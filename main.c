@@ -85,12 +85,21 @@ void yield() {
   thread_yield(&scheduler_thread);
 }
 
-__attribute__((noreturn)) void thread_work() {
+__attribute__((noreturn)) void thread_worker_1() {
   while (1) {
-    log_thread_event("work part 1");
-    yield();
-    log_thread_event("work part 2");
-    yield();
+    for (int i=0; i<100; ++i) {
+      if ((i % 3) == 0) {
+        log_thread_event("working");
+      }
+      yield();
+    }
+  }
+}
+
+__attribute__((noreturn)) void thread_worker_0() {
+  while (1) {
+      log_thread_event("working");
+      yield();
   }
 }
 
@@ -134,11 +143,10 @@ __attribute__((noreturn)) void start_scheduler() {
 }
 
 __attribute__((noreturn)) void main() {
-
   struct Thread thread1;
-  init_thread(&thread1, thread_work, false);
+  init_thread(&thread1, thread_worker_0, false);
   struct Thread thread2;
-  init_thread(&thread2, thread_work, false);
+  init_thread(&thread2, thread_worker_1, false);
 
   start_scheduler(); 
 }
