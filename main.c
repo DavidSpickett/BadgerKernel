@@ -49,7 +49,7 @@ void log_thread_event(const char* event) {
   print_uart0("Thread "); print_thread_id(); print_uart0(": "); print_uart0(event); print_uart0("\n");
 }
 
-void thread_yield() {
+void thread_yield(struct Thread* to) {
   log_thread_event("yielding");
 
   asm volatile ("push {r0-r12, r14}\n\t"      // No PC here
@@ -59,7 +59,7 @@ void thread_yield() {
                 "ldr r2, =user_thread_return\n\t"  // get address to resume from
                 "str r2, [r1]\n\t"            // make that our new PC
                 
-                "ldr r1, =scheduler_thread\n\t" // Switch back to scheduler
+                "mov r1, %0\n\t" // get addr of thread to move to
                 "ldr sp, [r1], #4\n\t"         // restore stack pointer
                 "ldr pc, [r1]\n\t"             // jump back to scheduler
 
@@ -68,17 +68,23 @@ void thread_yield() {
                 "ldr r1, [r1]\n\t" // get actual adress of current thread
                 "ldr sp, [r1], #4\n\t" //restore sp
                 "pop {r0-r12, r14}\n\t" //restore regs
+               :
+               : "r" (to)
                );
   
   log_thread_event("resuming");
 }
 
+void yield() {
+  thread_yield(&scheduler_thread);
+}
+
 __attribute__((noreturn)) void thread_work() {
   while (1) {
     log_thread_event("work part 1");
-    thread_yield();
+    yield();
     log_thread_event("work part 2");
-    thread_yield();
+    yield();
   }
 }
 
