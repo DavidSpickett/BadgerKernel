@@ -9,4 +9,4 @@ all:
 run:
 	qemu-system-arm -M versatilepb -m 128M -nographic -kernel main.bin -gdb tcp::1234
 clean:
-	rm startup.o main.o main.elf main.bin sections.txt disasm.txt
+	rm startup.o main.o main.elf main.bin sections.txt disasm.txt thread.o
