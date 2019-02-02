@@ -18,7 +18,7 @@ __attribute__((noreturn)) void thread_worker_0() {
   }
 }
 
-__attribute__((noreturn)) void main() {
+__attribute__((noreturn)) void entry() {
   struct Thread thread1;
   init_thread(&thread1, thread_worker_0, false);
   struct Thread thread2;

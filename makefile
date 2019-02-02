@@ -1,7 +1,7 @@
 all:
 	arm-none-eabi-as -mcpu=arm926ej-s -g startup.s -o startup.o
-	arm-none-eabi-gcc -c -mcpu=arm926ej-s -g main.c -o main.o
-	arm-none-eabi-gcc -c -mcpu=arm926ej-s -g thread.c -o thread.o
+	arm-none-eabi-gcc -c -mcpu=arm926ej-s -g main.c -o main.o -Wall
+	arm-none-eabi-gcc -c -mcpu=arm926ej-s -g thread.c -o thread.o -Wall
 	arm-none-eabi-ld -T linker.ld main.o thread.o startup.o -o main.elf
 	arm-none-eabi-objcopy -O binary main.elf main.bin
 	arm-none-eabi-objdump -h main.elf > sections.txt
