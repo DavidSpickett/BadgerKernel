@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <stddef.h>
+#include <stdbool.h>
 
 #define THREAD_STACK 512
 #define MAX_THREADS 10
@@ -17,46 +18,82 @@ struct Thread {
   uint8_t* stack_ptr;
   void (*current_pc)(void);
   uint8_t stack[THREAD_STACK];
+  int id;
 } scheduler_thread;
 
 struct Thread* all_threads[MAX_THREADS];
+struct Thread* current_thread;
 
-__attribute__((noreturn)) void thread1_work() {
-  while (1) {
-    print_uart0("Thread 1!\n");
-    /*
-    Emit a message
-    yield
-    */
+int get_thread_id() {
+  return current_thread->id;
+}
+
+void print_thread_id() {
+  int id = get_thread_id();
+  switch (id) {
+    case -1:
+      print_uart0("<HIDDEN>");
+      break;
+    default:
+    {
+      // Length matches the name above
+      char* o = "        ";
+      o[7] = (unsigned int)(id)+48;
+      print_uart0(o);
+      break;
+    }
   }
 }
 
-__attribute__((noreturn)) void thread2_work() {
+void log_thread_event(const char* event) {
+  print_uart0("Thread "); print_thread_id(); print_uart0(": "); print_uart0(event); print_uart0("\n");
+}
+
+void thread_yield() {
+  log_thread_event("yielding");
+
+  asm volatile ("push {r0-r12, r14}\n\t"      // No PC here
+                "ldr r1, =current_thread\n\t" // get *address* of current thread var
+                "ldr r1, [r1]\n\t"            // get actual adress of running thread
+                "str sp, [r1], #4\n\t"       // save current stack pointer to struct
+                "ldr r2, =user_thread_return\n\t"  // get address to resume from
+                "str r2, [r1]\n\t"            // make that our new PC
+                
+                "ldr r1, =scheduler_thread\n\t" // Switch back to scheduler
+                "ldr sp, [r1], #4\n\t"         // restore stack pointer
+                "ldr pc, [r1]\n\t"             // jump back to scheduler
+
+                "user_thread_return:\n\t"
+                "ldr r1, =current_thread\n\t" // Restore state
+                "ldr r1, [r1]\n\t" // get actual adress of current thread
+                "ldr sp, [r1], #4\n\t" //restore sp
+                "pop {r0-r12, r14}\n\t" //restore regs
+               );
+  
+  log_thread_event("resuming");
+}
+
+__attribute__((noreturn)) void thread_work() {
   while (1) {
-    /*
-    Emit a message
-    yield
-    */
+    log_thread_event("work part 1");
+    thread_yield();
+    log_thread_event("work part 2");
+    thread_yield();
   }
 }
 
 void start_thread(struct Thread* thread) {
-  // Ignore CPSR and SPSR for now since we're going to be manully yielding
+  current_thread = thread;
 
-  // Push the sp manually to avoid asm warnings  
+  // Ignore CPSR and SPSR for now since we're going to be manully yielding
   asm volatile ("push {r0-r12, r14}\n\t"     // note: no PC here
                 "ldr r1, =scheduler_thread\n\t"
-                "str sp, [r1]\n\t" // save current sp to thread struct
-                "add r1, #4\n\t"   // move to fn pointer
+                "str sp, [r1], #4\n\t" // save current sp to thread struct
                 "ldr r2, =thread_return\n\t" // when a thread yields it will return to this label
                 "str r2, [r1]\n\t"   // now a yielding thread returns to thread_return
 
-                // At this point:
-                // * registers apart from PC are on scheduler's stack
-                // * stack_ptr in struct is updated to the current sp
-                // * function pointer points to where a yielding thread will return
-
-                "mov r1, %0\n\t" // get address of thread
+                "ldr r1, =current_thread\n\t" // current thread is already the user thread
+                "ldr r1, [r1]\n\t" // get value of ptr
                 "ldr sp, [r1], #4\n\t" // load up thread's stack ptr and inc
                 "ldr pc, [r1]\n\t" // jump into thread
 
@@ -69,15 +106,17 @@ void start_thread(struct Thread* thread) {
                :
                : "r" (thread)
                ); 
-
-  // return to the scheduling loop...
+  
+  current_thread = &scheduler_thread;
 }
 
 __attribute__((noreturn)) void start_scheduler() {
   while (1) {
     for (size_t idx=0; idx != MAX_THREADS; ++idx) {
       if (all_threads[idx]) {
+        log_thread_event("scheduling new thread");
         start_thread(all_threads[idx]);
+        log_thread_event("thread yielded");
       }  
     }
   } 
@@ -87,28 +126,30 @@ int add_thread(struct Thread* new_thread) {
   for (size_t idx=0; idx != MAX_THREADS; ++idx) {
     if (!all_threads[idx]) {
       all_threads[idx] = new_thread;
-      return 0;
+      return idx;
     }
   }
   return -1;
 }
 
-void init_thread(struct Thread* thread, void (*do_work)(void)) {
+void init_thread(struct Thread* thread, void (*do_work)(void), bool hidden) {
   thread->current_pc = do_work;
   thread->stack_ptr = &(thread->stack[THREAD_STACK-1]);
+  // TODO: handle err
+  thread->id = hidden ? -1 : add_thread(thread);
 }
 
 
 __attribute__((noreturn)) void main() {
-  init_thread(&scheduler_thread, start_scheduler);
+  // Hidden so that the scheduler doesn't run itself somehow
+  init_thread(&scheduler_thread, start_scheduler, true);
 
   struct Thread thread1;
-  init_thread(&thread1, thread1_work);
-  add_thread(&thread1);
+  init_thread(&thread1, thread_work, false);
   struct Thread thread2;
-  init_thread(&thread2, thread2_work);
-  add_thread(&thread2);
+  init_thread(&thread2, thread_work, false);
 
+  current_thread = &scheduler_thread;
   asm volatile ("ldr r1, =scheduler_thread\n\t" // Load scheduler thread address
                 "ldr sp, [r1]\n\t"              // Set sp to scheduler thread's stack
                 "add r1, r1, #4\n\t"            // Point r1 to the work function pointer
