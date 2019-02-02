@@ -34,12 +34,12 @@ void print_thread_id() {
   }
 }
 
-void log_thread_event(const char* event) {
+void log_event(const char* event) {
   print("Thread "); print_thread_id(); print(": "); print(event); print("\n");
 }
 
 void thread_yield(struct Thread* to) {
-  log_thread_event("yielding");
+  log_event("yielding");
 
   // TODO: CPSR/SPSR, flags?
   asm volatile (
@@ -68,7 +68,7 @@ void thread_yield(struct Thread* to) {
                : "r" (to)
                );
   
-  log_thread_event("resuming");
+  log_event("resuming");
 }
 
 void yield() {
@@ -88,7 +88,7 @@ int add_thread(struct Thread* new_thread) {
 
 void init_thread(struct Thread* thread, void (*do_work)(void), bool hidden) {
   thread->current_pc = do_work;
-  thread->stack_ptr = &(thread->stack[THREAD_STACK-1]);
+  thread->stack_ptr = &(thread->stack[THREAD_STACK_SIZE-1]);
   // TODO: handle err
   thread->id = hidden ? -1 : add_thread(thread);
 }
@@ -97,9 +97,9 @@ __attribute__((noreturn)) void do_scheduler() {
   while (1) {
     for (size_t idx=0; idx != MAX_THREADS; ++idx) {
       if (all_threads[idx]) {
-        log_thread_event("scheduling new thread");
+        log_event("scheduling new thread");
         thread_yield(all_threads[idx]);
-        log_thread_event("thread yielded");
+        log_event("thread yielded");
       }  
     }
   } 
