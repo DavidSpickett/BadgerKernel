@@ -4,6 +4,15 @@
 #define THREAD_STACK 512
 #define MAX_THREADS 10
 
+volatile unsigned int * const UART0DR = (unsigned int *)0x101f1000;
+ 
+void print_uart0(const char *s) {
+ while(*s != '\0') { /* Loop until end of string */
+ *UART0DR = (unsigned int)(*s); /* Transmit char */
+ s++; /* Next char */
+ }
+}
+
 struct Thread {
   uint8_t* stack_ptr;
   void (*current_pc)(void);
@@ -14,6 +23,7 @@ struct Thread* all_threads[MAX_THREADS];
 
 __attribute__((noreturn)) void thread1_work() {
   while (1) {
+    print_uart0("Thread 1!\n");
     /*
     Emit a message
     yield
@@ -88,6 +98,7 @@ void init_thread(struct Thread* thread, void (*do_work)(void)) {
   thread->stack_ptr = &(thread->stack[THREAD_STACK-1]);
 }
 
+
 __attribute__((noreturn)) void main() {
   init_thread(&scheduler_thread, start_scheduler);
 
@@ -105,3 +116,8 @@ __attribute__((noreturn)) void main() {
                );
   __builtin_unreachable();
 }
+
+void c_entry() {
+  main();
+}
+
