@@ -1,7 +1,7 @@
 // TODO: CPSR/SPSR, flags?
 asm volatile (
  /* Save our own state */
- "push {r0-r12, r14}\n\t"      // note no PC here
+ "push {r0-r12, r14}\n\t"      // note no PC or sp here
  "ldr r1, =current_thread\n\t" // get *address* of current thread var
  "ldr r1, [r1]\n\t"            // get actual adress of current thread
  "str sp, [r1], #4\n\t"        // save current stack pointer to struct
