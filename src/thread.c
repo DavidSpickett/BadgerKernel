@@ -1,17 +1,11 @@
 #include "thread.h"
+#include "print.h"
 
 #define MAX_THREADS 10
 
 static struct Thread scheduler_thread;
 static struct Thread* all_threads[MAX_THREADS];
 static struct Thread* current_thread;
-
-void print(const char *s) {
-  volatile unsigned int * const UART0DR = (unsigned int *)0x101f1000;
-  while(*s != '\0') { 
-    *UART0DR = (unsigned int)(*s++);
-  }
-}
 
 int get_thread_id() {
   return current_thread->id;
