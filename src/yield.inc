@@ -19,7 +19,7 @@ asm volatile (
  "thread_return:\n\t"          // threads are resumed from here
  "ldr r1, =current_thread\n\t" // current will always be ourselves here
  "ldr r1, [r1]\n\t"            // get *value* of current thread ptr
- "ldr sp, [r1], #4\n\t"        // restore our own stack pointer
+ "ldr sp, [r1]\n\t"            // restore our own stack pointer
  "pop {r0-r12, r14}\n\t"       // restore our own regs
 :
 : "r" (to)
