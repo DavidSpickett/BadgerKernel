@@ -1,6 +1,6 @@
 A simple demo showing tasks cooperativley sharing time. 
 
-Mostly C, the assembly parts are in yield.inc. Current build target is 32 bit Arm, so the assembly is for that. It also relies on the size of a pointer being 32 bit.
+Mostly C, the assembly parts are in src/yield.inc. Current build target is 32 bit Arm so the assembly is for that.
 
 ## Building
 
