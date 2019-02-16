@@ -1,10 +1,17 @@
+INC = -I include/
+CFLAGS = -Wall -nostdlib -g
+
 PREFIX = arm-none-eabi
 PLATFORM = -mcpu=arm926ej-s
 PLATFORM_SRC = arm926ej_s
-CFLAGS = -Wall -nostdlib -g
-INC = -I include/
 RAM_START = 0x00010000
 QEMU = qemu-system-arm -M versatilepb -m 64M -nographic -semihosting -kernel build/demo.elf
+
+#PREFIX = aarch64-linux-gnu
+#PLATFORM =
+#PLATFORM_SRC = aarch64_virt
+#RAM_START = 0x40000000
+#QEMU = qemu-system-aarch64 -M virt -cpu cortex-a57 -m 64M -nographic -semihosting -kernel build/demo.elf
 
 all: test
 
