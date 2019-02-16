@@ -1,29 +1,33 @@
 A simple demo showing tasks cooperativley sharing time. 
 
-Mostly C, the assembly parts are in src/yield.inc. Current build target is 32 bit Arm so the assembly is for that.
+Current build targets are ARM and AArch64. Each platform has it's own folder in '/src/hw' for its specific code.
 
 ## Building
 
-Install the toolchain from:
-
-https://developer.arm.com/open-source/gnu-toolchain/gnu-rm/downloads
+Install an arm-none-eabi or aarch64-none-eabi toolchain. '-linux' should work fine too.
 
 Install qemu with Arm support, which for MacPorts will be:
 ```
 sudo port install qemu +target_arm
 ```
 
+Or on Ubuntu:
+```
+sudo apt-get install qemu-system-arm
+```
+
 Then:
 ```
 make
-make run
 ```
-(note that qemu will spam a lot of output so it's better to use a seperate window for running it)
+
+This will build and test the program. To see the qemu output do 'make run' instead.
 
 ## Example
 
-The included setup creates two threads. The first prints every time it is run and the other prints every 3 times it runs. It looks something like this: (repeated output removed)
+The included setup creates two threads. The first prints every time it is run and the other prints every 3 times it runs. On the next run after it has printed it will exit Qemu.
 
+The result looks something like this:
 ```
 Thread <HIDDEN>: resuming
 Thread <HIDDEN>: thread yielded
@@ -46,6 +50,8 @@ Thread        1: resuming
 Thread        1: working
 Thread        1: yielding
 ```
+
+See 'expected.log' for the full output.
 
 ## References
 
