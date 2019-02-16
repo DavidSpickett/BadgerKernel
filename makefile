@@ -9,10 +9,10 @@ all: test
 
 obj:
 	mkdir -p build
-	$(PREFIX)-as         $(PLATFORM)              src/startup.s                  -o build/startup.o
-	$(PREFIX)-gcc $(INC) $(PLATFORM) -c $(CFLAGS) src/thread.c                   -o build/thread.o
+	$(PREFIX)-as         $(PLATFORM)              src/hw/$(PLATFORM_SRC)/startup.s  -o build/startup.o
 	$(PREFIX)-gcc $(INC) $(PLATFORM) -c $(CFLAGS) src/hw/$(PLATFORM_SRC)/print.c -o build/print.o
 	$(PREFIX)-gcc $(INC) $(PLATFORM) -c $(CFLAGS) src/hw/$(PLATFORM_SRC)/exit.c  -o build/exit.o
+	$(PREFIX)-gcc $(INC) $(PLATFORM) -c $(CFLAGS) src/thread.c                   -o build/thread.o
 	$(PREFIX)-gcc $(INC) $(PLATFORM) -c $(CFLAGS) main.c                         -o build/main.o
 
 link: obj
