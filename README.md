@@ -50,3 +50,6 @@ Thread        1: yielding
 ## References
 
 https://balau82.wordpress.com/2010/02/28/hello-world-for-bare-metal-arm-using-qemu/
+https://stackoverflow.com/questions/45206027/qemu-aarch64-supported-boards/45235392#45235392
+https://github.com/freedomtan/aarch64-bare-metal-qemu
+https://stackoverflow.com/questions/31990487/how-to-cleanly-exit-qemu-after-executing-bare-metal-program-without-user-interve
