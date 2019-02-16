@@ -1,7 +1,7 @@
 PREFIX = arm-none-eabi
 PLATFORM = -mcpu=arm926ej-s
 CFLAGS = -Wall
-INC = -I INClude/
+INC = -I include/
 QEMU = qemu-system-arm -M versatilepb -m 128M -nographic -semihosting -kernel build/demo.bin
 
 all: test
