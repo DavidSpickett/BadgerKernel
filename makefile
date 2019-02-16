@@ -32,7 +32,7 @@ run: link
 	$(QEMU)
 
 test: link
-	$(QEMU) -serial file:build/got.log
+	$(QEMU) -serial file:build/got.log > /dev/null
 	diff expected.log build/got.log
 
 clean:
