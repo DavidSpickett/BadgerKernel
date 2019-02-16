@@ -3,6 +3,7 @@ PLATFORM = -mcpu=arm926ej-s
 PLATFORM_SRC = arm926ej_s
 CFLAGS = -Wall -nostdlib -g
 INC = -I include/
+RAM_START = 0x00010000
 QEMU = qemu-system-arm -M versatilepb -m 64M -nographic -semihosting -kernel build/demo.elf
 
 all: test
@@ -17,7 +18,7 @@ obj:
 	$(PREFIX)-gcc $(INC) $(PLATFORM) -c $(CFLAGS) main.c                           -o build/main.o
 
 link: obj
-	$(PREFIX)-ld -T linker.ld $(wildcard build/*.o) -o build/demo.elf
+	$(PREFIX)-ld -T linker.ld -defsym=ram_start=$(RAM_START) $(wildcard build/*.o) -o build/demo.elf
 
 run: link
 	$(QEMU)

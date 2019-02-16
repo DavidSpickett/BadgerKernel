@@ -1,7 +1,7 @@
 ENTRY(_Reset)
 SECTIONS
 {
- . = 0x10000;
+ . = ram_start;
  .startup . : { build/startup.o(.text) }
  .text : { *(.text) }
  .data : { *(.data) }
