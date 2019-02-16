@@ -26,6 +26,6 @@ void platform_yield(void** current, void* to) {
   :
   : [curr]"r"(current), [to]"r"(to), [inc]"I"(sizeof(void*))
   : "x19", "x20", "x21", "x22", "x23", "x24",
-    "x25", "x26", "x27", "x28" // x29 is done for us
+    "x25", "x26", "x27", "x28", /*"x29",*/ "x30"
   );
 }
