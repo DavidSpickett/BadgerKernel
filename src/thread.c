@@ -3,6 +3,8 @@
 
 #define MAX_THREADS 10
 
+extern void platform_yield(void**, void*);
+
 static struct Thread scheduler_thread;
 static struct Thread* all_threads[MAX_THREADS];
 static struct Thread* current_thread;
@@ -34,7 +36,7 @@ void log_event(const char* event) {
 
 void thread_yield(struct Thread* to) {
   log_event("yielding");
-  #include "yield.inc"
+  platform_yield((void**)&current_thread, to);
   log_event("resuming");
 }
 
