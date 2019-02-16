@@ -1,0 +1,1 @@
+void qemu_exit();

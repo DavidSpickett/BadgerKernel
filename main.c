@@ -1,13 +1,16 @@
 #include "thread.h"
+#include "exit.h"
 
 __attribute__((noreturn)) void thread_worker_1() {
   while (1) {
-    for (int i=0; i<100; ++i) {
+    for (int i=0; i<4; ++i) {
       if ((i % 3) == 0) {
         log_event("working");
       }
       yield();
     }
+    log_event("exiting");
+    qemu_exit();
   }
 }
 

@@ -77,6 +77,7 @@ __attribute__((noreturn)) void start_scheduler() {
   init_thread(&scheduler_thread, do_scheduler, true);
   // Need a dummy thread here otherwise we'll try to write to address 0
   struct Thread dummy;
+  init_thread(&dummy, (void (*)(void))(0), true);
   current_thread = &dummy;
   thread_yield(&scheduler_thread);
   __builtin_unreachable();
