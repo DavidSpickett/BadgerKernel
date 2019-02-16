@@ -2,7 +2,7 @@ PREFIX = arm-none-eabi
 PLATFORM = -mcpu=arm926ej-s
 CFLAGS = -Wall
 INC = -I include/
-QEMU = qemu-system-arm -M versatilepb -m 128M -nographic -semihosting -kernel build/demo.bin
+QEMU = qemu-system-arm -M versatilepb -m 128M -nographic -semihosting -kernel build/demo.elf
 
 all: test
 
@@ -17,13 +17,10 @@ obj:
 link: obj
 	$(PREFIX)-ld -T linker.ld $(wildcard build/*.o) -o build/demo.elf
 
-objcopy: link
-	$(PREFIX)-objcopy -O binary build/demo.elf build/demo.bin
-
-run: objcopy
+run: link
 	$(QEMU)
 
-test: objcopy
+test: link
 	@$(QEMU) > build/got.log
 	diff expected.log build/got.log
 
