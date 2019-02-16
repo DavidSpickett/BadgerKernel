@@ -7,20 +7,6 @@ Thread <HIDDEN>: resuming
 Thread <HIDDEN>: thread yielded
 Thread <HIDDEN>: scheduling new thread
 Thread <HIDDEN>: yielding
-Thread        1: working
-Thread        1: yielding
-Thread <HIDDEN>: resuming
-Thread <HIDDEN>: thread yielded
-Thread <HIDDEN>: scheduling new thread
-Thread <HIDDEN>: yielding
-Thread        0: resuming
-Thread        0: working
-Thread        0: yielding
-Thread <HIDDEN>: resuming
-Thread <HIDDEN>: thread yielded
-Thread <HIDDEN>: scheduling new thread
-Thread <HIDDEN>: yielding
-Thread        1: resuming
 Thread        1: yielding
 Thread <HIDDEN>: resuming
 Thread <HIDDEN>: thread yielded
@@ -48,17 +34,4 @@ Thread <HIDDEN>: scheduling new thread
 Thread <HIDDEN>: yielding
 Thread        1: resuming
 Thread        1: working
-Thread        1: yielding
-Thread <HIDDEN>: resuming
-Thread <HIDDEN>: thread yielded
-Thread <HIDDEN>: scheduling new thread
-Thread <HIDDEN>: yielding
-Thread        0: resuming
-Thread        0: working
-Thread        0: yielding
-Thread <HIDDEN>: resuming
-Thread <HIDDEN>: thread yielded
-Thread <HIDDEN>: scheduling new thread
-Thread <HIDDEN>: yielding
-Thread        1: resuming
 Thread        1: exiting

@@ -3,14 +3,14 @@
 
 __attribute__((noreturn)) void thread_worker_1() {
   while (1) {
-    for (int i=0; i<4; ++i) {
-      if ((i % 3) == 0) {
+    for (int i=0; ; ++i) {
+      if (i == 2) {
         log_event("working");
+        log_event("exiting");
+        qemu_exit();
       }
       yield();
     }
-    log_event("exiting");
-    qemu_exit();
   }
 }
 

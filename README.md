@@ -25,7 +25,7 @@ This will build and test the program. To see the qemu output do 'make run' inste
 
 ## Example
 
-The included setup creates two threads. The first prints every time it is run and the other prints every 3 times it runs. On the next run after it has printed it will exit Qemu.
+The included setup creates two threads. The first prints every time it is run and the other waits to be scheduled 3 times then exits qemu.
 
 The result looks something like this:
 ```
