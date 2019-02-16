@@ -1,6 +1,6 @@
-#ifndef SERIAL_H
-#define SERIAL_H
+#ifndef PRINT_H
+#define PRINT_H
 
 void print(const char *s);
 
-#endif /* ifdef SERIAL_H */
+#endif /* ifdef PRINT_H */
