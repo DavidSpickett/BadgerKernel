@@ -47,6 +47,7 @@ add_custom_target(run
   COMMAND /bin/sh build/run.sh
   DEPENDS demo)
 
+# This could be done with add_test, but then we wouldn't see the failure output.
 file( WRITE build/test.sh "${QEMU} -serial file:build/got.log > /dev/null && diff expected.log build/got.log" )
 add_custom_target(run_test ALL
   COMMAND /bin/sh build/test.sh
