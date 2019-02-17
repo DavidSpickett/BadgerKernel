@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/DavidSpickett/ARMMultiTasking.svg?branch=master)](https://travis-ci.com/DavidSpickett/ARMMultiTasking)
+
 A simple demo showing tasks cooperativley sharing time. 
 
 Current build targets are ARM and AArch64. Each platform has it's own folder in '/src/hw' for its specific code.
