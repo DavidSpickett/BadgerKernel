@@ -5,7 +5,6 @@ addons:
     packages:
     - cmake
     - qemu-system-arm
-    - qemu-system-aarch64
     - gcc-arm-none-eabi
     - gcc-aarch64-linux-gnu
     - libnewlib-arm-none-eabi
@@ -18,3 +17,4 @@ script:
   - rm -rf CMakeCache.txt CMakeFiles/
   - cmake . -DBUILD_PLATFORM=aarch64
   - make
+  - ls /usr/bin/qemu*
