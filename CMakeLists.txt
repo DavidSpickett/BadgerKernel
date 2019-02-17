@@ -21,7 +21,7 @@ set( CMAKE_C_COMPILER "${PREFIX}-gcc" )
 
 set( QEMU "${QEMU_ARGS} -m 64M -nographic -semihosting -kernel build/demo" )
 set( INC "-I include/" )
-set( CFLAGS "-Wall -nostdlib -g -O3" )
+set( CFLAGS "-Wall -nostdlib -g -O3 -std=gnu11" )
 set( CMAKE_C_FLAGS "${INC} ${PLATFORM} ${CFLAGS}" )
 
 set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/build" )
