@@ -41,6 +41,13 @@ set( SOURCES
 add_executable ( ${PROJECT_NAME} ${SOURCES} )
 target_link_libraries(demo PRIVATE "-Wl,-T,linker.ld,-defsym=ram_start=${RAM_START}" )
 
+# For some reason I can't run the command line directly
 file( WRITE build/run.sh ${QEMU} )
-add_custom_target(run COMMAND build/run.sh
+add_custom_target(run 
+  COMMAND /bin/sh build/run.sh
+  DEPENDS demo)
+
+file( WRITE build/test.sh "${QEMU} -serial file:build/got.log > /dev/null && diff expected.log build/got.log" )
+add_custom_target(run_test ALL
+  COMMAND /bin/sh build/test.sh
   DEPENDS demo)
