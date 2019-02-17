@@ -7,10 +7,10 @@ addons:
     - qemu-system-arm
     - gcc-arm-none-eabi
     - gcc-aarch64-linux-gnu
-    - gcc-multilib
 
 script:
   - cmake . -DBUILD_PLATFORM=arm
+  - make -n
   - make
   - make clean
   - rm -rf CMakeCache.txt CMakeFiles/
