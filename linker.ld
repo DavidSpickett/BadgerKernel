@@ -2,7 +2,7 @@ ENTRY(_Reset)
 SECTIONS
 {
  . = ram_start;
- .startup . : { build/startup.o(.text) }
+ .startup . : { *startup.s.o(.text) }
  .text : { *(.text) }
  .data : { *(.data) }
  .bss : { *(.bss COMMON) }
