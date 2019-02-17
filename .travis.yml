@@ -8,6 +8,7 @@ addons:
     - gcc-arm-none-eabi
     - gcc-aarch64-linux-gnu
     - libnewlib-arm-none-eabi
+    - libc6-dev-arm64-cross
 
 script:
   - cmake . -DBUILD_PLATFORM=arm
