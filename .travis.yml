@@ -5,9 +5,9 @@ addons:
     packages:
     - cmake
     - qemu-system-arm
-    - libc6-dev
     - gcc-arm-none-eabi
     - gcc-aarch64-linux-gnu
+    - libnewlib-arm-none-eabi
 
 script:
   - cmake . -DBUILD_PLATFORM=arm
