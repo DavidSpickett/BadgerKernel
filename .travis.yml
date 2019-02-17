@@ -6,7 +6,9 @@ addons:
     - cmake
     - qemu-system-arm
     - gcc-arm-none-eabi
+    - binutils-arm-none-eabi
     - gcc-aarch64-linux-gnu
+    - binutils-aarch64-linux-gnu
 
 script:
   - cmake . -DBUILD_PLATFORM=arm
