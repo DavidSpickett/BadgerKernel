@@ -5,6 +5,7 @@ addons:
     packages:
     - cmake
     - qemu-system-arm
+    - qemu-system-aarch64
     - gcc-arm-none-eabi
     - gcc-aarch64-linux-gnu
     - libnewlib-arm-none-eabi
