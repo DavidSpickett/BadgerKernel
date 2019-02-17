@@ -1,0 +1,17 @@
+language: c
+
+addons:
+  apt:
+    packages:
+    - cmake
+    - qemu-system-arm
+    - arm-none-eabi-gcc
+    - aarch64-linux-gnu-gcc
+
+script:
+  - cmake . -DBUILD_PLATFORM=arm
+  - make
+  - make clean
+  - rm -rf CMakeCache.txt CMakeFiles/
+  - cmake . -DBUILD_PLATFORM=aarch64
+  - make
