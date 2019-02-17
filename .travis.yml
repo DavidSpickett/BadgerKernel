@@ -4,7 +4,6 @@ dist: xenial
 addons:
   apt:
     packages:
-    - cmake
     - qemu-system-arm
     - gcc-arm-none-eabi
     - gcc-aarch64-linux-gnu
