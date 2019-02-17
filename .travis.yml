@@ -5,12 +5,12 @@ addons:
     packages:
     - cmake
     - qemu-system-arm
+    - libc6-dev
     - gcc-arm-none-eabi
     - gcc-aarch64-linux-gnu
 
 script:
   - cmake . -DBUILD_PLATFORM=arm
-  - make -n
   - make
   - make clean
   - rm -rf CMakeCache.txt CMakeFiles/
