@@ -4,20 +4,19 @@ Current build targets are ARM and AArch64. Each platform has it's own folder in 
 
 ## Building
 
-Install an arm-none-eabi or aarch64-none-eabi toolchain. '-linux' should work fine too.
+Install cmake and an arm-none-eabi or aarch64-none-eabi toolchain. '-linux' should work fine too.
 
-Install qemu with Arm support, which for MacPorts will be:
-```
-sudo port install qemu +target_arm
-```
-
-Or on Ubuntu:
+Install qemu with Arm support (this will get you aarch64 too):
 ```
 sudo apt-get install qemu-system-arm
 ```
 
-Then:
+Then configure according to which toolchain you installed:
 ```
+cmake . -DBUILD_PLATFORM=arm
+make
+
+cmake . -DBUILD_PLATFORM=aarch64
 make
 ```
 
