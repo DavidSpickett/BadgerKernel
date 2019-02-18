@@ -4,6 +4,9 @@ cmake_minimum_required( VERSION 3.9 )
 set( BUILD_PLATFORM "arm" CACHE STRING "Architecture to build for." )
 set( OPT_LEVEL "3" CACHE STRING "Compiler optmisation level." )
 
+message(STATUS "BUILD_PLATFORM is ${BUILD_PLATFORM}")
+message(STATUS "OPT_LEVEL is -O${OPT_LEVEL}")
+
 if( BUILD_PLATFORM STREQUAL "arm" )
   set( PREFIX       "arm-none-eabi" )
   set( PLATFORM     "-mcpu=arm926ej-s" )
