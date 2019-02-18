@@ -61,3 +61,4 @@ function(add_demo_app NAME)
 endfunction(add_demo_app)
 
 add_demo_app(yielding)
+add_demo_app(message)

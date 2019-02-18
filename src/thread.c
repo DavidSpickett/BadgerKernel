@@ -13,6 +13,53 @@ int get_thread_id() {
   return current_thread->id;
 }
 
+static void inc_msg_pointer(struct Thread* thr, struct Message** ptr) {
+  // wrap around the end back to the start
+  if (*ptr == &(thr->messages[THREAD_MSG_QUEUE_SIZE-1])) {
+    *ptr = &(thr->messages[0]);
+  // otherwise go forward normally
+  } else {
+    *ptr += 1;
+  }
+}
+
+bool get_msg(int* sender, int* message) {
+  if (current_thread->next_msg != current_thread->end_msgs) {
+    *sender = current_thread->next_msg->src;
+    *message = current_thread->next_msg->content;
+
+    inc_msg_pointer(current_thread, &current_thread->next_msg);
+    return true;
+  }
+  else {
+    return false;
+  }
+}
+
+bool send_msg(int destination, int message) {
+  // Invalid destination thread
+  if (destination >= MAX_THREADS ||
+      all_threads[destination] == NULL) {
+    return false;
+  }
+
+  // Thread's message box is full
+  struct Thread* dest = all_threads[destination];
+  struct Message* test_ptr = dest->end_msgs;
+  inc_msg_pointer(dest, &test_ptr);
+  if (test_ptr == dest->next_msg) {
+    return false;
+  }
+
+  // Now we can send something
+  struct Message * our_msg = dest->end_msgs;
+  our_msg->src = get_thread_id();
+  our_msg->content = message;
+  inc_msg_pointer(dest, &(dest->end_msgs));
+
+  return true;
+}
+
 void print_thread_id() {
   int id = get_thread_id();
   switch (id) {
@@ -60,6 +107,8 @@ void init_thread(struct Thread* thread, void (*do_work)(void), bool hidden) {
   thread->stack_ptr = &(thread->stack[THREAD_STACK_SIZE-1]);
   // TODO: handle err
   thread->id = hidden ? -1 : add_thread(thread);
+  thread->next_msg = &(thread->messages[0]);
+  thread->end_msgs = thread->next_msg;
 }
 
 __attribute__((noreturn)) void do_scheduler() {
