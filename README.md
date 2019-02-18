@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.com/DavidSpickett/ARMMultiTasking.svg?branch=master)](https://travis-ci.com/DavidSpickett/ARMMultiTasking)
 
-A simple demo showing tasks cooperativley sharing time. 
+A simple set of demos showing tasks cooperativley sharing time.
 
 Current build targets are ARM and AArch64. Each platform has it's own folder in '/src/hw' for its specific code.
 
@@ -22,11 +22,11 @@ cmake . -DBUILD_PLATFORM=aarch64
 make
 ```
 
-This will build and test the program. To see the qemu output do 'make run' instead.
+This will build and test all the demos, ls demos/ for a full list. To run or test an individual demo use the '<demo>_run' and '<demo>_test' targets.
 
 ## Example
 
-The included setup creates two threads. The first prints every time it is run and the other waits to be scheduled 3 times then exits qemu.
+The included 'yielding' demo creates two threads. The first prints every time it is run and the other waits to be scheduled 3 times then exits qemu.
 
 The result looks something like this:
 ```
@@ -60,3 +60,4 @@ https://balau82.wordpress.com/2010/02/28/hello-world-for-bare-metal-arm-using-qe
 https://stackoverflow.com/questions/45206027/qemu-aarch64-supported-boards/45235392#45235392
 https://github.com/freedomtan/aarch64-bare-metal-qemu
 https://stackoverflow.com/questions/31990487/how-to-cleanly-exit-qemu-after-executing-bare-metal-program-without-user-interve
+https://static.docs.arm.com/100863/0200/semihosting.pdf
