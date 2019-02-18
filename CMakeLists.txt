@@ -23,6 +23,7 @@ set( QEMU "${QEMU_ARGS} -m 64M -nographic -semihosting -kernel" )
 set( CFLAGS "-Wall -nostdlib -g -O3 -std=gnu11" )
 set( CMAKE_C_FLAGS "${PLATFORM} ${CFLAGS}" )
 
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 set_property(SOURCE src/hw/${PLATFORM_SRC}/startup.s PROPERTY LANGUAGE C)
 set( BASE_SOURCES
   src/thread.c
@@ -32,11 +33,11 @@ set( BASE_SOURCES
   src/hw/${PLATFORM_SRC}/startup.s
 )
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+add_library(support OBJECT ${BASE_SOURCES})
 
 function(add_demo_app NAME)
-        add_executable ( ${NAME} ${BASE_SOURCES} demos/${NAME}.c)
-        target_link_libraries(${NAME} PRIVATE "-Wl,-T,linker.ld,-defsym=ram_start=${RAM_START}" )
+        add_executable ( ${NAME} demos/${NAME}.c $<TARGET_OBJECTS:support> )
+        target_link_libraries(${NAME} PRIVATE "-Wl,-T,linker.ld,-defsym=ram_start=${RAM_START}")
 
         add_custom_target(run_${NAME})
         add_dependencies(run_${NAME} ${NAME})
