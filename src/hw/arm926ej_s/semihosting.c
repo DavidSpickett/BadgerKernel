@@ -5,3 +5,13 @@ void qemu_exit() {
       "svc 0x00123456\n\t"   // make semihosting call
   );
 }
+
+void qemu_print(const char* msg) {
+  asm volatile (
+      "mov r1, %[msg]\n\t"   // pointer to msg
+      "ldr r0, =0x04\n\t"    // SYS_WRITE0
+      "svc 0x00123456\n\t"   // make semihosting call
+    :
+    : [msg]"r"(msg)
+  );
+}
