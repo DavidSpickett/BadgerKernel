@@ -1,5 +1,5 @@
 #include "thread.h"
-#include "exit.h"
+#include "semihosting.h"
 
 __attribute__((noreturn)) void thread_worker_1() {
   while (1) {

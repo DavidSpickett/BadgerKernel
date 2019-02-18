@@ -33,7 +33,7 @@ set( BASE_SOURCES
   src/thread.c
   src/hw/${PLATFORM_SRC}/yield.c
   src/hw/${PLATFORM_SRC}/print.c
-  src/hw/${PLATFORM_SRC}/exit.c
+  src/hw/${PLATFORM_SRC}/semihosting.c
   src/hw/${PLATFORM_SRC}/startup.s
 )
 
