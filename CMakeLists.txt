@@ -43,18 +43,27 @@ function(add_demo_app NAME)
         add_executable ( ${NAME} ${BASE_SOURCES} demos/${NAME}.c)
         target_link_libraries(${NAME} PRIVATE "-Wl,-T,linker.ld,-defsym=ram_start=${RAM_START}" )
 
-        # For some reason I can't run the command line directly
-        file( WRITE build/run_${NAME}.sh "${QEMU} build/${NAME}" )
-        add_custom_target(run_${NAME} 
-          COMMAND /bin/sh build/run_${NAME}.sh
-          DEPENDS ${NAME})
+        add_custom_target(run_${NAME})
+        add_dependencies(run_${NAME} ${NAME})
+        add_custom_command(TARGET run_${NAME} POST_BUILD
+          COMMAND eval "${QEMU} build/${NAME}"
+          VERBATIM)
+
+        add_custom_target(debug_${NAME})
+        add_dependencies(debug_${NAME} ${NAME})
+        add_custom_command(TARGET debug_${NAME} POST_BUILD
+          COMMAND eval "${QEMU} build/${NAME} -s -S"
+          VERBATIM)
 
         # This could be done with add_test, but then we wouldn't see the failure output.
-        file( WRITE build/test_${NAME}.sh "${QEMU} build/${NAME} -serial file:build/${NAME}_got.log > \
-          /dev/null 2>&1 && diff demos/${NAME}_expected.log build/${NAME}_got.log" )
-        add_custom_target(test_${NAME} ALL
-          COMMAND /bin/sh build/test_${NAME}.sh
-          DEPENDS ${NAME})
+        add_custom_target(test_${NAME} ALL)
+        add_dependencies(test_${NAME} ${NAME})
+        add_custom_command(TARGET test_${NAME} POST_BUILD
+          # Why eval? Well, I've spent way too much time trying to get this argument substitution to work.
+          COMMAND eval "${QEMU} build/${NAME} -serial file:build/${NAME}_got.log > /dev/null 2>&1"
+          COMMAND diff demos/${NAME}_expected.log build/${NAME}_got.log
+          VERBATIM)
+
 endfunction(add_demo_app)
 
 add_demo_app(yielding)
