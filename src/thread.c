@@ -1,12 +1,9 @@
 #include "thread.h"
 #include "print.h"
 
-#define MAX_THREADS 10
-
 extern void platform_yield(void**, void*);
 
 static struct Thread scheduler_thread;
-static struct Thread* all_threads[MAX_THREADS];
 static struct Thread* current_thread;
 
 int get_thread_id() {
@@ -92,6 +89,24 @@ void yield() {
   thread_yield(&scheduler_thread);
 }
 
+__attribute__((noreturn)) void thread_start() {
+  // Every thread starts by entering this function
+
+  // Call thread's actual function
+  current_thread->work();
+
+  // Then mark this thread as invalid
+  all_threads[get_thread_id()] = NULL;
+
+  // Yield back to the scheduler
+  // Note that we NULLed the all_threads ptr but
+  // current_thread is still valid.
+  // TODO: we save state here that we don't need to
+  yield();
+
+  __builtin_unreachable();
+}
+
 int add_thread(struct Thread* new_thread) {
   for (size_t idx=0; idx != MAX_THREADS; ++idx) {
     if (!all_threads[idx]) {
@@ -103,7 +118,10 @@ int add_thread(struct Thread* new_thread) {
 }
 
 void init_thread(struct Thread* thread, void (*do_work)(void), bool hidden) {
-  thread->current_pc = do_work;
+  // thread start will jump to this
+  thread->work = do_work;
+  // but make sure thread start is the first call, so it can handle destruction
+  thread->current_pc = thread_start;
   thread->stack_ptr = &(thread->stack[THREAD_STACK_SIZE-1]);
   // TODO: handle err
   thread->id = hidden ? -1 : add_thread(thread);

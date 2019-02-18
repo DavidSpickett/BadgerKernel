@@ -1,0 +1,76 @@
+Thread <HIDDEN>: yielding
+Thread <HIDDEN>: scheduling new thread
+Thread <HIDDEN>: yielding
+Thread        0: yielding
+Thread <HIDDEN>: resuming
+Thread <HIDDEN>: thread yielded
+Thread <HIDDEN>: scheduling new thread
+Thread <HIDDEN>: yielding
+Thread        1: yielding
+Thread <HIDDEN>: resuming
+Thread <HIDDEN>: thread yielded
+Thread <HIDDEN>: scheduling new thread
+Thread <HIDDEN>: yielding
+Thread        2: yielding
+Thread <HIDDEN>: resuming
+Thread <HIDDEN>: thread yielded
+Thread <HIDDEN>: scheduling new thread
+Thread <HIDDEN>: yielding
+Thread        0: resuming
+Thread        0: yielding
+Thread <HIDDEN>: resuming
+Thread <HIDDEN>: thread yielded
+Thread <HIDDEN>: scheduling new thread
+Thread <HIDDEN>: yielding
+Thread        1: resuming
+Thread        1: yielding
+Thread <HIDDEN>: resuming
+Thread <HIDDEN>: thread yielded
+Thread <HIDDEN>: scheduling new thread
+Thread <HIDDEN>: yielding
+Thread        2: resuming
+Thread        2: yielding
+Thread <HIDDEN>: resuming
+Thread <HIDDEN>: thread yielded
+Thread <HIDDEN>: scheduling new thread
+Thread <HIDDEN>: yielding
+Thread        0: resuming
+Thread        0: yielding
+Thread <HIDDEN>: resuming
+Thread <HIDDEN>: thread yielded
+Thread <HIDDEN>: scheduling new thread
+Thread <HIDDEN>: yielding
+Thread        1: resuming
+Thread        1: yielding
+Thread <HIDDEN>: resuming
+Thread <HIDDEN>: thread yielded
+Thread <HIDDEN>: scheduling new thread
+Thread <HIDDEN>: yielding
+Thread        2: resuming
+Thread        2: a thread exited
+Thread        2: yielding
+Thread <HIDDEN>: resuming
+Thread <HIDDEN>: thread yielded
+Thread <HIDDEN>: scheduling new thread
+Thread <HIDDEN>: yielding
+Thread        0: resuming
+Thread        0: yielding
+Thread <HIDDEN>: resuming
+Thread <HIDDEN>: thread yielded
+Thread <HIDDEN>: scheduling new thread
+Thread <HIDDEN>: yielding
+Thread        2: resuming
+Thread        2: yielding
+Thread <HIDDEN>: resuming
+Thread <HIDDEN>: thread yielded
+Thread <HIDDEN>: scheduling new thread
+Thread <HIDDEN>: yielding
+Thread        0: resuming
+Thread        0: yielding
+Thread <HIDDEN>: resuming
+Thread <HIDDEN>: thread yielded
+Thread <HIDDEN>: scheduling new thread
+Thread <HIDDEN>: yielding
+Thread        2: resuming
+Thread        2: a thread exited
+Thread        2: all threads exited
