@@ -1,4 +1,4 @@
-project(demo C)
+project(MultiTaskingDemo C)
 cmake_minimum_required( VERSION 3.9 )
 
 set( BUILD_PLATFORM "arm" CACHE STRING "Architecture to build for." )
@@ -19,7 +19,7 @@ endif()
 
 set( CMAKE_C_COMPILER "${PREFIX}-gcc" )
 
-set( QEMU "${QEMU_ARGS} -m 64M -nographic -semihosting -kernel build/demo" )
+set( QEMU "${QEMU_ARGS} -m 64M -nographic -semihosting -kernel" )
 set( INC "-I include/" )
 set( CFLAGS "-Wall -nostdlib -g -O3 -std=gnu11" )
 set( CMAKE_C_FLAGS "${INC} ${PLATFORM} ${CFLAGS}" )
@@ -29,8 +29,7 @@ set( CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/build" )
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/build" )
 
 set_property(SOURCE src/hw/${PLATFORM_SRC}/startup.s PROPERTY LANGUAGE C)
-set( SOURCES
-  main.c
+set( BASE_SOURCES
   src/thread.c
   src/hw/${PLATFORM_SRC}/yield.c
   src/hw/${PLATFORM_SRC}/print.c
@@ -38,17 +37,24 @@ set( SOURCES
   src/hw/${PLATFORM_SRC}/startup.s
 )
 
-add_executable ( ${PROJECT_NAME} ${SOURCES} )
-target_link_libraries(demo PRIVATE "-Wl,-T,linker.ld,-defsym=ram_start=${RAM_START}" )
+set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES "build")
 
-# For some reason I can't run the command line directly
-file( WRITE build/run.sh ${QEMU} )
-add_custom_target(run 
-  COMMAND /bin/sh build/run.sh
-  DEPENDS demo)
+function(add_demo_app NAME)
+        add_executable ( ${NAME} ${BASE_SOURCES} demos/${NAME}.c)
+        target_link_libraries(${NAME} PRIVATE "-Wl,-T,linker.ld,-defsym=ram_start=${RAM_START}" )
 
-# This could be done with add_test, but then we wouldn't see the failure output.
-file( WRITE build/test.sh "${QEMU} -serial file:build/got.log > /dev/null 2>&1 && diff expected.log build/got.log" )
-add_custom_target(run_test ALL
-  COMMAND /bin/sh build/test.sh
-  DEPENDS demo)
+        # For some reason I can't run the command line directly
+        file( WRITE build/run_${NAME}.sh "${QEMU} build/${NAME}" )
+        add_custom_target(run_${NAME} 
+          COMMAND /bin/sh build/run_${NAME}.sh
+          DEPENDS ${NAME})
+
+        # This could be done with add_test, but then we wouldn't see the failure output.
+        file( WRITE build/test_${NAME}.sh "${QEMU} build/${NAME} -serial file:build/${NAME}_got.log > \
+          /dev/null 2>&1 && diff demos/${NAME}_expected.log build/${NAME}_got.log" )
+        add_custom_target(test_${NAME} ALL
+          COMMAND /bin/sh build/test_${NAME}.sh
+          DEPENDS ${NAME})
+endfunction(add_demo_app)
+
+add_demo_app(yielding)
