@@ -24,10 +24,6 @@ set( INC "-I include/" )
 set( CFLAGS "-Wall -nostdlib -g -O3 -std=gnu11" )
 set( CMAKE_C_FLAGS "${INC} ${PLATFORM} ${CFLAGS}" )
 
-set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/build" )
-set( CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/build" )
-set( CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/build" )
-
 set_property(SOURCE src/hw/${PLATFORM_SRC}/startup.s PROPERTY LANGUAGE C)
 set( BASE_SOURCES
   src/thread.c
@@ -37,8 +33,6 @@ set( BASE_SOURCES
   src/hw/${PLATFORM_SRC}/startup.s
 )
 
-set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES "build")
-
 function(add_demo_app NAME)
         add_executable ( ${NAME} ${BASE_SOURCES} demos/${NAME}.c)
         target_link_libraries(${NAME} PRIVATE "-Wl,-T,linker.ld,-defsym=ram_start=${RAM_START}" )
@@ -46,13 +40,13 @@ function(add_demo_app NAME)
         add_custom_target(run_${NAME})
         add_dependencies(run_${NAME} ${NAME})
         add_custom_command(TARGET run_${NAME} POST_BUILD
-          COMMAND eval "${QEMU} build/${NAME}"
+          COMMAND eval "${QEMU} ${NAME}"
           VERBATIM)
 
         add_custom_target(debug_${NAME})
         add_dependencies(debug_${NAME} ${NAME})
         add_custom_command(TARGET debug_${NAME} POST_BUILD
-          COMMAND eval "${QEMU} build/${NAME} -s -S"
+          COMMAND eval "${QEMU} ${NAME} -s -S"
           VERBATIM)
 
         # This could be done with add_test, but then we wouldn't see the failure output.
@@ -60,8 +54,8 @@ function(add_demo_app NAME)
         add_dependencies(test_${NAME} ${NAME})
         add_custom_command(TARGET test_${NAME} POST_BUILD
           # Why eval? Well, I've spent way too much time trying to get this argument substitution to work.
-          COMMAND eval "${QEMU} build/${NAME} -serial file:build/${NAME}_got.log > /dev/null 2>&1"
-          COMMAND diff demos/${NAME}_expected.log build/${NAME}_got.log
+          COMMAND eval "${QEMU} ${NAME} -serial file:${NAME}_got.log > /dev/null 2>&1"
+          COMMAND diff demos/${NAME}_expected.log ${NAME}_got.log
           VERBATIM)
 
 endfunction(add_demo_app)
