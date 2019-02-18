@@ -20,9 +20,8 @@ endif()
 set( CMAKE_C_COMPILER "${PREFIX}-gcc" )
 
 set( QEMU "${QEMU_ARGS} -m 64M -nographic -semihosting -kernel" )
-set( INC "-I include/" )
 set( CFLAGS "-Wall -nostdlib -g -O3 -std=gnu11" )
-set( CMAKE_C_FLAGS "${INC} ${PLATFORM} ${CFLAGS}" )
+set( CMAKE_C_FLAGS "${PLATFORM} ${CFLAGS}" )
 
 set_property(SOURCE src/hw/${PLATFORM_SRC}/startup.s PROPERTY LANGUAGE C)
 set( BASE_SOURCES
@@ -32,6 +31,8 @@ set( BASE_SOURCES
   src/hw/${PLATFORM_SRC}/semihosting.c
   src/hw/${PLATFORM_SRC}/startup.s
 )
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 function(add_demo_app NAME)
         add_executable ( ${NAME} ${BASE_SOURCES} demos/${NAME}.c)
