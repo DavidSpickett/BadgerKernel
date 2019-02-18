@@ -10,10 +10,13 @@ addons:
     - libnewlib-arm-none-eabi
     - libc6-dev-arm64-cross
 
+env:
+  - BUILD_PLATFORM=arm
+  - BUILD_PLATFORM=aarch64
+  - OPT_LEVEL=0
+  - OPT_LEVEL=3
+  - OPT_LEVEL=s
+
 script:
-  - cmake . -DBUILD_PLATFORM=arm
-  - make
-  - make clean
-  - rm -rf CMakeCache.txt CMakeFiles/
-  - cmake . -DBUILD_PLATFORM=aarch64
+  - cmake . -DBUILD_PLATFORM=$BUILD_PLATFORM -DOPT_LEVEL=$OPT_LEVEL
   - make

@@ -2,6 +2,7 @@ project(MultiTaskingDemo C)
 cmake_minimum_required( VERSION 3.9 )
 
 set( BUILD_PLATFORM "arm" CACHE STRING "Architecture to build for." )
+set( OPT_LEVEL "3" CACHE STRING "Compiler optmisation level." )
 
 if( BUILD_PLATFORM STREQUAL "arm" )
   set( PREFIX       "arm-none-eabi" )
@@ -20,7 +21,7 @@ endif()
 set( CMAKE_C_COMPILER "${PREFIX}-gcc" )
 
 set( QEMU "${QEMU_ARGS} -m 64M -nographic -semihosting -kernel" )
-set( CFLAGS "-Wall -nostdlib -g -O3 -std=gnu11" )
+set( CFLAGS "-Wall -nostdlib -g -O${OPT_LEVEL} -std=gnu11" )
 set( CMAKE_C_FLAGS "${PLATFORM} ${CFLAGS}" )
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
