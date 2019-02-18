@@ -6,7 +6,8 @@
 #include <stddef.h>
 
 #define THREAD_STACK_SIZE 512
-#define THREAD_MSG_QUEUE_SIZE 5
+// +1 because we need a gap to show the 'full' state
+#define THREAD_MSG_QUEUE_SIZE 5+1
 
 struct Message {
   int src;

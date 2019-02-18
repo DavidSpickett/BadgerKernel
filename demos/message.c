@@ -3,38 +3,57 @@
 
 __attribute__((noreturn)) void sender() {
   while (1) {
-    for (int i=0; ; ++i) {
-      bool sent = false;
-      while(!sent) {
-        sent = send_msg(1, i);
-        yield();
-      }
-
+    if (send_msg(2, 99)) {
       log_event("sent a message");
-      yield();
+    } else {
+      log_event("message box was full");
     }
+
+    yield();
+  }
+}
+
+__attribute__((noreturn)) void spammer() {
+  for (int i= 0; ; ++i) {
+    if (i == 2) {
+      // just one msg this time
+      send_msg(2, -1);
+      log_event("not spamming");
+    } else {
+      // Clog the receivers messages
+      while (send_msg(2, -1)) {}
+      log_event("spammed");
+    }
+
+    yield();
   }
 }
 
 __attribute__((noreturn)) void receiver() {
   while (1) {
-      int sender, message;
-      if (get_msg(&sender, &message)) {
-        if (message == 10) {
-          log_event("Got the right message");
-          qemu_exit();
-        }
-        log_event("Got a different message");
+    int sender, message;
+    while (get_msg(&sender, &message)) {
+      if (sender == 1) {
+        log_event("got message from sender");
+        qemu_exit();
+      } else {
+        log_event("discarded spam message");
       }
-      yield();
+    }
+
+    yield();
   }
 }
 
 __attribute__((noreturn)) void entry() {
-  struct Thread thread1;
-  init_thread(&thread1, sender, false);
-  struct Thread thread2;
-  init_thread(&thread2, receiver, false);
+  struct Thread t_spammer;
+  init_thread(&t_spammer, spammer, false);
+
+  struct Thread t_sender;
+  init_thread(&t_sender, sender, false);
+
+  struct Thread t_receiver;
+  init_thread(&t_receiver, receiver, false);
 
   start_scheduler();
 }

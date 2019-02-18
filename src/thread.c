@@ -14,12 +14,9 @@ int get_thread_id() {
 }
 
 static void inc_msg_pointer(struct Thread* thr, struct Message** ptr) {
-  // wrap around the end back to the start
-  if (*ptr == &(thr->messages[THREAD_MSG_QUEUE_SIZE-1])) {
+  ++(*ptr);
+  if (*ptr == &(thr->messages[THREAD_MSG_QUEUE_SIZE])) {
     *ptr = &(thr->messages[0]);
-  // otherwise go forward normally
-  } else {
-    *ptr += 1;
   }
 }
 
@@ -43,7 +40,10 @@ bool send_msg(int destination, int message) {
     return false;
   }
 
-  // Thread's message box is full
+  // Thread's message box is full if there is
+  // a one message gap between the end of the list
+  // and the start.
+  // If end and start are the same, it's an empty list
   struct Thread* dest = all_threads[destination];
   struct Message* test_ptr = dest->end_msgs;
   inc_msg_pointer(dest, &test_ptr);
