@@ -14,6 +14,15 @@ matrix:
       addons: *arm
     - env: BUILD_PLATFORM=arm OPT_LEVEL=s
       addons: *arm
+
+    #Same tools for arm/thumb builds
+    - env: BUILD_PLATFORM=thumb OPT_LEVEL=0
+      addons: *arm
+    - env: BUILD_PLATFORM=thumb OPT_LEVEL=3
+      addons: *arm
+    - env: BUILD_PLATFORM=thumb OPT_LEVEL=s
+      addons: *arm
+
     - env: BUILD_PLATFORM=aarch64 OPT_LEVEL=0
       addons: &aarch64
         apt:
