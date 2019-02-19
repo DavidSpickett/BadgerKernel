@@ -3,9 +3,11 @@ cmake_minimum_required( VERSION 3.9 )
 
 set( BUILD_PLATFORM "arm" CACHE STRING "Architecture to build for." )
 set( OPT_LEVEL "3" CACHE STRING "Compiler optmisation level." )
+option( UBSAN "Enable very basic undefined behaviour sanitiser." OFF )
 
 message(STATUS "BUILD_PLATFORM is ${BUILD_PLATFORM}")
 message(STATUS "OPT_LEVEL is -O${OPT_LEVEL}")
+message(STATUS "UBSAN is ${UBSAN}")
 
 if( BUILD_PLATFORM STREQUAL "arm" )
   set( PREFIX       "arm-none-eabi" )
@@ -36,7 +38,11 @@ endif()
 set( CMAKE_C_COMPILER "${PREFIX}-gcc" )
 
 set( QEMU "${QEMU_ARGS} -m 64M -nographic -semihosting -kernel" )
+
 set( CFLAGS "-Wall -nostdlib -g -O${OPT_LEVEL} -std=gnu11 -DUART_BASE=${UART_BASE}" )
+if(UBSAN)
+  set( CFLAGS "${CFLAGS} -fsanitize=undefined -fno-sanitize-recover" )
+endif(UBSAN)
 set( CMAKE_C_FLAGS "${PLATFORM} ${CFLAGS}" )
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
@@ -49,6 +55,10 @@ set( BASE_SOURCES
   src/hw/${PLATFORM_SRC}/semihosting.c
   src/hw/${PLATFORM_SRC}/startup.s
 )
+
+if(UBSAN)
+  set( BASE_SOURCES ${BASE_SOURCES} src/ubsan.c )
+endif(UBSAN)
 
 add_library(support OBJECT ${BASE_SOURCES})
 
