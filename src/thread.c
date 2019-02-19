@@ -66,7 +66,7 @@ void print_thread_id() {
     default:
     {
       // Length matches the name above
-      char* o = "        ";
+      char o[9] = "        ";
       o[7] = (unsigned int)(id)+48;
       print(o);
       break;
@@ -108,7 +108,7 @@ __attribute__((noreturn)) void thread_start() {
 }
 
 int add_thread(struct Thread* new_thread) {
-  for (size_t idx=0; idx != MAX_THREADS; ++idx) {
+  for (size_t idx=0; idx < MAX_THREADS; ++idx) {
     if (!all_threads[idx]) {
       all_threads[idx] = new_thread;
       return idx;
