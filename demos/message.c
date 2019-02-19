@@ -45,15 +45,10 @@ __attribute__((noreturn)) void receiver() {
   }
 }
 
-__attribute__((noreturn)) void entry() {
-  struct Thread t_spammer;
-  init_thread(&t_spammer, spammer, false);
-
-  struct Thread t_sender;
-  init_thread(&t_sender, sender, false);
-
-  struct Thread t_receiver;
-  init_thread(&t_receiver, receiver, false);
+void demo() {
+  add_thread(spammer);
+  add_thread(sender);
+  add_thread(receiver);
 
   start_scheduler();
 }

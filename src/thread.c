@@ -5,6 +5,13 @@ extern void platform_yield(void**, void*);
 
 static struct Thread scheduler_thread;
 static struct Thread* current_thread;
+struct Thread all_threads[MAX_THREADS];
+
+bool is_valid_thread(int tid) {
+  return (tid >= 0) &&
+    (tid < MAX_THREADS) &&
+    all_threads[tid].id != -1;
+}
 
 int get_thread_id() {
   return current_thread->id;
@@ -33,7 +40,8 @@ bool get_msg(int* sender, int* message) {
 bool send_msg(int destination, int message) {
   // Invalid destination thread
   if (destination >= MAX_THREADS ||
-      all_threads[destination] == NULL) {
+      destination < 0 ||
+      all_threads[destination].id == -1) {
     return false;
   }
 
@@ -41,7 +49,7 @@ bool send_msg(int destination, int message) {
   // a one message gap between the end of the list
   // and the start.
   // If end and start are the same, it's an empty list
-  struct Thread* dest = all_threads[destination];
+  struct Thread* dest = &all_threads[destination];
   struct Message* test_ptr = dest->end_msgs;
   inc_msg_pointer(dest, &test_ptr);
   if (test_ptr == dest->next_msg) {
@@ -90,46 +98,50 @@ __attribute__((noreturn)) void thread_start() {
   // Call thread's actual function
   current_thread->work();
 
-  // Then mark this thread as invalid
-  all_threads[get_thread_id()] = NULL;
-
   // Yield back to the scheduler
-  // Note that we NULLed the all_threads ptr but
-  // current_thread is still valid.
+  log_event("exiting");
+
+  // Mark this thread as invalid
+  // Use ID to mark invalid threads instead of stack pointer
+  // because we don't use the ID in yield, so it saves us
+  // writing a custom yield for this situation.
+  all_threads[get_thread_id()].id = -1;
+
+  // Calling platform yield directly so we don't log_events
+  // with an incorrect thread ID
   // TODO: we save state here that we don't need to
-  yield();
+  platform_yield((void**)&current_thread, &scheduler_thread);
 
   __builtin_unreachable();
 }
 
-int add_thread(struct Thread* new_thread) {
-  for (size_t idx=0; idx < MAX_THREADS; ++idx) {
-    if (!all_threads[idx]) {
-      all_threads[idx] = new_thread;
+void init_thread(struct Thread* thread, int tid, void (*do_work)(void), bool hidden) {
+  // thread start will jump to this
+  thread->work = do_work;
+  // but make sure thread start is the first call, so it can handle destruction
+  thread->current_pc = thread_start;
+  thread->stack_ptr = &(thread->stack[THREAD_STACK_SIZE-1]);
+  thread->next_msg = &(thread->messages[0]);
+  thread->end_msgs = thread->next_msg;
+  thread->id = tid;
+}
+
+int add_thread(void (*worker)(void)) {
+  for (size_t idx=0; idx <= MAX_THREADS; ++idx) {
+    if (all_threads[idx].id == -1) {
+      init_thread(&all_threads[idx], idx, worker, false);
       return idx;
     }
   }
   return -1;
 }
 
-void init_thread(struct Thread* thread, void (*do_work)(void), bool hidden) {
-  // thread start will jump to this
-  thread->work = do_work;
-  // but make sure thread start is the first call, so it can handle destruction
-  thread->current_pc = thread_start;
-  thread->stack_ptr = &(thread->stack[THREAD_STACK_SIZE-1]);
-  // TODO: handle err
-  thread->id = hidden ? -1 : add_thread(thread);
-  thread->next_msg = &(thread->messages[0]);
-  thread->end_msgs = thread->next_msg;
-}
-
 __attribute__((noreturn)) void do_scheduler() {
   while (1) {
     for (size_t idx=0; idx != MAX_THREADS; ++idx) {
-      if (all_threads[idx]) {
+      if (all_threads[idx].id != -1) {
         log_event("scheduling new thread");
-        thread_yield(all_threads[idx]);
+        thread_yield(&all_threads[idx]);
         log_event("thread yielded");
       }  
     }
@@ -138,11 +150,27 @@ __attribute__((noreturn)) void do_scheduler() {
 
 __attribute__((noreturn)) void start_scheduler() {
   // Hidden so that the scheduler doesn't run itself somehow
-  init_thread(&scheduler_thread, do_scheduler, true);
+  init_thread(&scheduler_thread, -1, do_scheduler, true);
+
   // Need a dummy thread here otherwise we'll try to write to address 0
   struct Thread dummy;
-  init_thread(&dummy, (void (*)(void))(0), true);
+  init_thread(&dummy, -1, (void (*)(void))(0), true);
+
   current_thread = &dummy;
   thread_yield(&scheduler_thread);
+
+  __builtin_unreachable();
+}
+
+extern void demo();
+__attribute__((noreturn)) void entry() {
+  // Invalidate all threads in the pool
+  for (size_t idx=0; idx < MAX_THREADS; ++idx) {
+    all_threads[idx].id = -1;
+  }
+
+  // Call user app
+  demo();
+
   __builtin_unreachable();
 }

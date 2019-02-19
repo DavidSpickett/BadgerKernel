@@ -21,11 +21,9 @@ __attribute__((noreturn)) void thread_worker_0() {
   }
 }
 
-__attribute__((noreturn)) void entry() {
-  struct Thread thread1;
-  init_thread(&thread1, thread_worker_0, false);
-  struct Thread thread2;
-  init_thread(&thread2, thread_worker_1, false);
+void demo() {
+  add_thread(thread_worker_0);
+  add_thread(thread_worker_1);
 
   start_scheduler(); 
 }

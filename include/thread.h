@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#define MAX_THREADS 10
 #define THREAD_STACK_SIZE 512
 // +1 because we need a gap to show the 'full' state
 #define THREAD_MSG_QUEUE_SIZE 5+1
@@ -25,10 +26,8 @@ struct Thread {
   int id;
 };
 
-#define MAX_THREADS 10
-struct Thread* all_threads[MAX_THREADS];
-
-void init_thread(struct Thread* thread, void (*do_work)(void), bool hidden);
+int add_thread(void (*worker)(void));
+bool is_valid_thread(int tid);
 int get_thread_id();
 void yield();
 void __attribute__((noreturn)) start_scheduler();
