@@ -5,8 +5,7 @@
 #include "print.h"
 
 #define THREAD_STACK_SIZE 512
-// +1 because we need a gap to show the 'full' state
-#define THREAD_MSG_QUEUE_SIZE 5+1
+#define THREAD_MSG_QUEUE_SIZE 5
 
 struct Message {
   int src;
@@ -21,6 +20,7 @@ struct Thread {
   struct Message messages[THREAD_MSG_QUEUE_SIZE];
   struct Message* next_msg;
   struct Message* end_msgs;
+  bool msgs_full;
   int id;
 };
 
@@ -48,11 +48,14 @@ static void inc_msg_pointer(struct Thread* thr, struct Message** ptr) {
 }
 
 bool get_msg(int* sender, int* message) {
-  if (current_thread->next_msg != current_thread->end_msgs) {
+  if (current_thread->next_msg != current_thread->end_msgs
+      || current_thread->msgs_full) {
     *sender = current_thread->next_msg->src;
     *message = current_thread->next_msg->content;
 
     inc_msg_pointer(current_thread, &current_thread->next_msg);
+    current_thread->msgs_full = false;
+
     return true;
   }
   else {
@@ -61,29 +64,23 @@ bool get_msg(int* sender, int* message) {
 }
 
 bool send_msg(int destination, int message) {
-  // Invalid destination thread
-  if (destination >= MAX_THREADS ||
+  if (
+      // Invalid destination
+      destination >= MAX_THREADS ||
       destination < 0 ||
-      all_threads[destination].id == -1) {
+      all_threads[destination].id == -1 ||
+      // Buffer is full
+      all_threads[destination].msgs_full
+  ) {
     return false;
   }
 
-  // Thread's message box is full if there is
-  // a one message gap between the end of the list
-  // and the start.
-  // If end and start are the same, it's an empty list
   struct Thread* dest = &all_threads[destination];
-  struct Message* test_ptr = dest->end_msgs;
-  inc_msg_pointer(dest, &test_ptr);
-  if (test_ptr == dest->next_msg) {
-    return false;
-  }
-
-  // Now we can send something
-  struct Message * our_msg = dest->end_msgs;
+  struct Message* our_msg = dest->end_msgs;
   our_msg->src = get_thread_id();
   our_msg->content = message;
   inc_msg_pointer(dest, &(dest->end_msgs));
+  dest->msgs_full = dest->next_msg == dest->end_msgs;
 
   return true;
 }
@@ -146,6 +143,7 @@ void init_thread(struct Thread* thread, int tid, void (*do_work)(void), bool hid
   thread->stack_ptr = &(thread->stack[THREAD_STACK_SIZE-1]);
   thread->next_msg = &(thread->messages[0]);
   thread->end_msgs = thread->next_msg;
+  thread->msgs_full = false;
   thread->id = tid;
 }
 
