@@ -58,19 +58,14 @@ bool send_msg(int destination, int message) {
 }
 
 void print_thread_id() {
-  int id = get_thread_id();
-  switch (id) {
-    case -1:
-      print("<HIDDEN>");
-      break;
-    default:
-    {
-      // Length matches the name above
-      char o[9] = "        ";
-      o[7] = (unsigned int)(id)+48;
-      print(o);
-      break;
-    }
+  int tid = get_thread_id();
+  if (tid == -1) {
+    print("<HIDDEN>");
+  } else {
+    // Length matches the name above
+    char out[9] = "        ";
+    out[7] = (unsigned int)(tid)+48;
+    print(out);
   }
 }
 
