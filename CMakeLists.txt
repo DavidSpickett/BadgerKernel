@@ -41,7 +41,7 @@ set( QEMU "${QEMU_ARGS} -m 64M -nographic -semihosting -kernel" )
 
 set( CFLAGS "-Wall -nostdlib -g -O${OPT_LEVEL} -std=gnu11 -DUART_BASE=${UART_BASE}" )
 if(UBSAN)
-  set( CFLAGS "${CFLAGS} -fsanitize=undefined -fno-sanitize-recover" )
+  set( CFLAGS "${CFLAGS} -fsanitize=undefined" )
 endif(UBSAN)
 set( CMAKE_C_FLAGS "${PLATFORM} ${CFLAGS}" )
 
