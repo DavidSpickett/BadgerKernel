@@ -46,9 +46,9 @@ __attribute__((noreturn)) void receiver() {
 }
 
 void demo() {
-  add_thread(spammer);
-  add_thread(sender);
-  add_thread(receiver);
+  add_named_thread(spammer, "spammer");
+  add_named_thread(sender, "spammer");
+  add_named_thread(receiver, "receiver");
 
   start_scheduler();
 }

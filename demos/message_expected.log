@@ -1,67 +1,67 @@
 Thread     <HIDDEN>: yielding
-Thread    scheduler: scheduling new thread
-Thread    scheduler: yielding
-Thread            0: spammed
-Thread            0: yielding
-Thread    scheduler: resuming
-Thread    scheduler: thread yielded
-Thread    scheduler: scheduling new thread
-Thread    scheduler: yielding
-Thread            1: message box was full
-Thread            1: yielding
-Thread    scheduler: resuming
-Thread    scheduler: thread yielded
-Thread    scheduler: scheduling new thread
-Thread    scheduler: yielding
-Thread            2: discarded spam message
-Thread            2: discarded spam message
-Thread            2: discarded spam message
-Thread            2: discarded spam message
-Thread            2: discarded spam message
-Thread            2: yielding
-Thread    scheduler: resuming
-Thread    scheduler: thread yielded
-Thread    scheduler: scheduling new thread
-Thread    scheduler: yielding
-Thread            0: resuming
-Thread            0: spammed
-Thread            0: yielding
-Thread    scheduler: resuming
-Thread    scheduler: thread yielded
-Thread    scheduler: scheduling new thread
-Thread    scheduler: yielding
-Thread            1: resuming
-Thread            1: message box was full
-Thread            1: yielding
-Thread    scheduler: resuming
-Thread    scheduler: thread yielded
-Thread    scheduler: scheduling new thread
-Thread    scheduler: yielding
-Thread            2: resuming
-Thread            2: discarded spam message
-Thread            2: discarded spam message
-Thread            2: discarded spam message
-Thread            2: discarded spam message
-Thread            2: discarded spam message
-Thread            2: yielding
-Thread    scheduler: resuming
-Thread    scheduler: thread yielded
-Thread    scheduler: scheduling new thread
-Thread    scheduler: yielding
-Thread            0: resuming
-Thread            0: not spamming
-Thread            0: yielding
-Thread    scheduler: resuming
-Thread    scheduler: thread yielded
-Thread    scheduler: scheduling new thread
-Thread    scheduler: yielding
-Thread            1: resuming
-Thread            1: sent a message
-Thread            1: yielding
-Thread    scheduler: resuming
-Thread    scheduler: thread yielded
-Thread    scheduler: scheduling new thread
-Thread    scheduler: yielding
-Thread            2: resuming
-Thread            2: discarded spam message
-Thread            2: got message from sender
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: yielding
+Thread      spammer: spammed
+Thread      spammer: yielding
+Thread  <scheduler>: resuming
+Thread  <scheduler>: thread yielded
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: yielding
+Thread      spammer: message box was full
+Thread      spammer: yielding
+Thread  <scheduler>: resuming
+Thread  <scheduler>: thread yielded
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: yielding
+Thread     receiver: discarded spam message
+Thread     receiver: discarded spam message
+Thread     receiver: discarded spam message
+Thread     receiver: discarded spam message
+Thread     receiver: discarded spam message
+Thread     receiver: yielding
+Thread  <scheduler>: resuming
+Thread  <scheduler>: thread yielded
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: yielding
+Thread      spammer: resuming
+Thread      spammer: spammed
+Thread      spammer: yielding
+Thread  <scheduler>: resuming
+Thread  <scheduler>: thread yielded
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: yielding
+Thread      spammer: resuming
+Thread      spammer: message box was full
+Thread      spammer: yielding
+Thread  <scheduler>: resuming
+Thread  <scheduler>: thread yielded
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: yielding
+Thread     receiver: resuming
+Thread     receiver: discarded spam message
+Thread     receiver: discarded spam message
+Thread     receiver: discarded spam message
+Thread     receiver: discarded spam message
+Thread     receiver: discarded spam message
+Thread     receiver: yielding
+Thread  <scheduler>: resuming
+Thread  <scheduler>: thread yielded
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: yielding
+Thread      spammer: resuming
+Thread      spammer: not spamming
+Thread      spammer: yielding
+Thread  <scheduler>: resuming
+Thread  <scheduler>: thread yielded
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: yielding
+Thread      spammer: resuming
+Thread      spammer: sent a message
+Thread      spammer: yielding
+Thread  <scheduler>: resuming
+Thread  <scheduler>: thread yielded
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: yielding
+Thread     receiver: resuming
+Thread     receiver: discarded spam message
+Thread     receiver: got message from sender

@@ -223,7 +223,7 @@ __attribute__((noreturn)) void do_scheduler() {
 
 __attribute__((noreturn)) void start_scheduler() {
   // Hidden so that the scheduler doesn't run itself somehow
-  init_thread(&scheduler_thread, -1, "scheduler", do_scheduler, true);
+  init_thread(&scheduler_thread, -1, "<scheduler>", do_scheduler, true);
 
   // Need a dummy thread here otherwise we'll try to write to address 0
   struct Thread dummy;
