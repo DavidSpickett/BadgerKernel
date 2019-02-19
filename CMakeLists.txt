@@ -73,7 +73,7 @@ function(add_demo_app NAME)
         add_dependencies(test_${NAME} ${NAME})
         add_custom_command(TARGET test_${NAME} POST_BUILD
           # Why eval? Well, I've spent way too much time trying to get this argument substitution to work.
-          COMMAND eval "${QEMU} ${NAME} -serial file:${NAME}_got.log > /dev/null 2>&1"
+          COMMAND eval "${QEMU} ${NAME}"
           COMMAND diff demos/${NAME}_expected.log ${NAME}_got.log
           VERBATIM)
 
