@@ -16,12 +16,20 @@ void *memset(void *str, int c, size_t n) {
 }
 
 size_t strlen(const char *str) {
+  if (str == NULL) {
+    return 0;
+  }
+
   size_t len = 0;
   while (*str != '\0') { ++str; ++len; }
   return len;
 }
 
 char *strncpy(char *dest, const char *src, size_t n) {
+  if ((dest == NULL) || (src == NULL)) {
+    return dest;
+  }
+
   for( ; *src != '\0' && n ; ++src, ++dest, --n) {
     *dest = *src;
   }
