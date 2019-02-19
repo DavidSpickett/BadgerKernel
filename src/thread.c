@@ -3,8 +3,10 @@
 #include <stddef.h>
 #include "thread.h"
 #include "print.h"
+#include "util.h"
 
 #define THREAD_STACK_SIZE 512
+#define THREAD_NAME_SIZE 12
 #define THREAD_MSG_QUEUE_SIZE 5
 
 struct Message {
@@ -15,13 +17,14 @@ struct Message {
 struct Thread {
   uint8_t* stack_ptr;
   void (*current_pc)(void);
+  int id;
+  const char* name;
   void (*work)(void);
-  uint8_t stack[THREAD_STACK_SIZE];
   struct Message messages[THREAD_MSG_QUEUE_SIZE];
   struct Message* next_msg;
   struct Message* end_msgs;
   bool msgs_full;
-  int id;
+  uint8_t stack[THREAD_STACK_SIZE];
 };
 
 extern void platform_yield(void**, void*);
@@ -29,6 +32,19 @@ extern void platform_yield(void**, void*);
 static struct Thread scheduler_thread;
 static struct Thread* current_thread;
 struct Thread all_threads[MAX_THREADS];
+
+extern void demo();
+__attribute__((noreturn)) void entry() {
+  // Invalidate all threads in the pool
+  for (size_t idx=0; idx < MAX_THREADS; ++idx) {
+    all_threads[idx].id = -1;
+  }
+
+  // Call user app
+  demo();
+
+  __builtin_unreachable();
+}
 
 bool is_valid_thread(int tid) {
   return (tid >= 0) &&
@@ -86,15 +102,40 @@ bool send_msg(int destination, int message) {
 }
 
 void print_thread_id() {
-  int tid = get_thread_id();
-  if (tid == -1) {
-    print("<HIDDEN>");
-  } else {
-    // Length matches the name above
-    char out[9] = "        ";
-    out[7] = (unsigned int)(tid)+48;
-    print(out);
+  char output[THREAD_NAME_SIZE+1];
+
+  // fill with spaces (no +1 as we'll terminate it later)
+  for (size_t idx=0; idx < THREAD_NAME_SIZE; ++idx) {
+    output[idx] = ' ';
   }
+
+  const char* name = current_thread->name;
+  if (name != NULL) {
+    size_t name_len = strlen(name);
+
+    // cut off long names
+    if (name_len > THREAD_NAME_SIZE) {
+      name_len = THREAD_NAME_SIZE;
+    }
+
+    size_t padding = THREAD_NAME_SIZE-name_len;
+    strncpy(&output[padding], name, name_len);
+  } else {
+    int tid = get_thread_id();
+
+    if (tid == -1) {
+      const char* hidden = "<HIDDEN>";
+      size_t h_len = strlen(hidden);
+      size_t padding = THREAD_NAME_SIZE - h_len;
+      strncpy(&output[padding], hidden, h_len);
+    } else {
+      // Length matches the name above
+      output[THREAD_NAME_SIZE-1] = (unsigned int)(tid)+48;
+    }
+  }
+
+  output[THREAD_NAME_SIZE] = '\0';
+  print(output);
 }
 
 void log_event(const char* event) {
@@ -135,22 +176,33 @@ __attribute__((noreturn)) void thread_start() {
   __builtin_unreachable();
 }
 
-void init_thread(struct Thread* thread, int tid, void (*do_work)(void), bool hidden) {
+void init_thread(struct Thread* thread, int tid, const char* name,
+                 void (*do_work)(void), bool hidden) {
   // thread start will jump to this
   thread->work = do_work;
-  // but make sure thread start is the first call, so it can handle destruction
+  // but make sure thread start is the first call so it can handle destruction
   thread->current_pc = thread_start;
-  thread->stack_ptr = &(thread->stack[THREAD_STACK_SIZE-1]);
+
+  thread->id = tid;
+  thread->name = name;
+
+  // Start message buffer empty
   thread->next_msg = &(thread->messages[0]);
   thread->end_msgs = thread->next_msg;
   thread->msgs_full = false;
-  thread->id = tid;
+
+  // Top of stack
+  thread->stack_ptr = &(thread->stack[THREAD_STACK_SIZE-1]);
 }
 
 int add_thread(void (*worker)(void)) {
+  return add_named_thread(worker, NULL);
+}
+
+int add_named_thread(void (*worker)(void), const char* name) {
   for (size_t idx=0; idx <= MAX_THREADS; ++idx) {
     if (all_threads[idx].id == -1) {
-      init_thread(&all_threads[idx], idx, worker, false);
+      init_thread(&all_threads[idx], idx, name, worker, false);
       return idx;
     }
   }
@@ -171,27 +223,14 @@ __attribute__((noreturn)) void do_scheduler() {
 
 __attribute__((noreturn)) void start_scheduler() {
   // Hidden so that the scheduler doesn't run itself somehow
-  init_thread(&scheduler_thread, -1, do_scheduler, true);
+  init_thread(&scheduler_thread, -1, "scheduler", do_scheduler, true);
 
   // Need a dummy thread here otherwise we'll try to write to address 0
   struct Thread dummy;
-  init_thread(&dummy, -1, (void (*)(void))(0), true);
+  init_thread(&dummy, -1, NULL, (void (*)(void))(0), true);
 
   current_thread = &dummy;
   thread_yield(&scheduler_thread);
-
-  __builtin_unreachable();
-}
-
-extern void demo();
-__attribute__((noreturn)) void entry() {
-  // Invalidate all threads in the pool
-  for (size_t idx=0; idx < MAX_THREADS; ++idx) {
-    all_threads[idx].id = -1;
-  }
-
-  // Call user app
-  demo();
 
   __builtin_unreachable();
 }

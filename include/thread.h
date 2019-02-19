@@ -6,6 +6,7 @@
 #define MAX_THREADS 10
 
 int add_thread(void (*worker)(void));
+int add_named_thread(void (*worker)(void), const char* name);
 bool is_valid_thread(int tid);
 int get_thread_id();
 void yield();
