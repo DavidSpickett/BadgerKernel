@@ -13,6 +13,7 @@ if( BUILD_PLATFORM STREQUAL "arm" )
   set( PLATFORM_SRC "arm926ej_s" )
   set( RAM_START    "0x00010000" )
   set( STACK_OFFSET "0" )
+  set( UART_BASE    "0x101f1000" )
   set( QEMU_ARGS    "qemu-system-arm -M versatilepb" )
 elseif( BUILD_PLATFORM STREQUAL "aarch64" )
   set( PREFIX       "aarch64-linux-gnu" )
@@ -20,6 +21,7 @@ elseif( BUILD_PLATFORM STREQUAL "aarch64" )
   set( PLATFORM_SRC "aarch64_virt" )
   set( RAM_START    "0x40000000" )
   set( STACK_OFFSET "0" )
+  set( UART_BASE    "0x09000000" )
   set( QEMU_ARGS    "qemu-system-aarch64 -M virt -cpu cortex-a57" )
 elseif( BUILD_PLATFORM STREQUAL "thumb" )
   set( PREFIX       "arm-none-eabi" )
@@ -27,13 +29,14 @@ elseif( BUILD_PLATFORM STREQUAL "thumb" )
   set( PLATFORM_SRC "thumb_lm3s6965evb" )
   set( RAM_START    "0x00000000" )
   set( STACK_OFFSET "0x20000000" )
+  set( UART_BASE    "0x4000C000" )
   set( QEMU_ARGS    "qemu-system-arm -M lm3s6965evb -cpu cortex-m4" )
 endif()
 
 set( CMAKE_C_COMPILER "${PREFIX}-gcc" )
 
 set( QEMU "${QEMU_ARGS} -m 64M -nographic -semihosting -kernel" )
-set( CFLAGS "-Wall -nostdlib -g -O${OPT_LEVEL} -std=gnu11" )
+set( CFLAGS "-Wall -nostdlib -g -O${OPT_LEVEL} -std=gnu11 -DUART_BASE=${UART_BASE}" )
 set( CMAKE_C_FLAGS "${PLATFORM} ${CFLAGS}" )
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
@@ -41,8 +44,8 @@ set_property(SOURCE src/hw/${PLATFORM_SRC}/startup.s PROPERTY LANGUAGE C)
 set( BASE_SOURCES
   src/thread.c
   src/util.c
+  src/print.c
   src/hw/${PLATFORM_SRC}/yield.c
-  src/hw/${PLATFORM_SRC}/print.c
   src/hw/${PLATFORM_SRC}/semihosting.c
   src/hw/${PLATFORM_SRC}/startup.s
 )
