@@ -110,17 +110,7 @@ void print_thread_id() {
   }
 
   const char* name = current_thread->name;
-  if (name != NULL) {
-    size_t name_len = strlen(name);
-
-    // cut off long names
-    if (name_len > THREAD_NAME_SIZE) {
-      name_len = THREAD_NAME_SIZE;
-    }
-
-    size_t padding = THREAD_NAME_SIZE-name_len;
-    strncpy(&output[padding], name, name_len);
-  } else {
+  if (name == NULL) {
     int tid = get_thread_id();
 
     if (tid == -1) {
@@ -132,6 +122,16 @@ void print_thread_id() {
       // Length matches the name above
       output[THREAD_NAME_SIZE-1] = (unsigned int)(tid)+48;
     }
+  } else {
+    size_t name_len = strlen(name);
+
+    // cut off long names
+    if (name_len > THREAD_NAME_SIZE) {
+      name_len = THREAD_NAME_SIZE;
+    }
+
+    size_t padding = THREAD_NAME_SIZE-name_len;
+    strncpy(&output[padding], name, name_len);
   }
 
   output[THREAD_NAME_SIZE] = '\0';
@@ -177,7 +177,7 @@ __attribute__((noreturn)) void thread_start() {
 }
 
 void init_thread(struct Thread* thread, int tid, const char* name,
-                 void (*do_work)(void), bool hidden) {
+                 void (*do_work)(void)) {
   // thread start will jump to this
   thread->work = do_work;
   // but make sure thread start is the first call so it can handle destruction
@@ -202,7 +202,7 @@ int add_thread(void (*worker)(void)) {
 int add_named_thread(void (*worker)(void), const char* name) {
   for (size_t idx=0; idx <= MAX_THREADS; ++idx) {
     if (all_threads[idx].id == -1) {
-      init_thread(&all_threads[idx], idx, name, worker, false);
+      init_thread(&all_threads[idx], idx, name, worker);
       return idx;
     }
   }
@@ -223,11 +223,11 @@ __attribute__((noreturn)) void do_scheduler() {
 
 __attribute__((noreturn)) void start_scheduler() {
   // Hidden so that the scheduler doesn't run itself somehow
-  init_thread(&scheduler_thread, -1, "<scheduler>", do_scheduler, true);
+  init_thread(&scheduler_thread, -1, "<scheduler>", do_scheduler);
 
   // Need a dummy thread here otherwise we'll try to write to address 0
   struct Thread dummy;
-  init_thread(&dummy, -1, NULL, (void (*)(void))(0), true);
+  init_thread(&dummy, -1, NULL, (void (*)(void))(0));
 
   current_thread = &dummy;
   thread_yield(&scheduler_thread);
