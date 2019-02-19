@@ -1,67 +1,67 @@
-Thread <HIDDEN>: yielding
-Thread <HIDDEN>: scheduling new thread
-Thread <HIDDEN>: yielding
-Thread        0: spammed
-Thread        0: yielding
-Thread <HIDDEN>: resuming
-Thread <HIDDEN>: thread yielded
-Thread <HIDDEN>: scheduling new thread
-Thread <HIDDEN>: yielding
-Thread        1: message box was full
-Thread        1: yielding
-Thread <HIDDEN>: resuming
-Thread <HIDDEN>: thread yielded
-Thread <HIDDEN>: scheduling new thread
-Thread <HIDDEN>: yielding
-Thread        2: discarded spam message
-Thread        2: discarded spam message
-Thread        2: discarded spam message
-Thread        2: discarded spam message
-Thread        2: discarded spam message
-Thread        2: yielding
-Thread <HIDDEN>: resuming
-Thread <HIDDEN>: thread yielded
-Thread <HIDDEN>: scheduling new thread
-Thread <HIDDEN>: yielding
-Thread        0: resuming
-Thread        0: spammed
-Thread        0: yielding
-Thread <HIDDEN>: resuming
-Thread <HIDDEN>: thread yielded
-Thread <HIDDEN>: scheduling new thread
-Thread <HIDDEN>: yielding
-Thread        1: resuming
-Thread        1: message box was full
-Thread        1: yielding
-Thread <HIDDEN>: resuming
-Thread <HIDDEN>: thread yielded
-Thread <HIDDEN>: scheduling new thread
-Thread <HIDDEN>: yielding
-Thread        2: resuming
-Thread        2: discarded spam message
-Thread        2: discarded spam message
-Thread        2: discarded spam message
-Thread        2: discarded spam message
-Thread        2: discarded spam message
-Thread        2: yielding
-Thread <HIDDEN>: resuming
-Thread <HIDDEN>: thread yielded
-Thread <HIDDEN>: scheduling new thread
-Thread <HIDDEN>: yielding
-Thread        0: resuming
-Thread        0: not spamming
-Thread        0: yielding
-Thread <HIDDEN>: resuming
-Thread <HIDDEN>: thread yielded
-Thread <HIDDEN>: scheduling new thread
-Thread <HIDDEN>: yielding
-Thread        1: resuming
-Thread        1: sent a message
-Thread        1: yielding
-Thread <HIDDEN>: resuming
-Thread <HIDDEN>: thread yielded
-Thread <HIDDEN>: scheduling new thread
-Thread <HIDDEN>: yielding
-Thread        2: resuming
-Thread        2: discarded spam message
-Thread        2: got message from sender
+Thread     <HIDDEN>: yielding
+Thread    scheduler: scheduling new thread
+Thread    scheduler: yielding
+Thread            0: spammed
+Thread            0: yielding
+Thread    scheduler: resuming
+Thread    scheduler: thread yielded
+Thread    scheduler: scheduling new thread
+Thread    scheduler: yielding
+Thread            1: message box was full
+Thread            1: yielding
+Thread    scheduler: resuming
+Thread    scheduler: thread yielded
+Thread    scheduler: scheduling new thread
+Thread    scheduler: yielding
+Thread            2: discarded spam message
+Thread            2: discarded spam message
+Thread            2: discarded spam message
+Thread            2: discarded spam message
+Thread            2: discarded spam message
+Thread            2: yielding
+Thread    scheduler: resuming
+Thread    scheduler: thread yielded
+Thread    scheduler: scheduling new thread
+Thread    scheduler: yielding
+Thread            0: resuming
+Thread            0: spammed
+Thread            0: yielding
+Thread    scheduler: resuming
+Thread    scheduler: thread yielded
+Thread    scheduler: scheduling new thread
+Thread    scheduler: yielding
+Thread            1: resuming
+Thread            1: message box was full
+Thread            1: yielding
+Thread    scheduler: resuming
+Thread    scheduler: thread yielded
+Thread    scheduler: scheduling new thread
+Thread    scheduler: yielding
+Thread            2: resuming
+Thread            2: discarded spam message
+Thread            2: discarded spam message
+Thread            2: discarded spam message
+Thread            2: discarded spam message
+Thread            2: discarded spam message
+Thread            2: yielding
+Thread    scheduler: resuming
+Thread    scheduler: thread yielded
+Thread    scheduler: scheduling new thread
+Thread    scheduler: yielding
+Thread            0: resuming
+Thread            0: not spamming
+Thread            0: yielding
+Thread    scheduler: resuming
+Thread    scheduler: thread yielded
+Thread    scheduler: scheduling new thread
+Thread    scheduler: yielding
+Thread            1: resuming
+Thread            1: sent a message
+Thread            1: yielding
+Thread    scheduler: resuming
+Thread    scheduler: thread yielded
+Thread    scheduler: scheduling new thread
+Thread    scheduler: yielding
+Thread            2: resuming
+Thread            2: discarded spam message
+Thread            2: got message from sender
