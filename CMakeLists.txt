@@ -40,6 +40,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 set_property(SOURCE src/hw/${PLATFORM_SRC}/startup.s PROPERTY LANGUAGE C)
 set( BASE_SOURCES
   src/thread.c
+  src/util.c
   src/hw/${PLATFORM_SRC}/yield.c
   src/hw/${PLATFORM_SRC}/print.c
   src/hw/${PLATFORM_SRC}/semihosting.c
