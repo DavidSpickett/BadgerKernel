@@ -10,6 +10,8 @@ matrix:
             - qemu-system-arm
             - gcc-arm-none-eabi
             - libnewlib-arm-none-eabi
+    - env: BUILD_PLATFORM=arm OPT_LEVEL=0 -DUBSAN=ON
+      addons: *arm
     - env: BUILD_PLATFORM=arm OPT_LEVEL=3
       addons: *arm
     - env: BUILD_PLATFORM=arm OPT_LEVEL=s
@@ -17,6 +19,8 @@ matrix:
 
     #Same tools for arm/thumb builds
     - env: BUILD_PLATFORM=thumb OPT_LEVEL=0
+      addons: *arm
+    - env: BUILD_PLATFORM=thumb OPT_LEVEL=0 -DUBSAN=ON
       addons: *arm
     - env: BUILD_PLATFORM=thumb OPT_LEVEL=3
       addons: *arm
@@ -30,6 +34,8 @@ matrix:
             - qemu-system-arm
             - gcc-aarch64-linux-gnu
             - libc6-dev-arm64-cross
+    - env: BUILD_PLATFORM=aarch64 OPT_LEVEL=0 -DUBSAN=ON
+      addons: *aarch64
     - env: BUILD_PLATFORM=aarch64 OPT_LEVEL=3
       addons: *aarch64
     - env: BUILD_PLATFORM=aarch64 OPT_LEVEL=s
