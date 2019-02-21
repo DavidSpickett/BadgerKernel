@@ -68,3 +68,5 @@ https://github.com/freedomtan/aarch64-bare-metal-qemu
 https://stackoverflow.com/questions/31990487/how-to-cleanly-exit-qemu-after-executing-bare-metal-program-without-user-interve
 
 https://static.docs.arm.com/100863/0200/semihosting.pdf
+
+http://cs107e.github.io/guides/gcc/
