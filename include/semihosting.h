@@ -3,7 +3,7 @@
 
 /* Functions for interacting with the Qemu host machine */
 
-void qemu_exit();
+__attribute__((noreturn)) void qemu_exit();
 void qemu_print(const char* msg);
 
 #endif /* ifdef SEMIHOSTING_H */

@@ -56,6 +56,10 @@ int get_thread_id() {
   return current_thread->id;
 }
 
+const char* get_thread_name() {
+  return current_thread->name;
+}
+
 static void inc_msg_pointer(struct Thread* thr, struct Message** ptr) {
   ++(*ptr);
   if (*ptr == &(thr->messages[THREAD_MSG_QUEUE_SIZE])) {
