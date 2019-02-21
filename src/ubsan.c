@@ -51,51 +51,18 @@ void print_source_info(struct SourceInfo* s) {
   print("\n");
 }
 
-void __ubsan_handle_add_overflow(struct SourceInfo* s, void* b, void* c) {
-  print("UBSAN: add_overflow @ ");
-  print_source_info(s);
-  qemu_exit();
-  __builtin_unreachable();
+#define ubhandler(NAME, ...) \
+void __ubsan_handle_##NAME(struct SourceInfo* s, ##__VA_ARGS__) { \
+  qemu_print("UBSAN: " #NAME " @ "); \
+  print_source_info(s); \
+  qemu_exit(); \
+  __builtin_unreachable(); \
 }
 
-void __ubsan_handle_out_of_bounds(struct SourceInfo* s, void* b) {
-  print("UBSAN: out_of_bounds @ ");
-  print_source_info(s);
-  qemu_exit(); 
-  __builtin_unreachable();
-}
-
-void __ubsan_handle_type_mismatch(struct SourceInfo* s, void* b) {
-  print("UBSAN: type_mismatch @ ");
-  print_source_info(s);
-  qemu_exit();
-  __builtin_unreachable();
-}
-
-void __ubsan_handle_builtin_unreachable(struct SourceInfo* s) {
-  qemu_print("UBSAN: builtin_unreachable @ ");
-  print_source_info(s);
-  qemu_exit(); 
-  __builtin_unreachable();
-}
-
-void __ubsan_handle_load_invalid_value(struct SourceInfo* s, void* b) {
-  qemu_print("UBSAN: load_invalid_value @ ");
-  print_source_info(s);
-  qemu_exit(); 
-  __builtin_unreachable(); 
-}
-
-void __ubsan_handle_nonnull_arg(struct SourceInfo* s, void* b) {
-  qemu_print("UBSAN: handle_nonnull_arg @ ");
-  print_source_info(s);
-  qemu_exit();
-  __builtin_unreachable();
-}
-
-void __ubsan_handle_divrem_overflow(struct SourceInfo* s, void* b, void* c) {
-  qemu_print("UBSAN: divrem_overflow @ ");
-  print_source_info(s);
-  qemu_exit();
-  __builtin_unreachable();
-}
+ubhandler(divrem_overflow, void* a, void* b);
+ubhandler(add_overflow, void* a, void* b);
+ubhandler(load_invalid_value, void* a);
+ubhandler(nonnull_arg, void* a);
+ubhandler(builtin_unreachable);
+ubhandler(type_mismatch, void* a);
+ubhandler(out_of_bounds, void* a);
