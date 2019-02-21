@@ -64,7 +64,7 @@ add_library(support OBJECT ${BASE_SOURCES})
 
 function(add_demo_app NAME)
         add_executable ( ${NAME} demos/${NAME}.c $<TARGET_OBJECTS:support> )
-        target_link_libraries(${NAME} PRIVATE "-Wl,-T,linker.ld,-defsym=ram_start=${RAM_START},-defsym=stack_offset=${STACK_OFFSET}")
+        target_link_libraries(${NAME} PRIVATE "-Wl,-nostdlib,-lgcc,-T,linker.ld,-defsym=ram_start=${RAM_START},-defsym=stack_offset=${STACK_OFFSET}")
 
         add_custom_command(TARGET ${NAME} PRE_BUILD
           COMMAND eval "${PREFIX}-gcc --version | head -n 1"
