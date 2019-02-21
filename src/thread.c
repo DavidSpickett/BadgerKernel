@@ -123,7 +123,7 @@ void print_thread_id() {
       output[THREAD_NAME_SIZE-1] = (unsigned int)(tid)+48;
     }
   } else {
-    size_t name_len = strlen(name);
+    size_t name_len = name == NULL ? 0 : strlen(name);
 
     // cut off long names
     if (name_len > THREAD_NAME_SIZE) {

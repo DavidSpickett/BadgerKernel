@@ -30,3 +30,9 @@ void __ubsan_handle_load_invalid_value(void* a, void* b) {
   qemu_exit(); 
   __builtin_unreachable(); 
 }
+
+void __ubsan_handle_nonnull_arg(void* a, void* b) {
+  qemu_print("UBSAN: handle_nonnull_arg\n");
+  qemu_exit();
+  __builtin_unreachable();
+}
