@@ -211,7 +211,7 @@ int add_named_thread(void (*worker)(void), const char* name) {
 
 __attribute__((noreturn)) void do_scheduler() {
   while (1) {
-    for (size_t idx=0; idx != MAX_THREADS; ++idx) {
+    for (size_t idx=0; idx < MAX_THREADS; ++idx) {
       if (all_threads[idx].id != -1) {
         log_event("scheduling new thread");
         thread_yield(&all_threads[idx]);
