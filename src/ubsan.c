@@ -61,8 +61,10 @@ void __ubsan_handle_##NAME(struct SourceInfo* s, ##__VA_ARGS__) { \
 
 ubhandler(divrem_overflow, void* a, void* b);
 ubhandler(add_overflow, void* a, void* b);
+ubhandler(sub_overflow, void* a, void* b);
 ubhandler(load_invalid_value, void* a);
 ubhandler(nonnull_arg, void* a);
 ubhandler(builtin_unreachable);
 ubhandler(type_mismatch, void* a);
 ubhandler(out_of_bounds, void* a);
+ubhandler(vla_bound_not_positive, void* a);
