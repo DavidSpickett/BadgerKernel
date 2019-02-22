@@ -1,10 +1,10 @@
 .extern current_thread
 .extern next_thread
 .global platform_yield
-platform_yield:   
+platform_yield:
   // TODO: NEON, CPSR & SPSR
   stp x0,  x1,  [sp, -16]!
-  stp x2,  x3,  [sp, -16]! 
+  stp x2,  x3,  [sp, -16]!
   stp x4,  x5,  [sp, -16]!
   stp x6,  x7,  [sp, -16]!
   stp x8,  x9,  [sp, -16]!
@@ -18,7 +18,7 @@ platform_yield:
   stp x24, x25, [sp, -16]!
   stp x26, x27, [sp, -16]!
   stp x28, x29, [sp, -16]!
-  str x30,      [sp, -8 ]!
+  str x30,      [sp, -16]! // 16 so we're aligned
 
   /* Setup pointers in some high reg numbers we won't overwrite */
   ldr x10, =current_thread
@@ -46,7 +46,7 @@ platform_yield:
   mov sp, x3             //
 
   /* Restore all registers */
-  ldr x30,      [sp], #8
+  ldr x30,      [sp], #16 // 16 for alignment
   ldp x28, x29, [sp], #16
   ldp x26, x27, [sp], #16
   ldp x24, x25, [sp], #16
