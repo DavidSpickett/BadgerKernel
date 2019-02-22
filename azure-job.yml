@@ -1,0 +1,37 @@
+# Note: indentation is VERY important!
+
+parameters:
+  build_platform: []
+  opt_level: []
+  ubsan: []
+
+jobs:
+- ${{ each build_platform in parameters.build_platform }}:
+  - ${{ each opt_level in parameters.opt_level }}:
+    - ${{ each ubsan in parameters.ubsan }}:
+      - job: ${{build_platform}}_O${{opt_level}}_UBSAN_${{ubsan}}
+        pool:
+          vmImage: 'Ubuntu-16.04'
+        steps:
+          - script: |
+              sudo apt-get update
+              sudo apt-get install -y qemu-system-arm
+            displayName: apt-get-qemu
+
+          - ${{ if eq(build_platform, 'ARM') }}:
+            - script: sudo apt-get install -y gcc-arm-none-eabi libnewlib-arm-none-eabi
+              displayName: apt-get-toolchain
+
+          - ${{ if eq(build_platform, 'THUMB') }}:
+            - script: sudo apt-get install -y gcc-arm-none-eabi libnewlib-arm-none-eabi
+              displayName: apt-get-toolchain
+
+          - ${{ if eq(build_platform, 'AARCH64') }}:
+            - script: sudo apt-get install -y gcc-aarch64-linux-gnu libc6-dev-arm64-cross
+              displayName: apt-get-toolchain
+
+          - script: |
+              set -ex
+              cmake . -DBUILD_PLATFORM=${{build_platform}} -DOPT_LEVEL=${{opt_level}} -DUBSAN=${{ubsan}}
+              make
+            displayName: make
