@@ -33,5 +33,8 @@ jobs:
           - script: |
               set -ex
               cmake . -DBUILD_PLATFORM=${{build_platform}} -DOPT_LEVEL=${{opt_level}} -DUBSAN=${{ubsan}}
-              make
-            displayName: make
+              make make_demos
+            displayName: build
+
+          - script: make test_demos
+            displayName: test

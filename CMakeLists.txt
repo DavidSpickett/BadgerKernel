@@ -66,6 +66,10 @@ endif(UBSAN)
 
 add_library(support OBJECT ${BASE_SOURCES})
 
+# Seperate build/test targets for CI
+add_custom_target(make_demos)
+add_custom_target(test_demos)
+
 function(add_demo_app NAME)
         add_executable ( ${NAME} demos/${NAME}.c $<TARGET_OBJECTS:support> )
         target_link_libraries(${NAME} PRIVATE "-Wl,-nostdlib,-lgcc,-T,linker.ld,-defsym=ram_start=${RAM_START},-defsym=stack_offset=${STACK_OFFSET}")
@@ -73,6 +77,7 @@ function(add_demo_app NAME)
         add_custom_command(TARGET ${NAME} PRE_BUILD
           COMMAND eval "${PREFIX}-gcc --version | head -n 1"
           VERBATIM)
+        add_dependencies(make_demos ${NAME})
 
         add_custom_target(run_${NAME})
         add_dependencies(run_${NAME} ${NAME})
@@ -94,6 +99,7 @@ function(add_demo_app NAME)
           COMMAND eval "${QEMU} ${NAME} -serial file:${NAME}_got.log > /dev/null 2>&1"
           COMMAND diff demos/${NAME}_expected.log ${NAME}_got.log
           VERBATIM)
+        add_dependencies(test_demos test_${NAME})
 
 endfunction(add_demo_app)
 
