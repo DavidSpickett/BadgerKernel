@@ -5,7 +5,7 @@
 #include "print.h"
 #include "util.h"
 
-#define THREAD_STACK_SIZE 512
+#define THREAD_STACK_SIZE 1024
 #define THREAD_NAME_SIZE 12
 #define THREAD_MSG_QUEUE_SIZE 5
 
