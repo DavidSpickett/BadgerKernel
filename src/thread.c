@@ -27,10 +27,11 @@ struct Thread {
   uint8_t stack[THREAD_STACK_SIZE];
 };
 
-extern void platform_yield(void**, void*);
+extern void platform_yield(void);
 
 static struct Thread scheduler_thread;
-static struct Thread* current_thread;
+struct Thread* current_thread;
+struct Thread* next_thread;
 struct Thread all_threads[MAX_THREADS];
 
 extern void demo();
@@ -148,7 +149,8 @@ void log_event(const char* event) {
 
 void thread_yield(struct Thread* to) {
   log_event("yielding");
-  platform_yield((void**)&current_thread, to);
+  next_thread = to;
+  platform_yield();
   log_event("resuming");
 }
 
@@ -175,7 +177,8 @@ __attribute__((noreturn)) void thread_start() {
   // Calling platform yield directly so we don't log_events
   // with an incorrect thread ID
   // TODO: we save state here that we don't need to
-  platform_yield((void**)&current_thread, &scheduler_thread);
+  next_thread = &scheduler_thread;
+  platform_yield();
 
   __builtin_unreachable();
 }
