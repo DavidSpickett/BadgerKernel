@@ -1,9 +1,6 @@
 # Note: indentation matters!
 # Note: parameters are case sensitive
 
-trigger:
-- master
-
 jobs:
   - template: azure-job.yml
     parameters:
