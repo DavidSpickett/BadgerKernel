@@ -1,8 +1,23 @@
 .global platform_yield
 .type platform_yield,%function
 platform_yield:
-   /* Save our own state */
-   push {r0-r12, r14}      // note no PC or SP here
+   /* Check stack extent */
+   ldr r0, =thread_stack_offset
+   ldr r1, =current_thread
+   ldr r0, [r0]        // chase offset
+   ldr r1, [r1]        // chase current
+   add r0, r1, r0      // get min. valid stack pointer
+   mov r1, sp          // get current sp
+   sub r1, r1, #(12*4) // take away space we want to use
+   cmp r0, r1          // is potential sp < min valid sp?
+   bhs stack_extent_failed
+
+.global platform_yield_no_stack_check
+platform_yield_no_stack_check:
+   // Jump here when yielding into scheduler for the first time
+
+   /* Save callee saved regs (no sp/pc) */
+   push {r4-r12, r14}
 
    /* Setup pointers in some high reg numbers we won't overwrite */
    ldr r10, =current_thread
@@ -24,5 +39,5 @@ platform_yield:
    thread_return:          // threads are resumed from here
    ldr r2, [r10]           // get *value* of current thread ptr
    ldr sp, [r2]            // restore our own stack pointer
-   pop {r0-r12, r14}       // restore our own regs
+   pop {r4-r12, r14}       // restore our own regs (no sp/pc)
    bx lr

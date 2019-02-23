@@ -10,13 +10,12 @@ platform_yield:
   add x0, x1, x0         // get minimum valid stack pointer
   mov x1, sp             // get current sp
   sub x1, x1, #(12*64)   // take away space we want to use
-  cmp x0, x1             // is sp < min valid sp?
+  cmp x0, x1             // is potential sp < min valid sp?
   b.hs stack_extent_failed
 
 .global platform_yield_no_stack_check
 platform_yield_no_stack_check:
-  // Jump here when yielding into the scheduler, since our
-  // current thread will only be a dummy.
+  // Jump here when yielding into the scheduler for the first time
 
   /* Setup pointers in some high reg numbers we won't overwrite */
   ldr x10, =current_thread
