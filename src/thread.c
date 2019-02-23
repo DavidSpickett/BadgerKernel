@@ -220,7 +220,9 @@ void init_thread(struct Thread* thread, int tid, const char* name,
 
   thread->canary = STACK_CANARY;
   // Top of stack
-  thread->stack_ptr = &(thread->stack[THREAD_STACK_SIZE-1]);
+  size_t stack_ptr = (size_t)(&(thread->stack[THREAD_STACK_SIZE-1]));
+  // Mask to align to 16 bytes for AArch64
+  thread->stack_ptr = (uint8_t*)(stack_ptr & ~0xF);
 }
 
 int add_thread(void (*worker)(void)) {
