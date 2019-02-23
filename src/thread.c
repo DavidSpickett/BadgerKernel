@@ -6,7 +6,7 @@
 #include "util.h"
 #include "semihosting.h"
 
-#define THREAD_STACK_SIZE 1024
+#define THREAD_STACK_SIZE 2048
 #define THREAD_NAME_SIZE 12
 #define THREAD_MSG_QUEUE_SIZE 5
 #define STACK_CANARY 0xcafef00d

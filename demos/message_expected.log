@@ -1,4 +1,4 @@
-Thread     <HIDDEN>: yielding
+Thread     <HIDDEN>: starting scheduler
 Thread  <scheduler>: scheduling new thread
 Thread  <scheduler>: yielding
 Thread      spammer: spammed
