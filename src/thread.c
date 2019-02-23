@@ -4,10 +4,12 @@
 #include "thread.h"
 #include "print.h"
 #include "util.h"
+#include "semihosting.h"
 
 #define THREAD_STACK_SIZE 1024
 #define THREAD_NAME_SIZE 12
 #define THREAD_MSG_QUEUE_SIZE 5
+#define STACK_CANARY 0xcafef00d
 
 struct Message {
   int src;
@@ -24,15 +26,24 @@ struct Thread {
   struct Message* next_msg;
   struct Message* end_msgs;
   bool msgs_full;
+  uint32_t canary;
   uint8_t stack[THREAD_STACK_SIZE];
 };
 
 extern void platform_yield(void);
 
-static struct Thread scheduler_thread;
-struct Thread* current_thread;
-struct Thread* next_thread;
+__attribute__((section(".thread_structs")))
 struct Thread all_threads[MAX_THREADS];
+
+// Use these struct names to ensure that these are
+// placed *after* the thread structs to prevent
+// stack overflow corrupting them.
+__attribute__((section(".thread_vars")))
+struct Thread* current_thread;
+__attribute__((section(".thread_vars")))
+struct Thread* next_thread;
+__attribute__((section(".thread_vars")))
+struct Thread scheduler_thread;
 
 extern void demo();
 __attribute__((noreturn)) void entry() {
@@ -147,7 +158,16 @@ void log_event(const char* event) {
   print("Thread "); print_thread_id(); print(": "); print(event); print("\n");
 }
 
+void check_stack() {
+  if (current_thread->canary != STACK_CANARY) {
+    qemu_print("Stack overflow!\n");
+    qemu_exit();
+  }
+}
+
 void thread_yield(struct Thread* to) {
+  check_stack();
+
   log_event("yielding");
   next_thread = to;
   platform_yield();
@@ -198,6 +218,7 @@ void init_thread(struct Thread* thread, int tid, const char* name,
   thread->end_msgs = thread->next_msg;
   thread->msgs_full = false;
 
+  thread->canary = STACK_CANARY;
   // Top of stack
   thread->stack_ptr = &(thread->stack[THREAD_STACK_SIZE-1]);
 }

@@ -13,5 +13,10 @@ SECTIONS
  . = . + 0x1000; /* 4kB of stack memory */
  stack_top = .;
  /* This is here so that it's read/write on Cortex M */
- .bss : { *(.bss COMMON) }
+ .bss : {
+    /* Thread structs go first! */
+    *(.thread_structs)
+    *(.thread_vars)
+    *(.bss COMMON)
+  }
 }
