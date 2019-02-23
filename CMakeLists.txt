@@ -3,7 +3,7 @@ cmake_minimum_required( VERSION 3.9 )
 
 set( BUILD_PLATFORM "arm" CACHE STRING "Architecture to build for." )
 set( OPT_LEVEL "3" CACHE STRING "Compiler optmisation level." )
-option( UBSAN "Enable very basic undefined behaviour sanitiser." OFF )
+option( UBSAN "Enable undefined behaviour sanitiser." OFF )
 
 string( TOLOWER "${BUILD_PLATFORM}" BP_LOWER )
 message(STATUS "BUILD_PLATFORM is ${BP_LOWER}")
@@ -45,8 +45,6 @@ if(UBSAN)
   set( CFLAGS "${CFLAGS} -fsanitize=undefined" )
 endif(UBSAN)
 set( CMAKE_C_FLAGS "${PLATFORM} ${CFLAGS}" )
-
-message(STATUS "Yield code should be at: src/hw/${PLATFORM_SRC}/yield.s")
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 set_property(SOURCE src/hw/${PLATFORM_SRC}/startup.s PROPERTY LANGUAGE C)
