@@ -1,6 +1,13 @@
 # Note: indentation matters!
 # Note: parameters are case sensitive
 
+# Use include here not just trigger: master
+# That would cause 2 builds, the default master plus an extra
+trigger:
+  branches:
+    include:
+      - master
+
 jobs:
   - template: azure-job.yml
     parameters:
