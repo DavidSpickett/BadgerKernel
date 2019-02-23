@@ -50,11 +50,13 @@ set( CMAKE_C_FLAGS "${PLATFORM} ${CFLAGS}" )
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 set_property(SOURCE src/hw/${PLATFORM_SRC}/startup.s PROPERTY LANGUAGE C)
 set_property(SOURCE src/hw/${PLATFORM_SRC}/yield.s PROPERTY LANGUAGE C)
+set_property(SOURCE src/hw/${PLATFORM_SRC}/switch.s PROPERTY LANGUAGE C)
 set( BASE_SOURCES
   src/thread.c
   src/util.c
   src/print.c
   src/hw/${PLATFORM_SRC}/yield.s
+  src/hw/${PLATFORM_SRC}/switch.s
   src/hw/${PLATFORM_SRC}/semihosting.c
   src/hw/${PLATFORM_SRC}/startup.s
 )
