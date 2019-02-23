@@ -2,27 +2,33 @@
 .extern next_thread
 .global platform_yield
 platform_yield:
-  // TODO: NEON, CPSR & SPSR
-  stp x0,  x1,  [sp, -16]!
-  stp x2,  x3,  [sp, -16]!
-  stp x4,  x5,  [sp, -16]!
-  stp x6,  x7,  [sp, -16]!
-  stp x8,  x9,  [sp, -16]!
-  stp x10, x11, [sp, -16]!
-  stp x12, x13, [sp, -16]!
-  stp x14, x15, [sp, -16]!
-  stp x16, x17, [sp, -16]!
-  stp x18, x19, [sp, -16]!
-  stp x20, x21, [sp, -16]!
-  stp x22, x23, [sp, -16]!
-  stp x24, x25, [sp, -16]!
-  stp x26, x27, [sp, -16]!
-  stp x28, x29, [sp, -16]!
-  str x30,      [sp, -16]! // 16 so we're aligned
+  /* Check stack extent */
+  ldr x0, =thread_stack_offset
+  ldr x1, =current_thread
+  ldr x0, [x0]           // chase it
+  ldr x1, [x1]           // chase current thread too
+  add x0, x1, x0         // get minimum valid stack pointer
+  mov x1, sp             // get current sp
+  sub x1, x1, #(12*64)   // take away space we want to use
+  cmp x0, x1             // is sp < min valid sp?
+  b.hs stack_extent_failed
+
+.global platform_yield_no_stack_check
+platform_yield_no_stack_check:
+  // Jump here when yielding into the scheduler, since our
+  // current thread will only be a dummy.
 
   /* Setup pointers in some high reg numbers we won't overwrite */
   ldr x10, =current_thread
   ldr x11, =next_thread
+
+  // Callee saved, no Neon/FPSR/CPSR
+  stp x19, x20, [sp, -16]!
+  stp x21, x22, [sp, -16]!
+  stp x23, x24, [sp, -16]!
+  stp x25, x26, [sp, -16]!
+  stp x27, x28, [sp, -16]!
+  stp x29, x30, [sp, -16]!
 
   /* Save our PC and return address */
   ldr x1, [x10]          // get actual adress of current thread
@@ -45,22 +51,12 @@ platform_yield:
   ldr x3, [x2]           // restore our own stack pointer
   mov sp, x3             //
 
-  /* Restore all registers */
-  ldr x30,      [sp], #16 // 16 for alignment
-  ldp x28, x29, [sp], #16
-  ldp x26, x27, [sp], #16
-  ldp x24, x25, [sp], #16
-  ldp x22, x23, [sp], #16
-  ldp x20, x21, [sp], #16
-  ldp x18, x19, [sp], #16
-  ldp x16, x17, [sp], #16
-  ldp x14, x15, [sp], #16
-  ldp x12, x13, [sp], #16
-  ldp x10, x11, [sp], #16
-  ldp x8,  x9,  [sp], #16
-  ldp x6,  x7,  [sp], #16
-  ldp x4,  x5,  [sp], #16
-  ldp x2,  x3,  [sp], #16
-  ldp x0,  x1,  [sp], #16
+  /* Restore all callee saved registers */
+  ldp x29, x30, [sp], #16
+  ldp x27, x28, [sp], #16
+  ldp x25, x26, [sp], #16
+  ldp x23, x24, [sp], #16
+  ldp x21, x22, [sp], #16
+  ldp x19, x20, [sp], #16
 
   ret

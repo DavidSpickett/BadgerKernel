@@ -31,6 +31,7 @@ struct Thread {
 };
 
 extern void platform_yield(void);
+extern void platform_yield_no_stack_check(void);
 
 __attribute__((section(".thread_structs")))
 struct Thread all_threads[MAX_THREADS];
@@ -44,6 +45,9 @@ __attribute__((section(".thread_vars")))
 struct Thread* next_thread;
 __attribute__((section(".thread_vars")))
 struct Thread scheduler_thread;
+__attribute__((section(".thread_vars")))
+size_t thread_stack_offset = offsetof(struct Thread, stack);
+
 
 extern void demo();
 __attribute__((noreturn)) void entry() {
@@ -158,8 +162,15 @@ void log_event(const char* event) {
   print("Thread "); print_thread_id(); print(": "); print(event); print("\n");
 }
 
+void stack_extent_failed() {
+  // current_thread is likely still valid here
+  log_event("Not enough stack to save context!");
+  qemu_exit();
+}
+
 void check_stack() {
   if (current_thread->canary != STACK_CANARY) {
+    // Don't bother with log_event here, current_thread is probably trashed
     qemu_print("Stack overflow!\n");
     qemu_exit();
   }
@@ -260,7 +271,9 @@ __attribute__((noreturn)) void start_scheduler() {
   init_thread(&dummy, -1, NULL, (void (*)(void))(0));
 
   current_thread = &dummy;
-  thread_yield(&scheduler_thread);
+  next_thread = &scheduler_thread;
+  log_event("starting scheduler");
+  platform_yield_no_stack_check();
 
   __builtin_unreachable();
 }
