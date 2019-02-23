@@ -2,8 +2,26 @@
 .extern current_thread
 .global platform_yield
 platform_yield:
-   /* Save our own state */
-   push {r0-r7, lr}       // note that we'll save lr here
+   /* Check stack extent */
+   ldr r0, =thread_stack_offset
+   ldr r1, =current_thread
+   ldr r0, [r0]                 // chase offset
+   ldr r1, [r1]                 // chase current
+   add r0, r1, r0               // get min. valid stack pointer
+   mrs r1, msp                  // get current sp
+   sub r1, r1, #(5*4)           // take away space we want to use
+   cmp r0, r1                   // is potential sp < min valid sp?
+   ldr r2, =stack_extent_failed // can't get a relocation to this, use addr
+   bls stack_check_passed       // can't conditonally branch to register...
+   bx r2                        // so branch over this instr if check passed
+stack_check_passed:             // carry on with the yield
+
+   .global platform_yield_no_stack_check
+platform_yield_no_stack_check:
+   // Jump here when yielding into the scheduler for the first time
+
+   /* Save callee saved regs */
+   push {r4-r7, lr}       // note that we'll save lr here
                           // and use it to return later
 
    /* Setup pointers some high reg numbers */
@@ -35,5 +53,5 @@ platform_yield:
    ldr r2, [r6]          // get *value* of current thread ptr
    ldr r5, [r2]          // restore our own stack pointer
    msr msp, r5           //
-   pop {r0-r7, pc}       // restore our own regs
+   pop {r4-r7, pc}       // restore our own regs
                          // and return in the process
