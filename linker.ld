@@ -17,6 +17,8 @@ SECTIONS
     /* Thread structs go first! */
     *(.thread_structs)
     *(.thread_vars)
+    . = ALIGN(16);
+    *(.monitor_stack)
     *(.bss COMMON)
   }
 }

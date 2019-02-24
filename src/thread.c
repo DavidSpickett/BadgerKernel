@@ -7,6 +7,8 @@
 #include "semihosting.h"
 
 #define THREAD_STACK_SIZE 2048
+// 2 registers on AArch64
+#define MONITOR_STACK_SIZE 2*8
 #define THREAD_NAME_SIZE 12
 #define THREAD_MSG_QUEUE_SIZE 5
 #define STACK_CANARY 0xcafef00d
@@ -48,6 +50,12 @@ struct Thread scheduler_thread;
 __attribute__((section(".thread_vars")))
 size_t thread_stack_offset = offsetof(struct Thread, stack);
 
+// Known good stack to save registers to while we check stack extent
+// In a seperate section so we can garauntee it's alignement for AArch64
+__attribute__((section(".monitor_vars")))
+uint8_t monitor_stack[MONITOR_STACK_SIZE];
+__attribute__((section(".thread_vars")))
+uint8_t* monitor_stack_top = &monitor_stack[MONITOR_STACK_SIZE];
 
 extern void demo();
 __attribute__((noreturn)) void entry() {
@@ -171,7 +179,7 @@ void stack_extent_failed() {
 void check_stack() {
   if (current_thread->canary != STACK_CANARY) {
     // Don't bother with log_event here, current_thread is probably trashed
-    qemu_print("Stack overflow!\n");
+    qemu_print("Stack underflow!\n");
     qemu_exit();
   }
 }
@@ -181,7 +189,8 @@ void thread_yield(struct Thread* to) {
 
   log_event("yielding");
   next_thread = to;
-  platform_yield();
+  asm volatile ("svc #0xdead");
+  //platform_yield();
   log_event("resuming");
 }
 
@@ -209,7 +218,7 @@ __attribute__((noreturn)) void thread_start() {
   // with an incorrect thread ID
   // TODO: we save state here that we don't need to
   next_thread = &scheduler_thread;
-  platform_yield();
+  asm volatile ("svc #0xdead");
 
   __builtin_unreachable();
 }
@@ -231,7 +240,7 @@ void init_thread(struct Thread* thread, int tid, const char* name,
 
   thread->canary = STACK_CANARY;
   // Top of stack
-  size_t stack_ptr = (size_t)(&(thread->stack[THREAD_STACK_SIZE-1]));
+  size_t stack_ptr = (size_t)(&(thread->stack[THREAD_STACK_SIZE]));
   // Mask to align to 16 bytes for AArch64
   thread->stack_ptr = (uint8_t*)(stack_ptr & ~0xF);
 }

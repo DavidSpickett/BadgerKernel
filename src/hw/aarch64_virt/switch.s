@@ -1,6 +1,67 @@
+.data
+        mon_stack_err: .string "Monitor stack underflow!\n"
+unknown_exception_err: .string "Got an unexpected exception cause!\n"
+
+.text
 .global thread_switch
 thread_switch:
-  // Note that all of the program runs at EL1 so sp = SP_EL1
+  /* When we do SVC we're EL1 with sp_el1.
+     When we do HLT we're EL1 with sp_el0.
+     Don't know exactly why, but we can just always use EL1_SP here.
+  */
+  msr SPSel, #1
+  stp x0, x1, [sp, #-16]! // This uses *monitor* stack
+                          // we can't trust the thread stack here
+
+  ldr x0, =monitor_stack // check that monitor stack is valid
+  mov x1, sp
+  cmp x0, x1
+  beq monitor_stack_ok
+  ldr x0, =mon_stack_err
+  bl qemu_print
+  b  qemu_exit
+monitor_stack_ok:
+
+  /* See if this is a thread switch call */
+  mrs x0, ESR_EL1
+  lsr x0, x0, #26    // 31-26 = exception class
+  mov x1, #0x15      // Caused by an 'svc' (not a 'hlt' for semihosting)
+  cmp x0, x1
+  beq __thread_switch
+  mov x1, xzr        // Caused by hlt
+  cmp x0, x1
+  beq semihosting
+  /* Otherwise it's something we weren't expecting */
+  mrs x1, ELR_EL1 // View in GDB to see what caused re-entry
+  ldr x0, =unknown_exception_err
+  bl qemu_print
+  b qemu_exit
+
+semihosting:
+  /* Re-raise semihosting call */
+  ldp x0, x1, [sp], #16 // restore thread's regs
+  msr SPSel, #0         // use thread's sp (points to semihosting data)
+  hlt 0xf000
+  eret
+
+__thread_switch:
+  /* Validate stack extent */
+
+  ldr x0, =thread_stack_offset
+  ldr x1, =current_thread
+  ldr x0, [x0]              // chase it
+  ldr x1, [x1]              // chase current thread too
+  add x1, x1, x0            // get minimum valid stack pointer
+  msr SPSel, #0             // get the thread's sp
+  mov x0, sp                //
+  sub x0, x0, #((31+2)*64)  // take away space we want to use
+  cmp x0, x1                // is potential sp < min valid sp?
+  b.hs stack_extent_failed  // Use thread's stack for this, qemu will exit anyway
+
+  msr SPSel, #1
+  ldp x0, x1, [sp], #16   // Restore thread's regs for saving
+
+  msr SPSel, #0 // Switch to thread's stack (EL0_SP)
 
   /* Save all registers to stack */
   stp x0,  x1,  [sp, #-16]!
