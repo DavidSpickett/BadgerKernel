@@ -16,7 +16,11 @@ SECTIONS
  .bss : {
     /* Thread structs go first! */
     *(.thread_structs)
+    /* including the scheduler thread */
+    *(.scheduler_thread)
+    /* then the important globals */
     *(.thread_vars)
+    /* align 16 for AArch64 */
     . = ALIGN(16);
     *(.monitor_stack)
     *(.bss COMMON)

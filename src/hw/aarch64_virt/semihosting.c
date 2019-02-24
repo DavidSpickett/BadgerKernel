@@ -7,7 +7,7 @@ void qemu_exit() {
     "str x0, [sp,#8]\n\t"
     "mov x1, sp\n\t"           // address of parameter block (unused here)
     "mov w0, #0x18\n\t"        // SYS_EXIT
-    "hlt 0xf000\n\t"           // do semihosting call
+    "svc 0x3333\n\t"           // ask monitor to do semihosting call
   );
 }
 
@@ -15,7 +15,7 @@ void qemu_print(const char* msg) {
   asm volatile (
     "mov x1, %[msg]\n\t"       // address of message
     "mov w0, #0x04\n\t"        // SYS_WRITE0
-    "hlt 0xf000\n\t"           // do semihosting call
+    "svc 0x3333\n\t"           // ask monitor to do semihosting call
   :
   : [msg]"r"(msg)
   );

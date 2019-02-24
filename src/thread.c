@@ -37,6 +37,8 @@ extern void platform_yield_no_stack_check(void);
 
 __attribute__((section(".thread_structs")))
 struct Thread all_threads[MAX_THREADS];
+__attribute__((section(".scheduler_thread")))
+struct Thread scheduler_thread;
 
 // Use these struct names to ensure that these are
 // placed *after* the thread structs to prevent
@@ -45,8 +47,6 @@ __attribute__((section(".thread_vars")))
 struct Thread* current_thread;
 __attribute__((section(".thread_vars")))
 struct Thread* next_thread;
-__attribute__((section(".thread_vars")))
-struct Thread scheduler_thread;
 __attribute__((section(".thread_vars")))
 size_t thread_stack_offset = offsetof(struct Thread, stack);
 
@@ -282,7 +282,7 @@ __attribute__((noreturn)) void start_scheduler() {
   current_thread = &dummy;
   next_thread = &scheduler_thread;
   log_event("starting scheduler");
-  platform_yield_no_stack_check();
+  asm volatile ("svc 0xdead");
 
   __builtin_unreachable();
 }

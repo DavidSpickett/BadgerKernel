@@ -1,14 +1,10 @@
 .data
-        mon_stack_err: .string "Monitor stack underflow!\n"
-unknown_exception_err: .string "Got an unexpected exception cause!\n"
+           mon_stack_err: .string "Monitor stack underflow!\n"
+unknown_monitor_call_err: .string "Got an unexpected monitor call!\n"
 
 .text
 .global thread_switch
 thread_switch:
-  /* When we do SVC we're EL1 with sp_el1.
-     When we do HLT we're EL1 with sp_el0.
-     Don't know exactly why, but we can just always use EL1_SP here.
-  */
   msr SPSel, #1
   stp x0, x1, [sp, #-16]! // This uses *monitor* stack
                           // we can't trust the thread stack here
@@ -24,29 +20,25 @@ monitor_stack_ok:
 
   /* See if this is a thread switch call */
   mrs x0, ESR_EL1
-  lsr x0, x0, #26    // 31-26 = exception class
-  mov x1, #0x15      // Caused by an 'svc' (not a 'hlt' for semihosting)
+  mov x1, #0xFFFF    // mask svc number
+  and x0, x0, x1
+  mov x1, #0xdead    // thread switch
   cmp x0, x1
   beq __thread_switch
-  mov x1, xzr        // Caused by hlt
+  mov x1, #0x3333    // semihosting
   cmp x0, x1
   beq semihosting
   /* Otherwise it's something we weren't expecting */
-  mrs x1, ELR_EL1 // View in GDB to see what caused re-entry
-  ldr x0, =unknown_exception_err
+  ldr x0, =unknown_monitor_call_err
   bl qemu_print
   b qemu_exit
 
 semihosting:
-  /* Re-raise semihosting call */
-
-  /* As HLT is a software break, your return address is the
-     address of the hlt instruction. Not the next instruction.
-     This is potentially a PITA for Thumb. */
-  mrs x0, ELR_EL1
-  add x0, x0, #4
-  msr ELR_EL1, x0
-
+  /* Do semihosting call
+     We don't let threads hlt directly because
+     a halt's exception link register is the halt,
+     not the next instr. Which makes things complicated.
+  */
   ldp x0, x1, [sp], #16 // restore thread's regs
   msr SPSel, #0         // use thread's sp (points to semihosting data)
   hlt 0xf000
