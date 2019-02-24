@@ -39,6 +39,14 @@ monitor_stack_ok:
 
 semihosting:
   /* Re-raise semihosting call */
+
+  /* As HLT is a software break, your return address is the
+     address of the hlt instruction. Not the next instruction.
+     This is potentially a PITA for Thumb. */
+  mrs x0, ELR_EL1
+  add x0, x0, #4
+  msr ELR_EL1, x0
+
   ldp x0, x1, [sp], #16 // restore thread's regs
   msr SPSel, #0         // use thread's sp (points to semihosting data)
   hlt 0xf000
