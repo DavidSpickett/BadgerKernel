@@ -1,6 +1,7 @@
 ENTRY(_Reset)
 SECTIONS
 {
+ .vectors . : { *vectors.s.o(.text) }
  . = ram_start;
  .startup . : { *startup.s.o(.text) }
  .text : { *(.text) }
