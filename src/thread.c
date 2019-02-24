@@ -189,8 +189,7 @@ void thread_yield(struct Thread* to) {
 
   log_event("yielding");
   next_thread = to;
-  asm volatile ("svc #0xdead");
-  //platform_yield();
+  platform_yield();
   log_event("resuming");
 }
 
@@ -218,7 +217,7 @@ __attribute__((noreturn)) void thread_start() {
   // with an incorrect thread ID
   // TODO: we save state here that we don't need to
   next_thread = &scheduler_thread;
-  asm volatile ("svc #0xdead");
+  platform_yield();
 
   __builtin_unreachable();
 }
@@ -282,7 +281,7 @@ __attribute__((noreturn)) void start_scheduler() {
   current_thread = &dummy;
   next_thread = &scheduler_thread;
   log_event("starting scheduler");
-  asm volatile ("svc 0xdead");
+  platform_yield_no_stack_check();
 
   __builtin_unreachable();
 }
