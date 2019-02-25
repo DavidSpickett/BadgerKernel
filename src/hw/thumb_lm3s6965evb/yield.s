@@ -1,5 +1,12 @@
-.extern next_thread
-.extern current_thread
+.global platform_yield_initial
+platform_yield_initial:
+  /* Init stack ptr to dummy thread so we can yield to scheduler */
+  ldr r0, =current_thread // Set the actual stack pointer to
+  ldr r0, [r0]            // that of the dummy thread
+  ldr r0, [r0]            // so that we can pass the stack check
+  mov sp, r0              // without having more than one entry point
+  bl platform_yield       // to the switching code
+
 .global platform_yield
 platform_yield:
    /* Check stack extent */
@@ -15,10 +22,6 @@ platform_yield:
    bls stack_check_passed       // can't conditonally branch to register...
    bx r2                        // so branch over this instr if check passed
 stack_check_passed:             // carry on with the yield
-
-   .global platform_yield_no_stack_check
-platform_yield_no_stack_check:
-   // Jump here when yielding into the scheduler for the first time
 
    /* Save callee saved regs */
    push {r4-r7, lr}       // note that we'll save lr here

@@ -3,6 +3,15 @@
 unknown_monitor_call_err: .string "Got an unexpected monitor call!\n"
 
 .text
+
+.global platform_yield_initial
+platform_yield_initial:
+  /* Called when starting scheduler (trashing regs is fine) */
+  ldr x0, =current_thread // init stack pointer to
+  ldr x0, [x0]            // stack pointer of dummy thread
+  ldr x0, [x0]            // so we can pass the check normally
+  bl platform_yield
+
 .global platform_yield
 platform_yield:
 .global platform_yield_no_stack_check
