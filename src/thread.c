@@ -11,7 +11,7 @@
 #define MONITOR_STACK_SIZE 2*8
 #define THREAD_NAME_SIZE 12
 #define THREAD_MSG_QUEUE_SIZE 5
-#define STACK_CANARY 0xcafef00d
+#define STACK_CANARY 0xcafebeefdeadf00d
 
 struct Message {
   int src;
@@ -28,9 +28,9 @@ struct Thread {
   struct Message* next_msg;
   struct Message* end_msgs;
   bool msgs_full;
-  uint32_t bottom_canary;
+  uint64_t bottom_canary;
   uint8_t stack[THREAD_STACK_SIZE];
-  uint32_t top_canary;
+  uint64_t top_canary;
 };
 
 extern void platform_yield_initial(void);
