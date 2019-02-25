@@ -28,8 +28,9 @@ struct Thread {
   struct Message* next_msg;
   struct Message* end_msgs;
   bool msgs_full;
-  uint32_t canary;
+  uint32_t bottom_canary;
   uint8_t stack[THREAD_STACK_SIZE];
+  uint32_t top_canary;
 };
 
 extern void platform_yield_initial(void);
@@ -177,9 +178,12 @@ void stack_extent_failed() {
 }
 
 void check_stack() {
-  if (current_thread->canary != STACK_CANARY) {
-    // Don't bother with log_event here, current_thread is probably trashed
-    qemu_print("Stack underflow!\n");
+  if (current_thread->bottom_canary != STACK_CANARY) {
+    log_event("Stack underflow!\n");
+    qemu_exit();
+  } else if (current_thread->top_canary != STACK_CANARY) {
+    // Can use current_thread here
+    log_event("Stack overflow!");
     qemu_exit();
   }
 }
@@ -237,7 +241,8 @@ void init_thread(struct Thread* thread, int tid, const char* name,
   thread->end_msgs = thread->next_msg;
   thread->msgs_full = false;
 
-  thread->canary = STACK_CANARY;
+  thread->bottom_canary = STACK_CANARY;
+  thread->top_canary = STACK_CANARY;
   // Top of stack
   size_t stack_ptr = (size_t)(&(thread->stack[THREAD_STACK_SIZE]));
   // Mask to align to 16 bytes for AArch64
