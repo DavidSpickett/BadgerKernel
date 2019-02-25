@@ -2,7 +2,7 @@
 
 A simple set of demos showing tasks cooperativley sharing time.
 
-Current build targets are ARM, Thumb (Cortex-M4) and AArch64. Each platform has it's own folder in '/src/hw' for its specific code.
+Current build targets are Arm (Armv7A, Cortex A-15), Thumb (Armv7E-M Cortex-M4) and AArch64 (Armv8A, Cortex A-57). Each platform has it's own folder in '/src/hw' for its specific code.
 
 ## Building
 
@@ -59,14 +59,32 @@ See 'demos/yielding_expected.log' for the full output.
 
 ## References
 
+### Qemu
+
 https://balau82.wordpress.com/2010/02/28/hello-world-for-bare-metal-arm-using-qemu/
 
 https://stackoverflow.com/questions/45206027/qemu-aarch64-supported-boards/45235392#45235392
 
 https://github.com/freedomtan/aarch64-bare-metal-qemu
 
-https://stackoverflow.com/questions/31990487/how-to-cleanly-exit-qemu-after-executing-bare-metal-program-without-user-interve
+### Semihosting
 
 https://static.docs.arm.com/100863/0200/semihosting.pdf
 
+https://stackoverflow.com/questions/31990487/how-to-cleanly-exit-qemu-after-executing-bare-metal-program-without-user-interve
+
+### GCC
+
 http://cs107e.github.io/guides/gcc/
+
+### Armv7A
+
+Store return state - http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0802b/Cihfdedi.html
+
+Return from exception - http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0489c/Cihjacag.html
+
+Change processor state - http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0204j/Cihfdbhd.html
+
+Vector tables - http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dai0425/BABHHDII.html
+
+CPSR - https://www.heyrick.co.uk/armwiki/The_Status_register
