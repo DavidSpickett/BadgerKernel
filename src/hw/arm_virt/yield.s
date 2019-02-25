@@ -4,9 +4,24 @@
 unknown_monitor_call_err: .string "Got an unexpected monitor call!\n"
 
 .text
+
+.set SYSTEM_MODE,     0x1f
+.set SUPERVISOR_MODE, 0x13
+.set USER_MODE,       0x10
+
+.global platform_yield_initial
+platform_yield_initial:
+  /* Called when starting the scheduler, so we can trash regs here */
+  ldr r0, =current_thread // Set the actual stack pointer to
+  ldr r0, [r0]            // that of the dummy thread
+  ldr r0, [r0]            // so that we can pass the stack check
+  mov sp, r0              // without having more than one entry point
+  bl platform_yield       // to the switching code
+
 .global platform_yield
 platform_yield:
   svc 0xdead
+  bx lr
 
 .global __platform_yield
 __platform_yield:
@@ -40,53 +55,62 @@ monitor_stack_ok:
 
 semihosting:
   pop {r0-r1}
-  cps #0x1f    // system mode (shares sp of user)
-  svc 0x123456 // picked up by Qemu
+  cps #SYSTEM_MODE // sys mode shares sp of user mode
+  svc 0x123456     // picked up by Qemu
   bx lr
 
 switch_thread:
   /* Check stack extent */
   ldr r0, =thread_stack_offset
   ldr r1, =current_thread
-  ldr r0, [r0]        // chase offset
-  ldr r1, [r1]        // chase current
-  add r0, r1, r0      // get min. valid stack pointer
-  cps #0x1f           // go to system mode
-  mov r1, sp          // get thread's stack pointer
-  cps #0x13           // back to svc mode
-  sub r1, r1, #(12*4) // take away space we want to use
-  cmp r0, r1          // is potential sp < min valid sp?
+  ldr r0, [r0]              // chase offset
+  ldr r1, [r1]              // chase current
+  add r0, r1, r0            // get min. valid stack pointer
+  cps #SYSTEM_MODE          //
+  mov r1, sp                // get thread's stack pointer
+  cps #SUPERVISOR_MODE      //
+  sub r1, r1, #((14+1+1)*4) // 13 gp regs plus lr plus lr+CPSR
+  cmp r0, r1                // is potential sp < min valid sp?
   bhs stack_extent_failed
 
-.global platform_yield_no_stack_check
-platform_yield_no_stack_check:
-  // Jump here when yielding into scheduler for the first time
+  pop {r0, r1}            // pop temps from supervisor stack
+  srsdb sp!, #SYSTEM_MODE // save CPSR and lr
+  cps #SYSTEM_MODE        //
 
-  pop {r0, r1} // pop temps from supervisor stack
-  cps #16      // switch to user mode
-
-  /* Save callee saved regs (no sp/pc) */
-  push {r4-r12, r14}
+  /* Push all regs (no sp or pc) */
+  push {r0-r12, r14} // lr also saved because restore at end
+                     // doesn't restore the link register
+                     // it sets the PC
 
   /* Setup pointers in some high reg numbers we won't overwrite */
   ldr r10, =current_thread
   ldr r11, =next_thread
 
-  /* Save our PC and return address */
+  /* Save our Stack pointer and PC */
   ldr r1, [r10]           // get actual adress of current thread
   str sp, [r1], #4        // save current stack pointer
-  ldr r2, =thread_return  // get address to resume this thread from
-  str r2, [r1]            // store that in our task struct
+  str lr, [r1]            // save PC
 
   /* Switch to new thread */
   ldr r11, [r11]          // chase to get actual address of new thread
   str r11, [r10]          // current = to (no need to chase ptr)
   ldr sp, [r11], #4       // restore stack pointer of new thread
-  ldr pc, [r11]           // jump to the PC of that thread
 
-  /* Resume this thread (note r10 is still &curent_thread here) */
-  thread_return:          // threads are resumed from here
-  ldr r2, [r10]           // get *value* of current thread ptr
-  ldr sp, [r2]            // restore our own stack pointer
-  pop {r4-r12, r14}       // restore our own regs (no sp/pc)
-  bx lr
+  /* check that this thread has been run at least once
+     if it hasn't it's PC will be exactly thread start */
+  ldr r3, [r11]           // get pc of new thread
+  ldr r4, =thread_start
+  cmp r3, r4
+  bne restore_regs
+
+  /* if not we need to fake the lr and CPSR being on the stack */
+  str r4, [sp, #-4]!      // link register
+  mov r5, #USER_MODE      // not sure of mode but flags should be 0
+  stmdb sp!, {r4,r5}
+  b exc_return
+
+restore_regs:
+  pop {r0-r12, r14}       // restore our own regs (no sp/pc)
+
+exc_return:
+  rfeia sp!               // restore CPSR and lr and eret
