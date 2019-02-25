@@ -179,7 +179,10 @@ void stack_extent_failed() {
 
 void check_stack() {
   if (current_thread->bottom_canary != STACK_CANARY) {
-    log_event("Stack underflow!\n");
+    /* Don't risk the thread's name pointing to some
+       random unterminated memory. */
+    current_thread->name = NULL;
+    log_event("Stack underflow!");
     qemu_exit();
   } else if (current_thread->top_canary != STACK_CANARY) {
     // Can use current_thread here
@@ -275,12 +278,14 @@ __attribute__((noreturn)) void do_scheduler() {
   } 
 }
 
+// Don't use a local because we don't want the entry
+// to require as much stack as the threads
+static struct Thread dummy;
 __attribute__((noreturn)) void start_scheduler() {
   // Hidden so that the scheduler doesn't run itself somehow
   init_thread(&scheduler_thread, -1, "<scheduler>", do_scheduler);
 
   // Need a dummy thread here otherwise we'll try to write to address 0
-  struct Thread dummy;
   init_thread(&dummy, -1, NULL, (void (*)(void))(0));
 
   current_thread = &dummy;

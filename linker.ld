@@ -8,7 +8,7 @@ SECTIONS
  .data : { *(.data) }
  /* align 16 for AArch64 */
  . = ALIGN(16);
- . = . + 0x1000; /* 4kB of stack memory */
+ . = . + 0x400; /* 1kB of stack memory for entry */
  stack_top = .;
  /* This is here so that it's read/write on Cortex M */
  .bss : {
