@@ -1,7 +1,8 @@
 #include <stdint.h>
+#include <stddef.h>
+#include <string.h>
 #include "semihosting.h"
 #include "print.h"
-#include "util.h"
 
 struct SourceInfo {
   const char* filename;

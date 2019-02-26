@@ -2,7 +2,6 @@
 #include <stddef.h>
 #include "thread.h"
 #include "semihosting.h"
-#include "util.h"
 
 extern void* current_thread;
 
@@ -65,7 +64,7 @@ void watcher() {
 void demo() {
   set_destroy_on_stack_err(true);
 
-  //add_named_thread(underflow, "underflow");
+  add_named_thread(underflow, "underflow");
   add_named_thread(watcher, "watcher");
   add_named_thread(overflow, "overflow");
 

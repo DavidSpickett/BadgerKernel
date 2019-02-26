@@ -1,9 +1,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include <string.h>
 #include "thread.h"
 #include "print.h"
-#include "util.h"
 #include "semihosting.h"
 
 #define THREAD_STACK_SIZE 2048

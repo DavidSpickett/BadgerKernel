@@ -18,7 +18,7 @@ if( BP_LOWER STREQUAL "arm" )
   set( UART_BASE    "0x09000000" )
   set( QEMU_ARGS    "qemu-system-arm -M virt -cpu cortex-a15" )
 elseif( BP_LOWER STREQUAL "aarch64" )
-  set( PREFIX       "aarch64-linux-gnu" )
+  set( PREFIX       "aarch64-elf" )
   # Don't generate NEON
   set( PLATFORM     "-mcpu=cortex-a57 -mgeneral-regs-only" )
   set( PLATFORM_SRC "aarch64_virt" )
@@ -38,7 +38,7 @@ set( CMAKE_C_COMPILER "${PREFIX}-gcc" )
 
 set( QEMU "${QEMU_ARGS} -m 64M -nographic -semihosting -kernel" )
 
-set( CFLAGS "-Wall -nostdlib -g -O${OPT_LEVEL} -std=gnu11 -DUART_BASE=${UART_BASE} -fno-builtin" )
+set( CFLAGS "-Wall -ffreestanding -nostdlib -g -O${OPT_LEVEL} -std=gnu11 -DUART_BASE=${UART_BASE}" )
 if(UBSAN)
   set( CFLAGS "${CFLAGS} -fsanitize=undefined" )
 endif(UBSAN)
@@ -50,7 +50,6 @@ set_property(SOURCE src/hw/${PLATFORM_SRC}/yield.s PROPERTY LANGUAGE C)
 set_property(SOURCE src/hw/${PLATFORM_SRC}/vectors.s PROPERTY LANGUAGE C)
 set( BASE_SOURCES
   src/thread.c
-  src/util.c
   src/print.c
   src/hw/${PLATFORM_SRC}/yield.s
   src/hw/${PLATFORM_SRC}/vectors.s
@@ -70,7 +69,7 @@ add_custom_target(test_demos)
 
 function(add_demo_app NAME)
         add_executable ( ${NAME} demos/${NAME}.c $<TARGET_OBJECTS:support> )
-        target_link_libraries(${NAME} PRIVATE "-Wl,-nostdlib,-lgcc,-T,linker.ld,-defsym=ram_start=${RAM_START}")
+        target_link_libraries(${NAME} PRIVATE "-Wl,-nostdlib,-lgcc,-T,linker.ld,-defsym=ram_start=${RAM_START},-lc")
 
         add_custom_command(TARGET ${NAME} PRE_BUILD
           COMMAND eval "${PREFIX}-gcc --version | head -n 1"
@@ -105,3 +104,4 @@ add_demo_app(yielding)
 add_demo_app(message)
 add_demo_app(exit)
 add_demo_app(spawn)
+#add_demo_app(stackcheck)
