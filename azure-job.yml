@@ -31,13 +31,12 @@ jobs:
                 set -ex
                 wget -q https://releases.linaro.org/components/toolchain/binaries/7.4-2019.02/aarch64-elf/gcc-linaro-7.4.1-2019.02-x86_64_aarch64-elf.tar.xz
                 tar -xf gcc-linaro-7.4.1-2019.02-x86_64_aarch64-elf.tar.xz
-                export PATH=$(pwd)/gcc-linaro-7.4.1-2019.02-x86_64_aarch64-elf/bin/:$PATH
-                env
-                which aarch64-elf-gcc
               displayName: download-linaro-toolchain
 
           - script: |
               set -ex
+              export PATH=$(pwd)/gcc-linaro-7.4.1-2019.02-x86_64_aarch64-elf/bin/:$PATH
+              which aarch64-elf-gcc
               cmake . -DBUILD_PLATFORM=${{build_platform}} -DOPT_LEVEL=${{opt_level}} -DUBSAN=${{ubsan}}
               make make_demos
             displayName: build
