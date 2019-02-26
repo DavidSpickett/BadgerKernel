@@ -38,6 +38,10 @@ extern void platform_yield(void);
 
 __attribute__((section(".thread_structs")))
 struct Thread all_threads[MAX_THREADS];
+// Don't care if this gets corrupted, we'll just reset it's stack anyway
+__attribute__((section(".thread_structs")))
+static struct Thread dummy_thread;
+
 __attribute__((section(".scheduler_thread")))
 struct Thread scheduler_thread;
 
@@ -57,6 +61,18 @@ __attribute__((section(".monitor_vars")))
 uint8_t monitor_stack[MONITOR_STACK_SIZE];
 __attribute__((section(".thread_vars")))
 uint8_t* monitor_stack_top = &monitor_stack[MONITOR_STACK_SIZE];
+
+/* Whether we exit qemu, or simply end the thread
+   when there is a stack error.
+   Not a #define because when thread.c is built,
+   the demo will not have had a chance to #define it.
+*/
+__attribute__((section(".thread_vars")))
+bool destroy_on_stack_err = false;
+
+void set_destroy_on_stack_err(bool enable) {
+  destroy_on_stack_err = enable;
+}
 
 extern void demo();
 __attribute__((noreturn)) void entry() {
@@ -178,16 +194,31 @@ void stack_extent_failed() {
 }
 
 void check_stack() {
-  if (current_thread->bottom_canary != STACK_CANARY) {
-    /* Don't risk the thread's name pointing to some
-       random unterminated memory. */
+  bool underflow = current_thread->bottom_canary != STACK_CANARY;
+  bool overflow  = current_thread->top_canary != STACK_CANARY;
+
+  if (underflow || overflow) {
+    // Don't schedule this again, or rely on its ID
+    current_thread->id = -1;
     current_thread->name = NULL;
-    log_event("Stack underflow!");
-    qemu_exit();
-  } else if (current_thread->top_canary != STACK_CANARY) {
-    // Can use current_thread here
-    log_event("Stack overflow!");
-    qemu_exit();
+
+    if (underflow) { log_event("Stack underflow!"); }
+    if (overflow)  { log_event("Stack overflow!"); }
+
+    if (destroy_on_stack_err) {
+      /* Use the dummy thread to yield back to the scheduler
+         without doing any more damage. */
+      current_thread = &dummy_thread;
+
+      /* Reset dummy's stack ptr so repeated exits here doesn't
+         corrupt *that* stack. */
+      dummy_thread.stack_ptr = &dummy_thread.stack[THREAD_STACK_SIZE];
+
+      next_thread = &scheduler_thread;
+      platform_yield_initial();
+    } else {
+      qemu_exit();
+    }
   }
 }
 
@@ -266,10 +297,18 @@ int add_named_thread(void (*worker)(void), const char* name) {
   return -1;
 }
 
-__attribute__((noreturn)) void do_scheduler() {
+__attribute__((noreturn))
+void do_scheduler() {
   while (1) {
     for (size_t idx=0; idx < MAX_THREADS; ++idx) {
-      if (all_threads[idx].id != -1) {
+      int next_id = all_threads[idx].id;
+
+      if (next_id != -1) {
+        if (next_id != idx) {
+          log_event("thread ID and position inconsistent!");
+          qemu_exit();
+        }
+
         log_event("scheduling new thread");
         thread_yield(&all_threads[idx]);
         log_event("thread yielded");
@@ -278,17 +317,14 @@ __attribute__((noreturn)) void do_scheduler() {
   } 
 }
 
-// Don't use a local because we don't want the entry
-// to require as much stack as the threads
-static struct Thread dummy;
 __attribute__((noreturn)) void start_scheduler() {
   // Hidden so that the scheduler doesn't run itself somehow
   init_thread(&scheduler_thread, -1, "<scheduler>", do_scheduler);
 
   // Need a dummy thread here otherwise we'll try to write to address 0
-  init_thread(&dummy, -1, NULL, (void (*)(void))(0));
+  init_thread(&dummy_thread, -1, NULL, (void (*)(void))(0));
 
-  current_thread = &dummy;
+  current_thread = &dummy_thread;
   next_thread = &scheduler_thread;
   log_event("starting scheduler");
   platform_yield_initial();
