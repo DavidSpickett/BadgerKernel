@@ -34,8 +34,8 @@ jobs:
 
           - script: |
               set -ex
+              # This is only for AArch64 but since env vars don't persist between scripts, do it anyway
               export PATH=$(pwd)/gcc-linaro-7.4.1-2019.02-x86_64_aarch64-elf/bin/:$PATH
-              which aarch64-elf-gcc
               cmake . -DBUILD_PLATFORM=${{build_platform}} -DOPT_LEVEL=${{opt_level}} -DUBSAN=${{ubsan}}
               make make_demos
             displayName: build
