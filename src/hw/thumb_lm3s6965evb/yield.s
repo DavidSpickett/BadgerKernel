@@ -1,3 +1,6 @@
+// This allows us to use push/pop with high registers
+.syntax unified
+
 .global platform_yield
 .thumb_func
 platform_yield:
@@ -93,7 +96,7 @@ __thread_switch:
    ldr r1, [r1]                 // chase current
    add r0, r1, r0               // get min. valid stack pointer
    mrs r1, psp                  // get current sp
-   sub r1, r1, #(4*4)           // take away (extra) space we want to use
+   sub r1, r1, #(7*4)           // take away (extra) space we want to use
    cmp r0, r1                   // is potential sp < min valid sp?
    ldr r2, =stack_extent_failed // can't get a relocation to this, use addr
    bls stack_check_passed       // can't conditonally branch to register...
@@ -104,7 +107,7 @@ stack_check_passed:             // carry on with the yield
    mov sp, r0   // MSP = PSP
 
    /* callee saved regs */
-   push {r4-r7} // no lr, it's already on the stack
+   push {r4-r11} // no lr, it's already on the stack
 
    /* Setup pointers some high reg numbers */
    ldr r6, =current_thread
@@ -118,8 +121,8 @@ stack_check_passed:             // carry on with the yield
 
    /* Save return address */
    mov r2, sp
-   add r2, #(4+4+3)       // point to saved PC
-   ldr r2, [r2]           // load return address
+   add r2, #(7+4+3)       // point to saved PC
+   ldr r2, [r2]           // load return address from exception stack
    mov r3, #1             // add thumb mode bit (not required atm but let's be safe)
    orr r2, r3, r2         //
    str r2, [r1]           // store to thread struct
@@ -148,7 +151,7 @@ stack_check_passed:             // carry on with the yield
    b exc_return
 
 restore_regs:
-   pop {r4-r7}
+   pop {r4-r11}
 
 exc_return:
    /* Set the psp *after* we've unstacked r4-r7.
