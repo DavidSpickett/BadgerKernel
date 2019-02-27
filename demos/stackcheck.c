@@ -63,7 +63,7 @@ void watcher() {
 }
 
 void demo() {
-  set_destroy_on_stack_err(true);
+  config.destroy_on_stack_err = true;
 
   add_named_thread(underflow, "underflow");
   add_named_thread(watcher, "watcher");

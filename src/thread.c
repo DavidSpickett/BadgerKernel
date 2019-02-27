@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <string.h>
+#include <stdarg.h>
 #include "thread.h"
 #include "print.h"
 #include "semihosting.h"
@@ -23,7 +24,9 @@ struct Thread {
   void (*current_pc)(void);
   int id;
   const char* name;
-  void (*work)(void);
+  // Deliberately not (void)
+  void (*work)();
+  struct ThreadArgs args;
   struct Message messages[THREAD_MSG_QUEUE_SIZE];
   struct Message* next_msg;
   struct Message* end_msgs;
@@ -62,17 +65,11 @@ uint8_t monitor_stack[MONITOR_STACK_SIZE];
 __attribute__((section(".thread_vars")))
 uint8_t* monitor_stack_top = &monitor_stack[MONITOR_STACK_SIZE];
 
-/* Whether we exit qemu, or simply end the thread
-   when there is a stack error.
-   Not a #define because when thread.c is built,
-   the demo will not have had a chance to #define it.
-*/
 __attribute__((section(".thread_vars")))
-bool destroy_on_stack_err = false;
-
-void set_destroy_on_stack_err(bool enable) {
-  destroy_on_stack_err = enable;
-}
+struct MonitorConfig config = {
+  destroy_on_stack_err: false,
+  exit_when_no_threads: true
+};
 
 extern void demo();
 __attribute__((noreturn)) void entry() {
@@ -205,7 +202,7 @@ void check_stack() {
     if (underflow) { log_event("Stack underflow!"); }
     if (overflow)  { log_event("Stack overflow!"); }
 
-    if (destroy_on_stack_err) {
+    if (config.destroy_on_stack_err) {
       /* Use the dummy thread to yield back to the scheduler
          without doing any more damage. */
       current_thread = &dummy_thread;
@@ -240,7 +237,12 @@ __attribute__((noreturn)) void thread_start() {
   // Every thread starts by entering this function
 
   // Call thread's actual function
-  current_thread->work();
+  current_thread->work(
+    current_thread->args.a1,
+    current_thread->args.a2,
+    current_thread->args.a3,
+    current_thread->args.a4
+  );
 
   // Yield back to the scheduler
   log_event("exiting");
@@ -261,7 +263,7 @@ __attribute__((noreturn)) void thread_start() {
 }
 
 void init_thread(struct Thread* thread, int tid, const char* name,
-                 void (*do_work)(void)) {
+                 void (*do_work)(void), struct ThreadArgs args) {
   // thread start will jump to this
   thread->work = do_work;
   // but make sure thread start is the first call so it can handle destruction
@@ -269,6 +271,7 @@ void init_thread(struct Thread* thread, int tid, const char* name,
 
   thread->id = tid;
   thread->name = name;
+  thread->args = args;
 
   // Start message buffer empty
   thread->next_msg = &(thread->messages[0]);
@@ -283,23 +286,31 @@ void init_thread(struct Thread* thread, int tid, const char* name,
   thread->stack_ptr = (uint8_t*)(stack_ptr & ~0xF);
 }
 
-int add_thread(void (*worker)(void)) {
-  return add_named_thread(worker, NULL);
-}
-
-int add_named_thread(void (*worker)(void), const char* name) {
+int add_named_thread_with_args(void (*worker)(), const char* name,
+                               struct ThreadArgs args) {
   for (size_t idx=0; idx <= MAX_THREADS; ++idx) {
     if (all_threads[idx].id == -1) {
-      init_thread(&all_threads[idx], idx, name, worker);
+      init_thread(&all_threads[idx], idx, name, worker, args);
       return idx;
     }
   }
   return -1;
 }
 
+int add_thread(void (*worker)()) {
+  return add_named_thread(worker, NULL);
+}
+
+int add_named_thread(void (*worker)(), const char* name) {
+  struct ThreadArgs args;
+  return add_named_thread_with_args(worker, name, args);
+}
+
 __attribute__((noreturn))
 void do_scheduler() {
   while (1) {
+    bool live_threads = false;
+
     for (size_t idx=0; idx < MAX_THREADS; ++idx) {
       int next_id = all_threads[idx].id;
 
@@ -310,19 +321,27 @@ void do_scheduler() {
         }
 
         log_event("scheduling new thread");
+        live_threads = true;
         thread_yield(&all_threads[idx]);
         log_event("thread yielded");
       }  
+    }
+
+    if (!live_threads && config.exit_when_no_threads) {
+      log_event("all threads finished");
+      qemu_exit();
     }
   } 
 }
 
 __attribute__((noreturn)) void start_scheduler() {
+  struct ThreadArgs args;
+
   // Hidden so that the scheduler doesn't run itself somehow
-  init_thread(&scheduler_thread, -1, "<scheduler>", do_scheduler);
+  init_thread(&scheduler_thread, -1, "<scheduler>", do_scheduler, args);
 
   // Need a dummy thread here otherwise we'll try to write to address 0
-  init_thread(&dummy_thread, -1, NULL, (void (*)(void))(0));
+  init_thread(&dummy_thread, -1, NULL, (void (*)(void))(0), args);
 
   current_thread = &dummy_thread;
   next_thread = &scheduler_thread;

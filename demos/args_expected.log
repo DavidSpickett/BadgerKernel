@@ -1,0 +1,18 @@
+Thread     <HIDDEN>: starting scheduler
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: yielding
+Thread      printer: aardvark
+Thread      printer: aardvark
+Thread      printer: aardvark
+Thread      printer: exiting
+Thread  <scheduler>: resuming
+Thread  <scheduler>: thread yielded
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: yielding
+Thread  sub_printer: ligator
+Thread  sub_printer: gazine
+Thread  sub_printer: ptor
+Thread  sub_printer: exiting
+Thread  <scheduler>: resuming
+Thread  <scheduler>: thread yielded
+Thread  <scheduler>: all threads finished
