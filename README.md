@@ -88,3 +88,11 @@ Change processor state - http://infocenter.arm.com/help/index.jsp?topic=/com.arm
 Vector tables - http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dai0425/BABHHDII.html
 
 CPSR - https://www.heyrick.co.uk/armwiki/The_Status_register
+
+### Cortex-M4/Thumb
+
+Cortex-M4 User Guide - http://infocenter.arm.com/help/topic/com.arm.doc.dui0553b/DUI0553.pdf
+
+Article on Cortex-M exception handling - https://www.embeddedrelated.com/showarticle/912.php
+
+ARMv7-M Architecture Manual - https://static.docs.arm.com/ddi0403/ec/DDI0403E_c_armv7m_arm.pdf
