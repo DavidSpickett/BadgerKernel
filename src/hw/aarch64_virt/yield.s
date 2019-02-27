@@ -9,6 +9,7 @@ platform_yield_initial:
   ldr x0, =current_thread // init stack pointer to
   ldr x0, [x0]            // stack pointer of dummy thread
   ldr x0, [x0]            // so we can pass the check normally
+  mov sp, x0
   bl platform_yield
 
 .global platform_yield
