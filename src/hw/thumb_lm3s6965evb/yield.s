@@ -19,11 +19,11 @@ platform_yield_initial:
 .thumb_func
 __platform_yield:
    /* Stack pointer is MSP aka monitor stack here.
-      Switch to privilidged mode, but use the PSP,
+      Switch to privileged mode, but use the PSP,
       since we don't need monitor stack.
    */
    mrs r0, control
-   mov r1, #1      // priviledged mode
+   mov r1, #1      // privileged mode
    mvn r1, r1
    and r0, r0, r1
    msr control, r0

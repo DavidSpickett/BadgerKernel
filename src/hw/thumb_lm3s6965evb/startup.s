@@ -4,7 +4,7 @@
 .thumb_func
 _Reset:
  mrs r0, control
- mov r1, #3      // Unprivledged, using PSP
+ mov r1, #3      // Unprivileged, using PSP
  orr r0, r1, r0
  msr control, r0
  isb
