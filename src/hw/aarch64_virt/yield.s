@@ -1,6 +1,5 @@
 .data
-           mon_stack_err: .string "Monitor stack underflow!\n"
-unknown_monitor_call_err: .string "Got an unexpected monitor call!\n"
+mon_stack_err: .string "Monitor stack underflow!\n"
 
 .text
 
@@ -45,9 +44,7 @@ monitor_stack_ok:
   cmp x0, x1
   beq semihosting
   /* Otherwise it's something we weren't expecting */
-  ldr x0, =unknown_monitor_call_err
-  bl qemu_print
-  b qemu_exit
+  b .
 
 semihosting:
   /* Do semihosting call

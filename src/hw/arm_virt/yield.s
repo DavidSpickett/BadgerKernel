@@ -1,7 +1,5 @@
 .data
-// TODO: dedupe these strings
-           mon_stack_err: .string "Monitor stack underflow!\n"
-unknown_monitor_call_err: .string "Got an unexpected monitor call!\n"
+mon_stack_err: .string "Monitor stack underflow!\n"
 
 .text
 
@@ -49,9 +47,8 @@ monitor_stack_ok:
   ldr r1, =0x123456        // semihosting call
   cmp r0, r1
   beq semihosting
-  ldr r1, =unknown_monitor_call_err
-  b qemu_print
-  b qemu_exit
+  /* Unkown svc code */
+  b .
 
 semihosting:
   pop {r0-r1}
