@@ -1,8 +1,3 @@
-.data
-unknown_monitor_call_err: .string "Got an unexpected monitor call!\n"
-
-.text
-
 .global platform_yield
 .thumb_func
 platform_yield:
@@ -56,9 +51,8 @@ __platform_yield:
    cmp r0, r1
    beq semihosting
    /* Unkown svc code */
-   ldr r0, =unknown_monitor_call_err
-   bl qemu_print
-   bl qemu_exit
+   /* Not much but enough to bkpt on in GDB */
+   b .
 
 semihosting:
    /* We need to use the PSP here and the thread's

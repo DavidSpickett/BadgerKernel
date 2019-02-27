@@ -15,3 +15,20 @@ void qemu_print(const char* msg) {
     : [msg]"r"(msg)
   );
 }
+
+// GDB helper to get current Cortex-M privilege level
+// Yes, 1 means unprivileged. I know, weird right?
+enum plevel { privileged, unprivileged };
+enum plevel pl() {
+  enum plevel level;
+  asm volatile(
+      "mrs r5, control\n\t"
+      "mov r6, #1\n\t"
+      "and r5, r5, r6\n\t"
+      "mov %0, r5\n\t"
+  : "=r"(level)
+  :
+  : "r5", "r6"
+  );
+  return level;
+}
