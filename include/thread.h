@@ -18,7 +18,7 @@ struct ThreadArgs {
 };
 
 #define make_args(a,b,c,d) \
-{ (void*)a, (void*)b, (void*)c, (void*)c }
+{ (void*)a, (void*)b, (void*)c, (void*)d }
 
 int add_thread(void (*worker)(void));
 int add_named_thread(void (*worker)(void), const char* name);
