@@ -11,7 +11,7 @@ static volatile uint32_t* NVIC_ICER0 = (volatile uint32_t*)0XE000E180;
 
 void enable_timer() {
   // Set reload value (23 bits)
-  *SYST_RVR = 0x08FFFF;
+  *SYST_RVR = 0x04FFFF;
 
   uint32_t timer_cfg = *SYST_CSR;
   // Enable timer
