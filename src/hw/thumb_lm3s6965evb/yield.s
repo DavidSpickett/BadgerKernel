@@ -42,31 +42,24 @@ __platform_yield:
    */
 
    /* See if this is a thread switch or a semihosting call */
-   mrs r0, psp
-   mov r1, #(6*4)
-   add r0, r1      // find the PC we came from
-   ldr r0, [r0]    // (there's no mode bit to remove)
-   sub r0, r0, #2  // back one instruction to the svc
-   ldr r0, [r0]    // load svc instruction
-   mov r1, #0xff   // mask out the svc number
-   and r0, r1, r0
 
-   mov r1, #0xff   // thread switch
-   cmp r0, r1
-   beq __thread_switch
-   mov r1, #0xab   // semihosting call
-   cmp r0, r1
-   beq semihosting
+   /* check the exception/interrupt number first so we
+      don't misdiagnose an instruction ending in FF or AB
+      as an SVC. */
 
-   /* Unkown svc code but maybe we had a timer interrupt */
    ldr r0, =ICSR
    ldr r0, [r0]
    mov r1, #0xff    // VECTACTIVE is the bottom 8 bits
    and r0, r0, r1
-   mov r1, #15      // Timer int is 15
+   mov r1, #15      // Timer int
    cmp r0, r1
-   bne exc_err      // Unknown cause
+   beq handle_interrupt
+   mov r1, #11      // SVC
+   cmp r0, r1
+   beq handle_svc
+   b exc_err        // Unknown interrupt code
 
+handle_interrupt:
    /* Disable interrupts so the scheduler pick next thread */
    ldr r0, =NVIC_ICER0
    mvn r1, #0     // aka 0xFFFFFFFF, write ones to disable all
@@ -80,6 +73,26 @@ __platform_yield:
 
    beq __thread_switch
    /* Pending status is cleared by exception return */
+
+handle_svc:
+   mrs r0, psp
+   mov r1, #(6*4)
+   add r0, r1      // find the PC we came from
+   ldr r0, [r0]    //
+   mvn r1, #1      // remove mode bit (not sure if it's always there)
+   and r0, r0, r1  //
+   sub r0, r0, #2  // back one instruction to the svc
+   ldr r0, [r0]    // load svc instruction
+   mov r1, #0xff   // mask out the svc number
+   and r0, r1, r0
+
+   mov r1, #0xff   // thread switch
+   cmp r0, r1
+   beq __thread_switch
+   mov r1, #0xab   // semihosting call
+   cmp r0, r1
+   beq semihosting
+   b exc_err
 
 exc_err:
    /* something unexpected */
