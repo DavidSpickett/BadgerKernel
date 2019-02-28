@@ -54,6 +54,7 @@ set( BASE_SOURCES
   src/hw/${PLATFORM_SRC}/yield.s
   src/hw/${PLATFORM_SRC}/vectors.s
   src/hw/${PLATFORM_SRC}/semihosting.c
+  src/hw/${PLATFORM_SRC}/timer.c
   src/hw/${PLATFORM_SRC}/startup.s
 )
 
@@ -107,3 +108,4 @@ add_demo_app(exit)
 add_demo_app(spawn)
 add_demo_app(stackcheck)
 add_demo_app(args)
+add_demo_app(timer)

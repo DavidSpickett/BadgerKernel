@@ -1,0 +1,28 @@
+Thread     <HIDDEN>: starting scheduler
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: yielding
+Thread            0: aardvark
+Thread  <scheduler>: resuming
+Thread  <scheduler>: thread yielded
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: yielding
+Thread            1: zebra
+Thread  <scheduler>: resuming
+Thread  <scheduler>: thread yielded
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: yielding
+Thread            0: aardvark
+Thread  <scheduler>: resuming
+Thread  <scheduler>: thread yielded
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: yielding
+Thread            1: zebra
+Thread            1: exiting
+Thread  <scheduler>: resuming
+Thread  <scheduler>: thread yielded
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: yielding
+Thread            0: exiting
+Thread  <scheduler>: resuming
+Thread  <scheduler>: thread yielded
+Thread  <scheduler>: all threads finished

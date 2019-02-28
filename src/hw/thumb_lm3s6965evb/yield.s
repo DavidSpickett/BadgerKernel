@@ -1,6 +1,10 @@
 // This allows us to use push/pop with high registers
 .syntax unified
 
+.set ICSR, 0xE000ED04
+//.set SYST_CSR, 0xE000E010
+.set NVIC_ICER0, 0XE000E180
+
 .global platform_yield
 .thumb_func
 platform_yield:
@@ -53,8 +57,32 @@ __platform_yield:
    mov r1, #0xab   // semihosting call
    cmp r0, r1
    beq semihosting
-   /* Unkown svc code */
-   /* Not much but enough to bkpt on in GDB */
+
+   /* Unkown svc code but maybe we had a timer interrupt */
+   ldr r0, =ICSR
+   ldr r0, [r0]
+   mov r1, #0xff    // VECTACTIVE is the bottom 8 bits
+   and r0, r0, r1
+   mov r1, #15      // Timer int is 15
+   cmp r0, r1
+   bne exc_err      // Unknown cause
+
+   /* Disable interrupts so the scheduler pick next thread */
+   ldr r0, =NVIC_ICER0
+   mvn r1, #0     // aka 0xFFFFFFFF, write ones to disable all
+   str r1, [r0]
+
+   /* Set next thread to be the scheduler regardless of what
+      it currently is. Since we've no idea what we interrupted. */
+   ldr r0, =scheduler_thread
+   ldr r1, =next_thread   // Don't need any chasing here
+   str r0, [r1]
+
+   beq __thread_switch
+   /* Pending status is cleared by exception return */
+
+exc_err:
+   /* something unexpected */
    b .
 
 semihosting:

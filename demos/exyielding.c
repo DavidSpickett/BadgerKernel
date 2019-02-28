@@ -17,5 +17,5 @@ void demo() {
   add_named_thread(thread1, "first");
   add_named_thread(thread2, "second");
 
-  start_scheduler(); 
+  start_scheduler();
 }
