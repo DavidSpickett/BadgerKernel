@@ -232,6 +232,43 @@ void yield() {
   thread_yield(&scheduler_thread);
 }
 
+bool yield_to(int id) {
+  if (!is_valid_thread(id)) {
+    return false;
+  }
+
+  struct Thread* candidate = &all_threads[id];
+  if (candidate->id != -1) {
+    thread_yield(candidate);
+    return true;
+  }
+
+  return false;
+}
+
+bool yield_next() {
+  // Yield to next valid thread, wrapping around the list
+  int id = get_thread_id();
+
+  // Don't call this in the scheduler
+  if ((id == -1) || (id >= MAX_THREADS)) {
+    return false;
+  }
+
+  // +1 otherwise we just schedule the current thread again
+  int limit = id+MAX_THREADS+1;
+  for (int idx=id+1; idx < limit; ++idx) {
+    struct Thread* candidate = &all_threads[idx % MAX_THREADS];
+    if (candidate->id != -1) {
+      thread_yield(candidate);
+      return true;
+    }
+  }
+
+  // Not sure how you'd get here, you'd at least schedule yourself
+  return false;
+}
+
 __attribute__((noreturn)) void thread_start() {
   // Every thread starts by entering this function
 

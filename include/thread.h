@@ -29,6 +29,8 @@ int get_thread_id();
 const char* get_thread_name();
 
 void yield();
+bool yield_next();
+bool yield_to(int id);
 void __attribute__((noreturn)) start_scheduler();
 void log_event(const char* event);
 bool get_msg(int* sender, int* message);

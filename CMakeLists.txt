@@ -101,6 +101,7 @@ function(add_demo_app NAME)
 endfunction(add_demo_app)
 
 add_demo_app(yielding)
+add_demo_app(exyielding)
 add_demo_app(message)
 add_demo_app(exit)
 add_demo_app(spawn)

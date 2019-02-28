@@ -1,0 +1,29 @@
+Thread     <HIDDEN>: starting scheduler
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: yielding
+Thread        first: yielding
+Thread       second: yielding
+Thread        first: resuming
+Thread        first: exiting
+Thread  <scheduler>: resuming
+Thread  <scheduler>: thread yielded
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: yielding
+Thread       second: resuming
+Thread       second: yielding
+Thread         last: yielding
+Thread       second: resuming
+Thread       second: yielding
+Thread         last: resuming
+Thread         last: exiting
+Thread  <scheduler>: resuming
+Thread  <scheduler>: thread yielded
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: yielding
+Thread       second: resuming
+Thread       second: yielding
+Thread       second: resuming
+Thread       second: exiting
+Thread  <scheduler>: resuming
+Thread  <scheduler>: thread yielded
+Thread  <scheduler>: all threads finished
