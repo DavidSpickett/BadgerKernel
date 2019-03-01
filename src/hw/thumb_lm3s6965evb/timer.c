@@ -9,7 +9,7 @@ static volatile uint32_t* NVIC_ISER0 = (volatile uint32_t*)0xE000E100;
 static volatile uint32_t* NVIC_ICER0 = (volatile uint32_t*)0XE000E180;
 #define TIMER_INT_BIT 1<<15
 
-void enable_timer() {
+void enable_timer(void) {
   // Set reload value (23 bits)
   *SYST_RVR = 0x04FFFF;
 
@@ -24,7 +24,7 @@ void enable_timer() {
   *NVIC_ISER0 |= TIMER_INT_BIT;
 }
 
-void disable_timer() {
+void disable_timer(void) {
   // Looks weird but it is write 1 to disable (different reg though)
   *NVIC_ICER0 |= TIMER_INT_BIT;
 
@@ -32,6 +32,6 @@ void disable_timer() {
   *SYST_CSR &= ~1;
 }
 
-uint32_t read_timer() {
+uint32_t read_timer(void) {
   return *SYST_CVR;
 }

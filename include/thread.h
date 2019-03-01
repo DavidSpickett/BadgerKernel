@@ -25,13 +25,13 @@ int add_named_thread(void (*worker)(void), const char* name);
 int add_named_thread_with_args(void (*worker)(), const char* name, struct ThreadArgs args);
 
 bool is_valid_thread(int tid);
-int get_thread_id();
-const char* get_thread_name();
+int get_thread_id(void);
+const char* get_thread_name(void);
 
-void yield();
-bool yield_next();
+void yield(void);
+bool yield_next(void);
 bool yield_to(int id);
-void __attribute__((noreturn)) start_scheduler();
+void __attribute__((noreturn)) start_scheduler(void);
 void log_event(const char* event);
 bool get_msg(int* sender, int* message);
 bool send_msg(int destination, int message);

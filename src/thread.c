@@ -70,8 +70,8 @@ struct MonitorConfig config = {
   exit_when_no_threads: true
 };
 
-extern void demo();
-__attribute__((noreturn)) void entry() {
+extern void demo(void);
+__attribute__((noreturn)) void entry(void) {
   // Invalidate all threads in the pool
   for (size_t idx=0; idx < MAX_THREADS; ++idx) {
     all_threads[idx].id = -1;
@@ -89,22 +89,24 @@ bool is_valid_thread(int tid) {
     all_threads[tid].id != -1;
 }
 
-int get_thread_id() {
+int get_thread_id(void) {
   return current_thread->id;
 }
 
-const char* get_thread_name() {
+const char* get_thread_name(void) {
   return current_thread->name;
 }
 
 static void inc_msg_pointer(struct Thread* thr, struct Message** ptr) {
   ++(*ptr);
+  // Wrap around from the end to the start
   if (*ptr == &(thr->messages[THREAD_MSG_QUEUE_SIZE])) {
     *ptr = &(thr->messages[0]);
   }
 }
 
 bool get_msg(int* sender, int* message) {
+  // If message box is not empty or full
   if (current_thread->next_msg != current_thread->end_msgs
       || current_thread->msgs_full) {
     *sender = current_thread->next_msg->src;
@@ -115,9 +117,8 @@ bool get_msg(int* sender, int* message) {
 
     return true;
   }
-  else {
-    return false;
-  }
+
+  return false;
 }
 
 bool send_msg(int destination, int message) {
@@ -142,7 +143,7 @@ bool send_msg(int destination, int message) {
   return true;
 }
 
-void print_thread_id() {
+void print_thread_id(void) {
   char output[THREAD_NAME_SIZE+1];
 
   // fill with spaces (no +1 as we'll terminate it later)
@@ -183,13 +184,13 @@ void log_event(const char* event) {
   print("Thread "); print_thread_id(); print(": "); print(event); print("\n");
 }
 
-void stack_extent_failed() {
+void stack_extent_failed(void) {
   // current_thread is likely still valid here
   log_event("Not enough stack to save context!");
   qemu_exit();
 }
 
-void check_stack() {
+void check_stack(void) {
   bool underflow = current_thread->bottom_canary != STACK_CANARY;
   bool overflow  = current_thread->top_canary != STACK_CANARY;
 
@@ -227,7 +228,7 @@ void thread_yield(struct Thread* to) {
   log_event("resuming");
 }
 
-void yield() {
+void yield(void) {
   // To be called in user threads
   thread_yield(&scheduler_thread);
 }
@@ -246,7 +247,7 @@ bool yield_to(int id) {
   return false;
 }
 
-bool yield_next() {
+bool yield_next(void) {
   // Yield to next valid thread, wrapping around the list
   int id = get_thread_id();
 
@@ -269,7 +270,7 @@ bool yield_next() {
   return false;
 }
 
-__attribute__((noreturn)) void thread_start() {
+__attribute__((noreturn)) void thread_start(void) {
   // Every thread starts by entering this function
 
   // Call thread's actual function
@@ -298,8 +299,11 @@ __attribute__((noreturn)) void thread_start() {
   __builtin_unreachable();
 }
 
-void init_thread(struct Thread* thread, int tid, const char* name,
-                 void (*do_work)(void), struct ThreadArgs args) {
+void init_thread(struct Thread* thread,
+                 int tid,
+                 const char* name,
+                 void (*do_work)(void),
+                 struct ThreadArgs args) {
   // thread start will jump to this
   thread->work = do_work;
   // but make sure thread start is the first call so it can handle destruction
@@ -322,7 +326,8 @@ void init_thread(struct Thread* thread, int tid, const char* name,
   thread->stack_ptr = (uint8_t*)(stack_ptr & ~0xF);
 }
 
-int add_named_thread_with_args(void (*worker)(), const char* name,
+int add_named_thread_with_args(void (*worker)(),
+                               const char* name,
                                struct ThreadArgs args) {
   for (size_t idx=0; idx <= MAX_THREADS; ++idx) {
     if (all_threads[idx].id == -1) {
@@ -342,8 +347,7 @@ int add_named_thread(void (*worker)(), const char* name) {
   return add_named_thread_with_args(worker, name, args);
 }
 
-__attribute__((noreturn))
-void do_scheduler() {
+__attribute__((noreturn)) void do_scheduler(void) {
   while (1) {
     bool live_threads = false;
 
@@ -370,7 +374,7 @@ void do_scheduler() {
   } 
 }
 
-__attribute__((noreturn)) void start_scheduler() {
+__attribute__((noreturn)) void start_scheduler(void) {
   struct ThreadArgs args;
 
   // Hidden so that the scheduler doesn't run itself somehow

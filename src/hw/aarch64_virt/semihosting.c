@@ -1,4 +1,4 @@
-void qemu_exit() {
+void qemu_exit(void) {
   asm volatile (
     "mov x1, #0x26\n\t"        // 0x20026 == ADP_Stopped_ApplicationExit
     "movk x1, #2, lsl #16\n\t"

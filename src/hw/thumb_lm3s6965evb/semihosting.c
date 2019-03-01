@@ -1,4 +1,4 @@
-void qemu_exit() {
+void qemu_exit(void) {
   asm volatile (
       "ldr r0, =0x18\n\t"    // angel_SWIreason_ReportException
       "ldr r1, =0x20026\n\t" // ADP_Stopped_ApplicationExit
@@ -19,7 +19,7 @@ void qemu_print(const char* msg) {
 // GDB helper to get current Cortex-M privilege level
 // Yes, 1 means unprivileged. I know, weird right?
 enum plevel { privileged, unprivileged };
-enum plevel pl() {
+enum plevel pl(void) {
   enum plevel level;
   asm volatile(
       "mrs r5, control\n\t"
