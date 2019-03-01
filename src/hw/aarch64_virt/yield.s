@@ -14,16 +14,14 @@ platform_yield_initial:
 
 .global platform_yield
 platform_yield:
-.global platform_yield_no_stack_check
-platform_yield_no_stack_check:
   svc 0xdead
   ret
 
 .global thread_switch
 thread_switch:
   msr SPSel, #1
-  stp x0, x1, [sp, #-16]! // This uses *monitor* stack
-                          // we can't trust the thread stack here
+  /* Use the monitor stack, we can't trust the thread stack here */
+  stp x0, x1, [sp, #-16]!
 
   ldr x0, =monitor_stack // check that monitor stack is valid
   mov x1, sp
@@ -32,8 +30,8 @@ thread_switch:
   ldr x0, =mon_stack_err
   bl qemu_print
   b  qemu_exit
-monitor_stack_ok:
 
+monitor_stack_ok:
   /* See if this is a thread switch call */
   mrs x0, ESR_EL1
   mov x1, #0xFFFF    // mask svc number
@@ -53,29 +51,28 @@ semihosting:
      a halt's exception link register is the halt,
      not the next instr. Which makes things complicated.
   */
-  ldp x0, x1, [sp], #16 // restore thread's regs
+  ldp x0, x1, [sp], #16 // restore thread's regs which hold the args
   msr SPSel, #0         // use thread's sp (points to semihosting data)
   hlt 0xf000
   eret
 
 __thread_switch:
   /* Validate stack extent */
-
   ldr x0, =thread_stack_offset
   ldr x1, =current_thread
   ldr x0, [x0]              // chase it
   ldr x1, [x1]              // chase current thread too
   add x1, x1, x0            // get minimum valid stack pointer
   msr SPSel, #0             // get the thread's sp
-  mov x0, sp                //
+  mov x0, sp
   sub x0, x0, #((31+2)*64)  // take away space we want to use
   cmp x0, x1                // is potential sp < min valid sp?
-  b.hs stack_extent_failed  // Use thread's stack for this, qemu will exit anyway
+  b.hs stack_extent_failed  // Use thread's stack for this, we will exit anyway
 
   msr SPSel, #1
-  ldp x0, x1, [sp], #16   // Restore thread's regs for saving
+  ldp x0, x1, [sp], #16     // Restore thread's regs for saving
 
-  msr SPSel, #0 // Switch to thread's stack (EL0_SP)
+  msr SPSel, #0             // Switch to thread's stack (EL0_SP)
 
   /* Save all registers to stack */
   stp x0,  x1,  [sp, #-16]!
@@ -106,7 +103,7 @@ __thread_switch:
 
   /* Save our PC and return address */
   ldr x1, [x10]          // get actual adress of current thread
-  mov x3, sp             //
+  mov x3, sp
   str x3, [x1], #8       // save current stack pointer
   mrs x2, ELR_EL1        // get address to resume this thread from
   str x2, [x1]           // store that in our task struct
@@ -115,24 +112,22 @@ __thread_switch:
   ldr x11, [x11]         // chase to get actual address of the new thread
   str x11, [x10]         // current_thread = new_thread
   ldr x3, [x11], #8      // restore stack pointer of new thread
-  mov sp, x3             //
+  mov sp, x3
 
   // Load ELR_EL1 with the next PC of the new thread
-  ldr x3, [x11]          //
+  ldr x3, [x11]
   msr ELR_EL1, x3        // when we eret we'll be in the new thread
 
   /* Check that the new thread has been run at least once.
-     If it hasn't then there's no state to restore. */
-
-  // For now we're going to check if it's current PC is start thread
-  // That's not going to be asynochronous exception safe though
-  // Bottom bit of pointer? Argh but thumb! (bit 2?)
+     If it hasn't then there's no state to restore.
+     For now we're going to check if it's current PC is thread_start
+  */
   ldr x4, =thread_start
   cmp x3, x4
   beq exc_return
 
   /* Restore all registers of the new thread */
-  ldp x30, xzr, [sp], #16 //to keep alignment
+  ldp x30, xzr, [sp], #16 // xzr to keep alignment
   ldp x28, x29, [sp], #16
   ldp x26, x27, [sp], #16
   ldp x24, x25, [sp], #16
