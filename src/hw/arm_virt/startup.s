@@ -7,7 +7,8 @@ _Reset:
 
   /* Can't move the vector table because virt has
      other stuff at the 0xffff0000 address.
-     so the vectors are loaded as a seperate object. */
+     so the vectors are loaded as a seperate object
+     and placed at 0. */
 
   ldr sp, =stack_top         // set user mode stack pointer
   bl entry

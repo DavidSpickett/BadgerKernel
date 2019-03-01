@@ -35,8 +35,8 @@ __platform_yield:
   ldr r0, =mon_stack_err
   bl qemu_print
   b qemu_exit
-monitor_stack_ok:
 
+monitor_stack_ok:
   /* See if this is semihosting or a thread switch */
   ldr r0, [lr, #-4]        // load svc instruction used
   ldr r1, =0xFFFFFF        // mask to get code
@@ -60,24 +60,23 @@ switch_thread:
   /* Check stack extent */
   ldr r0, =thread_stack_offset
   ldr r1, =current_thread
-  ldr r0, [r0]              // chase offset
-  ldr r1, [r1]              // chase current
-  add r0, r1, r0            // get min. valid stack pointer
-  cps #SYSTEM_MODE          //
-  mov r1, sp                // get thread's stack pointer
-  cps #SUPERVISOR_MODE      //
-  sub r1, r1, #((14+1+1)*4) // 13 gp regs plus lr plus lr+CPSR
-  cmp r0, r1                // is potential sp < min valid sp?
-  bhs stack_extent_failed
+  ldr r0, [r0]                // chase offset
+  ldr r1, [r1]                // chase current
+  add r0, r1, r0              // get min. valid stack pointer
+  cps #SYSTEM_MODE
+  mov r1, sp                  // get thread's stack pointer
+  cps #SUPERVISOR_MODE
+  sub r1, r1, #((13+1+1+1)*4) // 13 gp regs plus lr plus lr+CPSR
+  cmp r0, r1                  // is potential sp < min valid sp?
+  bhs stack_extent_failed     // call C function to error and exit
 
+  /* Start switching thread */
   pop {r0, r1}            // pop temps from supervisor stack
-  srsdb sp!, #SYSTEM_MODE // save CPSR and lr
-  cps #SYSTEM_MODE        //
+  srsdb sp!, #SYSTEM_MODE // save CPSR and lr to system mode stack pointer
+  cps #SYSTEM_MODE        // continue in system mode
 
-  /* Push all regs (no sp or pc) */
-  push {r0-r12, r14} // lr also saved because restore at end
-                     // doesn't restore the link register
-                     // it sets the PC
+  /* Push all regs apart from sp and pc) */
+  push {r0-r12, r14} // lr also included here
 
   /* Setup pointers in some high reg numbers we won't overwrite */
   ldr r10, =current_thread
@@ -104,10 +103,10 @@ switch_thread:
   str r4, [sp, #-4]!      // link register
   mov r5, #USER_MODE      // not sure of mode but flags should be 0
   stmdb sp!, {r4,r5}
-  b exc_return
+  b exc_return            // don't restore other regs, just these two when we return
 
 restore_regs:
   pop {r0-r12, r14}       // restore our own regs (no sp/pc)
 
 exc_return:
-  rfeia sp!               // restore CPSR and lr and eret
+  rfeia sp!               // restore CPSR and lr then eret

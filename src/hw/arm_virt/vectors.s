@@ -1,6 +1,6 @@
   b .
   b . 
-  b __platform_yield
+  b __platform_yield // svc
   b . 
   b . 
   b . 
