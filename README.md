@@ -4,9 +4,11 @@ A simple set of demos showing tasks cooperativley sharing time.
 
 Current build targets are Arm (Armv7A, Cortex A-15), Thumb (Armv7E-M Cortex-M4) and AArch64 (Armv8A, Cortex A-57). Each platform has it's own folder in '/src/hw' for its specific code.
 
+All platforms use exceptions for switching threads, Cortex-M also has support for the timer interrupt. Although the switching is implemented by calling a function, the exception handlers save/restore everything. So, if you can figure it out, timer interrupts on Arm/AArch64 should work fine.
+
 ## Building
 
-Install cmake and an arm-none-eabi or aarch64-none-eabi toolchain. '-linux' should work fine too.
+Install cmake and an arm-none-eabi or aarch64-elf toolchain. (Linaro releases are the easiest way to get these)
 
 Install qemu with Arm support (this will get you aarch64 too):
 ```
@@ -27,35 +29,18 @@ make
 
 This will build and test all the demos, ls demos/ for a full list. To run or test an individual demo use the 'run_<demo>' and 'test_<demo>' targets. To start qemu with a GDB enabled use 'debug_<demo>'.
 
-## Example
+## Demos
 
-The included 'yielding' demo creates two threads. The first prints every time it is run and the other waits to be scheduled 3 times then exits qemu.
-
-The result looks something like this:
-```
-Thread <HIDDEN>: resuming
-Thread <HIDDEN>: thread yielded
-Thread <HIDDEN>: scheduling new thread
-Thread <HIDDEN>: yielding
-Thread        0: resuming
-Thread        0: working
-<...>
-Thread        1: resuming
-Thread        1: yielding
-<...>
-Thread        0: working
-<...>
-Thread        1: resuming
-Thread        1: yielding
-<...>
-Thread        0: working
-<...>
-Thread        1: resuming
-Thread        1: working
-Thread        1: yielding
-```
-
-See 'demos/yielding_expected.log' for the full output.
+| Name       | Description   |
+|------------|---------------|
+| yielding   | Threads yielding back to the scheduler. |
+| exyielding | Threads yielding directly to another thread, or the next available thread. |
+| message    | Passing messages between threads. |
+| exit       | Threads exiting normally like any other C function. |
+| spawn      | One thread creating other threads and waiting for them all to complete. |
+| stackcheck | Stack underflow and overflow checks when we try to yield.|
+| args       | Passing arguments to a thread function.|
+| mutex      | Locking a buffer using a mutex.|
 
 ## References
 
