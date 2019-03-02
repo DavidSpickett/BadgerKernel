@@ -51,6 +51,7 @@ set_property(SOURCE src/hw/${PLATFORM_SRC}/vectors.s PROPERTY LANGUAGE C)
 set( BASE_SOURCES
   src/thread.c
   src/print.c
+  src/mutex.c
   src/hw/${PLATFORM_SRC}/yield.s
   src/hw/${PLATFORM_SRC}/vectors.s
   src/hw/${PLATFORM_SRC}/semihosting.c
@@ -111,6 +112,7 @@ add_demo_app(exit)
 add_demo_app(spawn)
 add_demo_app(stackcheck)
 add_demo_app(args)
+add_demo_app(mutex)
 
 if( BP_LOWER STREQUAL "thumb" )
   add_demo_app(timer)

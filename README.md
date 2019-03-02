@@ -31,16 +31,17 @@ This will build and test all the demos, ls demos/ for a full list. To run or tes
 
 ## Demos
 
-| Name       | Description   |
-|------------|---------------|
-| yielding   | Threads yielding back to the scheduler. |
-| exyielding | Threads yielding directly to another thread, or the next available thread. |
-| message    | Passing messages between threads. |
-| exit       | Threads exiting normally like any other C function. |
-| spawn      | One thread creating other threads and waiting for them all to complete. |
-| stackcheck | Stack underflow and overflow checks when we try to yield.|
-| args       | Passing arguments to a thread function.|
-| mutex      | Locking a buffer using a mutex.|
+| Name                  | Description   |
+|-----------------------|---------------|
+| yielding              | Threads yielding back to the scheduler. |
+| exyielding            | Threads yielding directly to another thread, or the next available thread. |
+| message               | Passing messages between threads. |
+| exit                  | Threads exiting normally like any other C function. |
+| spawn                 | One thread creating other threads and waiting for them all to complete. |
+| stackcheck            | Stack underflow and overflow checks when we try to yield.|
+| args                  | Passing arguments to a thread function.|
+| mutex                 | Locking a buffer using a mutex.|
+| timer (Cortex-M only) | Thread switching using a timer interrupt. |
 
 ## References
 
