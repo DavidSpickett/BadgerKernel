@@ -1,7 +1,4 @@
-.data
-mon_stack_err: .string "Monitor stack underflow!\n"
-
-.text
+.set TIMER_AMOUNT, 100000
 
 .global platform_yield_initial
 platform_yield_initial:
@@ -17,6 +14,34 @@ platform_yield:
   svc 0xdead
   ret
 
+/* Having this as a seperate handler is easier than
+   finding the exact right register to read.
+   Since I'm not sure what would happen if there
+   were a pending timer int, and we happened to hit
+   an SVC at the same time. We might lose the SVC.
+*/
+.global handle_timer
+handle_timer:
+  msr SPSel, #1
+  stp x0, x1, [sp, #-16]!
+
+  // TODO: de-dupe
+  ldr x0, =monitor_stack // check that monitor stack is valid
+  mov x1, sp
+  cmp x0, x1
+  bne . // probably a re-entry
+
+  ldr x0, [x0]
+  mov x0, #2    // Disable timer output, mask the interrupt
+  msr CNTV_CTL_EL0, x0
+
+  /* Always set next thread to scheduler */
+  ldr x0, =scheduler_thread
+  ldr x1, =next_thread
+  str x0, [x1]
+
+  b __thread_switch
+
 .global thread_switch
 thread_switch:
   msr SPSel, #1
@@ -27,13 +52,20 @@ thread_switch:
   mov x1, sp
   cmp x0, x1
   beq monitor_stack_ok
-  ldr x0, =mon_stack_err
-  bl qemu_print
-  b  qemu_exit
+  b . // probably a re-entry
 
 monitor_stack_ok:
-  /* See if this is a thread switch call */
+  /* See what brought us here. */
   mrs x0, ESR_EL1
+  lsr x0, x0, #26    // check exception code
+  mov x1, #0x15      // SVC
+  cmp x0, x1
+  beq handle_svc
+
+  b unknown_exc
+
+handle_svc:
+  mrs x0, ESR_EL1    // Reload then check svc code
   mov x1, #0xFFFF    // mask svc number
   and x0, x0, x1
   mov x1, #0xdead    // thread switch
@@ -42,8 +74,39 @@ monitor_stack_ok:
   mov x1, #0x3333    // semihosting
   cmp x0, x1
   beq semihosting
+  mov x1, #1         // enable virtual timer
+  cmp x0, x1
+  beq enable_timer
+  mov x1, #0         // disable virtual timer
+  cmp x0, x1
+  beq disable_timer
+
+  b unknown_exc
+
+unknown_exc:
   /* Otherwise it's something we weren't expecting */
   b .
+
+enable_timer:
+  mrs x0, CNTVCT_EL0     // Get current count
+  ldr x1, =TIMER_AMOUNT
+  add x1, x0, x1
+  msr CNTV_CVAL_EL0, x1  // New target is some point in the future
+
+  mov x0, #1
+  msr CNTV_CTL_EL0, x0
+
+  b finalise_timer
+
+disable_timer:
+  mov x0, #2 // Disable and mask interrupt
+  msr CNTV_CTL_EL0, x0
+
+  b finalise_timer
+
+finalise_timer:
+  ldp x0, x1, [sp], #16 // restore thread's regs
+  eret
 
 semihosting:
   /* Do semihosting call

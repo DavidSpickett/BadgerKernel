@@ -53,6 +53,8 @@ https://stackoverflow.com/questions/45206027/qemu-aarch64-supported-boards/45235
 
 https://github.com/freedomtan/aarch64-bare-metal-qemu
 
+Virt board configuration - https://git.qemu.org/?p=qemu.git;a=blob;f=hw/arm/virt.c
+
 ### Semihosting
 
 https://static.docs.arm.com/100863/0200/semihosting.pdf
@@ -82,3 +84,15 @@ Cortex-M4 User Guide - http://infocenter.arm.com/help/topic/com.arm.doc.dui0553b
 Article on Cortex-M exception handling - https://www.embeddedrelated.com/showarticle/912.php
 
 ARMv7-M Architecture Manual - https://static.docs.arm.com/ddi0403/ec/DDI0403E_c_armv7m_arm.pdf
+
+### Armv8-A
+
+Armv8-A Reference Manual - https://static.docs.arm.com/ddi0487/da/DDI0487D_a_armv8_arm.pdf
+
+Armv8-A cheat sheet - https://courses.cs.washington.edu/courses/cse469/19wi/arm64.pdf
+
+ARM GIC specification v3.0/4.0 - https://static.docs.arm.com/ihi0069/c/IHI0069C_gic_architecture_specification.pdf
+
+IRQ number - https://patchwork.kernel.org/patch/2487601/ (best I could find, there must be an official source too)
+
+Discussion on correct GIC configuration - https://github.com/takeharukato/sample-tsk-sw/issues/1

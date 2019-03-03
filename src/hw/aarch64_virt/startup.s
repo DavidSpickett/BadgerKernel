@@ -10,27 +10,39 @@ _Reset:
   /* Init stack for exceptions */
   ldr x0, =monitor_stack_top
   ldr x0, [x0]  // Chase to get actual value
-  MSR SPSel, #1
+  msr SPSel, #1
   mov sp, x0
+
+  /* Setup timer
+     Allow EL0 to read the registers, though it's
+     only used by some GDB helper functions.
+  */
+  mov x0, #(1<<8) | (1<<1)    // so EL0 can at least read them
+  msr CNTKCTL_EL1, x0
+  ldr x0, =1000000            // 1 MHz timer freq
+  msr CNTFRQ_EL0, x0
 
   /* Init stack for application */
   ldr x0, =stack_top
-  MSR SPSel, #0
+  msr SPSel, #0
   mov sp, x0
 
-  bl enable_irq
+  /* Configure interrupt routing */
+  // Do this using initial stack because it's C and might store some regs
+  bl gic_init
+
+  /* Make sure virtual timer is disabled at startup */
+  mov x0, #2
+  msr CNTV_CTL_EL0, x0
+
+  /* Locate vector table */
+  ldr x1,=el1_table
+  msr vbar_el1,x1  // Qemu boots in EL1
 
   /* Go to entry as El0 */
   ldr x0, =entry
   msr ELR_EL1, x0
   eret
-
-enable_irq:
-  ldr x1,=el1_table
-  msr vbar_el1,x1  // Qemu boots in EL1
-  mov x1, #(1<<7)  // Just IRQs
-  msr daif, x1
-  ret
 
  /* Current EL with SP0 */
  .balign 0x800
@@ -45,11 +57,9 @@ el1_table:
 
   /* Current EL with SPxELR_EL3 */
   .balign 128
-  /* We end up here if we do something wrong in thread_switch.
-    Go back there and we'll detect that and exit. */
-  b thread_switch
+  b . // sync
   .balign 128
-  b . // irq
+  b .  // irq
   .balign 128
   b . // fiq
   .balign 128
@@ -60,7 +70,7 @@ el1_table:
   .extern thread_switch
   b thread_switch  // sync aka svc
   .balign 128
-  b . // irq
+  b handle_timer   // irq
   .balign 128
   b . // fiq
   .balign 128

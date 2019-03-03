@@ -58,7 +58,7 @@ set( BASE_SOURCES
   src/hw/${PLATFORM_SRC}/startup.s
 )
 
-if( BP_LOWER STREQUAL "thumb" )
+if( NOT BP_LOWER STREQUAL "arm" )
   set( BASE_SOURCES ${BASE_SOURCES} src/hw/${PLATFORM_SRC}/timer.c )
 endif()
 
@@ -114,6 +114,6 @@ add_demo_app(stackcheck)
 add_demo_app(args)
 add_demo_app(mutex)
 
-if( BP_LOWER STREQUAL "thumb" )
+if( NOT BP_LOWER STREQUAL "arm" )
   add_demo_app(timer)
 endif()
