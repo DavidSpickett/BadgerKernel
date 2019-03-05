@@ -14,9 +14,11 @@ jobs:
           vmImage: 'Ubuntu-16.04'
         steps:
           - script: |
+              set -ex
               sudo apt-get install -y python-setuptools
               pip install wheel
               pip install lit
+              pip show lit
               /usr/local/bin/lit
               sudo apt-get install -y qemu-system-arm
             displayName: apt-get-install
