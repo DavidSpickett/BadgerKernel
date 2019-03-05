@@ -14,8 +14,12 @@ jobs:
           vmImage: 'Ubuntu-16.04'
         steps:
           - script: |
+              sudo apt-get install -y python-setuptools
+              pip install wheel
+              pip install lit
+              /usr/local/bin/lit
               sudo apt-get install -y qemu-system-arm
-            displayName: apt-get-qemu
+            displayName: apt-get-install
 
           - ${{ if eq(build_platform, 'ARM') }}:
             - script: sudo apt-get install -y gcc-arm-none-eabi libnewlib-arm-none-eabi
@@ -40,11 +44,7 @@ jobs:
               make make_demos
             displayName: build
 
-          - script: |
-              sudo apt-get install python-setuptools
-              pip install wheel
-              pip install lit
-              lit demos --xunit-xml-output results.xml
+          - script: /usr/local/bin/lit demos --xunit-xml-output results.xml
             displayName: test
 
           - task: PublishTestResults@2
