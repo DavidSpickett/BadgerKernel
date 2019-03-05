@@ -14,14 +14,8 @@ jobs:
           vmImage: 'Ubuntu-16.04'
         steps:
           - script: |
-              set -ex
-              sudo apt-get install -y python-setuptools
-              pip install wheel
-              pip install lit
-              pip show lit
-              .local/bin/lit
               sudo apt-get install -y qemu-system-arm
-            displayName: apt-get-install
+            displayName: apt-get-qemu
 
           - ${{ if eq(build_platform, 'ARM') }}:
             - script: sudo apt-get install -y gcc-arm-none-eabi libnewlib-arm-none-eabi
@@ -46,7 +40,12 @@ jobs:
               make make_demos
             displayName: build
 
-          - script: .local/bin/lit demos --xunit-xml-output results.xml
+          - script: |
+              # Running it in a venv is the best way to be able to just run 'lit', not some random path or "python -c" invocation.
+              python -m virtualenv testenv
+              source testenv/bin/activate
+              pip install lit
+              lit demos --xunit-xml-output results.xml
             displayName: test
 
           - task: PublishTestResults@2
