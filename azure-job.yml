@@ -19,7 +19,7 @@ jobs:
               pip install wheel
               pip install lit
               pip show lit
-              /usr/local/bin/lit
+              .local/bin/lit
               sudo apt-get install -y qemu-system-arm
             displayName: apt-get-install
 
@@ -46,7 +46,7 @@ jobs:
               make make_demos
             displayName: build
 
-          - script: /usr/local/bin/lit demos --xunit-xml-output results.xml
+          - script: .local/bin/lit demos --xunit-xml-output results.xml
             displayName: test
 
           - task: PublishTestResults@2
