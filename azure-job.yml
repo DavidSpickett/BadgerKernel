@@ -51,7 +51,7 @@ jobs:
 
           - task: PublishTestResults@2
             inputs:
-              testResultsFormat: 'xUnit'
+              testResultsFormat: 'JUnit'
               testResultsFiles: 'results.xml' 
               #failTaskOnFailedTests: false # Optional
               #testRunTitle: # Optional
