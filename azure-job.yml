@@ -53,8 +53,7 @@ jobs:
             inputs:
               testResultsFormat: 'xUnit'
               testResultsFiles: 'results.xml' 
-              #failTaskOnFailedTests: false # Optional
+              failTaskOnFailedTests: false
               #testRunTitle: # Optional
               #buildPlatform: # Optional
               #buildConfiguration: # Optional
-              #publishRunAttachments: true # Optional
