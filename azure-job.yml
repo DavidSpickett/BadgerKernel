@@ -40,5 +40,7 @@ jobs:
               make make_demos
             displayName: build
 
-          - script: make test_demos
+          - script: |
+              sudo pip install lit
+              make test_demos
             displayName: test
