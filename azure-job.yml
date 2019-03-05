@@ -41,7 +41,6 @@ jobs:
             displayName: build
 
           - script: |
-              sudo pip install --upgrade pip
-              sudo pip install lit
+              pip install lit
               make test_demos
             displayName: test
