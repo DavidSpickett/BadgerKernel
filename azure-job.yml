@@ -13,36 +13,46 @@ jobs:
         pool:
           vmImage: 'Ubuntu-16.04'
         steps:
-#          - script: |
-#              sudo apt-get install -y qemu-system-arm
-#            displayName: apt-get-qemu
-#
-#          - ${{ if eq(build_platform, 'ARM') }}:
-#            - script: sudo apt-get install -y gcc-arm-none-eabi libnewlib-arm-none-eabi
-#              displayName: apt-get-toolchain
-#
-#          - ${{ if eq(build_platform, 'THUMB') }}:
-#            - script: sudo apt-get install -y gcc-arm-none-eabi libnewlib-arm-none-eabi
-#              displayName: apt-get-toolchain
-#
-#          - ${{ if eq(build_platform, 'AARCH64') }}:
-#            - script: |
-#                set -ex
-#                wget -q https://releases.linaro.org/components/toolchain/binaries/7.4-2019.02/aarch64-elf/gcc-linaro-7.4.1-2019.02-x86_64_aarch64-elf.tar.xz
-#                tar -xf gcc-linaro-7.4.1-2019.02-x86_64_aarch64-elf.tar.xz
-#              displayName: download-linaro-toolchain
+          - script: |
+              sudo apt-get install -y qemu-system-arm
+            displayName: apt-get-qemu
 
-#          - script: |
-#              set -ex
+          - ${{ if eq(build_platform, 'ARM') }}:
+            - script: sudo apt-get install -y gcc-arm-none-eabi libnewlib-arm-none-eabi
+              displayName: apt-get-toolchain
+
+          - ${{ if eq(build_platform, 'THUMB') }}:
+            - script: sudo apt-get install -y gcc-arm-none-eabi libnewlib-arm-none-eabi
+              displayName: apt-get-toolchain
+
+          - ${{ if eq(build_platform, 'AARCH64') }}:
+            - script: |
+                set -ex
+                wget -q https://releases.linaro.org/components/toolchain/binaries/7.4-2019.02/aarch64-elf/gcc-linaro-7.4.1-2019.02-x86_64_aarch64-elf.tar.xz
+                tar -xf gcc-linaro-7.4.1-2019.02-x86_64_aarch64-elf.tar.xz
+              displayName: download-linaro-toolchain
+
+          - script: |
+              set -ex
               # This is only for AArch64 but since env vars don't persist between scripts, do it anyway
-#              export PATH=$(pwd)/gcc-linaro-7.4.1-2019.02-x86_64_aarch64-elf/bin/:$PATH
-#              cmake . -DBUILD_PLATFORM=${{build_platform}} -DOPT_LEVEL=${{opt_level}} -DUBSAN=${{ubsan}}
-#              make make_demos
-#            displayName: build
+              export PATH=$(pwd)/gcc-linaro-7.4.1-2019.02-x86_64_aarch64-elf/bin/:$PATH
+              cmake . -DBUILD_PLATFORM=${{build_platform}} -DOPT_LEVEL=${{opt_level}} -DUBSAN=${{ubsan}}
+              make make_demos
+            displayName: build
 
           - script: |
               sudo apt-get install python-setuptools
               pip install wheel
               pip install lit
-              make test_demos
+              lit demos --xunit-xml-output results.xml
             displayName: test
+
+          - task: PublishTestResults@2
+            inputs:
+              testResultsFormat: 'xUnit'
+              testResultsFiles: 'results.xml' 
+              #failTaskOnFailedTests: false # Optional
+              #testRunTitle: # Optional
+              #buildPlatform: # Optional
+              #buildConfiguration: # Optional
+              #publishRunAttachments: true # Optional
