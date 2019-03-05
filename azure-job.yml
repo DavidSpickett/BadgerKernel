@@ -41,8 +41,8 @@ jobs:
 #            displayName: build
 
           - script: |
-              # Setuptools required for lit install
               sudo apt-get install python-setuptools
+              pip install wheel
               pip install lit
               make test_demos
             displayName: test
