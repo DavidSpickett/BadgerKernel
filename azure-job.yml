@@ -46,14 +46,15 @@ jobs:
               python -m virtualenv testenv
               source testenv/bin/activate
               pip install lit
-              lit demos --xunit-xml-output results.xml
+              lit demos --xunit-xml-output results.xml || true
             displayName: test
 
           - task: PublishTestResults@2
             inputs:
               testResultsFormat: 'xUnit'
               testResultsFiles: 'results.xml' 
-              failTaskOnFailedTests: false
+              #failTaskOnFailedTests: false # Optional
               #testRunTitle: # Optional
               #buildPlatform: # Optional
               #buildConfiguration: # Optional
+              #publishRunAttachments: true # Optional
