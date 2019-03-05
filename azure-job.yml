@@ -46,6 +46,7 @@ jobs:
               python -m virtualenv testenv
               source testenv/bin/activate
               pip install lit
+              # Don't be fooled, this is actually JUnit format
               lit demos --xunit-xml-output results.xml || true
             displayName: test
 
@@ -53,8 +54,3 @@ jobs:
             inputs:
               testResultsFormat: 'JUnit'
               testResultsFiles: 'results.xml' 
-              #failTaskOnFailedTests: false # Optional
-              #testRunTitle: # Optional
-              #buildPlatform: # Optional
-              #buildConfiguration: # Optional
-              #publishRunAttachments: true # Optional
