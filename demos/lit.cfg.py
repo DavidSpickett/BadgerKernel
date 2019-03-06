@@ -38,5 +38,3 @@ config.test_format = MakeTest()
 config.suffixes = ['.log']
 config.test_source_root = os.path.dirname(__file__)
 config.test_exec_root = os.path.join(config.test_source_root, '..')
-# No timer support for Arm
-config.excludes = ['timer.c'] if platform.lower() == 'arm' else []

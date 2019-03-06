@@ -47,8 +47,31 @@ monitor_stack_ok:
   ldr r1, =0x123456        // semihosting call
   cmp r0, r1
   beq semihosting
+  mov r1, #1               // enable timer
+  cmp r0, r1
+  beq enable_timer
+  mov r1, #0               // disable timer
+  cmp r0, r1
+  beq disable_timer
   /* Unkown svc code */
   b .
+
+enable_timer:
+  ldr r0, =100
+  mcr p15, 0, r0, c14, c2, 0 // CNTP_TVAL
+  mov r0, #1                 // Enable, don't mask interrupt
+  mcr p15, 0, r0, c14, c2, 1 // CNTP_CTL
+  b finalise_timer
+
+disable_timer:
+  mov r0, #2                 // Disable and mask interrupt
+  mcr p15, 0, r0, c14, c2, 1 // CNTP_CTL
+  b finalise_timer
+
+finalise_timer:
+  pop {r0-r1}
+  cps #SYSTEM_MODE
+  bx lr
 
 semihosting:
   pop {r0-r1}

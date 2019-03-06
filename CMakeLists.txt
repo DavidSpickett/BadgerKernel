@@ -55,12 +55,9 @@ set( BASE_SOURCES
   src/hw/${PLATFORM_SRC}/yield.s
   src/hw/${PLATFORM_SRC}/vectors.s
   src/hw/${PLATFORM_SRC}/semihosting.c
+  src/hw/${PLATFORM_SRC}/timer.c
   src/hw/${PLATFORM_SRC}/startup.s
 )
-
-if( NOT BP_LOWER STREQUAL "arm" )
-  set( BASE_SOURCES ${BASE_SOURCES} src/hw/${PLATFORM_SRC}/timer.c )
-endif()
 
 if(UBSAN)
   set( BASE_SOURCES ${BASE_SOURCES} src/ubsan.c )
@@ -113,7 +110,4 @@ add_demo_app(spawn)
 add_demo_app(stackcheck)
 add_demo_app(args)
 add_demo_app(mutex)
-
-if( NOT BP_LOWER STREQUAL "arm" )
-  add_demo_app(timer)
-endif()
+add_demo_app(timer)
