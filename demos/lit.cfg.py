@@ -8,10 +8,13 @@ from test_format import MakeTest
 
 def get_build_config():
   # Read CMakeCache.txt to find our build settings
+  need = ['BUILD_PLATFORM', 'OPT_LEVEL', 'UBSAN']
   found = dict()
-  expected = set(['BUILD_PLATFORM', 'OPT_LEVEL', 'UBSAN'])
-  var_regex = re.compile("(?P<var>.+):.+=(?P<value>.+)")
+  expected = set(need)
+
   with open("CMakeCache.txt", 'r') as cf:
+    var_regex = re.compile("(?P<var>.+):.+=(?P<value>.+)")
+
     for line in cf.read().splitlines():
       m = var_regex.match(line)
       if m:
@@ -26,7 +29,8 @@ def get_build_config():
     if expected:
       raise RuntimeError("Couldn't find the build config.")
 
-  return found.values()
+  # Don't rely on dict order, or order of vars in CMakeCache.txt
+  return [found[k] for k in need]
 
 platform, opt_level, ubsan = get_build_config()
 config.name = '{}_O{}_UBSAN_{}'.format(platform, opt_level, ubsan)
