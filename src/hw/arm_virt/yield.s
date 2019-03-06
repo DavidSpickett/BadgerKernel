@@ -7,6 +7,10 @@ mon_stack_err: .string "Monitor stack underflow!\n"
 .set SUPERVISOR_MODE, 0x13
 .set USER_MODE,       0x10
 
+.global handle_timer
+handle_timer:
+  b .
+
 .global platform_yield_initial
 platform_yield_initial:
   /* Called when starting the scheduler, so we can trash regs here */
@@ -57,7 +61,7 @@ monitor_stack_ok:
   b .
 
 enable_timer:
-  ldr r0, =100
+  ldr r0, =1000
   mcr p15, 0, r0, c14, c2, 0 // CNTP_TVAL
   mov r0, #1                 // Enable, don't mask interrupt
   mcr p15, 0, r0, c14, c2, 1 // CNTP_CTL
@@ -70,14 +74,16 @@ disable_timer:
 
 finalise_timer:
   pop {r0-r1}
+  srsdb sp!, #SYSTEM_MODE // save CPSR and lr
   cps #SYSTEM_MODE
-  bx lr
+  b exc_return
 
 semihosting:
   pop {r0-r1}
-  cps #SYSTEM_MODE // sys mode shares sp of user mode
+  cps #SYSTEM_MODE // use user sp to get args
   svc 0x123456     // picked up by Qemu
-  bx lr
+  srsdb sp!, #SYSTEM_MODE // save CPSR and lr
+  b exc_return
 
 switch_thread:
   /* Check stack extent */

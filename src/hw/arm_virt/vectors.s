@@ -4,5 +4,5 @@
   b . 
   b . 
   b . 
-  b . 
+  b handle_timer // irq
   b . 
