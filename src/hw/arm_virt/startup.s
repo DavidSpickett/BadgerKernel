@@ -16,7 +16,6 @@ _Reset:
   mov r0, #2                 // disable, mask interrupt
   mcr p15, 0, r0, c14, c2, 1 // CNTP_CTL
 
-  // Stack could be a problem here
   bl gic_init
 
   cps #16                    // switch to user mode

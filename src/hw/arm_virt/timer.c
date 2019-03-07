@@ -50,9 +50,7 @@ size_t rt() {
   return res;
 }
 
-/* I'm assuming this is called from supervisor mode,
-   with some valid stack to use.  */
-void gic_init(void)
+__attribute__((naked)) void gic_init(void)
 {
   /* CPU Interface */
 
@@ -87,4 +85,7 @@ void gic_init(void)
 
   // Re-enable
   *DIST_CTLR = 1;
+
+  // Need a manual return from a naked func
+  asm volatile ("bx lr");
 }
