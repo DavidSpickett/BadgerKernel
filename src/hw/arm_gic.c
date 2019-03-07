@@ -63,7 +63,11 @@ void gic_init(unsigned irq_no)
   *DIST_CTLR = 1;
 
 #if __ARM_ARCH_7A__
-  // Need a manual return from a naked func
-  asm volatile ("bx lr");
+  /* Since this is a naked function we need to do our
+     own return. However, the compiler may decide to use
+     the link register and corrupt it (at -O3).
+     So just branch to a global label instead.
+  */
+  asm volatile ("b gic_init_ret");
 #endif
 }

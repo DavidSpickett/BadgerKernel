@@ -22,7 +22,13 @@ _Reset:
    it depends on the Qemu version. For mine, it's 30.
   */
   mov r0, #30
-  bl gic_init
+  b gic_init
+
+/* At O3 the compiler decides to use the lr in a naked
+   function. So we don't rely on lr, branch back here directly.
+*/
+.global gic_init_ret
+gic_init_ret:
 
   cps #16                    // switch to user mode
 
