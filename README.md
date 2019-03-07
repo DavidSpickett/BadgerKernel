@@ -1,10 +1,10 @@
 [![Build Status](https://dev.azure.com/spickettdavid/spickettdavid/_apis/build/status/DavidSpickett.ARMMultiTasking?branchName=master)](https://dev.azure.com/spickettdavid/spickettdavid/_build/latest?definitionId=1&branchName=master) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A simple set of demos showing tasks cooperativley sharing time.
+A simple set of demos showing threads sharing time on Arm platforms.
 
 Current build targets are Arm (Armv7A, Cortex A-15), Thumb (Armv7E-M Cortex-M4) and AArch64 (Armv8A, Cortex A-57). Each platform has it's own folder in '/src/hw' for its specific code.
 
-All platforms use exceptions for switching threads. Cortex-M and AArch64 also have support for a timer interrupt. Although most of the switching is implemented by calling a function, the exception handlers save/restore everything.
+All platforms use exceptions for switching threads. Either by yielding (which uses a software exception) or enabling a timer interrupt for preemptive switching.
 
 ## Building
 
@@ -31,17 +31,17 @@ This will build and test all the demos.
 
 ## Demos
 
-| Name                          | Description   |
-|-------------------------------|---------------|
-| yielding                      | Threads yielding back to the scheduler. |
-| exyielding                    | Threads yielding directly to another thread, or the next available thread. |
-| message                       | Passing messages between threads. |
-| exit                          | Threads exiting normally like any other C function. |
-| spawn                         | One thread creating other threads and waiting for them all to complete. |
-| stackcheck                    | Stack underflow and overflow checks when we try to yield.|
-| args                          | Passing arguments to a thread function.|
-| mutex                         | Locking a buffer using a mutex.|
-| timer (Cortex-M/AArch64 only) | Thread switching using a timer interrupt. |
+| Name                          | Description                                                               |
+|-------------------------------|---------------------------------------------------------------------------|
+| yielding                      | Threads yielding back to the scheduler.                                   |
+| exyielding                    | Threads yielding directly to another thread or the next available thread. |
+| message                       | Passing messages between threads.                                         |
+| exit                          | Threads exiting normally like any other C function.                       |
+| spawn                         | One thread creating other threads.                                        |
+| stackcheck                    | Detection of thread stack underflow or overflow when they try to yield.   |
+| args                          | Passing arguments to a thread.                                            |
+| mutex                         | Locking a buffer using a mutex.                                           |
+| timer                         | Thread switching using a timer interrupt.                                 |
 
 Each demo has 'run_<demo>', 'debug_<demo>' and 'test_<demo>' make targets. To test all demos, use 'make test_demos' or use lit. (best done in a virtualenv)
 
