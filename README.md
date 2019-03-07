@@ -84,6 +84,8 @@ Vector tables - http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dai0
 
 CPSR - https://www.heyrick.co.uk/armwiki/The_Status_register
 
+Interrupt handlers - http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.faqs/ka13552.html
+
 ### Cortex-M4/Thumb
 
 Cortex-M4 User Guide - http://infocenter.arm.com/help/topic/com.arm.doc.dui0553b/DUI0553.pdf
