@@ -1,15 +1,42 @@
-.data
-mon_stack_err: .string "Monitor stack underflow!\n"
-
-.text
-
 .set SYSTEM_MODE,     0x1f
 .set SUPERVISOR_MODE, 0x13
 .set USER_MODE,       0x10
 
 .global handle_timer
 handle_timer:
-  b .
+  /* lr points to instruction *after* the interrupted
+     instruction. We want to return to what was interrupted.
+  */
+  sub lr, lr, #4
+
+  /* Do a little dance to copy IRQ mode lr into SVC mode's lr
+     See: http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.faqs/ka13552.html
+  */
+  srsdb sp!, #SUPERVISOR_MODE
+  cps #SUPERVISOR_MODE
+  pop {lr}         // Want IRQ mode LR
+  add sp, sp, #4   // Don't want IRQ mode sp
+
+  // TODO: dedupe
+  push {r0-r1}     // push to monitor stack
+
+  /* Check monitor stack */
+  ldr r0, =monitor_stack_top
+  ldr r0, [r0]
+  sub r0, r0, #8   // 2 Arm registers
+  mov r1, sp
+  cmp r0, r1
+  bne . // probably a re-entry
+
+  /* Next thread is always the scheduler on interrupt */
+  ldr r0, =scheduler_thread
+  ldr r1, =next_thread
+  str r0, [r1]
+
+  mov r0, #2                 // Disable timer and mask interrupt
+  mcr p15, 0, r0, c14, c2, 1 // CNTP_CTL
+
+  b switch_thread
 
 .global platform_yield_initial
 platform_yield_initial:
@@ -36,9 +63,7 @@ __platform_yield:
   mov r1, sp
   cmp r0, r1
   beq monitor_stack_ok
-  ldr r0, =mon_stack_err
-  bl qemu_print
-  b qemu_exit
+  b . // probably a re-entry
 
 monitor_stack_ok:
   /* See if this is semihosting or a thread switch */
