@@ -59,6 +59,10 @@ set( BASE_SOURCES
   src/hw/${PLATFORM_SRC}/startup.s
 )
 
+if(NOT BP_LOWER STREQUAL "thumb")
+  set( BASE_SOURCES ${BASE_SOURCES} src/hw/arm_gic.c )
+endif()
+
 if(UBSAN)
   set( BASE_SOURCES ${BASE_SOURCES} src/ubsan.c )
 endif(UBSAN)

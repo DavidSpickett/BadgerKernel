@@ -27,8 +27,9 @@ _Reset:
   msr SPSel, #0
   mov sp, x0
 
-  /* Configure interrupt routing */
-  // Do this using initial stack because it's C and might store some regs
+  /* Configure interrupt routing
+     Uses stack but this is fine because of the setup above. */
+  mov x0, #27  // Timer IRQ
   bl gic_init
 
   /* Make sure virtual timer is disabled at startup */

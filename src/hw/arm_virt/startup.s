@@ -16,6 +16,12 @@ _Reset:
   mov r0, #2                 // disable, mask interrupt
   mcr p15, 0, r0, c14, c2, 1 // CNTP_CTL
 
+  /* According to Arm developer docs, physical timer
+   is 26, virtual is 27. According to:
+   https://github.com/littlekernel/lk/issues/54
+   it depends on the Qemu version. For mine, it's 30.
+  */
+  mov r0, #30
   bl gic_init
 
   cps #16                    // switch to user mode
