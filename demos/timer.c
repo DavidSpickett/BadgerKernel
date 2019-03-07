@@ -11,19 +11,27 @@ void thread_work(const char* msg,
   while (1) {
     disable_timer();
 
-    // Check this *outside* the flag if
-    // In case the other thread already exited
-    if (*total_prints == 0) {
-      break;
-    }
-
     if (*your_flag) {
-      log_event(msg);
       *your_flag = false;
       *their_flag = true;
       *total_prints -= 1;
+
+      if (*total_prints < 0) {
+        break;
+      }
+
+      log_event(msg);
     }
     enable_timer();
+    /* Note that for a sufficiently long timer amount,
+       enable_timer and disable_timer are basically
+       sequential.
+
+       So to prevent a race condition we must check
+       total_prints after our flag is set.
+       Otherwise if the timer doesn't fire between
+       enable and disable, we'll exit immediatley.
+    */
   }
   // Exit normally to scheduler...
 }
