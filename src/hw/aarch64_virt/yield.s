@@ -31,7 +31,6 @@ handle_timer:
   cmp x0, x1
   bne . // probably a re-entry
 
-  ldr x0, [x0]
   mov x0, #2    // Disable timer output, mask the interrupt
   msr CNTV_CTL_EL0, x0
 
