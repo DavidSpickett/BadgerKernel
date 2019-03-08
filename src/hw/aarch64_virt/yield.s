@@ -1,5 +1,22 @@
 .set TIMER_AMOUNT, 100000
 
+.macro DISABLE_TIMER
+  mov x0, #2    // Disable timer output, mask the interrupt
+  msr CNTV_CTL_EL0, x0
+.endm
+
+.macro CHECK_MONITOR_STACK
+  msr SPSel, #1
+  /* Use the monitor stack, we can't trust the thread stack here */
+  stp x0, x1, [sp, #-16]!
+
+  ldr x0, =monitor_stack // check that monitor stack is valid
+  mov x1, sp
+  cmp x0, x1
+  beq 1f                 // monitor stack is valid
+  b .                    // probably a re-entry
+.endm
+
 .global platform_yield_initial
 platform_yield_initial:
   /* Called when starting scheduler (trashing regs is fine) */
@@ -22,17 +39,9 @@ platform_yield:
 */
 .global handle_timer
 handle_timer:
-  msr SPSel, #1
-  stp x0, x1, [sp, #-16]!
-
-  // TODO: de-dupe
-  ldr x0, =monitor_stack // check that monitor stack is valid
-  mov x1, sp
-  cmp x0, x1
-  bne . // probably a re-entry
-
-  mov x0, #2    // Disable timer output, mask the interrupt
-  msr CNTV_CTL_EL0, x0
+  CHECK_MONITOR_STACK
+1:
+  DISABLE_TIMER
 
   /* Always set next thread to scheduler */
   ldr x0, =scheduler_thread
@@ -43,17 +52,8 @@ handle_timer:
 
 .global thread_switch
 thread_switch:
-  msr SPSel, #1
-  /* Use the monitor stack, we can't trust the thread stack here */
-  stp x0, x1, [sp, #-16]!
-
-  ldr x0, =monitor_stack // check that monitor stack is valid
-  mov x1, sp
-  cmp x0, x1
-  beq monitor_stack_ok
-  b . // probably a re-entry
-
-monitor_stack_ok:
+  CHECK_MONITOR_STACK
+1:
   /* See what brought us here. */
   mrs x0, ESR_EL1
   lsr x0, x0, #26    // check exception code
@@ -98,9 +98,7 @@ enable_timer:
   b finalise_timer
 
 disable_timer:
-  mov x0, #2 // Disable and mask interrupt
-  msr CNTV_CTL_EL0, x0
-
+  DISABLE_TIMER
   b finalise_timer
 
 finalise_timer:
