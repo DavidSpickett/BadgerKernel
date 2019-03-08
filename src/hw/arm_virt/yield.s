@@ -2,6 +2,23 @@
 .set SUPERVISOR_MODE, 0x13
 .set USER_MODE,       0x10
 
+.macro DISABLE_TIMER
+  mov r0, #2                 // Disable timer and mask interrupt
+  mcr p15, 0, r0, c14, c2, 1 // CNTP_CTL
+.endm
+
+.macro CHECK_MONITOR_STACK
+  push {r0-r1}     // push to monitor stack
+
+  /* Check monitor stack */
+  ldr r0, =monitor_stack_top
+  ldr r0, [r0]
+  sub r0, r0, #8   // 2 Arm registers
+  mov r1, sp
+  cmp r0, r1
+  bne . // probably a re-entry
+.endm
+
 .global handle_timer
 handle_timer:
   /* lr points to instruction *after* the interrupted
@@ -17,24 +34,14 @@ handle_timer:
   pop {lr}         // Want IRQ mode LR
   add sp, sp, #4   // Don't want IRQ mode sp
 
-  // TODO: dedupe
-  push {r0-r1}     // push to monitor stack
-
-  /* Check monitor stack */
-  ldr r0, =monitor_stack_top
-  ldr r0, [r0]
-  sub r0, r0, #8   // 2 Arm registers
-  mov r1, sp
-  cmp r0, r1
-  bne . // probably a re-entry
+  CHECK_MONITOR_STACK
 
   /* Next thread is always the scheduler on interrupt */
   ldr r0, =scheduler_thread
   ldr r1, =next_thread
   str r0, [r1]
 
-  mov r0, #2                 // Disable timer and mask interrupt
-  mcr p15, 0, r0, c14, c2, 1 // CNTP_CTL
+  DISABLE_TIMER
 
   b switch_thread
 
@@ -54,16 +61,7 @@ platform_yield:
 
 .global __platform_yield
 __platform_yield:
-  push {r0-r1}     // push to monitor stack
-
-  /* Check monitor stack. (note that we don't use all of it on Arm */
-  ldr r0, =monitor_stack_top
-  ldr r0, [r0]
-  sub r0, r0, #8   // 2 Arm registers
-  mov r1, sp
-  cmp r0, r1
-  beq monitor_stack_ok
-  b . // probably a re-entry
+  CHECK_MONITOR_STACK
 
 monitor_stack_ok:
   /* See if this is semihosting or a thread switch */
@@ -93,8 +91,7 @@ enable_timer:
   b finalise_timer
 
 disable_timer:
-  mov r0, #2                 // Disable and mask interrupt
-  mcr p15, 0, r0, c14, c2, 1 // CNTP_CTL
+  DISABLE_TIMER
   b finalise_timer
 
 finalise_timer:
