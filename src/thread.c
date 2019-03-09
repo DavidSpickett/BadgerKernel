@@ -35,8 +35,8 @@ struct Thread {
   uint64_t top_canary;
 };
 
-extern void platform_yield_initial(void);
-extern void platform_yield(void);
+extern void thread_switch_initial(void);
+extern void thread_switch(void);
 
 __attribute__((section(".thread_structs")))
 struct Thread all_threads[MAX_THREADS];
@@ -212,7 +212,7 @@ void check_stack(void) {
       dummy_thread.stack_ptr = &dummy_thread.stack[THREAD_STACK_SIZE];
 
       next_thread = &scheduler_thread;
-      platform_yield_initial();
+      thread_switch_initial();
     } else {
       qemu_exit();
     }
@@ -224,7 +224,7 @@ void thread_yield(struct Thread* to) {
 
   log_event("yielding");
   next_thread = to;
-  platform_yield();
+  thread_switch();
   log_event("resuming");
 }
 
@@ -294,7 +294,7 @@ __attribute__((noreturn)) void thread_start(void) {
   // with an incorrect thread ID
   // TODO: we save state here that we don't need to
   next_thread = &scheduler_thread;
-  platform_yield();
+  thread_switch();
 
   __builtin_unreachable();
 }
@@ -386,7 +386,7 @@ __attribute__((noreturn)) void start_scheduler(void) {
   current_thread = &dummy_thread;
   next_thread = &scheduler_thread;
   log_event("starting scheduler");
-  platform_yield_initial();
+  thread_switch_initial();
 
   __builtin_unreachable();
 }

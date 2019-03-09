@@ -68,8 +68,8 @@ el1_table:
 
   /* Lower EL using AArch64 */
   .balign 128
-  .extern thread_switch
-  b thread_switch  // sync aka svc
+  .extern handle_svc
+  b handle_svc
   .balign 128
   b handle_timer   // irq
   .balign 128

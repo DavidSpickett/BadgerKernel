@@ -4,26 +4,26 @@
 .set ICSR, 0xE000ED04
 .set NVIC_ICER0, 0XE000E180
 
-.global platform_yield
+.global thread_switch
 .thumb_func
-platform_yield:
+thread_switch:
   svc 0xFF
   bx lr
 
-.global platform_yield_initial
+.global thread_switch_initial
 .thumb_func
-platform_yield_initial:
+thread_switch_initial:
   /* Init stack ptr to dummy thread so we can yield to scheduler */
   ldr r0, =current_thread // Set the actual stack pointer to
   ldr r0, [r0]            // that of the dummy thread
   ldr r0, [r0]            // so that we can pass the stack check
   mov sp, r0              // without having more than one entry point
-  bl platform_yield       // to the switching code
+  bl thread_switch        // to the switching code
   bx lr
 
-.global __platform_yield
+.global handle_exception
 .thumb_func
-__platform_yield:
+handle_exception:
   /* Stack pointer is MSP aka monitor stack here.
      Switch to privileged mode, but use the PSP,
      since we don't need monitor stack.

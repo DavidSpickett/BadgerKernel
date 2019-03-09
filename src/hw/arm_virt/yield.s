@@ -43,24 +43,24 @@ handle_timer:
 
   DISABLE_TIMER
 
-  b switch_thread
+  b __thread_switch
 
-.global platform_yield_initial
-platform_yield_initial:
+.global thread_switch_initial
+thread_switch_initial:
   /* Called when starting the scheduler, so we can trash regs here */
   ldr r0, =current_thread // Set the actual stack pointer to
   ldr r0, [r0]            // that of the dummy thread
   ldr r0, [r0]            // so that we can pass the stack check
   mov sp, r0              // without having more than one entry point
-  bl platform_yield       // to the switching code
+  bl thread_switch        // to the switching code
 
-.global platform_yield
-platform_yield:
+.global thread_switch
+thread_switch:
   svc 0xdead
   bx lr
 
-.global __platform_yield
-__platform_yield:
+.global handle_svc
+handle_svc:
   CHECK_MONITOR_STACK
 
 monitor_stack_ok:
@@ -70,7 +70,7 @@ monitor_stack_ok:
   and r0, r0, r1           //
   ldr r1, =0x00dead        // thread switch
   cmp r0, r1
-  beq switch_thread
+  beq __thread_switch
   ldr r1, =0x123456        // semihosting call
   cmp r0, r1
   beq semihosting
@@ -107,7 +107,7 @@ semihosting:
   srsdb sp!, #SYSTEM_MODE // save CPSR and lr
   b exc_return
 
-switch_thread:
+__thread_switch:
   /* Check stack extent */
   ldr r0, =thread_stack_offset
   ldr r1, =current_thread

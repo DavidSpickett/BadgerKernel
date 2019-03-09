@@ -17,17 +17,17 @@
   b .                    // probably a re-entry
 .endm
 
-.global platform_yield_initial
-platform_yield_initial:
+.global thread_switch_initial
+thread_switch_initial:
   /* Called when starting scheduler (trashing regs is fine) */
   ldr x0, =current_thread // init stack pointer to
   ldr x0, [x0]            // stack pointer of dummy thread
   ldr x0, [x0]            // so we can pass the check normally
   mov sp, x0
-  bl platform_yield
+  bl thread_switch
 
-.global platform_yield
-platform_yield:
+.global thread_switch
+thread_switch:
   svc 0xdead
   ret
 
@@ -50,8 +50,8 @@ handle_timer:
 
   b __thread_switch
 
-.global thread_switch
-thread_switch:
+.global handle_svc
+handle_svc:
   CHECK_MONITOR_STACK
 1:
   /* See what brought us here. */
@@ -59,11 +59,11 @@ thread_switch:
   lsr x0, x0, #26    // check exception code
   mov x1, #0x15      // SVC
   cmp x0, x1
-  beq handle_svc
+  beq check_svc
 
   b unknown_exc
 
-handle_svc:
+check_svc:
   mrs x0, ESR_EL1    // Reload then check svc code
   mov x1, #0xFFFF    // mask svc number
   and x0, x0, x1
