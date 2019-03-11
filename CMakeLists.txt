@@ -1,5 +1,5 @@
 project(MultiTaskingDemo C)
-cmake_minimum_required( VERSION 3.9 )
+cmake_minimum_required( VERSION 3.7 )
 
 set( BUILD_PLATFORM "arm" CACHE STRING "Architecture to build for." )
 set( OPT_LEVEL "3" CACHE STRING "Compiler optmisation level." )
@@ -10,7 +10,15 @@ message(STATUS "BUILD_PLATFORM is ${BP_LOWER}")
 message(STATUS "OPT_LEVEL is -O${OPT_LEVEL}")
 message(STATUS "UBSAN is ${UBSAN}")
 
-if( BP_LOWER STREQUAL "arm" )
+if ( BP_LOWER STREQUAL "arm_linux")
+  set( PREFIX       "" )
+  set( PLATFORM     "" )
+  set( PLATFORM_SRC "arm_linux" )
+  set( RAM_START    "" )
+  set( UART_BASE    "" )
+  set( QEMU_ARGS    "" )
+  set( HOSTED       ON )
+elseif( BP_LOWER STREQUAL "arm" )
   set( PREFIX       "arm-none-eabi" )
   set( PLATFORM     "-mcpu=cortex-a15" )
   set( PLATFORM_SRC "arm_virt" )
@@ -34,14 +42,19 @@ elseif( BP_LOWER STREQUAL "thumb" )
   set( QEMU_ARGS    "qemu-system-arm -M lm3s6965evb -cpu cortex-m4" )
 endif()
 
-set( CMAKE_C_COMPILER "${PREFIX}-gcc" )
+if (HOSTED)
+  set( CMAKE_C_COMPILER "gcc" )
+  set( CFLAGS "-Wall -g -O${OPT_LEVEL} -std=gnu11" )
+else()
+  set( CMAKE_C_COMPILER "${PREFIX}-gcc" )
+  set( QEMU "${QEMU_ARGS} -m 64M -nographic -semihosting -kernel" )
+  set( CFLAGS "-Wall -ffreestanding -nostdlib -g -O${OPT_LEVEL} -std=gnu11 -DUART_BASE=${UART_BASE}" )
+endif()
 
-set( QEMU "${QEMU_ARGS} -m 64M -nographic -semihosting -kernel" )
-
-set( CFLAGS "-Wall -ffreestanding -nostdlib -g -O${OPT_LEVEL} -std=gnu11 -DUART_BASE=${UART_BASE}" )
 if(UBSAN)
-  set( CFLAGS "${CFLAGS} -fsanitize=undefined" )
+    set( CFLAGS "${CFLAGS} -fsanitize=undefined" )
 endif(UBSAN)
+
 set( CMAKE_C_FLAGS "${PLATFORM} ${CFLAGS}" )
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
@@ -53,19 +66,23 @@ set( BASE_SOURCES
   src/print.c
   src/mutex.c
   src/hw/${PLATFORM_SRC}/yield.s
-  src/hw/${PLATFORM_SRC}/vectors.s
   src/hw/${PLATFORM_SRC}/semihosting.c
   src/hw/${PLATFORM_SRC}/timer.c
-  src/hw/${PLATFORM_SRC}/startup.s
 )
+
+if(NOT HOSTED)
+  set( BASE_SOURCES ${BASE_SOURCES}
+       src/hw/${PLATFORM_SRC}/vectors.s
+       src/hw/${PLATFORM_SRC}/startup.s
+  )
+  if(UBSAN)
+    set( BASE_SOURCES ${BASE_SOURCES} src/ubsan.c )
+  endif()
+endif()
 
 if(NOT BP_LOWER STREQUAL "thumb")
   set( BASE_SOURCES ${BASE_SOURCES} src/hw/arm_gic.c )
 endif()
-
-if(UBSAN)
-  set( BASE_SOURCES ${BASE_SOURCES} src/ubsan.c )
-endif(UBSAN)
 
 add_library(support OBJECT ${BASE_SOURCES})
 
@@ -75,33 +92,59 @@ add_custom_target(test_demos)
 
 function(add_demo_app NAME)
         add_executable ( ${NAME} demos/${NAME}.c $<TARGET_OBJECTS:support> )
-        target_link_libraries(${NAME} PRIVATE "-Wl,-nostdlib,-lgcc,-T,linker.ld,-defsym=ram_start=${RAM_START},-lc")
+
+        if(NOT HOSTED)
+          target_link_libraries(${NAME} PRIVATE "-Wl,-T,linker.ld,-defsym=ram_start=${RAM_START},-lgcc,-lc,-N")
+        endif()
 
         add_custom_command(TARGET ${NAME} PRE_BUILD
-          COMMAND eval "${PREFIX}-gcc --version | head -n 1"
+          COMMAND eval "${CMAKE_C_COMPILER} --version | head -n 1"
           VERBATIM)
         add_dependencies(make_demos ${NAME})
 
         add_custom_target(run_${NAME})
         add_dependencies(run_${NAME} ${NAME})
-        add_custom_command(TARGET run_${NAME} POST_BUILD
-          COMMAND eval "${QEMU} ${NAME}"
-          VERBATIM)
+
+        if(HOSTED)
+          add_custom_command(TARGET run_${NAME} POST_BUILD
+            COMMAND eval "./${NAME}"
+            VERBATIM)
+        else()
+           add_custom_command(TARGET run_${NAME} POST_BUILD
+             COMMAND eval "${QEMU} ${NAME}"
+            VERBATIM)
+        endif()
 
         add_custom_target(debug_${NAME})
         add_dependencies(debug_${NAME} ${NAME})
-        add_custom_command(TARGET debug_${NAME} POST_BUILD
-          COMMAND eval "${QEMU} ${NAME} -s -S"
-          VERBATIM)
+
+        if(HOSTED)
+          add_custom_command(TARGET debug_${NAME} POST_BUILD
+            COMMAND eval "gdb ./${NAME}"
+            VERBATIM)
+        else()
+          add_custom_command(TARGET debug_${NAME} POST_BUILD
+            COMMAND eval "${QEMU} ${NAME} -s -S"
+            VERBATIM)
+        endif()
 
         # This could be done with add_test, but then we wouldn't see the failure output.
         add_custom_target(test_${NAME} ALL)
         add_dependencies(test_${NAME} ${NAME})
-        add_custom_command(TARGET test_${NAME} POST_BUILD
-          # Why eval? Well, I've spent way too much time trying to get this argument substitution to work.
-          COMMAND eval "${QEMU} ${NAME} -serial file:${NAME}_got.log > /dev/null 2>&1"
-          COMMAND diff demos/${NAME}_expected.log ${NAME}_got.log
-          VERBATIM)
+
+        if(HOSTED)
+          add_custom_command(TARGET test_${NAME} POST_BUILD
+            COMMAND eval "./${NAME} > ${NAME}_got.log"
+            COMMAND diff demos/${NAME}_expected.log ${NAME}_got.log
+            VERBATIM)
+        else()
+          add_custom_command(TARGET test_${NAME} POST_BUILD
+            # Why eval? Well, I've spent way too much time trying to get this argument substitution to work.
+            COMMAND eval "${QEMU} ${NAME} -serial file:${NAME}_got.log > /dev/null 2>&1"
+            COMMAND diff demos/${NAME}_expected.log ${NAME}_got.log
+            VERBATIM)
+        endif()
+
         add_dependencies(test_demos test_${NAME})
 
 endfunction(add_demo_app)
@@ -111,7 +154,10 @@ add_demo_app(exyielding)
 add_demo_app(message)
 add_demo_app(exit)
 add_demo_app(spawn)
-add_demo_app(stackcheck)
 add_demo_app(args)
 add_demo_app(mutex)
-add_demo_app(timer)
+
+if(NOT HOSTED)
+  add_demo_app(timer)
+  add_demo_app(stackcheck)
+endif()

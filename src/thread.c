@@ -83,6 +83,14 @@ __attribute__((noreturn)) void entry(void) {
   __builtin_unreachable();
 }
 
+#ifdef linux
+// Hosted builds need an entry point
+int main() {
+  entry();
+  return 0;
+}
+#endif
+
 bool is_valid_thread(int tid) {
   return (tid >= 0) &&
     (tid < MAX_THREADS) &&
