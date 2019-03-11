@@ -7,30 +7,23 @@ thread_switch_initial:
   mov sp, r0              // without having more than one entry point
   bl thread_switch        // to the switching code
 
-.macro THREAD_SWITCH_ENTRY
-  /* Push all regs apart from sp and pc) */
-  push {r0-r12, r14} // lr also included here
+.global thread_switch_alrm
+thread_switch_alrm:
+  /* Next thread is always the scheduler */
+  ldr r0, =next_thread
+  ldr r1, =scheduler_thread
+  str r1, [r0]
+
+  b thread_switch
+
+.global thread_switch
+thread_switch:
+  /* Push all callee saved regs apart from sp and pc */
+  push {r4-r12, r14} // lr also included here
 
   /* Setup pointers in some high reg numbers we won't overwrite */
   ldr r10, =current_thread
   ldr r11, =next_thread
-.endm
-
-.global thread_switch_alrm
-thread_switch_alrm:
-  THREAD_SWITCH_ENTRY
-
-  /* Next thread is always the scheduler */
-  ldr r0, =scheduler_thread
-  str r0, [r11]
-
-  b thread_switch_inner
-
-.global thread_switch
-thread_switch:
-  THREAD_SWITCH_ENTRY
-
-thread_switch_inner:
 
   /* Save our Stack pointer and PC */
   ldr r1, [r10]           // get actual adress of current thread
@@ -53,7 +46,7 @@ thread_switch_inner:
   b exc_return            // don't restore other regs, just use loaded lr from above
 
 restore_regs:
-  pop {r0-r12, r14}       // restore our own regs (no sp/pc)
+  pop {r4-r12, r14}       // restore our own regs (no sp/pc)
 
 exc_return:
   bx lr
