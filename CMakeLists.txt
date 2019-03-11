@@ -17,7 +17,7 @@ if ( BP_LOWER STREQUAL "arm_linux")
   set( RAM_START    "" )
   set( UART_BASE    "" )
   set( QEMU_ARGS    "" )
-  set( HOSTED       ON )
+  set( LINUX       ON )
 elseif( BP_LOWER STREQUAL "arm" )
   set( PREFIX       "arm-none-eabi" )
   set( PLATFORM     "-mcpu=cortex-a15" )
@@ -42,7 +42,7 @@ elseif( BP_LOWER STREQUAL "thumb" )
   set( QEMU_ARGS    "qemu-system-arm -M lm3s6965evb -cpu cortex-m4" )
 endif()
 
-if (HOSTED)
+if (LINUX)
   set( CMAKE_C_COMPILER "gcc" )
   set( CFLAGS "-Wall -g -O${OPT_LEVEL} -std=gnu11" )
 else()
@@ -70,7 +70,7 @@ set( BASE_SOURCES
   src/hw/${PLATFORM_SRC}/timer.c
 )
 
-if(HOSTED)
+if(LINUX)
   set( BASE_SOURCES ${BASE_SOURCES}
        src/hw/${PLATFORM_SRC}/main.c
   )
@@ -98,7 +98,7 @@ add_custom_target(test_demos)
 function(add_demo_app NAME)
         add_executable ( ${NAME} demos/${NAME}.c $<TARGET_OBJECTS:support> )
 
-        if(NOT HOSTED)
+        if(NOT LINUX)
           target_link_libraries(${NAME} PRIVATE "-Wl,-T,linker.ld,-defsym=ram_start=${RAM_START},-lgcc,-lc,-N")
         endif()
 
@@ -110,7 +110,7 @@ function(add_demo_app NAME)
         add_custom_target(run_${NAME})
         add_dependencies(run_${NAME} ${NAME})
 
-        if(HOSTED)
+        if(LINUX)
           add_custom_command(TARGET run_${NAME} POST_BUILD
             COMMAND eval "./${NAME}"
             VERBATIM)
@@ -123,7 +123,7 @@ function(add_demo_app NAME)
         add_custom_target(debug_${NAME})
         add_dependencies(debug_${NAME} ${NAME})
 
-        if(HOSTED)
+        if(LINUX)
           add_custom_command(TARGET debug_${NAME} POST_BUILD
             COMMAND eval "gdb ./${NAME}"
             VERBATIM)
@@ -137,7 +137,7 @@ function(add_demo_app NAME)
         add_custom_target(test_${NAME} ALL)
         add_dependencies(test_${NAME} ${NAME})
 
-        if(HOSTED)
+        if(LINUX)
           add_custom_command(TARGET test_${NAME} POST_BUILD
             COMMAND eval "./${NAME} > ${NAME}_got.log"
             COMMAND diff demos/${NAME}_expected.log ${NAME}_got.log
@@ -163,6 +163,6 @@ add_demo_app(args)
 add_demo_app(mutex)
 add_demo_app(timer)
 
-if(NOT HOSTED)
+if(NOT LINUX)
   add_demo_app(stackcheck)
 endif()
