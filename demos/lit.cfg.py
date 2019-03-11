@@ -38,4 +38,4 @@ config.test_format = MakeTest()
 config.suffixes = ['.log']
 config.test_source_root = os.path.dirname(__file__)
 config.test_exec_root = os.path.join(config.test_source_root, '..')
-config.excludes = ['timer.c', 'stackcheck.c'] if platform.lower() == 'arm_linux' else []
+config.excludes = ['stackcheck.c'] if platform.lower() == 'arm_linux' else []

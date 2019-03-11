@@ -52,7 +52,7 @@ else()
 endif()
 
 if(UBSAN)
-    set( CFLAGS "${CFLAGS} -fsanitize=undefined" )
+  set( CFLAGS "${CFLAGS} -fsanitize=undefined" )
 endif(UBSAN)
 
 set( CMAKE_C_FLAGS "${PLATFORM} ${CFLAGS}" )
@@ -70,18 +70,23 @@ set( BASE_SOURCES
   src/hw/${PLATFORM_SRC}/timer.c
 )
 
-if(NOT HOSTED)
+if(HOSTED)
+  set( BASE_SOURCES ${BASE_SOURCES}
+       src/hw/${PLATFORM_SRC}/main.c
+  )
+else()
   set( BASE_SOURCES ${BASE_SOURCES}
        src/hw/${PLATFORM_SRC}/vectors.s
        src/hw/${PLATFORM_SRC}/startup.s
   )
+
   if(UBSAN)
     set( BASE_SOURCES ${BASE_SOURCES} src/ubsan.c )
   endif()
-endif()
 
-if(NOT BP_LOWER STREQUAL "thumb")
-  set( BASE_SOURCES ${BASE_SOURCES} src/hw/arm_gic.c )
+  if(NOT BP_LOWER STREQUAL "thumb")
+    set( BASE_SOURCES ${BASE_SOURCES} src/hw/arm_gic.c )
+  endif()
 endif()
 
 add_library(support OBJECT ${BASE_SOURCES})
@@ -156,8 +161,8 @@ add_demo_app(exit)
 add_demo_app(spawn)
 add_demo_app(args)
 add_demo_app(mutex)
+add_demo_app(timer)
 
 if(NOT HOSTED)
-  add_demo_app(timer)
   add_demo_app(stackcheck)
 endif()

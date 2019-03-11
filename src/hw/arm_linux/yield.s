@@ -1,7 +1,3 @@
-.set SYSTEM_MODE,     0x1f
-.set SUPERVISOR_MODE, 0x13
-.set USER_MODE,       0x10
-
 .global thread_switch_initial
 thread_switch_initial:
   /* Called when starting the scheduler, so we can trash regs here */
@@ -11,14 +7,30 @@ thread_switch_initial:
   mov sp, r0              // without having more than one entry point
   bl thread_switch        // to the switching code
 
-.global thread_switch
-thread_switch:
+.macro THREAD_SWITCH_ENTRY
   /* Push all regs apart from sp and pc) */
   push {r0-r12, r14} // lr also included here
 
   /* Setup pointers in some high reg numbers we won't overwrite */
   ldr r10, =current_thread
   ldr r11, =next_thread
+.endm
+
+.global thread_switch_alrm
+thread_switch_alrm:
+  THREAD_SWITCH_ENTRY
+
+  /* Next thread is always the scheduler */
+  ldr r0, =scheduler_thread
+  str r0, [r11]
+
+  b thread_switch_inner
+
+.global thread_switch
+thread_switch:
+  THREAD_SWITCH_ENTRY
+
+thread_switch_inner:
 
   /* Save our Stack pointer and PC */
   ldr r1, [r10]           // get actual adress of current thread
