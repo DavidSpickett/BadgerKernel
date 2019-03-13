@@ -31,17 +31,18 @@ This will build and test all the demos.
 
 ## Demos
 
-| Name                          | Description                                                               |
-|-------------------------------|---------------------------------------------------------------------------|
-| yielding                      | Threads yielding back to the scheduler.                                   |
-| exyielding                    | Threads yielding directly to another thread or the next available thread. |
-| message                       | Passing messages between threads.                                         |
-| exit                          | Threads exiting normally like any other C function.                       |
-| spawn                         | One thread creating other threads.                                        |
-| stackcheck                    | Detection of thread stack underflow or overflow when they try to yield.   |
-| args                          | Passing arguments to a thread.                                            |
-| mutex                         | Locking a buffer using a mutex.                                           |
-| timer                         | Thread switching using a timer interrupt.                                 |
+| Name                          | Description                                                                       |
+|-------------------------------|-----------------------------------------------------------------------------------|
+| yielding                      | Threads yielding back to the scheduler.                                           |
+| exyielding                    | Threads yielding directly to another thread or the next available thread.         |
+| message                       | Passing messages between threads.                                                 |
+| exit                          | Threads exiting normally like any other C function.                               |
+| spawn                         | One thread creating other threads.                                                |
+| stackcheck                    | Detection of thread stack underflow or overflow when they try to yield.           |
+| args                          | Passing arguments to a thread.                                                    |
+| mutex                         | Locking a buffer using a mutex.                                                   |
+| timer                         | Thread switching using a timer interrupt.                                         |
+| threadlocalstorage            | Using thread local storage (TLS) to give each thread it's own 'global' variables. |
 
 Each demo has 'run_<demo>', 'debug_<demo>' and 'test_<demo>' make targets. To test all demos, use 'make test_demos' or use lit. (best done in a virtualenv)
 
