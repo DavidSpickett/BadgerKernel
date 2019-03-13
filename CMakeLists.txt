@@ -60,6 +60,7 @@ set( BASE_SOURCES
   src/thread.c
   src/print.c
   src/mutex.c
+  src/emutls.c
   src/hw/${PLATFORM_SRC}/yield.s
   src/hw/${PLATFORM_SRC}/semihosting.c
   src/hw/${PLATFORM_SRC}/timer.c
@@ -159,5 +160,8 @@ add_demo_app(mutex)
 add_demo_app(timer)
 
 if(NOT LINUX)
+  if(NOT BP_LOWER STREQUAL "aarch64" )
+    add_demo_app(threadlocalstorage)
+  endif()
   add_demo_app(stackcheck)
 endif()

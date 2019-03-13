@@ -70,3 +70,4 @@ ubhandler(type_mismatch, void* a);
 ubhandler(out_of_bounds, void* a);
 ubhandler(vla_bound_not_positive, void* a);
 ubhandler(shift_out_of_bounds, void* a, void* b);
+ubhandler(mul_overflow, void* a, void* b);
