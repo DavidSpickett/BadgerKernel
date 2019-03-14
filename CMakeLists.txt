@@ -60,7 +60,6 @@ set( BASE_SOURCES
   src/thread.c
   src/print.c
   src/mutex.c
-  src/emutls.c
   src/hw/${PLATFORM_SRC}/yield.s
   src/hw/${PLATFORM_SRC}/semihosting.c
   src/hw/${PLATFORM_SRC}/timer.c
@@ -74,6 +73,7 @@ else()
   set( BASE_SOURCES ${BASE_SOURCES}
        src/hw/${PLATFORM_SRC}/vectors.s
        src/hw/${PLATFORM_SRC}/startup.s
+       src/emutls.c
   )
 
   if(UBSAN)
