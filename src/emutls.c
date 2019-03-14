@@ -17,10 +17,10 @@ typedef struct __emutls_control {
 
 #define ALLOC_SPACE_SIZE 256
 #define MAX_TLS_VARS 3
-void* address_arrays[MAX_THREADS][MAX_TLS_VARS];
-uint8_t alloc_space[ALLOC_SPACE_SIZE];
-uint8_t* alloc_ptr = alloc_space;
-uintptr_t emutls_var_count;
+static void* address_arrays[MAX_THREADS][MAX_TLS_VARS];
+static uint8_t alloc_space[ALLOC_SPACE_SIZE];
+static uint8_t* alloc_ptr = alloc_space;
+static uintptr_t emutls_var_count;
 
 static void emutls_init_var(__emutls_control* control) {
   uint8_t* new_ptr = alloc_ptr + control->size;
