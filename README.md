@@ -2,20 +2,22 @@
 
 A simple set of demos showing threads sharing time on Arm platforms.
 
-Current build targets are Arm (Armv7A, Cortex A-15), Thumb (Armv7E-M Cortex-M4) and AArch64 (Armv8A, Cortex A-57). Each platform has it's own folder in '/src/hw' for its specific code.
+Current build targets are Arm (Armv7A, Cortex A-15), Thumb (Armv7E-M Cortex-M4), AArch64 (Armv8A, Cortex A-57) and 32 bit Arm Linux (Raspberry Pi). Each platform has it's own folder in '/src/hw' for its specific code.
 
-All platforms use exceptions for switching threads. Either by yielding (which uses a software exception) or enabling a timer interrupt for preemptive switching.
+All bare metal platforms use exceptions for switching threads. Either by yielding (which uses a software exception) or enabling a timer interrupt for preemptive switching.
 
 ## Building
 
+### Bare Metal
+
 Install cmake and an arm-none-eabi or aarch64-elf toolchain. (Linaro releases are the easiest way to get these)
 
-Install qemu with Arm support (this will get you aarch64 too):
+Install QEMU with Arm support (this will get you aarch64 too):
 ```
 sudo apt-get install qemu-system-arm
 ```
 
-Then configure according to which toolchain you installed:
+Then configure according to which toolchain you installed, and build:
 ```
 cmake . -DBUILD_PLATFORM=arm
 make
@@ -27,22 +29,31 @@ cmake . -DBUILD_PLATFORM=thumb
 make
 ```
 
-This will build and test all the demos.
+### Arm Linux
+
+Simply configure with cmake and build, the system GCC is fine.
+
+```
+cmake . -DBUILD_PLATFORM=arm_linux
+make
+```
+
+Note that you do not need QEMU for this, everything runs natively.
 
 ## Demos
 
-| Name                          | Description                                                                       |
-|-------------------------------|-----------------------------------------------------------------------------------|
-| yielding                      | Threads yielding back to the scheduler.                                           |
-| exyielding                    | Threads yielding directly to another thread or the next available thread.         |
-| message                       | Passing messages between threads.                                                 |
-| exit                          | Threads exiting normally like any other C function.                               |
-| spawn                         | One thread creating other threads.                                                |
-| stackcheck                    | Detection of thread stack underflow or overflow when they try to yield.           |
-| args                          | Passing arguments to a thread.                                                    |
-| mutex                         | Locking a buffer using a mutex.                                                   |
-| timer                         | Thread switching using a timer interrupt.                                         |
-| threadlocalstorage            | Using thread local storage (TLS) to give each thread it's own 'global' variables. |
+| Name                           | Description                                                                       |
+|--------------------------------|-----------------------------------------------------------------------------------|
+| yielding                       | Threads yielding back to the scheduler.                                           |
+| exyielding                     | Threads yielding directly to another thread or the next available thread.         |
+| message                        | Passing messages between threads.                                                 |
+| exit                           | Threads exiting normally like any other C function.                               |
+| spawn                          | One thread creating other threads.                                                |
+| stackcheck (Arm/Thumb/AArch64) | Detection of thread stack underflow or overflow when they try to yield.           |
+| args                           | Passing arguments to a thread.                                                    |
+| mutex                          | Locking a buffer using a mutex.                                                   |
+| timer                          | Thread switching using a timer interrupt.                                         |
+| threadlocalstorage (Arm/Thumb) | Using thread local storage (TLS) to give each thread it's own 'global' variables. |
 
 Each demo has 'run_<demo>', 'debug_<demo>' and 'test_<demo>' make targets. To test all demos, use 'make test_demos' or use lit. (best done in a virtualenv)
 
