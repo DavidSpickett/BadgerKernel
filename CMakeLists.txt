@@ -16,7 +16,8 @@ if ( BP_LOWER STREQUAL "arm_linux")
   set( PLATFORM_SRC "arm_linux" )
   set( LINUX ON )
   if (NOT NATIVE)
-    set( PLATFORM "-static -mcpu=cortex-a15" )
+    # Do *not* generate Thumb code!
+    set( PLATFORM "-static -mcpu=cortex-a15 -marm" )
     # Note: soft float
     set( PREFIX "arm-linux-gnueabi-")
     set( QEMU_CMD "qemu-arm --cpu cortex-a15")

@@ -20,6 +20,14 @@ jobs:
         - script: sudo apt-get install -y gcc-arm-none-eabi libnewlib-arm-none-eabi
           displayName: apt-get-toolchain
 
+      - ${{ if eq(build_platform, 'ARM_LINUX') }}:
+        - script: |
+            set -ex
+            sudo apt-get install -y qemu-user
+            wget -q https://releases.linaro.org/components/toolchain/binaries/7.4-2019.02/arm-linux-gnueabi/gcc-linaro-7.4.1-2019.02-x86_64_arm-linux-gnueabi.tar.xz
+            tar -xf gcc-linaro-7.4.1-2019.02-x86_64_arm-linux-gnueabi.tar.xz
+          displayName: download-linaro-toolchain
+
       - ${{ if eq(build_platform, 'AARCH64') }}:
         - script: |
             set -ex
@@ -39,8 +47,9 @@ jobs:
         - ${{ each ubsan in parameters.ubsan }}:
           - script: |
               set -ex
-              # This is only for AArch64 but since env vars don't persist between scripts, do it anyway
+              # Each script has its own environment so we need to do this here
               export PATH=$(pwd)/gcc-linaro-7.4.1-2019.02-x86_64_aarch64-elf/bin/:$PATH
+              export PATH=$(pwd)/gcc-linaro-7.4.1-2019.02-x86_64_arm-linux-gnueabi/bin/:$PATH
               cmake . -DBUILD_PLATFORM=${{build_platform}} -DOPT_LEVEL=${{opt_level}} -DUBSAN=${{ubsan}} -DNATIVE=OFF
               make clean
               make make_demos
