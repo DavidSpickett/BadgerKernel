@@ -4,45 +4,53 @@ cmake_minimum_required( VERSION 3.7 )
 set( BUILD_PLATFORM "arm" CACHE STRING "Architecture to build for." )
 set( OPT_LEVEL "3" CACHE STRING "Compiler optmisation level." )
 option( UBSAN "Enable undefined behaviour sanitiser." OFF )
+option( NATIVE "Set ON to run Arm Linux demos on real hardware." OFF )
 
 string( TOLOWER "${BUILD_PLATFORM}" BP_LOWER )
 message(STATUS "BUILD_PLATFORM is ${BP_LOWER}")
 message(STATUS "OPT_LEVEL is -O${OPT_LEVEL}")
 message(STATUS "UBSAN is ${UBSAN}")
+message(STATUS "NATIVE is ${NATIVE}")
 
 if ( BP_LOWER STREQUAL "arm_linux")
   set( PLATFORM_SRC "arm_linux" )
-  set( LINUX       ON )
+  set( LINUX ON )
+  if (NOT NATIVE)
+    set( PLATFORM "-static -mcpu=cortex-a15" )
+    # Note: soft float
+    set( PREFIX "arm-linux-gnueabi-")
+    set( QEMU_CMD "qemu-arm --cpu cortex-a15")
+  endif()
 elseif( BP_LOWER STREQUAL "arm" )
-  set( PREFIX       "arm-none-eabi" )
+  set( PREFIX       "arm-none-eabi-" )
   set( PLATFORM     "-mcpu=cortex-a15" )
   set( PLATFORM_SRC "arm_virt" )
   set( RAM_START    "0x40000000" )
   set( UART_BASE    "0x09000000" )
-  set( QEMU_ARGS    "qemu-system-arm -M virt -cpu cortex-a15" )
+  set( QEMU_CMD    "qemu-system-arm -M virt -cpu cortex-a15" )
 elseif( BP_LOWER STREQUAL "aarch64" )
-  set( PREFIX       "aarch64-elf" )
+  set( PREFIX       "aarch64-elf-" )
   # Don't generate NEON
   set( PLATFORM     "-mcpu=cortex-a57 -mgeneral-regs-only" )
   set( PLATFORM_SRC "aarch64_virt" )
   set( RAM_START    "0x40000000" )
   set( UART_BASE    "0x09000000" )
-  set( QEMU_ARGS    "qemu-system-aarch64 -M virt -cpu cortex-a57" )
+  set( QEMU_CMD    "qemu-system-aarch64 -M virt -cpu cortex-a57" )
 elseif( BP_LOWER STREQUAL "thumb" )
-  set( PREFIX       "arm-none-eabi" )
+  set( PREFIX       "arm-none-eabi-" )
   set( PLATFORM     "-mthumb -mcpu=cortex-m4" )
   set( PLATFORM_SRC "thumb_lm3s6965evb" )
   set( RAM_START    "0x20000000" )
   set( UART_BASE    "0x4000C000" )
-  set( QEMU_ARGS    "qemu-system-arm -M lm3s6965evb -cpu cortex-m4" )
+  set( QEMU_CMD    "qemu-system-arm -M lm3s6965evb -cpu cortex-m4" )
 endif()
 
+set( CMAKE_C_COMPILER "${PREFIX}gcc" )
+
 if (LINUX)
-  set( CMAKE_C_COMPILER "gcc" )
   set( CFLAGS "-Wall -g -O${OPT_LEVEL} -std=gnu11" )
 else()
-  set( CMAKE_C_COMPILER "${PREFIX}-gcc" )
-  set( QEMU "${QEMU_ARGS} -m 64M -nographic -semihosting -kernel" )
+  set( QEMU "${QEMU_CMD} -m 64M -nographic -semihosting -kernel" )
   set( CFLAGS "-Wall -ffreestanding -nostdlib -g -O${OPT_LEVEL} -std=gnu11 -DUART_BASE=${UART_BASE}" )
 endif()
 
@@ -108,7 +116,7 @@ function(add_demo_app NAME)
 
         if(LINUX)
           add_custom_command(TARGET run_${NAME} POST_BUILD
-            COMMAND eval "./${NAME}"
+            COMMAND eval "${QEMU_CMD} ./${NAME}"
             VERBATIM)
         else()
            add_custom_command(TARGET run_${NAME} POST_BUILD
@@ -120,9 +128,12 @@ function(add_demo_app NAME)
         add_dependencies(debug_${NAME} ${NAME})
 
         if(LINUX)
-          add_custom_command(TARGET debug_${NAME} POST_BUILD
-            COMMAND eval "gdb ./${NAME}"
-            VERBATIM)
+          if(NATIVE)
+            add_custom_command(TARGET debug_${NAME} POST_BUILD
+              COMMAND eval "gdb ./${NAME}"
+              VERBATIM)
+          endif()
+          # No debug command for qemu-arm builds
         else()
           add_custom_command(TARGET debug_${NAME} POST_BUILD
             COMMAND eval "${QEMU} ${NAME} -s -S"
@@ -135,7 +146,7 @@ function(add_demo_app NAME)
 
         if(LINUX)
           add_custom_command(TARGET test_${NAME} POST_BUILD
-            COMMAND eval "./${NAME} > ${NAME}_got.log"
+            COMMAND eval "${QEMU_CMD} ./${NAME} > ${NAME}_got.log"
             COMMAND diff demos/${NAME}_expected.log ${NAME}_got.log
             VERBATIM)
         else()
