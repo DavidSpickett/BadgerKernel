@@ -34,11 +34,17 @@ make
 Simply configure with cmake and build, the system GCC is fine.
 
 ```
-cmake . -DBUILD_PLATFORM=arm_linux
+cmake . -DBUILD_PLATFORM=arm_linux -DNATIVE=ON
 make
 ```
 
-Note that you do not need QEMU for this, everything runs natively.
+Or you can run this via qemu-user on x86. You'll need the arm-linux-gnueabi toolchain for this.
+
+```
+sudo apt-get install qemu-system-arm qemu-user
+cmake . -DBUILD_PLATFORM=arm_linux -DNATIVE=OFF
+make
+```
 
 ## Demos
 
