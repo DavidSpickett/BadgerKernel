@@ -7,50 +7,51 @@ parameters:
 
 jobs:
 - ${{ each build_platform in parameters.build_platform }}:
-  - ${{ each opt_level in parameters.opt_level }}:
-    - ${{ each ubsan in parameters.ubsan }}:
-      - job: ${{build_platform}}_O${{opt_level}}_UBSAN_${{ubsan}}
-        pool:
-          vmImage: 'Ubuntu-16.04'
-        steps:
-          - script: |
-              sudo apt-get install -y qemu-system-arm
-            displayName: apt-get-qemu
+  - job: ${{build_platform}}
+    pool:
+      vmImage: 'Ubuntu-16.04'
+    steps:
+      - script: |
+          sudo apt-get install -y qemu-system-arm
+        displayName: apt-get-qemu
 
-          - ${{ if eq(build_platform, 'ARM') }}:
-            - script: sudo apt-get install -y gcc-arm-none-eabi libnewlib-arm-none-eabi
-              displayName: apt-get-toolchain
+      - ${{ if in(build_platform, ['ARM', 'THUMB']) }}:
+        - script: sudo apt-get install -y gcc-arm-none-eabi libnewlib-arm-none-eabi
+          displayName: apt-get-toolchain
 
-          - ${{ if eq(build_platform, 'THUMB') }}:
-            - script: sudo apt-get install -y gcc-arm-none-eabi libnewlib-arm-none-eabi
-              displayName: apt-get-toolchain
+      - ${{ if eq(build_platform, 'AARCH64') }}:
+        - script: |
+            set -ex
+            wget -q https://releases.linaro.org/components/toolchain/binaries/7.4-2019.02/aarch64-elf/gcc-linaro-7.4.1-2019.02-x86_64_aarch64-elf.tar.xz
+            tar -xf gcc-linaro-7.4.1-2019.02-x86_64_aarch64-elf.tar.xz
+          displayName: download-linaro-toolchain
 
-          - ${{ if eq(build_platform, 'AARCH64') }}:
-            - script: |
-                set -ex
-                wget -q https://releases.linaro.org/components/toolchain/binaries/7.4-2019.02/aarch64-elf/gcc-linaro-7.4.1-2019.02-x86_64_aarch64-elf.tar.xz
-                tar -xf gcc-linaro-7.4.1-2019.02-x86_64_aarch64-elf.tar.xz
-              displayName: download-linaro-toolchain
+      - script: |
+          # Running it in a venv is the best way to be able to just run 'lit', not some random path or "python -c" invocation.
+          pip install virtualenv
+          python -m virtualenv testenv
+          source testenv/bin/activate
+          pip install lit
+        displayName: install_lit
 
+      - ${{ each opt_level in parameters.opt_level }}:
+        - ${{ each ubsan in parameters.ubsan }}:
           - script: |
               set -ex
               # This is only for AArch64 but since env vars don't persist between scripts, do it anyway
               export PATH=$(pwd)/gcc-linaro-7.4.1-2019.02-x86_64_aarch64-elf/bin/:$PATH
-              cmake . -DBUILD_PLATFORM=${{build_platform}} -DOPT_LEVEL=${{opt_level}} -DUBSAN=${{ubsan}}
+              cmake . -DBUILD_PLATFORM=${{build_platform}} -DOPT_LEVEL=${{opt_level}} -DUBSAN=${{ubsan}} -DNATIVE=OFF
+              make clean
               make make_demos
-            displayName: build
+            displayName: build_${{opt_level}}_UBSAN_${{ubsan}}
 
           - script: |
-              # Running it in a venv is the best way to be able to just run 'lit', not some random path or "python -c" invocation.
-              pip install virtualenv
-              python -m virtualenv testenv
               source testenv/bin/activate
-              pip install lit
               # Don't be fooled, this is actually JUnit format
-              lit demos --xunit-xml-output results.xml || true
-            displayName: test
+              lit demos --xunit-xml-output ${{build_platform}}_${{opt_level}}_UBSAN_${{ubsan}}_results.xml || true
+            displayName: test_${{opt_level}}_UBSAN_${{ubsan}}
 
-          - task: PublishTestResults@2
-            inputs:
-              testResultsFormat: 'JUnit'
-              testResultsFiles: 'results.xml' 
+      - task: PublishTestResults@2
+        inputs:
+          testResultsFormat: 'JUnit'
+          testResultsFiles: '*_results.xml'
