@@ -19,6 +19,10 @@ jobs:
         - script: sudo apt-get install -y gcc-arm-none-eabi libnewlib-arm-none-eabi
           displayName: apt-get-toolchain
 
+      - ${{ if eq(build_platform, 'ARM_LINUX') }}:
+        - script: sudo apt-get install -y gcc-arm-linux-gnueabi qemu-user
+          displayName: apt-get-toolchain
+
       - ${{ if eq(build_platform, 'AARCH64') }}:
         - script: |
             set -ex
