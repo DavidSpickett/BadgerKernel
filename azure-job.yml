@@ -15,7 +15,7 @@ jobs:
           sudo apt-get install -y qemu-system-arm
         displayName: apt-get-qemu
 
-      - ${{ if in(build_platform, ['ARM', 'THUMB']) }}:
+      - ${{ if in(build_platform, 'ARM', 'THUMB') }}:
         - script: sudo apt-get install -y gcc-arm-none-eabi libnewlib-arm-none-eabi
           displayName: apt-get-toolchain
 
