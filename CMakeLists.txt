@@ -58,8 +58,7 @@ if(UBSAN)
   set( CFLAGS "${CFLAGS} -fsanitize=undefined " )
   # Failing is the default on bare metal, but it doesn't recognise the option
   if (LINUX)
-    # UBSAN on Linux needs pthread, and libdl (but not locally, just in Azure?)
-    set( CFLAGS "${CFLAGS} -fno-sanitize-recover -pthread -Wl,-ldl")
+    set( CFLAGS "${CFLAGS} -fno-sanitize-recover ")
   endif()
 endif(UBSAN)
 
@@ -137,8 +136,11 @@ function(add_demo_app NAME)
             add_custom_command(TARGET debug_${NAME} POST_BUILD
               COMMAND eval "gdb ./${NAME}"
               VERBATIM)
+          else()
+            add_custom_command(TARGET debug_${NAME} POST_BUILD
+              COMMAND eval "${QEMU_CMD} -g 1234 ./${NAME}"
+              VERBATIM)
           endif()
-          # No debug command for qemu-arm builds
         else()
           add_custom_command(TARGET debug_${NAME} POST_BUILD
             COMMAND eval "${QEMU} ${NAME} -s -S"
