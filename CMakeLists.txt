@@ -58,7 +58,7 @@ if(UBSAN)
   set( CFLAGS "${CFLAGS} -fsanitize=undefined " )
   # Failing is the default on bare metal, but it doesn't recognise the option
   if (LINUX)
-    set( CFLAGS "${CFLAGS} -fno-sanitize-recover ")
+    set( CFLAGS "${CFLAGS} -fno-sanitize-recover -pthread")
   endif()
 endif(UBSAN)
 
