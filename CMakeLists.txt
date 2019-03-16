@@ -55,7 +55,11 @@ else()
 endif()
 
 if(UBSAN)
-  set( CFLAGS "${CFLAGS} -fsanitize=undefined" )
+  set( CFLAGS "${CFLAGS} -fsanitize=undefined " )
+  # Failing is the default on bare metal, but it doesn't recognise the option
+  if (LINUX)
+    set( CFLAGS "${CFLAGS} -fno-sanitize-recover ")
+  endif()
 endif(UBSAN)
 
 set( CMAKE_C_FLAGS "${PLATFORM} ${CFLAGS}" )

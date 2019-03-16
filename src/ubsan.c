@@ -54,7 +54,7 @@ void print_source_info(struct SourceInfo* s) {
 
 #define ubhandler(NAME, ...) \
 void __ubsan_handle_##NAME(struct SourceInfo* s, ##__VA_ARGS__) { \
-  qemu_print("UBSAN: " #NAME " @ "); \
+  print("UBSAN: " #NAME " @ "); \
   print_source_info(s); \
   qemu_exit(); \
   __builtin_unreachable(); \
