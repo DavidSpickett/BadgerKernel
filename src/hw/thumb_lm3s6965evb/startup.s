@@ -14,4 +14,7 @@ _Reset:
   ldr r0, =stack_top // Setup PSP
   mov sp, r0
 
-  b entry
+  // Load the address directly so the distance isn't an issue
+  ldr r0, =entry
+  // Note that the Thumb bit is set for us
+  bx r0
