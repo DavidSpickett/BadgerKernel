@@ -9,9 +9,19 @@ void thread_work(const char* msg,
         int* total_prints
 ) {
   while (1) {
-    disable_timer();
-
     if (*your_flag) {
+      /* Disable the timer after we've found the flag
+         to prevent a race condition. If we did:
+         disable timer -> check flag -> enable timer
+         The timer may not fire between enable/disable.
+         Whether it does depends on code layout and machine speed.
+         With this ordering we might be interrupted while
+         reading our flag but that's fine. We'll just pick
+         it up next time aronud the loop.
+         (and there's no need for waiting for interrupts)
+      */
+      disable_timer();
+
       *your_flag = false;
       *their_flag = true;
       *total_prints -= 1;
@@ -23,15 +33,6 @@ void thread_work(const char* msg,
       log_event(msg);
     }
     enable_timer();
-    /* Note that for a sufficiently long timer amount,
-       enable_timer and disable_timer are basically
-       sequential.
-
-       So to prevent a race condition we must check
-       total_prints after our flag is set.
-       Otherwise if the timer doesn't fire between
-       enable and disable, we'll exit immediatley.
-    */
   }
   // Exit normally to scheduler...
 }
