@@ -4,6 +4,7 @@ parameters:
   build_platform: []
   opt_level: []
   ubsan: []
+  lto: []
 
 jobs:
 - ${{ each build_platform in parameters.build_platform }}:
@@ -44,22 +45,23 @@ jobs:
         displayName: install_lit
 
       - ${{ each opt_level in parameters.opt_level }}:
-        - ${{ each ubsan in parameters.ubsan }}:
-          - script: |
-              set -ex
-              # Each script has its own environment so we need to do this here
-              export PATH=$(pwd)/gcc-linaro-7.4.1-2019.02-x86_64_aarch64-elf/bin/:$PATH
-              export PATH=$(pwd)/gcc-linaro-7.4.1-2019.02-x86_64_arm-linux-gnueabi/bin/:$PATH
-              cmake . -DBUILD_PLATFORM=${{build_platform}} -DOPT_LEVEL=${{opt_level}} -DUBSAN=${{ubsan}} -DNATIVE=OFF
-              make clean
-              make make_demos
-            displayName: build_O${{opt_level}}_UBSAN_${{ubsan}}
+        - ${{ each lto in parameters.lto }}:
+          - ${{ each ubsan in parameters.ubsan }}:
+            - script: |
+                set -ex
+                # Each script has its own environment so we need to do this here
+                export PATH=$(pwd)/gcc-linaro-7.4.1-2019.02-x86_64_aarch64-elf/bin/:$PATH
+                export PATH=$(pwd)/gcc-linaro-7.4.1-2019.02-x86_64_arm-linux-gnueabi/bin/:$PATH
+                cmake . -DBUILD_PLATFORM=${{build_platform}} -DOPT_LEVEL=${{opt_level}} -DUBSAN=${{ubsan}} -DLTO=${{lto}} -DNATIVE=OFF
+                make clean
+                make make_demos
+              displayName: build_O${{opt_level}}_UBSAN_${{ubsan}}_LTO_${{lto}}
 
-          - script: |
-              source testenv/bin/activate
-              # Don't be fooled, this is actually JUnit format
-              lit demos --xunit-xml-output ${{build_platform}}_O${{opt_level}}_UBSAN_${{ubsan}}_results.xml || true
-            displayName: test_O${{opt_level}}_UBSAN_${{ubsan}}
+            - script: |
+                source testenv/bin/activate
+                # Don't be fooled, this is actually JUnit format
+                lit demos --xunit-xml-output ${{build_platform}}_O${{opt_level}}_UBSAN_${{ubsan}}_LTO_${{lto}}_results.xml || true
+              displayName: test_O${{opt_level}}_UBSAN_${{ubsan}}_LTO_${{lto}}
 
       - task: PublishTestResults@2
         inputs:

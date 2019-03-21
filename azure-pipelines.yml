@@ -14,3 +14,4 @@ jobs:
       build_platform: [ARM, ARM_LINUX, THUMB, AARCH64]
       opt_level: [0, s, 3]
       ubsan: [OFF, ON]
+      lto: [OFF, ON]
