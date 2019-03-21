@@ -52,7 +52,9 @@ void print_source_info(struct SourceInfo* s) {
   print("\n");
 }
 
+// Attribute used for when we're using LTO
 #define ubhandler(NAME, ...) \
+__attribute__((used)) \
 void __ubsan_handle_##NAME(struct SourceInfo* s, ##__VA_ARGS__) { \
   print("UBSAN: " #NAME " @ "); \
   print_source_info(s); \

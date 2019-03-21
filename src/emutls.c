@@ -65,6 +65,7 @@ static void* emutls_get_var_addr(__emutls_control* control) {
   return address_arrays[get_thread_id()][index-1];
 }
 
+__attribute__((used)) // For LTO builds
 void* __emutls_get_address(__emutls_control* control) {
   // TODO: all of this is *not* interrupt safe!
   return emutls_get_var_addr(control);
