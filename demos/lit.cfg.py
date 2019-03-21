@@ -8,7 +8,7 @@ from test_format import MakeTest
 
 def get_build_config():
   # Read CMakeCache.txt to find our build settings
-  need = ['BUILD_PLATFORM', 'OPT_LEVEL', 'UBSAN']
+  need = ['BUILD_PLATFORM', 'OPT_LEVEL', 'UBSAN', 'LTO']
   found = dict()
   expected = set(need)
 
@@ -32,8 +32,8 @@ def get_build_config():
   # Don't rely on dict order, or order of vars in CMakeCache.txt
   return [found[k] for k in need]
 
-platform, opt_level, ubsan = get_build_config()
-config.name = '{}_O{}_UBSAN_{}'.format(platform, opt_level, ubsan)
+platform, opt_level, ubsan, lto = get_build_config()
+config.name = '{}_O{}_UBSAN_{}_LTO_{}'.format(platform, opt_level, ubsan, lto)
 config.test_format = MakeTest()
 config.suffixes = ['.log']
 config.test_source_root = os.path.dirname(__file__)
