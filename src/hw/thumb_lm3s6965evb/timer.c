@@ -22,6 +22,8 @@ void enable_timer(void) {
 
   // Enable handling of the interrupt
   *NVIC_ISER0 |= TIMER_INT_BIT;
+
+  asm volatile("":::"memory");
 }
 
 void disable_timer(void) {
@@ -30,6 +32,8 @@ void disable_timer(void) {
 
   // Stop timer running
   *SYST_CSR &= ~1;
+
+  asm volatile("":::"memory");
 }
 
 uint32_t read_timer(void) {
