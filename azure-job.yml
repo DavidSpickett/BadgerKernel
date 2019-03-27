@@ -14,7 +14,7 @@ jobs:
     steps:
       - script: |
           sudo apt-get update
-          sudo apt-get install -y qemu-system-arm
+          sudo apt-get install -y qemu-system-arm python3-pip
         displayName: apt-get-qemu
 
       - ${{ if in(build_platform, 'ARM', 'THUMB') }}:
@@ -46,10 +46,10 @@ jobs:
 
       - script: |
           # Running it in a venv is the best way to be able to just run 'lit', not some random path or "python -c" invocation.
-          pip install virtualenv
-          python -m virtualenv testenv
+          pip3 install virtualenv
+          python3 -m virtualenv testenv
           source testenv/bin/activate
-          pip install lit
+          pip3 install lit
         displayName: install_lit
 
       - ${{ each opt_level in parameters.opt_level }}:
