@@ -18,9 +18,8 @@ jobs:
         displayName: apt-get-qemu
 
       - ${{ if in(build_platform, 'ARM', 'THUMB') }}:
-        - template: get-linaro-toolchain.yml
-          parameters:
-            toolchain_url: 7.4-2019.02/arm-eabi/gcc-linaro-7.4.1-2019.02-x86_64_arm-eabi.tar.xz
+        - script: sudo apt-get install -y gcc-arm-none-eabi libnewlib-arm-none-eabi
+          displayName: apt-get-toolchain
 
       - ${{ if eq(build_platform, 'AARCH64') }}:
         - template: get-linaro-toolchain.yml
