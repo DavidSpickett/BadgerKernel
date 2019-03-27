@@ -6,6 +6,7 @@ set( OPT_LEVEL "3" CACHE STRING "Compiler optmisation level." )
 option( UBSAN "Enable undefined behaviour sanitiser." OFF )
 option( LTO "Enable link time optimisation." OFF )
 option( NATIVE "Set ON to run Arm Linux demos on real hardware." OFF )
+set( STACK_SIZE   1 ) # In KB
 
 string( TOLOWER "${BUILD_PLATFORM}" BP_LOWER )
 message(STATUS "BUILD_PLATFORM is ${BP_LOWER}")
@@ -17,6 +18,7 @@ message(STATUS "NATIVE is ${NATIVE}")
 if ( BP_LOWER STREQUAL "arm_linux")
   set( PLATFORM_SRC "arm_linux" )
   set( LINUX ON )
+  set( STACK_SIZE 2 )
   if (NOT NATIVE)
     # Do *not* generate Thumb code!
     set( PLATFORM "-static -mcpu=cortex-a15 -marm" )
@@ -24,13 +26,22 @@ if ( BP_LOWER STREQUAL "arm_linux")
     set( PREFIX "arm-linux-gnueabi-")
     set( QEMU_CMD "qemu-arm --cpu cortex-a15")
   endif()
+elseif ( BP_LOWER STREQUAL "aarch64_linux")
+  set( PLATFORM_SRC "aarch64_linux" )
+  set( LINUX ON )
+  set( STACK_SIZE 5 )
+  if (NOT NATIVE)
+    set( PLATFORM "-static -mcpu=cortex-a57 -mgeneral-regs-only" )
+    set( PREFIX "aarch64-linux-gnu-")
+    set( QEMU_CMD "qemu-aarch64 --cpu cortex-a57")
+  endif()
 elseif( BP_LOWER STREQUAL "arm" )
   set( PREFIX       "arm-none-eabi-" )
   set( PLATFORM     "-mcpu=cortex-a15" )
   set( PLATFORM_SRC "arm_virt" )
   set( RAM_START    "0x40000000" )
   set( UART_BASE    "0x09000000" )
-  set( QEMU_CMD    "qemu-system-arm -M virt -cpu cortex-a15" )
+  set( QEMU_CMD     "qemu-system-arm -M virt -cpu cortex-a15" )
 elseif( BP_LOWER STREQUAL "aarch64" )
   set( PREFIX       "aarch64-elf-" )
   # Don't generate NEON
@@ -38,23 +49,26 @@ elseif( BP_LOWER STREQUAL "aarch64" )
   set( PLATFORM_SRC "aarch64_virt" )
   set( RAM_START    "0x40000000" )
   set( UART_BASE    "0x09000000" )
-  set( QEMU_CMD    "qemu-system-aarch64 -M virt -cpu cortex-a57" )
+  set( QEMU_CMD     "qemu-system-aarch64 -M virt -cpu cortex-a57" )
 elseif( BP_LOWER STREQUAL "thumb" )
   set( PREFIX       "arm-none-eabi-" )
   set( PLATFORM     "-mthumb -mcpu=cortex-m4" )
   set( PLATFORM_SRC "thumb_lm3s6965evb" )
   set( RAM_START    "0x20000000" )
   set( UART_BASE    "0x4000C000" )
-  set( QEMU_CMD    "qemu-system-arm -M lm3s6965evb -cpu cortex-m4" )
+  set( QEMU_CMD     "qemu-system-arm -M lm3s6965evb -cpu cortex-m4" )
 endif()
 
+message(STATUS "STACK_SIZE is ${STACK_SIZE}KB")
+
 set( CMAKE_C_COMPILER "${PREFIX}gcc" )
+set( CFLAGS "-DSTACK_SIZE=${STACK_SIZE}")
 
 if (LINUX)
-  set( CFLAGS "-Wall -g -O${OPT_LEVEL} -std=gnu11" )
+  set( CFLAGS "${CFLAGS} -Wall -g -O${OPT_LEVEL} -std=gnu11" )
 else()
   set( QEMU "${QEMU_CMD} -m 64M -nographic -semihosting -kernel" )
-  set( CFLAGS "-Wall -ffreestanding -nostdlib -g -O${OPT_LEVEL} -std=gnu11 -DUART_BASE=${UART_BASE}" )
+  set( CFLAGS "${CFLAGS} -Wall -ffreestanding -nostdlib -g -O${OPT_LEVEL} -std=gnu11 -DUART_BASE=${UART_BASE}" )
 endif()
 
 if(LTO)
@@ -72,26 +86,30 @@ endif(UBSAN)
 set( CMAKE_C_FLAGS "${PLATFORM} ${CFLAGS}" )
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+
 set_property(SOURCE src/hw/${PLATFORM_SRC}/startup.s PROPERTY LANGUAGE C)
 set_property(SOURCE src/hw/${PLATFORM_SRC}/yield.s PROPERTY LANGUAGE C)
 set_property(SOURCE src/hw/${PLATFORM_SRC}/vectors.s PROPERTY LANGUAGE C)
+
 set( BASE_SOURCES
   src/thread.c
   src/print.c
   src/mutex.c
   src/hw/${PLATFORM_SRC}/yield.s
-  src/hw/${PLATFORM_SRC}/semihosting.c
-  src/hw/${PLATFORM_SRC}/timer.c
 )
 
 if(LINUX)
   set( BASE_SOURCES ${BASE_SOURCES}
-       src/hw/${PLATFORM_SRC}/main.c
+       src/hw/linux/main.c
+       src/hw/linux/timer.c
+       src/hw/linux/semihosting.c
   )
 else()
   set( BASE_SOURCES ${BASE_SOURCES}
        src/hw/${PLATFORM_SRC}/vectors.s
        src/hw/${PLATFORM_SRC}/startup.s
+       src/hw/${PLATFORM_SRC}/semihosting.c
+       src/hw/${PLATFORM_SRC}/timer.c
        src/emutls.c
   )
 

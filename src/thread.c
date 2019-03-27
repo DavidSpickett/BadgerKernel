@@ -6,7 +6,7 @@
 #include "print.h"
 #include "semihosting.h"
 
-#define THREAD_STACK_SIZE 2048
+#define THREAD_STACK_SIZE 1024*STACK_SIZE
 // 2 registers on AArch64
 #define MONITOR_STACK_SIZE 2*8
 #define THREAD_NAME_SIZE 12
