@@ -17,15 +17,24 @@ jobs:
           sudo apt-get install -y qemu-system-arm qemu-user python3-pip
         displayName: apt-get-qemu
 
-      - template: get-linaro-toolchain.yml
-        parameters:
-          - ${{ if in(build_platform, 'ARM', 'THUMB') }}:
+      - ${{ if in(build_platform, 'ARM', 'THUMB') }}:
+        - template: get-linaro-toolchain.yml
+          parameters:
             toolchain_url: 7.4-2019.02/arm-eabi/gcc-linaro-7.4.1-2019.02-x86_64_arm-eabi.tar.xz
-          - ${{ if eq(build_platform, 'AARCH64') }}:
+
+      - ${{ if eq(build_platform, 'AARCH64') }}:
+        - template: get-linaro-toolchain.yml
+          parameters:
             toolchain_url: 7.4-2019.02/aarch64-elf/gcc-linaro-7.4.1-2019.02-x86_64_aarch64-elf.tar.xz
-          - ${{ if eq(build_platform, 'ARM_LINUX') }}:
+
+      - ${{ if eq(build_platform, 'ARM_LINUX') }}:
+        - template: get-linaro-toolchain.yml
+          parameters:
             toolchain_url: 7.4-2019.02/arm-linux-gnueabi/gcc-linaro-7.4.1-2019.02-x86_64_arm-linux-gnueabi.tar.xz
-          - ${{ if eq(build_platform, 'AARCH64_LINUX') }}:
+
+      - ${{ if eq(build_platform, 'AARCH64_LINUX') }}:
+        - template: get-linaro-toolchain.yml
+          parameters:
             toolchain_url: 7.4-2019.02/aarch64-linux-gnu/gcc-linaro-7.4.1-2019.02-x86_64_aarch64-linux-gnu.tar.xz
 
       - script: |
