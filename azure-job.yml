@@ -14,7 +14,7 @@ jobs:
     steps:
       - script: |
           sudo apt-get update
-          sudo apt-get install -y qemu-system-arm python3-pip
+          sudo apt-get install -y qemu-system-arm qemu-user python3-pip
         displayName: apt-get-qemu
 
       - ${{ if in(build_platform, 'ARM', 'THUMB') }}:
@@ -24,7 +24,6 @@ jobs:
       - ${{ if eq(build_platform, 'ARM_LINUX') }}:
         - script: |
             set -ex
-            sudo apt-get install -y qemu-user
             mkdir toolchain
             wget -qO- https://releases.linaro.org/components/toolchain/binaries/7.4-2019.02/arm-linux-gnueabi/gcc-linaro-7.4.1-2019.02-x86_64_arm-linux-gnueabi.tar.xz | tar xJf - -C toolchain --strip-components=1
           displayName: download-linaro-toolchain
@@ -32,7 +31,6 @@ jobs:
       - ${{ if eq(build_platform, 'AARCH64_LINUX') }}:
         - script: |
             set -ex
-            sudo apt-get install -y qemu-user
             mkdir toolchain
             wget -qO- https://releases.linaro.org/components/toolchain/binaries/7.4-2019.02/aarch64-linux-gnu/gcc-linaro-7.4.1-2019.02-x86_64_aarch64-linux-gnu.tar.xz | tar xJf - -C toolchain --strip-components=1
           displayName: download-linaro-toolchain
