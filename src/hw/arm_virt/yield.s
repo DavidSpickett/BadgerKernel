@@ -2,6 +2,10 @@
 .set SUPERVISOR_MODE, 0x13
 .set USER_MODE,       0x10
 
+.set INIT,      0
+.set RUNNING,   1
+.set SUSPENDED, 2
+
 .macro DISABLE_TIMER
   mov r0, #2                 // Disable timer and mask interrupt
   mcr p15, 0, r0, c14, c2, 1 // CNTP_CTL
@@ -40,13 +44,6 @@ handle_timer:
   ldr r0, =scheduler_thread
   ldr r1, =next_thread
   str r0, [r1]
-
-  /* Set suspended state on current thread */
-  ldr r0, =current_thread
-  ldr r0, [r0]            // Chase for struct address
-  add r0, #4              // Skip stack ptr
-  mov r1, #1              // 1 = suspended
-  str r1, [r0]            // set state
 
   DISABLE_TIMER
 
@@ -142,6 +139,8 @@ __thread_switch:
 
   ldr r1, [r10]           // get actual adress of current thread
   str sp, [r1], #4        // save current stack pointer
+  mov r2, #SUSPENDED      // update state
+  str r2, [r1]
 
   /* Switch to new thread */
   ldr r11, [r11]          // chase to get actual address of new thread
@@ -150,8 +149,12 @@ __thread_switch:
 
   /* check that this thread has been run at least once */
   ldr r3, [r11]           // get state of new thread
-  mov r4, #0              // 0 = init
+  mov r4, #INIT
   cmp r3, r4
+
+  mov r4, #RUNNING        // either way it'll start running
+  str r4, [r11]
+
   bne restore_regs
 
   /* if not we need to fake the lr and CPSR being on the stack */

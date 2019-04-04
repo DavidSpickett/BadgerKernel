@@ -20,8 +20,8 @@ struct Message {
 
 enum ThreadState {
   init=0,
-  suspended=1,
-  running,
+  running=1,
+  suspended=2,
   finished
 };
 
@@ -225,7 +225,10 @@ void check_stack(void) {
       dummy_thread.stack_ptr = &dummy_thread.stack[THREAD_STACK_SIZE];
 
       next_thread = &scheduler_thread;
-      set_thread_state(finished);
+      /* Setting -1 here, instead of state=finished is fine,
+         because A: the thread didn't actually finish
+                 B: the thread struct is actually invalid */
+      current_thread->id = -1;
       thread_switch_initial();
     } else {
       qemu_exit();
@@ -238,9 +241,7 @@ void thread_yield(struct Thread* to) {
 
   log_event("yielding");
   next_thread = to;
-  set_thread_state(suspended);
   thread_switch();
-  set_thread_state(running);
   log_event("resuming");
 }
 
@@ -288,7 +289,6 @@ bool yield_next(void) {
 
 __attribute__((noreturn)) void thread_start(void) {
   // Every thread starts by entering this function
-  set_thread_state(running);
 
   // Call thread's actual function
   current_thread->work(
@@ -302,9 +302,11 @@ __attribute__((noreturn)) void thread_start(void) {
   log_event("exiting");
 
   // Make sure we're not scheduled again
-  set_thread_state(finished);
+  // TODO: this should be state = finished
+  // id of -1 is really meant to mean invalid thread struct
+  current_thread->id = -1;
 
-  // Calling platform yield directly so we don't log_events
+  // Calling thread_switch directly so we don't log_events
   // with an incorrect thread ID
   // TODO: we save state here that we don't need to
   next_thread = &scheduler_thread;
