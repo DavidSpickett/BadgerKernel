@@ -1,3 +1,7 @@
+.set INIT,      0
+.set RUNNING,   1
+.set SUSPENDED, 2
+
 .global thread_switch_initial
 thread_switch_initial:
   /* Called when starting the scheduler, so we can trash regs here */
@@ -25,25 +29,31 @@ thread_switch:
   ldr r10, =current_thread
   ldr r11, =next_thread
 
-  /* Save our Stack pointer and PC */
+  /* Save our Stack pointer */
   ldr r1, [r10]           // get actual adress of current thread
-  str sp, [r1], #4        // save current stack pointer
-  str lr, [r1]            // save PC
+  str sp, [r1], #4
+
+  /* update state */
+  mov r2, #SUSPENDED
+  str r2, [r1]
 
   /* Switch to new thread */
   ldr r11, [r11]          // chase to get actual address of new thread
   str r11, [r10]          // current = to (no need to chase ptr)
   ldr sp, [r11], #4       // restore stack pointer of new thread
 
-  /* check that this thread has been run at least once
-     if it hasn't it's PC will be exactly thread start */
-  ldr r3, [r11]           // get pc of new thread
-  mov lr, r3              // we'll use it either way
-  ldr r4, =thread_start
+  /* check that this thread has been run at least once */
+  ldr r3, [r11]           // get state of new thread
+  mov r4, #INIT
   cmp r3, r4
-  bne restore_regs
 
-  b exc_return            // don't restore other regs, just use loaded lr from above
+  /* either way we start running */
+  mov r4, #RUNNING
+  str r4, [r11]
+
+  bne restore_regs
+  ldr lr, =thread_start
+  b exc_return            // don't restore other regs, just use fake lr value
 
 restore_regs:
   pop {r4-r12, r14}       // restore our own regs (no sp/pc)
