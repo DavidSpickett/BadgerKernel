@@ -41,6 +41,13 @@ handle_timer:
   ldr r1, =next_thread
   str r0, [r1]
 
+  /* Set suspended state on current thread */
+  ldr r0, =current_thread
+  ldr r0, [r0]            // Chase for struct address
+  add r0, #4              // Skip stack ptr
+  mov r1, #1              // 1 = suspended
+  str r1, [r0]            // set state
+
   DISABLE_TIMER
 
   b __thread_switch
@@ -133,25 +140,23 @@ __thread_switch:
   ldr r10, =current_thread
   ldr r11, =next_thread
 
-  /* Save our Stack pointer and PC */
   ldr r1, [r10]           // get actual adress of current thread
   str sp, [r1], #4        // save current stack pointer
-  str lr, [r1]            // save PC
 
   /* Switch to new thread */
   ldr r11, [r11]          // chase to get actual address of new thread
   str r11, [r10]          // current = to (no need to chase ptr)
   ldr sp, [r11], #4       // restore stack pointer of new thread
 
-  /* check that this thread has been run at least once
-     if it hasn't it's PC will be exactly thread start */
-  ldr r3, [r11]           // get pc of new thread
-  ldr r4, =thread_start
+  /* check that this thread has been run at least once */
+  ldr r3, [r11]           // get state of new thread
+  mov r4, #0              // 0 = init
   cmp r3, r4
   bne restore_regs
 
   /* if not we need to fake the lr and CPSR being on the stack */
-  str r4, [sp, #-4]!      // link register
+  ldr r4, =thread_start
+  str r4, [sp, #-4]!      // initialise link register
   mov r5, #USER_MODE      // not sure of mode but flags should be 0
   stmdb sp!, {r4,r5}
   b exc_return            // don't restore other regs, just these two when we return

@@ -18,9 +18,17 @@ struct Message {
   int content;
 };
 
+enum ThreadState {
+  init=0,
+  suspended=1,
+  running,
+  finished
+};
+
 struct Thread {
   uint8_t* stack_ptr;
-  void (*current_pc)(void);
+  // Not an enum directly because we need to know its size
+  size_t state;
   int id;
   const char* name;
   // Deliberately not (void)
@@ -70,6 +78,10 @@ struct MonitorConfig config = {
   exit_when_no_threads: true
 };
 
+void set_thread_state(enum ThreadState state) {
+  current_thread->state = (size_t)state;
+}
+
 extern void demo(void);
 __attribute__((noreturn)) void entry(void) {
   // Invalidate all threads in the pool
@@ -86,7 +98,8 @@ __attribute__((noreturn)) void entry(void) {
 bool is_valid_thread(int tid) {
   return (tid >= 0) &&
     (tid < MAX_THREADS) &&
-    all_threads[tid].id != -1;
+    all_threads[tid].id != -1 &&
+    all_threads[tid].state != finished;
 }
 
 int get_thread_id(void) {
@@ -212,6 +225,7 @@ void check_stack(void) {
       dummy_thread.stack_ptr = &dummy_thread.stack[THREAD_STACK_SIZE];
 
       next_thread = &scheduler_thread;
+      set_thread_state(finished);
       thread_switch_initial();
     } else {
       qemu_exit();
@@ -224,7 +238,9 @@ void thread_yield(struct Thread* to) {
 
   log_event("yielding");
   next_thread = to;
+  set_thread_state(suspended);
   thread_switch();
+  set_thread_state(running);
   log_event("resuming");
 }
 
@@ -259,9 +275,9 @@ bool yield_next(void) {
   // +1 otherwise we just schedule the current thread again
   int limit = id+MAX_THREADS+1;
   for (int idx=id+1; idx < limit; ++idx) {
-    struct Thread* candidate = &all_threads[idx % MAX_THREADS];
-    if (candidate->id != -1) {
-      thread_yield(candidate);
+    int idx_in_range = idx % MAX_THREADS;
+    if (is_valid_thread(idx_in_range)) {
+      thread_yield(&all_threads[idx_in_range]);
       return true;
     }
   }
@@ -272,6 +288,7 @@ bool yield_next(void) {
 
 __attribute__((noreturn)) void thread_start(void) {
   // Every thread starts by entering this function
+  set_thread_state(running);
 
   // Call thread's actual function
   current_thread->work(
@@ -284,11 +301,8 @@ __attribute__((noreturn)) void thread_start(void) {
   // Yield back to the scheduler
   log_event("exiting");
 
-  // Mark this thread as invalid
-  // Use ID to mark invalid threads instead of stack pointer
-  // because we don't use the ID in yield, so it saves us
-  // writing a custom yield for this situation.
-  all_threads[get_thread_id()].id = -1;
+  // Make sure we're not scheduled again
+  set_thread_state(finished);
 
   // Calling platform yield directly so we don't log_events
   // with an incorrect thread ID
@@ -304,10 +318,9 @@ void init_thread(struct Thread* thread,
                  const char* name,
                  void (*do_work)(void),
                  struct ThreadArgs args) {
-  // thread start will jump to this
+  // thread_start will jump to this
   thread->work = do_work;
-  // but make sure thread start is the first call so it can handle destruction
-  thread->current_pc = thread_start;
+  thread->state = init;
 
   thread->id = tid;
   thread->name = name;
@@ -352,10 +365,8 @@ __attribute__((noreturn)) void do_scheduler(void) {
     bool live_threads = false;
 
     for (size_t idx=0; idx < MAX_THREADS; ++idx) {
-      int next_id = all_threads[idx].id;
-
-      if (next_id != -1) {
-        if (next_id != idx) {
+      if (is_valid_thread(idx)) {
+        if (all_threads[idx].id != idx) {
           log_event("thread ID and position inconsistent!");
           qemu_exit();
         }
