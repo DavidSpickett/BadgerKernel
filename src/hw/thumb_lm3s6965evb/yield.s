@@ -4,6 +4,10 @@
 .set ICSR, 0xE000ED04
 .set NVIC_ICER0, 0XE000E180
 
+.set INIT,      0
+.set RUNNING,   1
+.set SUSPENDED, 2
+
 .global thread_switch
 .thumb_func
 thread_switch:
@@ -68,6 +72,12 @@ handle_interrupt:
   ldr r0, =scheduler_thread
   ldr r1, =next_thread   // Don't need any chasing here
   str r0, [r1]
+
+  /* set state to suspended */
+  ldr r0, =current_thread
+  ldr r0, [r0]
+  add r0, #4         // Skip stack ptr
+  mov r1, #SUSPENDED
 
   beq __thread_switch
   /* Pending status is cleared by exception return */
@@ -159,13 +169,9 @@ stack_check_passed:
   str r5, [r1]
   add r1, r1, #4
 
-  /* Save return address */
-  mov r2, sp
-  add r2, #(7+4+3)       // point to saved PC
-  ldr r2, [r2]           // load return address from exception stack
-  mov r3, #1             // add thumb mode bit (not required atm but let's be safe)
-  orr r2, r3, r2
-  str r2, [r1]           // store to thread struct
+  /* Update state */
+  mov r2, #SUSPENDED
+  str r2, [r1]
 
   /* Switch to new thread */
   ldr r7, [r7]          // chase to get actual address of next thread
@@ -176,14 +182,20 @@ stack_check_passed:
   /* no need to restore PC, exc return will do that */
 
   /* check that thread has been scheduled at least once already */
-  ldr r3, [r7]          // load last PC
-  ldr r4, =thread_start
+  ldr r3, [r7]          // load state
+  mov r4, #INIT
   cmp r3, r4
+
+  /* either way it'll start running */
+  mov r4, #RUNNING
+  str r4, [r7]
+
   bne restore_regs
 
   /* If it's never been scheduled we need to fake PC and EPSR
      values being on the stack. (lr doesn't matter) */
   sub sp, #(8*4)       // size of the expected return frame
+  ldr r4, =thread_start
   str r4, [sp, #(6*4)] // store intial pc
   mov r1, #1           // Set Thumb bit in EPSR
   lsl r1, #24
