@@ -1,5 +1,9 @@
 .set TIMER_AMOUNT, 100000
 
+.set INIT,      0
+.set RUNNING,   1
+.set SUSPENDED, 2
+
 .macro DISABLE_TIMER
   mov x0, #2    // Disable timer output, mask the interrupt
   msr CNTV_CTL_EL0, x0
@@ -161,12 +165,14 @@ __thread_switch:
   ldr x10, =current_thread
   ldr x11, =next_thread
 
-  /* Save our PC and return address */
+  /* Save our stack pointer */
   ldr x1, [x10]          // get actual adress of current thread
   mov x3, sp
-  str x3, [x1], #8       // save current stack pointer
-  mrs x2, ELR_EL1        // get address to resume this thread from
-  str x2, [x1]           // store that in our task struct
+  str x3, [x1], #8
+
+  /* update state */
+  mov x2, #SUSPENDED
+  str x2, [x1]
 
   /* Switch to new thread */
   ldr x11, [x11]         // chase to get actual address of the new thread
@@ -174,18 +180,22 @@ __thread_switch:
   ldr x3, [x11], #8      // restore stack pointer of new thread
   mov sp, x3
 
-  // Load ELR_EL1 with the next PC of the new thread
+  /* Check that the new thread has been run at least once */
   ldr x3, [x11]
-  msr ELR_EL1, x3        // when we eret we'll be in the new thread
-
-  /* Check that the new thread has been run at least once.
-     If it hasn't then there's no state to restore.
-     For now we're going to check if it's current PC is thread_start
-  */
-  ldr x4, =thread_start
+  mov x4, #INIT
   cmp x3, x4
-  beq exc_return
 
+  /* either way we start running */
+  mov x4, #RUNNING
+  str x4, [x11]
+
+  bne restore_regs
+
+  /* Fake lr value */
+  ldr x30, =thread_start
+  b exc_return
+
+restore_regs:
   /* Restore all registers of the new thread */
   ldp x30, xzr, [sp], #16 // xzr to keep alignment
   ldp x28, x29, [sp], #16
@@ -210,5 +220,12 @@ __thread_switch:
   ldp x0,  x1,  [sp], #16 // actual x0/x1 values
 
 exc_return:
-  // Return to PC that's in ELR_EL1
+  /* Note that this means we return to *before* the function that
+     did the svc call. For example:
+     thread_yield() -> thread_switch -> svc -> here
+     when we return it goes:
+     here -> thread_yield() -> user code
+     It's a bit weird but lets us skip storing the current PC.
+  */
+  msr ELR_EL1, x30
   eret
