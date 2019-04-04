@@ -18,7 +18,7 @@ void counter() {
   while (1) {
     int curr_threads = 0;
     for (int i=0; i<MAX_THREADS; ++i) {
-      if (is_valid_thread(i)) {
+      if (is_valid_thread(i) && !is_thread_finished(i)) {
         ++curr_threads;
       }
     }

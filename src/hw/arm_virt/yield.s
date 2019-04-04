@@ -139,8 +139,15 @@ __thread_switch:
 
   ldr r1, [r10]           // get actual adress of current thread
   str sp, [r1], #4        // save current stack pointer
-  mov r2, #SUSPENDED      // update state
-  str r2, [r1]
+
+  /* update state */
+  ldr r2, [r1]
+  mov r3, #RUNNING
+  cmp r2, r3              // if we're something other than running, leave it as it is
+  bne dont_set_state
+  mov r3, #SUSPENDED      // otherwise move to suspended
+  str r3, [r1]
+dont_set_state:
 
   /* Switch to new thread */
   ldr r11, [r11]          // chase to get actual address of new thread

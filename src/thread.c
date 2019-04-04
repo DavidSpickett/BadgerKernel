@@ -78,10 +78,6 @@ struct MonitorConfig config = {
   exit_when_no_threads: true
 };
 
-void set_thread_state(enum ThreadState state) {
-  current_thread->state = (size_t)state;
-}
-
 extern void demo(void);
 __attribute__((noreturn)) void entry(void) {
   // Invalidate all threads in the pool
@@ -95,10 +91,23 @@ __attribute__((noreturn)) void entry(void) {
   __builtin_unreachable();
 }
 
-bool is_valid_thread(int tid) {
+static bool is_valid_thread_id(int tid) {
   return (tid >= 0) &&
     (tid < MAX_THREADS) &&
-    all_threads[tid].id != -1 &&
+    all_threads[tid].id != -1;
+}
+
+bool is_valid_thread(int tid) {
+  return is_valid_thread_id(tid);
+}
+
+bool is_thread_finished(int tid) {
+  return is_valid_thread_id(tid) &&
+    all_threads[tid].state == finished;
+}
+
+static bool can_schedule_thread(int tid) {
+  return is_valid_thread_id(tid) &&
     all_threads[tid].state != finished;
 }
 
@@ -251,17 +260,13 @@ void yield(void) {
 }
 
 bool yield_to(int id) {
-  if (!is_valid_thread(id)) {
+  if (!can_schedule_thread(id)) {
     return false;
   }
 
   struct Thread* candidate = &all_threads[id];
-  if (candidate->id != -1) {
-    thread_yield(candidate);
-    return true;
-  }
-
-  return false;
+  thread_yield(candidate);
+  return true;
 }
 
 bool yield_next(void) {
@@ -277,7 +282,7 @@ bool yield_next(void) {
   int limit = id+MAX_THREADS+1;
   for (int idx=id+1; idx < limit; ++idx) {
     int idx_in_range = idx % MAX_THREADS;
-    if (is_valid_thread(idx_in_range)) {
+    if (can_schedule_thread(idx_in_range)) {
       thread_yield(&all_threads[idx_in_range]);
       return true;
     }
@@ -302,14 +307,23 @@ __attribute__((noreturn)) void thread_start(void) {
   log_event("exiting");
 
   // Make sure we're not scheduled again
-  // TODO: this should be state = finished
-  // id of -1 is really meant to mean invalid thread struct
-  current_thread->id = -1;
+  current_thread->state = finished;
 
-  // Calling thread_switch directly so we don't log_events
-  // with an incorrect thread ID
-  // TODO: we save state here that we don't need to
+  /* You might think this is a timing issue.
+     What if we're interrupted here?
+
+     Well, we'd go to thread_switch, next_thread
+     is set to the scheduler automatically.
+     Since our state is finished, it won't be updated
+     to suspended. Meaning, we'll never come back here.
+
+     Which is just fine, since we were going to switch
+     away anyway.
+  */
+
   next_thread = &scheduler_thread;
+  // Calling thread_switch directly so we don't print 'yielding'
+  // TODO: we save state here that we don't need to
   thread_switch();
 
   __builtin_unreachable();
@@ -367,7 +381,7 @@ __attribute__((noreturn)) void do_scheduler(void) {
     bool live_threads = false;
 
     for (size_t idx=0; idx < MAX_THREADS; ++idx) {
-      if (is_valid_thread(idx)) {
+      if (can_schedule_thread(idx)) {
         if (all_threads[idx].id != idx) {
           log_event("thread ID and position inconsistent!");
           qemu_exit();

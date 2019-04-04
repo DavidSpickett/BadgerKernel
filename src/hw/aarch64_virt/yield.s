@@ -171,8 +171,13 @@ __thread_switch:
   str x3, [x1], #8
 
   /* update state */
+  ldr x2, [x1]
+  mov x3, #RUNNING
+  cmp x2, x3
+  bne dont_update_state
   mov x2, #SUSPENDED
   str x2, [x1]
+dont_update_state:
 
   /* Switch to new thread */
   ldr x11, [x11]         // chase to get actual address of the new thread

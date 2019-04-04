@@ -30,11 +30,11 @@ __attribute__((noreturn)) void spawner() {
   log_event("spawned demons");
 
   // Wait for them all to finish
-  bool valid = true;
-  while (valid) {
+  bool running = true;
+  while (running) {
     yield();
     for (int j=0; j < dlen; ++j) {
-      valid = is_valid_thread(ids[j]);
+      running = !is_thread_finished(ids[j]);
     }
   }
 

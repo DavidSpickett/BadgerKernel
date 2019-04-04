@@ -50,8 +50,13 @@ thread_switch:
   str x3, [x1], #8       // save current stack pointer
 
   /* update state */
+  ldr x4, [x1]
+  mov x5, #RUNNING
+  cmp x4, x5
+  bne dont_update_state
   mov x4, #SUSPENDED
   str x4, [x1]
+dont_update_state:
 
   /* Switch to new thread */
   ldr x11, [x11]         // chase to get actual address of the new thread

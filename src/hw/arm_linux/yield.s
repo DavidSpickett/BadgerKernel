@@ -34,8 +34,13 @@ thread_switch:
   str sp, [r1], #4
 
   /* update state */
+  ldr r2, [r1]
+  mov r3, #RUNNING
+  cmp r2, r3
+  bne dont_update_state
   mov r2, #SUSPENDED
   str r2, [r1]
+dont_update_state:
 
   /* Switch to new thread */
   ldr r11, [r11]          // chase to get actual address of new thread

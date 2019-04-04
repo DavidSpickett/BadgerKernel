@@ -25,6 +25,8 @@ int add_named_thread(void (*worker)(void), const char* name);
 int add_named_thread_with_args(void (*worker)(), const char* name, struct ThreadArgs args);
 
 bool is_valid_thread(int tid);
+// Note: assumes a valid tid
+bool is_thread_finished(int tid);
 int get_thread_id(void);
 const char* get_thread_name(void);
 
