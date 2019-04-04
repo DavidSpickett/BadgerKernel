@@ -1,3 +1,7 @@
+.set INIT,      0
+.set RUNNING,   1
+.set SUSPENDED, 2
+
 .global thread_switch_initial
 thread_switch_initial:
   /* Called when starting scheduler (trashing regs is fine) */
@@ -40,11 +44,14 @@ thread_switch:
   ldr x10, =current_thread
   ldr x11, =next_thread
 
-  /* Save our PC and return address */
-  ldr x1, [x10]          // get actual adress of current thread
+  /* save stack pointer */
+  ldr x1, [x10]          // get actual address of current thread
   mov x3, sp
   str x3, [x1], #8       // save current stack pointer
-  str x30, [x1]          // save return address
+
+  /* update state */
+  mov x4, #SUSPENDED
+  str x4, [x1]
 
   /* Switch to new thread */
   ldr x11, [x11]         // chase to get actual address of the new thread
@@ -52,17 +59,22 @@ thread_switch:
   ldr x3, [x11], #8      // restore stack pointer of new thread
   mov sp, x3
 
-  ldr x30, [x11]          // load resume address
+  /* Check that the new thread has been run at least once */
+  ldr x3, [x11]           // load thread state
+  mov x4, #INIT
+  cmp x3, x4
 
-  /* Check that the new thread has been run at least once.
-     If it hasn't then there's no state to restore.
-     For now we're going to check if it's current PC is thread_start
-  */
-  ldr x4, =thread_start
-  cmp x30, x4
-  beq return
+  /* either way we'll be running */
+  mov x4, #RUNNING
+  str x4, [x11]
 
-  /* Restore all registers of the new thread */
+  bne restore_regs
+
+  /* Fake lr */
+  ldr x30, =thread_start
+  b return
+
+restore_regs:
   ldp x30, xzr, [sp], #16 // xzr to keep alignment
   ldp x28, x29, [sp], #16
   ldp x26, x27, [sp], #16
