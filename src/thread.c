@@ -22,6 +22,7 @@ enum ThreadState {
   init=0,
   running=1,
   suspended=2,
+  waiting,
   finished
 };
 
@@ -91,24 +92,21 @@ __attribute__((noreturn)) void entry(void) {
   __builtin_unreachable();
 }
 
-static bool is_valid_thread_id(int tid) {
+bool is_valid_thread(int tid) {
   return (tid >= 0) &&
     (tid < MAX_THREADS) &&
     all_threads[tid].id != -1;
 }
 
-bool is_valid_thread(int tid) {
-  return is_valid_thread_id(tid);
-}
-
 bool is_thread_finished(int tid) {
-  return is_valid_thread_id(tid) &&
+  return is_valid_thread(tid) &&
     all_threads[tid].state == finished;
 }
 
 static bool can_schedule_thread(int tid) {
-  return is_valid_thread_id(tid) &&
-    all_threads[tid].state != finished;
+  return is_valid_thread(tid) &&
+    all_threads[tid].state != finished &&
+    all_threads[tid].state != waiting;
 }
 
 int get_thread_id(void) {
@@ -128,7 +126,7 @@ static void inc_msg_pointer(Thread* thr, Message** ptr) {
 }
 
 bool get_msg(int* sender, int* message) {
-  // If message box is not empty or full
+  // If message box is not empty, or it is full
   if (current_thread->next_msg != current_thread->end_msgs
       || current_thread->msgs_full) {
     *sender = current_thread->next_msg->src;
@@ -259,12 +257,12 @@ void yield(void) {
   thread_yield(&scheduler_thread);
 }
 
-bool yield_to(int id) {
-  if (!can_schedule_thread(id)) {
+bool yield_to(int tid) {
+  if (!can_schedule_thread(tid)) {
     return false;
   }
 
-  Thread* candidate = &all_threads[id];
+  Thread* candidate = &all_threads[tid];
   thread_yield(candidate);
   return true;
 }
@@ -289,6 +287,22 @@ bool yield_next(void) {
   }
 
   // Not sure how you'd get here, you'd at least schedule yourself
+  return false;
+}
+
+void thread_wait(void) {
+  current_thread->state = waiting;
+  // Call thread_switch directly to keep state intact
+  next_thread = &scheduler_thread;
+  thread_switch();
+}
+
+bool thread_wake(int tid) {
+  if (is_valid_thread(tid)) {
+    all_threads[tid].state = suspended;
+    return true;
+  }
+
   return false;
 }
 

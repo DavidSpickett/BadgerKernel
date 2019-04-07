@@ -33,7 +33,9 @@ const char* get_thread_name(void);
 
 void yield(void);
 bool yield_next(void);
-bool yield_to(int id);
+bool yield_to(int tid);
+void thread_wait(void);
+bool thread_wake(int tid);
 void __attribute__((noreturn)) start_scheduler(void);
 void log_event(const char* event);
 bool get_msg(int* sender, int* message);

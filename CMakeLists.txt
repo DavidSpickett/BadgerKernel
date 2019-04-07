@@ -95,6 +95,7 @@ set( BASE_SOURCES
   src/thread.c
   src/print.c
   src/mutex.c
+  src/condition_variable.c
   src/hw/${PLATFORM_SRC}/yield.s
 )
 
@@ -201,6 +202,7 @@ add_demo_app(spawn)
 add_demo_app(args)
 add_demo_app(mutex)
 add_demo_app(timer)
+add_demo_app(conditionvariables)
 
 if(NOT LINUX)
   if(NOT BP_LOWER STREQUAL "aarch64" )
