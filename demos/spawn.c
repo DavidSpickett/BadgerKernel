@@ -43,6 +43,8 @@ __attribute__((noreturn)) void spawner() {
 }
 
 void demo() {
+  config.log_scheduler = false;
+
   add_named_thread(spawner, "spawner");
   start_scheduler();
 }

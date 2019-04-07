@@ -1,62 +1,24 @@
 Thread     <HIDDEN>: starting scheduler
-Thread  <scheduler>: scheduling new thread
-Thread  <scheduler>: yielding
 Thread      spawner: spawned demons
 Thread      spawner: yielding
-Thread  <scheduler>: resuming
-Thread  <scheduler>: thread yielded
-Thread  <scheduler>: scheduling new thread
-Thread  <scheduler>: yielding
 Thread      Morgoth: Hello my name is
 Thread      Morgoth: Morgoth
 Thread      Morgoth: exiting
-Thread  <scheduler>: resuming
-Thread  <scheduler>: thread yielded
-Thread  <scheduler>: scheduling new thread
-Thread  <scheduler>: yielding
 Thread       Sauron: yielding
-Thread  <scheduler>: resuming
-Thread  <scheduler>: thread yielded
-Thread  <scheduler>: scheduling new thread
-Thread  <scheduler>: yielding
 Thread       Khamul: yielding
-Thread  <scheduler>: resuming
-Thread  <scheduler>: thread yielded
-Thread  <scheduler>: scheduling new thread
-Thread  <scheduler>: yielding
 Thread      spawner: resuming
 Thread      spawner: yielding
-Thread  <scheduler>: resuming
-Thread  <scheduler>: thread yielded
-Thread  <scheduler>: scheduling new thread
-Thread  <scheduler>: yielding
 Thread       Sauron: resuming
 Thread       Sauron: Hello my name is
 Thread       Sauron: Sauron
 Thread       Sauron: exiting
-Thread  <scheduler>: resuming
-Thread  <scheduler>: thread yielded
-Thread  <scheduler>: scheduling new thread
-Thread  <scheduler>: yielding
 Thread       Khamul: resuming
 Thread       Khamul: yielding
-Thread  <scheduler>: resuming
-Thread  <scheduler>: thread yielded
-Thread  <scheduler>: scheduling new thread
-Thread  <scheduler>: yielding
 Thread      spawner: resuming
 Thread      spawner: yielding
-Thread  <scheduler>: resuming
-Thread  <scheduler>: thread yielded
-Thread  <scheduler>: scheduling new thread
-Thread  <scheduler>: yielding
 Thread       Khamul: resuming
 Thread       Khamul: Hello my name is
 Thread       Khamul: Khamul
 Thread       Khamul: exiting
-Thread  <scheduler>: resuming
-Thread  <scheduler>: thread yielded
-Thread  <scheduler>: scheduling new thread
-Thread  <scheduler>: yielding
 Thread      spawner: resuming
 Thread      spawner: demons perished

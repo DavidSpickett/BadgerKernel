@@ -42,6 +42,8 @@ void signaller(void) {
 }
 
 void demo() {
+  config.log_scheduler = false;
+
   init_condition_variable(&cv);
 
   const unsigned num_waiting = 5;

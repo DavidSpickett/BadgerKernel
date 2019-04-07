@@ -15,6 +15,8 @@ void thread_worker() {
 }
 
 void demo() {
+  config.log_scheduler = false;
+
   add_thread(thread_worker);
   add_thread(thread_worker);
 

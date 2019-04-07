@@ -1,22 +1,8 @@
 Thread     <HIDDEN>: starting scheduler
-Thread  <scheduler>: scheduling new thread
-Thread  <scheduler>: yielding
 Thread    underflow: recursing
 Thread     <HIDDEN>: Stack underflow!
-Thread  <scheduler>: resuming
-Thread  <scheduler>: thread yielded
-Thread  <scheduler>: scheduling new thread
-Thread  <scheduler>: yielding
 Thread      watcher: yielding
-Thread  <scheduler>: resuming
-Thread  <scheduler>: thread yielded
-Thread  <scheduler>: scheduling new thread
-Thread  <scheduler>: yielding
 Thread     overflow: overflowing
 Thread     <HIDDEN>: Stack overflow!
-Thread  <scheduler>: resuming
-Thread  <scheduler>: thread yielded
-Thread  <scheduler>: scheduling new thread
-Thread  <scheduler>: yielding
 Thread      watcher: resuming
 Thread      watcher: All threads errored

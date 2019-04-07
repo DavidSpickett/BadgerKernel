@@ -1,42 +1,20 @@
 Thread     <HIDDEN>: starting scheduler
-Thread  <scheduler>: scheduling new thread
-Thread  <scheduler>: yielding
 Thread      spammer: spammed
 Thread      spammer: yielding
-Thread  <scheduler>: resuming
-Thread  <scheduler>: thread yielded
-Thread  <scheduler>: scheduling new thread
-Thread  <scheduler>: yielding
 Thread      spammer: message box was full
 Thread      spammer: yielding
-Thread  <scheduler>: resuming
-Thread  <scheduler>: thread yielded
-Thread  <scheduler>: scheduling new thread
-Thread  <scheduler>: yielding
 Thread     receiver: discarded spam message
 Thread     receiver: discarded spam message
 Thread     receiver: discarded spam message
 Thread     receiver: discarded spam message
 Thread     receiver: discarded spam message
 Thread     receiver: yielding
-Thread  <scheduler>: resuming
-Thread  <scheduler>: thread yielded
-Thread  <scheduler>: scheduling new thread
-Thread  <scheduler>: yielding
 Thread      spammer: resuming
 Thread      spammer: spammed
 Thread      spammer: yielding
-Thread  <scheduler>: resuming
-Thread  <scheduler>: thread yielded
-Thread  <scheduler>: scheduling new thread
-Thread  <scheduler>: yielding
 Thread      spammer: resuming
 Thread      spammer: message box was full
 Thread      spammer: yielding
-Thread  <scheduler>: resuming
-Thread  <scheduler>: thread yielded
-Thread  <scheduler>: scheduling new thread
-Thread  <scheduler>: yielding
 Thread     receiver: resuming
 Thread     receiver: discarded spam message
 Thread     receiver: discarded spam message
@@ -44,24 +22,12 @@ Thread     receiver: discarded spam message
 Thread     receiver: discarded spam message
 Thread     receiver: discarded spam message
 Thread     receiver: yielding
-Thread  <scheduler>: resuming
-Thread  <scheduler>: thread yielded
-Thread  <scheduler>: scheduling new thread
-Thread  <scheduler>: yielding
 Thread      spammer: resuming
 Thread      spammer: not spamming
 Thread      spammer: yielding
-Thread  <scheduler>: resuming
-Thread  <scheduler>: thread yielded
-Thread  <scheduler>: scheduling new thread
-Thread  <scheduler>: yielding
 Thread      spammer: resuming
 Thread      spammer: sent a message
 Thread      spammer: yielding
-Thread  <scheduler>: resuming
-Thread  <scheduler>: thread yielded
-Thread  <scheduler>: scheduling new thread
-Thread  <scheduler>: yielding
 Thread     receiver: resuming
 Thread     receiver: discarded spam message
 Thread     receiver: got message from sender

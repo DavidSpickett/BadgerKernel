@@ -76,7 +76,8 @@ uint8_t* monitor_stack_top = &monitor_stack[MONITOR_STACK_SIZE];
 __attribute__((section(".thread_vars")))
 MonitorConfig config = {
   destroy_on_stack_err: false,
-  exit_when_no_threads: true
+  exit_when_no_threads: true,
+  log_scheduler: true
 };
 
 extern void demo(void);
@@ -244,12 +245,14 @@ void check_stack(void) {
 }
 
 void thread_yield(Thread* to) {
+  bool log = get_thread_id() != -1 || config.log_scheduler;
+
   check_stack();
 
-  log_event("yielding");
+  if (log) { log_event("yielding"); }
   next_thread = to;
   thread_switch();
-  log_event("resuming");
+  if (log) { log_event("resuming"); }
 }
 
 void yield(void) {
@@ -397,19 +400,26 @@ __attribute__((noreturn)) void do_scheduler(void) {
     for (size_t idx=0; idx < MAX_THREADS; ++idx) {
       if (can_schedule_thread(idx)) {
         if (all_threads[idx].id != idx) {
+          // Error so always log
           log_event("thread ID and position inconsistent!");
           qemu_exit();
         }
 
-        log_event("scheduling new thread");
+        if (config.log_scheduler) {
+          log_event("scheduling new thread");
+        }
         live_threads = true;
         thread_yield(&all_threads[idx]);
-        log_event("thread yielded");
+        if (config.log_scheduler) {
+          log_event("thread yielded");
+        }
       }  
     }
 
     if (!live_threads && config.exit_when_no_threads) {
-      log_event("all threads finished");
+      if (config.log_scheduler) {
+        log_event("all threads finished");
+      }
       qemu_exit();
     }
   } 

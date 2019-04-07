@@ -24,6 +24,8 @@ void sub_printer(char** words, int num_phrases, unsigned int offset) {
 }
 
 void demo() {
+  config.log_scheduler = false;
+
   ThreadArgs p_args = make_args(3, "aardvark", 1, 2);
   add_named_thread_with_args(printer, "printer", p_args);
 

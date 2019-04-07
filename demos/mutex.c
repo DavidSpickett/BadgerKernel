@@ -24,8 +24,10 @@ void thread_work(const char* word) {
 }
 
 void demo() {
+  config.log_scheduler = false;
+
   init_mutex(&buffer_mutex);
-  
+
   const char* word1 = "dog";
   ThreadArgs a1 = make_args(word1, 0, 0, 0);
   add_named_thread_with_args(thread_work, NULL, a1);

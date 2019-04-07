@@ -46,6 +46,8 @@ __attribute__((noreturn)) void receiver() {
 }
 
 void demo() {
+  config.log_scheduler = false;
+
   add_named_thread(spammer, "spammer");
   add_named_thread(sender, "spammer");
   add_named_thread(receiver, "receiver");
