@@ -2,7 +2,7 @@
 
 A simple set of demos showing threads sharing time on Arm platforms.
 
-Current build targets are Arm (Armv7A, Cortex A-15), Thumb (Armv7E-M Cortex-M4), AArch64 (Armv8A, Cortex A-57) and 32 bit Arm Linux (Raspberry Pi). Each platform has it's own folder in '/src/hw' for its specific code.
+Current build targets are Arm (Armv7A, Cortex A-15), Thumb (Armv7E-M Cortex-M4), AArch64 (Armv8A, Cortex A-57) and Arm/AArch64 Linux. Each platform has its own folder in '/src/hw' for its specific code.
 
 All bare metal platforms use exceptions for switching threads. Either by yielding (which uses a software exception) or enabling a timer interrupt for preemptive switching.
 
@@ -29,16 +29,16 @@ cmake . -DBUILD_PLATFORM=thumb
 make
 ```
 
-### Arm Linux
+### Arm/AArch64 Linux
 
-Simply configure with cmake and build, the system GCC is fine.
+To run natively configure with NATIVE=ON and build as normal.
 
 ```
 cmake . -DBUILD_PLATFORM=arm_linux -DNATIVE=ON
 make
 ```
 
-Or you can run this via qemu-user on x86. You'll need the arm-linux-gnueabi toolchain for this.
+Or you can run this via qemu-user on x86. You'll need the arm-linux-gnueabi/aarch64-linux-gnu toolchain for this.
 
 ```
 sudo apt-get install qemu-system-arm qemu-user
@@ -60,6 +60,7 @@ make
 | mutex                          | Locking a buffer using a mutex.                                                   |
 | timer                          | Thread switching using a timer interrupt.                                         |
 | threadlocalstorage (Arm/Thumb) | Using thread local storage (TLS) to give each thread it's own 'global' variables. |
+| conditionvariables             | Waiting on, signalling and broadcasting to condition variables.                   |
 
 Each demo has 'run_<demo>', 'debug_<demo>' and 'test_<demo>' make targets. To test all demos, use 'make test_demos' or use lit. (best done in a virtualenv)
 
