@@ -4,11 +4,11 @@
 #include "semihosting.h"
 #include "print.h"
 
-struct SourceInfo {
+typedef struct {
   const char* filename;
   uint32_t line;
   uint32_t column;
-};
+} SourceInfo;
 
 // unsigned base 10 only
 void uint_to_str(uint32_t n, char* out) {
@@ -32,7 +32,7 @@ void uint_to_str(uint32_t n, char* out) {
   }
 }
 
-void print_source_info(struct SourceInfo* s) {
+void print_source_info(SourceInfo* s) {
   // 10 digits of lines/columns should be enough for anyone
   char nums[11];
   memset(nums, 0, 10);
@@ -55,7 +55,7 @@ void print_source_info(struct SourceInfo* s) {
 // Attribute used for when we're using LTO
 #define ubhandler(NAME, ...) \
 __attribute__((used)) \
-void __ubsan_handle_##NAME(struct SourceInfo* s, ##__VA_ARGS__) { \
+void __ubsan_handle_##NAME(SourceInfo* s, ##__VA_ARGS__) { \
   print("UBSAN: " #NAME " @ "); \
   print_source_info(s); \
   qemu_exit(); \

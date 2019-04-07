@@ -13,10 +13,10 @@
 #define THREAD_MSG_QUEUE_SIZE 5
 #define STACK_CANARY 0xcafebeefdeadf00d
 
-struct Message {
+typedef struct {
   int src;
   int content;
-};
+} Message;
 
 enum ThreadState {
   init=0,
@@ -25,7 +25,7 @@ enum ThreadState {
   finished
 };
 
-struct Thread {
+typedef struct {
   uint8_t* stack_ptr;
   // Not an enum directly because we need to know its size
   size_t state;
@@ -33,37 +33,37 @@ struct Thread {
   const char* name;
   // Deliberately not (void)
   void (*work)();
-  struct ThreadArgs args;
-  struct Message messages[THREAD_MSG_QUEUE_SIZE];
-  struct Message* next_msg;
-  struct Message* end_msgs;
+  ThreadArgs args;
+  Message messages[THREAD_MSG_QUEUE_SIZE];
+  Message* next_msg;
+  Message* end_msgs;
   bool msgs_full;
   uint64_t bottom_canary;
   uint8_t stack[THREAD_STACK_SIZE];
   uint64_t top_canary;
-};
+} Thread;
 
 extern void thread_switch_initial(void);
 extern void thread_switch(void);
 
 __attribute__((section(".thread_structs")))
-struct Thread all_threads[MAX_THREADS];
+Thread all_threads[MAX_THREADS];
 // Don't care if this gets corrupted, we'll just reset it's stack anyway
 __attribute__((section(".thread_structs")))
-static struct Thread dummy_thread;
+static Thread dummy_thread;
 
 __attribute__((section(".scheduler_thread")))
-struct Thread scheduler_thread;
+Thread scheduler_thread;
 
 // Use these struct names to ensure that these are
 // placed *after* the thread structs to prevent
 // stack overflow corrupting them.
 __attribute__((section(".thread_vars")))
-struct Thread* current_thread;
+Thread* current_thread;
 __attribute__((section(".thread_vars")))
-struct Thread* next_thread;
+Thread* next_thread;
 __attribute__((section(".thread_vars")))
-size_t thread_stack_offset = offsetof(struct Thread, stack);
+size_t thread_stack_offset = offsetof(Thread, stack);
 
 // Known good stack to save registers to while we check stack extent
 // In a seperate section so we can garauntee it's alignement for AArch64
@@ -73,7 +73,7 @@ __attribute__((section(".thread_vars")))
 uint8_t* monitor_stack_top = &monitor_stack[MONITOR_STACK_SIZE];
 
 __attribute__((section(".thread_vars")))
-struct MonitorConfig config = {
+MonitorConfig config = {
   destroy_on_stack_err: false,
   exit_when_no_threads: true
 };
@@ -119,7 +119,7 @@ const char* get_thread_name(void) {
   return current_thread->name;
 }
 
-static void inc_msg_pointer(struct Thread* thr, struct Message** ptr) {
+static void inc_msg_pointer(Thread* thr, Message** ptr) {
   ++(*ptr);
   // Wrap around from the end to the start
   if (*ptr == &(thr->messages[THREAD_MSG_QUEUE_SIZE])) {
@@ -155,8 +155,8 @@ bool send_msg(int destination, int message) {
     return false;
   }
 
-  struct Thread* dest = &all_threads[destination];
-  struct Message* our_msg = dest->end_msgs;
+  Thread* dest = &all_threads[destination];
+  Message* our_msg = dest->end_msgs;
   our_msg->src = get_thread_id();
   our_msg->content = message;
   inc_msg_pointer(dest, &(dest->end_msgs));
@@ -245,7 +245,7 @@ void check_stack(void) {
   }
 }
 
-void thread_yield(struct Thread* to) {
+void thread_yield(Thread* to) {
   check_stack();
 
   log_event("yielding");
@@ -264,7 +264,7 @@ bool yield_to(int id) {
     return false;
   }
 
-  struct Thread* candidate = &all_threads[id];
+  Thread* candidate = &all_threads[id];
   thread_yield(candidate);
   return true;
 }
@@ -329,11 +329,11 @@ __attribute__((noreturn)) void thread_start(void) {
   __builtin_unreachable();
 }
 
-void init_thread(struct Thread* thread,
+void init_thread(Thread* thread,
                  int tid,
                  const char* name,
                  void (*do_work)(void),
-                 struct ThreadArgs args) {
+                 ThreadArgs args) {
   // thread_start will jump to this
   thread->work = do_work;
   thread->state = init;
@@ -357,7 +357,7 @@ void init_thread(struct Thread* thread,
 
 int add_named_thread_with_args(void (*worker)(),
                                const char* name,
-                               struct ThreadArgs args) {
+                               ThreadArgs args) {
   for (size_t idx=0; idx <= MAX_THREADS; ++idx) {
     if (all_threads[idx].id == -1) {
       init_thread(&all_threads[idx], idx, name, worker, args);
@@ -372,7 +372,7 @@ int add_thread(void (*worker)()) {
 }
 
 int add_named_thread(void (*worker)(), const char* name) {
-  struct ThreadArgs args;
+  ThreadArgs args;
   return add_named_thread_with_args(worker, name, args);
 }
 
@@ -402,7 +402,7 @@ __attribute__((noreturn)) void do_scheduler(void) {
 }
 
 __attribute__((noreturn)) void start_scheduler(void) {
-  struct ThreadArgs args;
+  ThreadArgs args;
 
   // Hidden so that the scheduler doesn't run itself somehow
   init_thread(&scheduler_thread, -1, "<scheduler>", do_scheduler, args);

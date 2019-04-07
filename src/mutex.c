@@ -6,11 +6,11 @@
 #define ID(x) (int)(x)
 #define DATA(x) (size_t)(x)
 
-void init_mutex(struct Mutex* m) {
+void init_mutex(Mutex* m) {
   m->data = DATA(-1);
 }
 
-bool unlock_mutex(struct Mutex* m) {
+bool unlock_mutex(Mutex* m) {
   int id = get_thread_id();
 
   if (id == ID(m->data)) {
@@ -21,7 +21,7 @@ bool unlock_mutex(struct Mutex* m) {
   return false;
 }
 
-bool lock_mutex(struct Mutex* m) {
+bool lock_mutex(Mutex* m) {
   int id = get_thread_id();
 
   if (m->data == DATA(-1)) {

@@ -4,12 +4,12 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-struct Mutex {
+typedef struct {
   size_t data;
-};
+} Mutex;
 
-void init_mutex(struct Mutex* m);
-bool unlock_mutex(struct Mutex* m);
-bool lock_mutex(struct Mutex* m);
+void init_mutex(Mutex* m);
+bool unlock_mutex(Mutex* m);
+bool lock_mutex(Mutex* m);
 
 #endif /* ifdef MUTEX_H */

@@ -2,7 +2,7 @@
 #include "thread.h"
 #include "mutex.h"
 
-struct Mutex buffer_mutex;
+Mutex buffer_mutex;
 char buffer[4];
 
 void thread_work(const char* word) {
@@ -27,11 +27,11 @@ void demo() {
   init_mutex(&buffer_mutex);
   
   const char* word1 = "dog";
-  struct ThreadArgs a1 = make_args(word1, 0, 0, 0);
+  ThreadArgs a1 = make_args(word1, 0, 0, 0);
   add_named_thread_with_args(thread_work, NULL, a1);
 
   const char* word2 = "cat";
-  struct ThreadArgs a2 = make_args(word2, 0, 0, 0);
+  ThreadArgs a2 = make_args(word2, 0, 0, 0);
   add_named_thread_with_args(thread_work, NULL, a2);
 
   start_scheduler(); 

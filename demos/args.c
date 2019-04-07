@@ -24,12 +24,12 @@ void sub_printer(char** words, int num_phrases, unsigned int offset) {
 }
 
 void demo() {
-  struct ThreadArgs p_args = make_args(3, "aardvark", 1, 2);
+  ThreadArgs p_args = make_args(3, "aardvark", 1, 2);
   add_named_thread_with_args(printer, "printer", p_args);
 
   char *words[] = {"food", "alligator", "magazine", "raptor"};
   // Only takes 3, just zero the 4th arg
-  struct ThreadArgs sp_args = make_args(words, 4, 2, 0);
+  ThreadArgs sp_args = make_args(words, 4, 2, 0);
   add_named_thread_with_args(sub_printer, "sub_printer", sp_args);
 
   start_scheduler();

@@ -5,24 +5,25 @@
 
 #define MAX_THREADS 10
 
-struct MonitorConfig {
+typedef struct {
   bool destroy_on_stack_err;
   bool exit_when_no_threads;
-} config;
+} MonitorConfig;
+MonitorConfig config;
 
-struct ThreadArgs {
+typedef struct {
   void* a1;
   void* a2;
   void* a3;
   void* a4;
-};
+} ThreadArgs;
 
 #define make_args(a,b,c,d) \
 { (void*)a, (void*)b, (void*)c, (void*)d }
 
 int add_thread(void (*worker)(void));
 int add_named_thread(void (*worker)(void), const char* name);
-int add_named_thread_with_args(void (*worker)(), const char* name, struct ThreadArgs args);
+int add_named_thread_with_args(void (*worker)(), const char* name, ThreadArgs args);
 
 bool is_valid_thread(int tid);
 // Note: assumes a valid tid
