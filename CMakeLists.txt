@@ -47,6 +47,7 @@ elseif( BP_LOWER STREQUAL "aarch64" )
   # Don't generate NEON
   set( PLATFORM     "-mcpu=cortex-a57 -mgeneral-regs-only" )
   set( PLATFORM_SRC "aarch64_virt" )
+  set( STACK_SIZE 2 )
   set( RAM_START    "0x40000000" )
   set( UART_BASE    "0x09000000" )
   set( QEMU_CMD     "qemu-system-aarch64 -M virt -cpu cortex-a57" )
