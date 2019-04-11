@@ -10,7 +10,10 @@ void thread2() {
   add_named_thread(thread1, "last");
   yield_next(); // switch to "last"
   yield_next(); // switch back to "last"
-  yield_next(); // run ourselves again
+  // Run ourselves again, shouldn't actually do a switch
+  if (yield_next()) {
+    log_event("yield_next shouldn't have found another thread!");
+  }
 }
 
 void demo() {

@@ -18,14 +18,6 @@ typedef struct {
   int content;
 } Message;
 
-enum ThreadState {
-  init=0,
-  running=1,
-  suspended=2,
-  waiting,
-  finished
-};
-
 typedef struct {
   uint8_t* stack_ptr;
   // Not an enum directly because we need to know its size
@@ -100,9 +92,10 @@ bool is_valid_thread(int tid) {
 }
 
 static bool can_schedule_thread(int tid) {
-  return is_valid_thread(tid) &&
-    all_threads[tid].state != finished &&
-    all_threads[tid].state != waiting;
+  return is_valid_thread(tid) && (
+    all_threads[tid].state == suspended ||
+    all_threads[tid].state == init
+  );
 }
 
 int get_thread_id(void) {
@@ -274,8 +267,8 @@ bool yield_next(void) {
     return false;
   }
 
-  // +1 otherwise we just schedule the current thread again
-  int limit = id+MAX_THREADS+1;
+  // Check every other thread than this one
+  int limit = id+MAX_THREADS;
   for (int idx=id+1; idx < limit; ++idx) {
     int idx_in_range = idx % MAX_THREADS;
     if (can_schedule_thread(idx_in_range)) {
@@ -284,7 +277,7 @@ bool yield_next(void) {
     }
   }
 
-  // Not sure how you'd get here, you'd at least schedule yourself
+  // Don't switch just continue to run current thread
   return false;
 }
 
@@ -295,21 +288,32 @@ void thread_wait(void) {
   thread_switch();
 }
 
-bool thread_wake(int tid) {
+static bool set_thread_state(int tid, ThreadState state) {
   if (is_valid_thread(tid)) {
-    all_threads[tid].state = suspended;
+    all_threads[tid].state = state;
     return true;
   }
-
   return false;
 }
 
-bool thread_join(int tid) {
+bool thread_wake(int tid) {
+  return set_thread_state(tid, suspended);
+}
+
+bool thread_cancel(int tid) {
+  return set_thread_state(tid, cancelled);
+}
+
+bool thread_join(int tid, ThreadState* state) {
   while (1) {
     // Initial ID is invalid, or it was destroyed due to stack err
     if (!is_valid_thread(tid)) { return false; }
 
-    if (all_threads[tid].state == finished) {
+    ThreadState ts = all_threads[tid].state;
+    if (ts == finished || ts == cancelled) {
+      if (state) {
+        *state = ts;
+      }
       return true;
     } else {
       yield();

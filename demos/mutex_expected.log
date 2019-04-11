@@ -17,13 +17,7 @@ Thread            0: dog
 Thread            0: exiting
 Thread            1: resuming
 Thread            1: copying...
-Thread            1: yielding
-Thread            1: resuming
 Thread            1: copying...
-Thread            1: yielding
-Thread            1: resuming
 Thread            1: copying...
-Thread            1: yielding
-Thread            1: resuming
 Thread            1: cat
 Thread            1: exiting

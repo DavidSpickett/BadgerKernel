@@ -42,24 +42,17 @@ void overflow() {
 }
 
 void watcher() {
-  bool threads_living = true;
-  int our_id = get_thread_id();
+  const int num_threads = 2;
+  // Note we do not include ourselves
+  int tids[] = {0, 2};
 
-  while (threads_living) {
-    yield();
-    threads_living = false;
-    
-    for (int id=0; id <= MAX_THREADS; ++id) {
-      if ((id != our_id) &&
-          is_valid_thread(id)) {
-        threads_living = true;
-        break;
-      }
+  for (int i=0; i<num_threads; ++i) {
+    if (thread_join(tids[i], NULL)) {
+      log_event("thread did not error!");
     }
   }
 
   log_event("All threads errored");
-  qemu_exit();
 }
 
 void demo() {

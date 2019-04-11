@@ -1,0 +1,13 @@
+Thread     <HIDDEN>: starting scheduler
+Thread            0: foo
+Thread            0: yielding
+Thread            1: cancelling thread 2
+Thread            1: yielding
+Thread            0: resuming
+Thread            0: foo
+Thread            0: yielding
+Thread            1: resuming
+Thread            1: cancelling thread 0
+Thread            1: yielding
+Thread            1: resuming
+Thread            1: exiting

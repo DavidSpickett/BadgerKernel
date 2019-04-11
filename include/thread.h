@@ -22,6 +22,16 @@ typedef struct {
 #define make_args(a,b,c,d) \
 { (void*)a, (void*)b, (void*)c, (void*)d }
 
+typedef enum {
+  // Fixed values for use in assembly
+  init=0,
+  running=1,
+  suspended=2,
+  waiting,
+  finished,
+  cancelled
+} ThreadState;
+
 int add_thread(void (*worker)(void));
 int add_named_thread(void (*worker)(void), const char* name);
 int add_named_thread_with_args(void (*worker)(), const char* name, ThreadArgs args);
@@ -35,7 +45,8 @@ bool yield_next(void);
 bool yield_to(int tid);
 void thread_wait(void);
 bool thread_wake(int tid);
-bool thread_join(int tid);
+bool thread_cancel(int tid);
+bool thread_join(int tid, ThreadState* state);
 void __attribute__((noreturn)) start_scheduler(void);
 void log_event(const char* event);
 bool get_msg(int* sender, int* message);

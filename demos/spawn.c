@@ -1,3 +1,4 @@
+#include <stddef.h>
 #include "thread.h"
 #include "semihosting.h"
 
@@ -31,7 +32,7 @@ __attribute__((noreturn)) void spawner() {
 
   // Wait for them all to exit
   for (int j=0; j<dlen; ++j) {
-    thread_join(ids[j]);
+    thread_join(ids[j], NULL);
   }
 
   log_event("demons perished");

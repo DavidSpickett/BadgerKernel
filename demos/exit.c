@@ -13,14 +13,20 @@ void counter() {
 
   // Since we're the last thread added, we're the upper bound on ID
   for (int i=0; i<our_id; ++i) {
-    thread_join(i);
-    log_event("a thread exited");
+    ThreadState ts;
+    thread_join(i, &ts);
+    if (ts == finished) {
+      log_event("a thread exited");
+    } else {
+      log_event("unexpected thread state!");
+      break;
+    }
   }
-
-  qemu_exit();
 }
 
 void demo() {
+  config.log_scheduler = false;
+
   ThreadArgs ta1 = make_args(2, 0, 0, 0);
   add_named_thread_with_args(work, NULL, ta1);
 

@@ -6,3 +6,4 @@ Thread     overflow: overflowing
 Thread     <HIDDEN>: Stack overflow!
 Thread      watcher: resuming
 Thread      watcher: All threads errored
+Thread      watcher: exiting

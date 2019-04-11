@@ -21,8 +21,6 @@ Thread  <scheduler>: thread yielded
 Thread  <scheduler>: scheduling new thread
 Thread  <scheduler>: yielding
 Thread       second: resuming
-Thread       second: yielding
-Thread       second: resuming
 Thread       second: exiting
 Thread  <scheduler>: resuming
 Thread  <scheduler>: thread yielded
