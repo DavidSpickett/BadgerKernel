@@ -29,13 +29,9 @@ __attribute__((noreturn)) void spawner() {
 
   log_event("spawned demons");
 
-  // Wait for them all to finish
-  bool running = true;
-  while (running) {
-    yield();
-    for (int j=0; j < dlen; ++j) {
-      running = !is_thread_finished(ids[j]);
-    }
+  // Wait for them all to exit
+  for (int j=0; j<dlen; ++j) {
+    thread_join(ids[j]);
   }
 
   log_event("demons perished");

@@ -99,11 +99,6 @@ bool is_valid_thread(int tid) {
     all_threads[tid].id != -1;
 }
 
-bool is_thread_finished(int tid) {
-  return is_valid_thread(tid) &&
-    all_threads[tid].state == finished;
-}
-
 static bool can_schedule_thread(int tid) {
   return is_valid_thread(tid) &&
     all_threads[tid].state != finished &&
@@ -307,6 +302,19 @@ bool thread_wake(int tid) {
   }
 
   return false;
+}
+
+bool thread_join(int tid) {
+  while (1) {
+    // Initial ID is invalid, or it was destroyed due to stack err
+    if (!is_valid_thread(tid)) { return false; }
+
+    if (all_threads[tid].state == finished) {
+      return true;
+    } else {
+      yield();
+    }
+  }
 }
 
 __attribute__((noreturn)) void thread_start(void) {

@@ -1,46 +1,32 @@
+#include <stddef.h>
 #include "thread.h"
 #include "semihosting.h"
 
-void temp_0() {
-  for (int i=0; i<4; ++i) {
-    yield();
-  }
-}
-
-void temp_1() {
-  for (int i=0; i<2; ++i) {
+void work(int num) {
+  for (int i=0; i<num; ++i) {
     yield();
   }
 }
 
 void counter() {
-  int num_threads = 3;
-  while (1) {
-    int curr_threads = 0;
-    for (int i=0; i<MAX_THREADS; ++i) {
-      if (is_valid_thread(i) && !is_thread_finished(i)) {
-        ++curr_threads;
-      }
-    }
-    
-    if (curr_threads < num_threads) {
-      log_event("a thread exited");
-    }
+  int our_id = get_thread_id();
 
-    // not 0, because we'll still be running
-    if (curr_threads == 1) {
-      log_event("all threads exited");
-      qemu_exit();
-    }
-    
-    num_threads = curr_threads;
-    yield();
+  // Since we're the last thread added, we're the upper bound on ID
+  for (int i=0; i<our_id; ++i) {
+    thread_join(i);
+    log_event("a thread exited");
   }
+
+  qemu_exit();
 }
 
 void demo() {
-  add_thread(temp_0);
-  add_thread(temp_1);
+  ThreadArgs ta1 = make_args(2, 0, 0, 0);
+  add_named_thread_with_args(work, NULL, ta1);
+
+  ThreadArgs ta2 = make_args(4, 0, 0, 0);
+  add_named_thread_with_args(work, NULL, ta2);
+
   add_thread(counter);
 
   start_scheduler(); 

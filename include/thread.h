@@ -27,8 +27,6 @@ int add_named_thread(void (*worker)(void), const char* name);
 int add_named_thread_with_args(void (*worker)(), const char* name, ThreadArgs args);
 
 bool is_valid_thread(int tid);
-// Note: assumes a valid tid
-bool is_thread_finished(int tid);
 int get_thread_id(void);
 const char* get_thread_name(void);
 
@@ -37,6 +35,7 @@ bool yield_next(void);
 bool yield_to(int tid);
 void thread_wait(void);
 bool thread_wake(int tid);
+bool thread_join(int tid);
 void __attribute__((noreturn)) start_scheduler(void);
 void log_event(const char* event);
 bool get_msg(int* sender, int* message);

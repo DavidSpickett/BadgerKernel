@@ -35,7 +35,32 @@ Thread  <scheduler>: thread yielded
 Thread  <scheduler>: scheduling new thread
 Thread  <scheduler>: yielding
 Thread            0: resuming
-Thread            0: yielding
+Thread            0: exiting
+Thread  <scheduler>: resuming
+Thread  <scheduler>: thread yielded
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: yielding
+Thread            1: resuming
+Thread            1: yielding
+Thread  <scheduler>: resuming
+Thread  <scheduler>: thread yielded
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: yielding
+Thread            2: resuming
+Thread            2: a thread exited
+Thread            2: yielding
+Thread  <scheduler>: resuming
+Thread  <scheduler>: thread yielded
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: yielding
+Thread            1: resuming
+Thread            1: yielding
+Thread  <scheduler>: resuming
+Thread  <scheduler>: thread yielded
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: yielding
+Thread            2: resuming
+Thread            2: yielding
 Thread  <scheduler>: resuming
 Thread  <scheduler>: thread yielded
 Thread  <scheduler>: scheduling new thread
@@ -48,29 +73,3 @@ Thread  <scheduler>: scheduling new thread
 Thread  <scheduler>: yielding
 Thread            2: resuming
 Thread            2: a thread exited
-Thread            2: yielding
-Thread  <scheduler>: resuming
-Thread  <scheduler>: thread yielded
-Thread  <scheduler>: scheduling new thread
-Thread  <scheduler>: yielding
-Thread            0: resuming
-Thread            0: yielding
-Thread  <scheduler>: resuming
-Thread  <scheduler>: thread yielded
-Thread  <scheduler>: scheduling new thread
-Thread  <scheduler>: yielding
-Thread            2: resuming
-Thread            2: yielding
-Thread  <scheduler>: resuming
-Thread  <scheduler>: thread yielded
-Thread  <scheduler>: scheduling new thread
-Thread  <scheduler>: yielding
-Thread            0: resuming
-Thread            0: exiting
-Thread  <scheduler>: resuming
-Thread  <scheduler>: thread yielded
-Thread  <scheduler>: scheduling new thread
-Thread  <scheduler>: yielding
-Thread            2: resuming
-Thread            2: a thread exited
-Thread            2: all threads exited
