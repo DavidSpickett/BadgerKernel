@@ -59,8 +59,10 @@ jobs:
             - script: |
                 source testenv/bin/activate
                 # Don't be fooled, this is actually JUnit format
-                lit demos --xunit-xml-output ${{build_platform}}_O${{opt_level}}_UBSAN_${{ubsan}}_LTO_${{lto}}_results.xml || true
+                lit demos --xunit-xml-output ${{build_platform}}_O${{opt_level}}_UBSAN_${{ubsan}}_LTO_${{lto}}_results.xml
               displayName: test-O${{opt_level}}_UBSAN_${{ubsan}}_LTO_${{lto}}
+              # So we'll get a failed build when tests fail
+              continueOnError: true
 
       - task: PublishTestResults@2
         inputs:
