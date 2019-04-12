@@ -268,9 +268,9 @@ bool yield_next(void) {
   }
 
   // Check every other thread than this one
-  int limit = id+MAX_THREADS;
-  for (int idx=id+1; idx < limit; ++idx) {
-    int idx_in_range = idx % MAX_THREADS;
+  size_t limit = id+MAX_THREADS;
+  for (size_t idx=id+1; idx < limit; ++idx) {
+    size_t idx_in_range = idx % MAX_THREADS;
     if (can_schedule_thread(idx_in_range)) {
       thread_yield(&all_threads[idx_in_range]);
       return true;
