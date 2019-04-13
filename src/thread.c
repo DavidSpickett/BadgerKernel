@@ -67,9 +67,9 @@ uint8_t* monitor_stack_top = &monitor_stack[MONITOR_STACK_SIZE];
 
 __attribute__((section(".thread_vars")))
 MonitorConfig config = {
-  destroy_on_stack_err: false,
-  exit_when_no_threads: true,
-  log_scheduler: true
+  .destroy_on_stack_err = false,
+  .exit_when_no_threads = true,
+  .log_scheduler = true
 };
 
 extern void demo(void);
@@ -401,7 +401,7 @@ int add_thread(void (*worker)()) {
 }
 
 int add_named_thread(void (*worker)(), const char* name) {
-  ThreadArgs args;
+  ThreadArgs args = {0,0,0,0};
   return add_named_thread_with_args(worker, name, args);
 }
 
@@ -438,7 +438,7 @@ __attribute__((noreturn)) void do_scheduler(void) {
 }
 
 __attribute__((noreturn)) void start_scheduler(void) {
-  ThreadArgs args;
+  ThreadArgs args = {0,0,0,0};
 
   // Hidden so that the scheduler doesn't run itself somehow
   init_thread(&scheduler_thread, -1, "<scheduler>", do_scheduler, args);
