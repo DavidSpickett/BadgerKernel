@@ -18,9 +18,9 @@ void qemu_print(const char* msg) {
 
 // GDB helper to get current Cortex-M privilege level
 // Yes, 1 means unprivileged. I know, weird right?
-enum plevel { privileged, unprivileged };
-enum plevel pl(void) {
-  enum plevel level;
+typedef enum { privileged, unprivileged } plevel;
+plevel pl(void) {
+  plevel level;
   asm volatile(
       "mrs r5, control\n\t"
       "mov r6, #1\n\t"
@@ -28,7 +28,7 @@ enum plevel pl(void) {
       "mov %0, r5\n\t"
   : "=r"(level)
   :
-  : "r5", "r6"
+  : "r5", "r6" //!OCLINT - doesn't recognise register names for some reason
   );
   return level;
 }
