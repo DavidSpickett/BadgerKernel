@@ -4,8 +4,8 @@
 
 #include <stdio.h>
 
-void print(const char* s) {
-  printf("%s", s);
+void print(const char* str) {
+  printf("%s", str);
 }
 
 #else

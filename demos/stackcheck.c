@@ -8,18 +8,18 @@ extern void* current_thread;
 
 #define ALLOC_SIZE 500 
 __attribute__((noinline))
-void recurse(int n) {
-  char f[ALLOC_SIZE];
-  memset((void*)f, 0, ALLOC_SIZE);
-  if (n) {
-    recurse(n-1);
+void recurse(int repeat) {
+  char dummy[ALLOC_SIZE];
+  memset((void*)dummy, 0, ALLOC_SIZE);
+  if (repeat) {
+    recurse(repeat-1);
   }
   return;
 }
 
 void underflow() {
-  char t;
-  size_t distance = (void*)(&t)-current_thread;
+  char dummy;
+  size_t distance = (void*)(&dummy)-current_thread;
   log_event("recursing");
   recurse(distance/ALLOC_SIZE);
   /* Don't log_event here because under some settings
@@ -28,8 +28,8 @@ void underflow() {
 }
 
 void overflow() {
-  char t;
-  size_t distance = (void*)(&t)-current_thread;
+  char dummy;
+  size_t distance = (void*)(&dummy)-current_thread;
   log_event("overflowing");
   /* We're probably very close to top of stack
      so this is overkill. At least we can be sure that:
@@ -37,7 +37,7 @@ void overflow() {
      So overflow is garaunteed.
   */
   // Set -1 so scheduler doesn't check that position == ID
-  memset((void*)&t, -1, distance);
+  memset((void*)&dummy, -1, distance);
   while (1) { yield(); }
 }
 

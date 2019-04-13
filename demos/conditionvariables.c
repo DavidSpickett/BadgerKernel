@@ -1,17 +1,17 @@
 #include "thread.h"
 #include "condition_variable.h"
 
-ConditionVariable cv;
+ConditionVariable cond_var;
 
 void waiter(void) {
   log_event("Waiting...");
-  wait(&cv);
+  wait(&cond_var);
   log_event("Signalled");
 }
 
 void final_signal(void) {
   log_event("Signalling");
-  signal(&cv);
+  signal(&cond_var);
 }
 
 void signaller(void) {
@@ -21,30 +21,30 @@ void signaller(void) {
   // Signal a few individually
   for (unsigned i=0; i<2; ++i) {
     log_event("Signalling");
-    signal(&cv);
+    signal(&cond_var);
     yield_next();
   }
 
   // Signal the rest
   log_event("Broadcasting");
-  broadcast(&cv);
+  broadcast(&cond_var);
   yield();
 
   // Should be false, no yield...
-  if (signal(&cv)) {
+  if (signal(&cond_var)) {
     yield();
   }
 
   // Show that a new thread can wait after some have been signalled
   add_named_thread(final_signal, "final_signal");
   log_event("Waiting...");
-  wait(&cv);
+  wait(&cond_var);
 }
 
 void demo() {
   config.log_scheduler = false;
 
-  init_condition_variable(&cv);
+  init_condition_variable(&cond_var);
 
   const unsigned num_waiting = 5;
   for (unsigned i=0; i < num_waiting; ++i) {

@@ -13,9 +13,9 @@ void counter() {
 
   // Since we're the last thread added, we're the upper bound on ID
   for (int i=0; i<our_id; ++i) {
-    ThreadState ts;
-    thread_join(i, &ts);
-    if (ts == finished) {
+    ThreadState state;
+    thread_join(i, &state);
+    if (state == finished) {
       log_event("a thread exited");
     } else {
       log_event("unexpected thread state!");

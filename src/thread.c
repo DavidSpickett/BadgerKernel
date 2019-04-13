@@ -232,13 +232,13 @@ void check_stack(void) {
   }
 }
 
-void thread_yield(Thread* to) {
+void thread_yield(Thread* next) {
   bool log = get_thread_id() != -1 || config.log_scheduler;
 
   check_stack();
 
   if (log) { log_event("yielding"); }
-  next_thread = to;
+  next_thread = next;
   thread_switch();
   if (log) { log_event("resuming"); }
 }
@@ -410,22 +410,25 @@ __attribute__((noreturn)) void do_scheduler(void) {
     bool live_threads = false;
 
     for (size_t idx=0; idx < MAX_THREADS; ++idx) {
-      if (can_schedule_thread(idx)) {
-        if (all_threads[idx].id != idx) {
-          // Error so always log
-          log_event("thread ID and position inconsistent!");
-          qemu_exit();
-        }
+      if (!can_schedule_thread(idx)) {
+        continue;
+      }
 
-        if (config.log_scheduler) {
-          log_event("scheduling new thread");
-        }
-        live_threads = true;
-        thread_yield(&all_threads[idx]);
-        if (config.log_scheduler) {
-          log_event("thread yielded");
-        }
-      }  
+      if (all_threads[idx].id != idx) {
+        // Error so always log
+        log_event("thread ID and position inconsistent!");
+        qemu_exit();
+      }
+
+      if (config.log_scheduler) {
+        log_event("scheduling new thread");
+      }
+
+      live_threads = true;
+      thread_yield(&all_threads[idx]);
+      if (config.log_scheduler) {
+        log_event("thread yielded");
+      }
     }
 
     if (!live_threads && config.exit_when_no_threads) {

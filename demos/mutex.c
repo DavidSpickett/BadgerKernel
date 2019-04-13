@@ -29,12 +29,12 @@ void demo() {
   init_mutex(&buffer_mutex);
 
   const char* word1 = "dog";
-  ThreadArgs a1 = make_args(word1, 0, 0, 0);
-  add_named_thread_with_args(thread_work, NULL, a1);
+  ThreadArgs args1 = make_args(word1, 0, 0, 0);
+  add_named_thread_with_args(thread_work, NULL, args1);
 
   const char* word2 = "cat";
-  ThreadArgs a2 = make_args(word2, 0, 0, 0);
-  add_named_thread_with_args(thread_work, NULL, a2);
+  ThreadArgs args2 = make_args(word2, 0, 0, 0);
+  add_named_thread_with_args(thread_work, NULL, args2);
 
   start_scheduler(); 
 }

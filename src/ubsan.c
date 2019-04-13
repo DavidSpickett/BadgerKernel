@@ -11,42 +11,42 @@ typedef struct {
 } SourceInfo;
 
 // unsigned base 10 only
-void uint_to_str(uint32_t n, char* out) {
+void uint_to_str(uint32_t num, char* out) {
   char* start = out;
 
   uint32_t div = 10;
   // Luckily line/col starts from 1
-  while (n) {
-    uint32_t digit = n % div;
+  while (num) {
+    uint32_t digit = num % div;
     *out++ = ((char)digit)+48;
-    n /= div;
+    num /= div;
   }
 
   // Now reverse the digits
   size_t len = strlen(start);
   --out;
   for (size_t idx = 0; idx != (len/2); ++idx) {
-    char c = start[idx];
+    char chr = start[idx];
     *(start+idx) = *(out-idx);
-    *(out-idx) = c;
+    *(out-idx) = chr;
   }
 }
 
-void print_source_info(SourceInfo* s) {
+void print_source_info(SourceInfo* info) {
   // 10 digits of lines/columns should be enough for anyone
   char nums[11];
   memset(nums, 0, 10);
 
-  print(s->filename);
+  print(info->filename);
   print(":");
 
-  uint_to_str(s->line, nums);
+  uint_to_str(info->line, nums);
   print(nums);
 
   print(":");
 
   memset(nums, 0, 10);
-  uint_to_str(s->column, nums);
+  uint_to_str(info->column, nums);
   print(nums);
 
   print("\n");

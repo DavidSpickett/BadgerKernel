@@ -6,8 +6,8 @@
 #define ID(x) (int)(x)
 #define DATA(x) (size_t)(x)
 
-void init_mutex(Mutex* m) {
-  m->data = DATA(-1);
+void init_mutex(Mutex* mut) {
+  mut->data = DATA(-1);
 }
 
 bool unlock_mutex(Mutex* m) {

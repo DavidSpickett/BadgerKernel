@@ -1,7 +1,7 @@
 #include "thread.h"
 
 void work() {
-  for (int i=0; i<3; ++i) {
+  for (int num=0; num<3; ++num) {
     log_event("foo");
     yield();
   }
@@ -19,9 +19,9 @@ void canceller() {
 
   yield();
 
-  ThreadState ts;
-  thread_join(0, &ts);
-  if (ts != cancelled) {
+  ThreadState state;
+  thread_join(0, &state);
+  if (state != cancelled) {
     log_event("thread 0 not cancelled!");
   }
 }
