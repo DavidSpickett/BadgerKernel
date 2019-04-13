@@ -22,13 +22,11 @@ typedef enum { privileged, unprivileged } plevel;
 plevel pl(void) {
   plevel level;
   asm volatile(
-      "mrs r5, control\n\t"
-      "mov r6, #1\n\t"
-      "and r5, r5, r6\n\t"
-      "mov %0, r5\n\t"
+      "mrs r0, control\n\t"
+      "mov r1, #1\n\t"
+      "and r0, r0, r1\n\t"
+      "mov %0, r0\n\t"
   : "=r"(level)
-  :
-  : "r5", "r6" //!OCLINT - doesn't recognise register names for some reason
   );
   return level;
 }
