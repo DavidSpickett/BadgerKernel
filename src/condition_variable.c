@@ -17,7 +17,7 @@ bool signal(ConditionVariable* cond_var) {
 }
 
 void broadcast(ConditionVariable* cond_var) {
-  while (signal(cond_var)) {}
+  while (signal(cond_var)); //!OCLINT
 }
 
 void wait(ConditionVariable *cond_var) {
