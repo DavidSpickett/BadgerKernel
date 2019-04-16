@@ -206,6 +206,9 @@ add_demo_app(timer)
 add_demo_app(conditionvariables)
 add_demo_app(cancel)
 
+# For the random demo generator
+add_demo_app(generated)
+
 if(NOT LINUX)
   if(NOT BP_LOWER STREQUAL "aarch64" )
     add_demo_app(threadlocalstorage)

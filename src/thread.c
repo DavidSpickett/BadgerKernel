@@ -387,7 +387,7 @@ void init_thread(Thread* thread,
 int add_named_thread_with_args(void (*worker)(),
                                const char* name,
                                ThreadArgs args) {
-  for (size_t idx=0; idx <= MAX_THREADS; ++idx) {
+  for (size_t idx=0; idx < MAX_THREADS; ++idx) {
     if (all_threads[idx].id == -1) {
       init_thread(&all_threads[idx], idx, name, worker, args);
       return idx;

@@ -38,6 +38,7 @@ config.test_format = MakeTest()
 config.suffixes = ['.log']
 config.test_source_root = os.path.dirname(__file__)
 config.test_exec_root = os.path.join(config.test_source_root, '..')
+config.excludes = ['generated.c'] # Not a real test just a dummy file
 config.excludes = ['stackcheck.c', 'threadlocalstorage.c'] if 'linux' in platform.lower() else []
 if platform.lower() == 'aarch64':
   config.excludes.append('threadlocalstorage.c')
