@@ -50,7 +50,7 @@ def gen_worker(thread_num, depth):
 
   # Timer adds a whole host of issues right now
   if ENABLE_TIMER:
-    thread_actons.extend([
+    thread_actions.extend([
      Action("disable_timer"),
      Action("enable_timer"),
     ])
