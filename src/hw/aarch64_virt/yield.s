@@ -126,10 +126,10 @@ __thread_switch:
   ldr x1, =current_thread
   ldr x0, [x0]              // chase it
   ldr x1, [x1]              // chase current thread too
-  add x1, x1, x0            // get minimum valid stack pointer
+  add x0, x1, x0            // get minimum valid stack pointer
   msr SPSel, #0             // get the thread's sp
-  mov x0, sp
-  sub x0, x0, #((31+2)*64)  // take away space we want to use
+  mov x1, sp
+  sub x1, x1, #((31+2+1)*8) // take away space we want to use
   cmp x0, x1                // is potential sp < min valid sp?
   b.hs stack_extent_failed  // Use thread's stack for this, we will exit anyway
 
@@ -145,21 +145,24 @@ __thread_switch:
   mrs x1, SPSR_EL1          // so we have temp regs x0/x1 to msr from
   stp x0, x1,   [sp, #-16]!
 
-  stp x2,  x3,  [sp, #-16]!
-  stp x4,  x5,  [sp, #-16]!
-  stp x6,  x7,  [sp, #-16]!
-  stp x8,  x9,  [sp, #-16]!
-  stp x10, x11, [sp, #-16]!
-  stp x12, x13, [sp, #-16]!
-  stp x14, x15, [sp, #-16]!
-  stp x16, x17, [sp, #-16]!
-  stp x18, x19, [sp, #-16]!
-  stp x20, x21, [sp, #-16]!
-  stp x22, x23, [sp, #-16]!
-  stp x24, x25, [sp, #-16]!
-  stp x26, x27, [sp, #-16]!
-  stp x28, x29, [sp, #-16]!
-  stp x30, xzr, [sp, #-16]!
+  /* Save the PC we are switching from */
+  mrs x1, ELR_EL1
+
+  stp x1,  x2,  [sp, #-16]! // PC included here
+  stp x3,  x4,  [sp, #-16]!
+  stp x5,  x6,  [sp, #-16]!
+  stp x7,  x8,  [sp, #-16]!
+  stp x9,  x10, [sp, #-16]!
+  stp x11, x12, [sp, #-16]!
+  stp x13, x14, [sp, #-16]!
+  stp x15, x16, [sp, #-16]!
+  stp x17, x18, [sp, #-16]!
+  stp x19, x20, [sp, #-16]!
+  stp x21, x22, [sp, #-16]!
+  stp x23, x24, [sp, #-16]!
+  stp x25, x26, [sp, #-16]!
+  stp x27, x28, [sp, #-16]!
+  stp x29, x30, [sp, #-16]!
 
   /* Setup pointers in some high reg numbers we won't overwrite */
   ldr x10, =current_thread
@@ -196,41 +199,39 @@ dont_update_state:
 
   bne restore_regs
 
-  /* Fake lr value */
+  /* Fake return PC value (doesn't matter what reg we use here)*/
   ldr x30, =thread_start
+  msr ELR_EL1, x30
   b exc_return
 
 restore_regs:
   /* Restore all registers of the new thread */
-  ldp x30, xzr, [sp], #16 // xzr to keep alignment
-  ldp x28, x29, [sp], #16
-  ldp x26, x27, [sp], #16
-  ldp x24, x25, [sp], #16
-  ldp x22, x23, [sp], #16
-  ldp x20, x21, [sp], #16
-  ldp x18, x19, [sp], #16
-  ldp x16, x17, [sp], #16
-  ldp x14, x15, [sp], #16
-  ldp x12, x13, [sp], #16
-  ldp x10, x11, [sp], #16
-  ldp x8,  x9,  [sp], #16
-  ldp x6,  x7,  [sp], #16
-  ldp x4,  x5,  [sp], #16
-  ldp x2,  x3,  [sp], #16
+  ldp x29, x30, [sp], #16
+  ldp x27, x28, [sp], #16
+  ldp x25, x26, [sp], #16
+  ldp x23, x24, [sp], #16
+  ldp x21, x22, [sp], #16
+  ldp x19, x20, [sp], #16
+  ldp x17, x18, [sp], #16
+  ldp x15, x16, [sp], #16
+  ldp x13, x14, [sp], #16
+  ldp x11, x12, [sp], #16
+  ldp x9,  x10, [sp], #16
+  ldp x7,  x8,  [sp], #16
+  ldp x5,  x6,  [sp], #16
+  ldp x3,  x4,  [sp], #16
+  ldp x1,  x2,  [sp], #16
 
-  ldp x0,  x1,  [sp], #16 // This is FPSR/PSR not actually x0/x1
+  /* x1 = restore PC */
+  msr ELR_EL1, x1
+
+  /* This is FPSR/PSR */
+  ldp x0,  x1,  [sp], #16
   msr FPSR, x0
   msr SPSR_EL1, x1
 
-  ldp x0,  x1,  [sp], #16 // actual x0/x1 values
+  /* Actual x0 and x1 */
+  ldp x0,  x1,  [sp], #16
 
 exc_return:
-  /* Note that this means we return to *before* the function that
-     did the svc call. For example:
-     thread_yield() -> thread_switch -> svc -> here
-     when we return it goes:
-     here -> thread_yield() -> user code
-     It's a bit weird but lets us skip storing the current PC.
-  */
-  msr ELR_EL1, x30
   eret
