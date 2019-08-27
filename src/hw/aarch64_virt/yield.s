@@ -45,12 +45,13 @@ thread_switch:
 handle_timer:
   CHECK_MONITOR_STACK
 1:
+  DISABLE_TIMER
+
   /* Always set next thread to scheduler */
   ldr x0, =scheduler_thread
   ldr x1, =next_thread
   str x0, [x1]
 
-  /* Also disables the timer */
   b __thread_switch
 
 .global handle_svc
@@ -120,9 +121,6 @@ semihosting:
   eret
 
 __thread_switch:
-  /* We never want the timer enabled during the scheduler */
-  DISABLE_TIMER
-
   /* Validate stack extent */
   ldr x0, =thread_stack_offset
   ldr x1, =current_thread
@@ -232,11 +230,7 @@ exc_return:
      thread_yield() -> thread_switch -> svc -> here
      when we return it goes:
      here -> thread_yield() -> user code
-
-     TODO: this let's us not store the PC but is
-           VERY VERY BAD for interrupts. Since there
-           is no dummy stack frame for us to skip
-           in that situation.
+     It's a bit weird but lets us skip storing the current PC.
   */
   msr ELR_EL1, x30
   eret
