@@ -1,9 +1,13 @@
 #include "thread.h"
+#include "print.h"
 
 void work(void) {}
 
 void setup(void) {
   config.log_scheduler = false;
+
+  // Check we can escape %
+  print("%% Print Demo %%\n");
 
   // Use up some IDs
   for (int i=0; i<8; ++i) {

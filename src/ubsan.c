@@ -10,21 +10,12 @@ typedef struct {
 } SourceInfo;
 
 void print_source_info(SourceInfo* info) {
-  // 10 digits of lines/columns should be enough for anyone
-  char nums[11];
+  char line_no[5];
+  uint_to_str(info->line, line_no);
+  char col_no[5];
+  uint_to_str(info->column, col_no);
 
-  print(info->filename);
-  print(":");
-
-  uint_to_str(info->line, nums);
-  print(nums);
-
-  print(":");
-
-  uint_to_str(info->column, nums);
-  print(nums);
-
-  print("\n");
+  print("%s:%s:%s\n", info->filename, line_no, col_no);
 }
 
 // Attribute used for when we're using LTO

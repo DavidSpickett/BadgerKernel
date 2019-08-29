@@ -193,11 +193,7 @@ void format_thread_name(char* out) {
 void log_event(const char* event) {
   char thread_name[THREAD_NAME_SIZE+1];
   format_thread_name(thread_name);
-  print("Thread ");
-  print(thread_name);
-  print(": ");
-  print(event);
-  print("\n");
+  print("Thread %s: %s\n", thread_name, event);
 }
 
 void stack_extent_failed(void) {
