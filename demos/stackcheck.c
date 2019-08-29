@@ -55,13 +55,11 @@ void watcher() {
   log_event("All threads errored");
 }
 
-void demo() {
+void setup(void) {
   config.log_scheduler = false;
   config.destroy_on_stack_err = true;
 
   add_named_thread(underflow, "underflow");
   add_named_thread(watcher, "watcher");
   add_named_thread(overflow, "overflow");
-
-  start_scheduler(); 
 }

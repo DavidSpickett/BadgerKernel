@@ -23,7 +23,7 @@ void thread_work(const char* word) {
   unlock_mutex(&buffer_mutex);
 }
 
-void demo() {
+void setup(void) {
   config.log_scheduler = false;
 
   init_mutex(&buffer_mutex);
@@ -35,6 +35,4 @@ void demo() {
   const char* word2 = "cat";
   ThreadArgs args2 = make_args(word2, 0, 0, 0);
   add_named_thread_with_args(thread_work, NULL, args2);
-
-  start_scheduler(); 
 }

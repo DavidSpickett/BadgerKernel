@@ -24,7 +24,6 @@ void thread_work() {
   while (1); //!OCLINT
 }
 
-void demo() {
+void setup(void) {
   add_thread(thread_work);
-  start_scheduler();
 }

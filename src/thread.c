@@ -72,15 +72,17 @@ MonitorConfig config = {
   .log_scheduler = true
 };
 
-extern void demo(void);
+extern void setup(void);
+void start_scheduler(void);
 __attribute__((noreturn)) void entry(void) {
   // Invalidate all threads in the pool
   for (size_t idx=0; idx < MAX_THREADS; ++idx) {
     all_threads[idx].id = -1;
   }
 
-  // Call user app
-  demo();
+  // Call user setup
+  setup();
+  start_scheduler();
 
   __builtin_unreachable();
 }

@@ -91,9 +91,8 @@ def gen_add_threads(num_threads):
 
 def gen_demo(num_threads):
   return dedent('''\
-    void demo() {{
+    void setup(void) {{
       {}
-      start_scheduler();
     }}''').format(gen_add_threads(num_threads))
 
 def gen_file(num_threads):

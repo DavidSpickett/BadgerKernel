@@ -24,7 +24,7 @@ void counter() {
   }
 }
 
-void demo() {
+void setup(void) {
   config.log_scheduler = false;
 
   ThreadArgs ta1 = make_args(2, 0, 0, 0);
@@ -34,6 +34,4 @@ void demo() {
   add_named_thread_with_args(work, NULL, ta2);
 
   add_thread(counter);
-
-  start_scheduler(); 
 }

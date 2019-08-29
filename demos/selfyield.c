@@ -25,7 +25,6 @@ void thread(void) {
   log_things();
 }
 
-void demo() {
+void setup(void) {
   add_thread(thread);
-  start_scheduler();
 }

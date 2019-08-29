@@ -47,7 +47,6 @@ void thread_wait(void);
 bool thread_wake(int tid);
 bool thread_cancel(int tid);
 bool thread_join(int tid, ThreadState* state);
-void __attribute__((noreturn)) start_scheduler(void);
 void log_event(const char* event);
 bool get_msg(int* sender, int* message);
 bool send_msg(int destination, int message);

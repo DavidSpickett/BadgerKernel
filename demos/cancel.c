@@ -26,11 +26,10 @@ void canceller() {
   }
 }
 
-void demo() {
+void setup(void) {
   config.log_scheduler = false;
+
   add_thread(work);
   add_thread(canceller);
   add_thread(work);
-
-  start_scheduler();
 }

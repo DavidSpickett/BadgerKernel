@@ -41,7 +41,7 @@ void signaller(void) {
   wait(&cond_var);
 }
 
-void demo() {
+void setup(void) {
   config.log_scheduler = false;
 
   init_condition_variable(&cond_var);
@@ -51,6 +51,4 @@ void demo() {
     add_thread(waiter);
   }
   add_named_thread(signaller, "signaller");
-
-  start_scheduler();
 }

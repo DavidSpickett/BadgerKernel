@@ -45,12 +45,10 @@ __attribute__((noreturn)) void receiver() {
   }
 }
 
-void demo() {
+void setup(void) {
   config.log_scheduler = false;
 
   add_named_thread(spammer, "spammer");
   add_named_thread(sender, "spammer");
   add_named_thread(receiver, "receiver");
-
-  start_scheduler();
 }

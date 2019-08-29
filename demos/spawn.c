@@ -39,9 +39,8 @@ __attribute__((noreturn)) void spawner() {
   qemu_exit();
 }
 
-void demo() {
+void setup(void) {
   config.log_scheduler = false;
 
   add_named_thread(spawner, "spawner");
-  start_scheduler();
 }

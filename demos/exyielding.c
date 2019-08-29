@@ -16,9 +16,7 @@ void thread2() {
   }
 }
 
-void demo() {
+void setup(void) {
   add_named_thread(thread1, "first");
   add_named_thread(thread2, "second");
-
-  start_scheduler();
 }

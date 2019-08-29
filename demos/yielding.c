@@ -21,9 +21,7 @@ __attribute__((noreturn)) void thread_worker_0() {
   }
 }
 
-void demo() {
+void setup(void) {
   add_thread(thread_worker_0);
   add_thread(thread_worker_1);
-
-  start_scheduler(); 
 }

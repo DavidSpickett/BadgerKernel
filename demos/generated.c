@@ -5,6 +5,4 @@
 
 #include "thread.h"
 
-void demo() {
-  start_scheduler();
-}
+void setup(void) {}
