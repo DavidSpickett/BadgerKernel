@@ -154,12 +154,10 @@ bool send_msg(int destination, int message) {
   return true;
 }
 
-void print_thread_id(void) {
-  char output[THREAD_NAME_SIZE+1];
-
+void format_thread_name(char* out) {
   // fill with spaces (no +1 as we'll terminate it later)
   for (size_t idx=0; idx < THREAD_NAME_SIZE; ++idx) {
-    output[idx] = ' ';
+    out[idx] = ' ';
   }
 
   const char* name = current_thread->name;
@@ -170,10 +168,12 @@ void print_thread_id(void) {
       const char* hidden = "<HIDDEN>";
       size_t h_len = strlen(hidden);
       size_t padding = THREAD_NAME_SIZE - h_len;
-      strncpy(&output[padding], hidden, h_len);
+      strncpy(&out[padding], hidden, h_len);
     } else {
-      // Length matches the name above
-      output[THREAD_NAME_SIZE-1] = (unsigned int)(tid)+48;
+      // Just show the ID number (assume max 999 threads)
+      char idstr[4];
+      size_t len = uint_to_str((unsigned int)tid, idstr);
+      strcpy(&out[THREAD_NAME_SIZE-len], idstr);
     }
   } else {
     size_t name_len = strlen(name);
@@ -184,15 +184,20 @@ void print_thread_id(void) {
     }
 
     size_t padding = THREAD_NAME_SIZE-name_len;
-    strncpy(&output[padding], name, name_len);
+    strncpy(&out[padding], name, name_len);
   }
 
-  output[THREAD_NAME_SIZE] = '\0';
-  print(output);
+  out[THREAD_NAME_SIZE] = '\0';
 }
 
 void log_event(const char* event) {
-  print("Thread "); print_thread_id(); print(": "); print(event); print("\n");
+  char thread_name[THREAD_NAME_SIZE+1];
+  format_thread_name(thread_name);
+  print("Thread ");
+  print(thread_name);
+  print(": ");
+  print(event);
+  print("\n");
 }
 
 void stack_extent_failed(void) {

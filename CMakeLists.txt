@@ -205,6 +205,7 @@ add_demo_app(mutex)
 add_demo_app(timer)
 add_demo_app(conditionvariables)
 add_demo_app(cancel)
+add_demo_app(printthreadname)
 
 # For the random demo generator
 add_demo_app(generated)

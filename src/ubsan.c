@@ -1,5 +1,4 @@
 #include <stdint.h>
-#include <stddef.h>
 #include <string.h>
 #include "semihosting.h"
 #include "print.h"
@@ -10,32 +9,9 @@ typedef struct {
   uint32_t column;
 } SourceInfo;
 
-// unsigned base 10 only
-void uint_to_str(uint32_t num, char* out) {
-  char* start = out;
-
-  uint32_t div = 10;
-  // Luckily line/col starts from 1
-  while (num) {
-    uint32_t digit = num % div;
-    *out++ = ((char)digit)+48;
-    num /= div;
-  }
-
-  // Now reverse the digits
-  size_t len = strlen(start);
-  --out;
-  for (size_t idx = 0; idx != (len/2); ++idx) {
-    char chr = start[idx];
-    *(start+idx) = *(out-idx);
-    *(out-idx) = chr;
-  }
-}
-
 void print_source_info(SourceInfo* info) {
   // 10 digits of lines/columns should be enough for anyone
   char nums[11];
-  memset(nums, 0, 10);
 
   print(info->filename);
   print(":");
@@ -45,7 +21,6 @@ void print_source_info(SourceInfo* info) {
 
   print(":");
 
-  memset(nums, 0, 10);
   uint_to_str(info->column, nums);
   print(nums);
 
