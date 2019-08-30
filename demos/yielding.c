@@ -1,5 +1,5 @@
 #include "thread.h"
-#include "semihosting.h"
+#include "util.h"
 
 __attribute__((noreturn)) void thread_worker_1() {
   while (1) {
@@ -7,7 +7,7 @@ __attribute__((noreturn)) void thread_worker_1() {
       if (i == 2) {
         log_event("working");
         log_event("exiting");
-        qemu_exit();
+        exit(0);
       }
       yield();
     }

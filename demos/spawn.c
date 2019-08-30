@@ -1,6 +1,6 @@
 #include <stddef.h>
 #include "thread.h"
-#include "semihosting.h"
+#include "util.h"
 
 void work() {
   int sender, message;
@@ -12,7 +12,7 @@ void work() {
   log_event(get_thread_name());
 }
 
-__attribute__((noreturn)) void spawner() {
+void spawner() {
   const char* demons[] = {
     "Morgoth",
     "Sauron",
@@ -36,7 +36,6 @@ __attribute__((noreturn)) void spawner() {
   }
 
   log_event("demons perished");
-  qemu_exit();
 }
 
 void setup(void) {

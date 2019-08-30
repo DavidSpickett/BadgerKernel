@@ -104,13 +104,12 @@ if(LINUX)
   set( BASE_SOURCES ${BASE_SOURCES}
        src/hw/linux/main.c
        src/hw/linux/timer.c
-       src/hw/linux/semihosting.c
   )
 else()
   set( BASE_SOURCES ${BASE_SOURCES}
        src/hw/${PLATFORM_SRC}/vectors.s
        src/hw/${PLATFORM_SRC}/startup.s
-       src/hw/${PLATFORM_SRC}/semihosting.c
+       src/hw/${PLATFORM_SRC}/util.c
        src/hw/${PLATFORM_SRC}/timer.c
        src/emutls.c
   )

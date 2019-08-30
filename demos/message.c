@@ -1,5 +1,5 @@
 #include "thread.h"
-#include "semihosting.h"
+#include "util.h"
 
 __attribute__((noreturn)) void sender() {
   while (1) {
@@ -35,7 +35,7 @@ __attribute__((noreturn)) void receiver() {
     while (get_msg(&sender, &message)) {
       if (sender == 1) {
         log_event("got message from sender");
-        qemu_exit();
+        exit(0);
       } else {
         log_event("discarded spam message");
       }

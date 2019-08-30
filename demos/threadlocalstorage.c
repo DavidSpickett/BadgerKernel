@@ -1,5 +1,5 @@
 #include "thread.h"
-#include "semihosting.h"
+#include "util.h"
 
 __thread int num = 2;
 // Specifically an array to show that vars with size != 4 work

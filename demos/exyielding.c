@@ -1,5 +1,5 @@
 #include "thread.h"
-#include "semihosting.h"
+#include "util.h"
 
 void thread1() {
   yield_to(1);

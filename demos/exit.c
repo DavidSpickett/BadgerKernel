@@ -1,6 +1,6 @@
 #include <stddef.h>
 #include "thread.h"
-#include "semihosting.h"
+#include "util.h"
 
 void work(int num) {
   for (int i=0; i<num; ++i) {

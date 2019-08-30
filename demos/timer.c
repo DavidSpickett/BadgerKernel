@@ -1,7 +1,7 @@
 #include <string.h>
 #include "timer.h"
 #include "thread.h"
-#include "semihosting.h"
+#include "util.h"
 
 const char* msgs[] = {
   "zero",
@@ -14,7 +14,7 @@ const char** curr_msg = msgs;
 void thread_work() {
   if (!*curr_msg) {
     log_event("three");
-    qemu_exit();
+    exit(0);
   }
 
   log_event(*curr_msg);

@@ -2,7 +2,7 @@
 #include <stddef.h>
 #include <string.h>
 #include "thread.h"
-#include "semihosting.h"
+#include "util.h"
 
 extern void* current_thread;
 

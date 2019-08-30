@@ -1,6 +1,6 @@
 #include <stddef.h>
 #include "thread.h"
-#include "semihosting.h"
+#include "util.h"
 
 void printer(int repeat, char* phrase, int sub_printer, int start) {
   for( ; repeat; --repeat) {
@@ -15,7 +15,7 @@ void sub_printer(char** words, int num_phrases, unsigned int offset) {
   bool got = get_msg(&sender, &start);
   if (!got) {
     log_event("No orders received!");
-    qemu_exit();
+    exit(0);
   }
 
   for (int idx = start; idx != num_phrases; ++idx) {

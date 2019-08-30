@@ -2,7 +2,8 @@
 #include <stdint.h>
 #include <string.h>
 #include "thread.h"
-#include "semihosting.h"
+#include "util.h"
+#include "print.h"
 
 typedef struct __emutls_control {
   size_t size;
@@ -25,8 +26,8 @@ static uintptr_t emutls_var_count;
 static void emutls_init_var(__emutls_control* control) {
   uint8_t* new_ptr = alloc_ptr + control->size;
   if (new_ptr > &alloc_space[ALLOC_SPACE_SIZE]) {
-    qemu_print("Ran out of TLS alloc space!\n");
-    qemu_exit();
+    print("Ran out of TLS alloc space!\n");
+    exit(1);
   } else {
     // Initialise the new value
     memcpy(alloc_ptr, control->value, control->size);
@@ -45,8 +46,8 @@ static uintptr_t emutls_get_index(__emutls_control* control) {
     // Assign it an index (1+ because 0 is the invalid index)
     control->object.index = 1 + emutls_var_count++;
     if (emutls_var_count > MAX_TLS_VARS) {
-      qemu_print("Too many TLS vars!\n");
-      qemu_exit();
+      print("Too many TLS vars!\n");
+      exit(1);
     }
   }
 

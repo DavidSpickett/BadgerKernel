@@ -1,6 +1,6 @@
 #include <stdint.h>
 #include <string.h>
-#include "semihosting.h"
+#include "util.h"
 #include "print.h"
 
 typedef struct {
@@ -24,7 +24,7 @@ __attribute__((used)) \
 void __ubsan_handle_##NAME(SourceInfo* s, ##__VA_ARGS__) { \
   print("UBSAN: " #NAME " @ "); \
   print_source_info(s); \
-  qemu_exit(); \
+  exit(1); \
   __builtin_unreachable(); \
 }
 

@@ -4,7 +4,7 @@
 #include <string.h>
 #include "thread.h"
 #include "print.h"
-#include "semihosting.h"
+#include "util.h"
 
 #define THREAD_STACK_SIZE 1024*STACK_SIZE
 // 2 registers on AArch64
@@ -199,7 +199,7 @@ void log_event(const char* event) {
 void stack_extent_failed(void) {
   // current_thread is likely still valid here
   log_event("Not enough stack to save context!");
-  qemu_exit();
+  exit(1);
 }
 
 void check_stack(void) {
@@ -230,7 +230,7 @@ void check_stack(void) {
       current_thread->id = -1;
       thread_switch_initial();
     } else {
-      qemu_exit();
+      exit(1);
     }
   }
 }
@@ -420,7 +420,7 @@ __attribute__((noreturn)) void do_scheduler(void) {
       if (all_threads[idx].id != idx) {
         // Error so always log
         log_event("thread ID and position inconsistent!");
-        qemu_exit();
+        exit(1);
       }
 
       if (config.log_scheduler) {
@@ -438,7 +438,7 @@ __attribute__((noreturn)) void do_scheduler(void) {
       if (config.log_scheduler) {
         log_event("all threads finished");
       }
-      qemu_exit();
+      exit(0);
     }
   } 
 }
