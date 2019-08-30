@@ -1,5 +1,0 @@
-ARM           arm-arm-none-eabi
-THUMB         arm-arm-none-eabi
-AARCH64       aarch64-arm-none-eabi
-ARM_LINUX     arm-arm-linux-eabi
-AARCH64_LINUX aarch64-arm-linux-eabi
