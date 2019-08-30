@@ -1,8 +1,15 @@
+#include "util.h"
+
 void exit(int status) {
+  unsigned event = get_semihosting_event(status);
   asm volatile (
-      "ldr r0, =0x18\n\t"    // angel_SWIreason_ReportException
-      "ldr r1, =0x20026\n\t" // ADP_Stopped_ApplicationExit
-      "svc 0xAB\n\t"         // have monitor make semihosting call
+      "ldr r0, =0x18\n\t" // SYS_EXIT
+      "mov r1, %0\n\t"    // ADP_Stopped_ApplicationExit
+      "svc 0xAB\n\t"      // semihosting call
+      ::"r"(event)
+      /* Otherwise the compiler might put "event" in r0
+         and it'll get overwritten before use. */
+      : "r0", "r1"
   );
 }
 
