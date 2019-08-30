@@ -1,5 +1,4 @@
 #include "thread.h"
-#include "timer.h"
 
 /*
   Check that when switching threads via
