@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include "util.h"
+#include "semihosting.h"
 
 void exit(int status) {
   unsigned event = get_semihosting_event(status);

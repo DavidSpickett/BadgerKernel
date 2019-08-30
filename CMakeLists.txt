@@ -112,6 +112,7 @@ else()
        src/hw/${PLATFORM_SRC}/util.c
        src/hw/${PLATFORM_SRC}/timer.c
        src/emutls.c
+       src/semihosting.c
   )
 
   if(UBSAN)
