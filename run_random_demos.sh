@@ -8,6 +8,7 @@ while true; do
 
   # Check output formatting (second part is for make's status messages)
   if cat /tmp/generated.log | grep -v -P "(Thread\s.*:\s.*|\[.*\]\s.*)"; then
+    echo "Inconsistent log output!"
     exit 1
   else
     :
