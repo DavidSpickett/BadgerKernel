@@ -172,7 +172,7 @@ void format_thread_name(char* out) {
     } else {
       // Just show the ID number (assume max 999 threads)
       char idstr[4];
-      size_t len = uint_to_str((unsigned int)tid, idstr);
+      int len = sprintf(idstr, "%u", tid);
       strcpy(&out[THREAD_NAME_SIZE-len], idstr);
     }
   } else {

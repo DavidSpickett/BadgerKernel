@@ -94,7 +94,6 @@ set_property(SOURCE src/hw/${PLATFORM_SRC}/vectors.s PROPERTY LANGUAGE C)
 
 set( BASE_SOURCES
   src/thread.c
-  src/print.c
   src/mutex.c
   src/condition_variable.c
   src/hw/${PLATFORM_SRC}/yield.s
@@ -111,6 +110,7 @@ else()
        src/hw/${PLATFORM_SRC}/startup.s
        src/hw/${PLATFORM_SRC}/timer.c
        src/emutls.c
+       src/print.c
        src/util.c
   )
 

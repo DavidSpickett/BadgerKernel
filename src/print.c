@@ -1,66 +1,20 @@
 #include "print.h"
-
-#ifndef linux
 #include <stdarg.h>
 
-int putchar(int c) {
+int putchar(int chr) {
   // This must be a an int write not a char
   volatile unsigned int * const UART0 = (unsigned int *)UART_BASE;
-  *UART0 = (unsigned int)c;
-  return c;
+  *UART0 = (unsigned int)chr;
+  return 1;
 }
 
-void putstr(const char* str) {
+int putstr(const char* str) {
+  int len = 0;
   while (*str) {
-    putchar(*str++);
+    len += putchar(*str++);
   }
+  return len;
 }
-
-void printf(const char* fmt, ...)
-{
-    va_list args;
-    va_start(args, fmt);
-
-    while (*fmt) {
-      // Check for formatting arg
-      if (*fmt == '%') {
-        fmt++;
-
-        switch (*fmt) {
-          case 's':
-          {
-            // string
-            const char* str = va_arg(args, const char*);
-            putstr(str);
-            fmt++;
-            break;
-          }
-          case 'u':
-          {
-            // Unsigned decimal
-            char num_str[6];
-            unsigned num = va_arg(args, unsigned);
-            uint_to_str(num, num_str);
-            putstr(num_str);
-            fmt++;
-            break;
-          }
-          case '%':
-            // Escaped char, print normally
-            break;
-          default:
-            __builtin_unreachable();
-            break;
-        }
-      }
-
-      putchar(*fmt++);
-    }
-
-    va_end(args);
-}
-
-#endif // !linux
 
 // unsigned base 10 only
 size_t uint_to_str(unsigned num, char* out) {
@@ -93,4 +47,75 @@ size_t uint_to_str(unsigned num, char* out) {
   *(out+1) = '\0';
 
   return len;
+}
+
+int printf(const char* fmt, ...)
+{
+    int len = 0;
+    va_list args;
+    va_start(args, fmt);
+
+    while (*fmt) {
+      // Check for formatting arg
+      if (*fmt == '%') {
+        fmt++;
+
+        switch (*fmt) {
+          case 's': // string
+          {
+            len += putstr(va_arg(args, const char*));
+            fmt++;
+            break;
+          }
+          case 'u': // Unsigned decimal
+          {
+            char num_str[6];
+            uint_to_str(va_arg(args, unsigned), num_str);
+            len += putstr(num_str);
+            fmt++;
+            break;
+          }
+          case '%': // Escaped %
+            len += putchar(*fmt++);
+            break;
+          default:
+            __builtin_unreachable();
+            break;
+        }
+      } else {
+        // Any non formatting character
+        len += putchar(*fmt++);
+      }
+    }
+
+    va_end(args);
+    return len;
+}
+
+int sprintf(char* str, const char* fmt, ...) {
+   char* start = str;
+   va_list args;
+   va_start(args, fmt);
+
+   while (*fmt) {
+    if (*fmt == '%') {
+      fmt++;
+
+      if (*fmt == 'u') {
+        unsigned num = va_arg(args, unsigned);
+        str += uint_to_str(num, str);
+        fmt++;
+      } else if (*fmt == '%') {
+        *str++ = *fmt++;
+      } else {
+        __builtin_unreachable();
+      }
+    } else {
+      *str++ = *fmt++;
+    }
+   }
+
+   *str = '\0';
+   va_end(args);
+   return str-start;
 }

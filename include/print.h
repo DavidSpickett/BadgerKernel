@@ -7,10 +7,9 @@
 #include <stdint.h>
 #include <string.h>
 
-void printf(const char *fmt, ...);
+int printf(const char *fmt, ...);
+int sprintf(char* str, const char* fmt, ...);
 
 #endif // !linux
-
-size_t uint_to_str(unsigned num, char* out);
 
 #endif /* ifdef PRINT_H */
