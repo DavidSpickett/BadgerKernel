@@ -1,11 +1,7 @@
-#include <stdarg.h>
 #include "print.h"
 
-#ifdef linux
-
-#include <stdio.h>
-
-#else
+#ifndef linux
+#include <stdarg.h>
 
 int putchar(int c) {
   // This must be a an int write not a char
@@ -14,15 +10,13 @@ int putchar(int c) {
   return c;
 }
 
-#endif
-
 void putstr(const char* str) {
   while (*str) {
     putchar(*str++);
   }
 }
 
-void print(const char* fmt, ...)
+void printf(const char* fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
@@ -65,6 +59,8 @@ void print(const char* fmt, ...)
 
     va_end(args);
 }
+
+#endif // !linux
 
 // unsigned base 10 only
 size_t uint_to_str(unsigned num, char* out) {

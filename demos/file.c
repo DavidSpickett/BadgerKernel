@@ -7,7 +7,7 @@ void read_file(void) {
   char* path = "demos/file.c";
   int file = open(path, O_RDONLY);
   if (!file) {
-    print("Failed to open %s\n", path);
+    printf("Failed to open %s\n", path);
     exit(1);
   }
 
@@ -25,7 +25,7 @@ void read_file(void) {
   log_event(content);
   int failed = close(file);
   if (failed) {
-    print("Failed to close file %s\n", path);
+    printf("Failed to close file %s\n", path);
     exit(1);
   }
 }

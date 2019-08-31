@@ -13,7 +13,7 @@ typedef struct {
 #define ubhandler(NAME, ...)                               \
 __attribute__((used))                                      \
 void __ubsan_handle_##NAME(SourceInfo* s, ##__VA_ARGS__) { \
-  print("UBSAN: " #NAME " @ %s:%u:%u\n",                   \
+  printf("UBSAN: " #NAME " @ %s:%u:%u\n",                  \
         s->filename, s->line, s->column);                  \
   exit(1);                                                 \
   __builtin_unreachable();                                 \

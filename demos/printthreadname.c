@@ -7,7 +7,7 @@ void setup(void) {
   config.log_scheduler = false;
 
   // Check we can escape %
-  print("%% Print Demo %%\n");
+  printf("%% Print Demo %%\n");
 
   // Use up some IDs
   unsigned padding = 8;
@@ -15,7 +15,7 @@ void setup(void) {
     add_thread(work);
     thread_cancel(i);
   }
-  print("Added then cancelled %u threads.\n", padding);
+  printf("Added then cancelled %u threads.\n", padding);
 
   // ID 7
   add_thread(work);
