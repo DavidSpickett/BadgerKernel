@@ -16,6 +16,12 @@ int putchar(int c) {
 
 #endif
 
+void putstr(const char* str) {
+  while (*str) {
+    putchar(*str++);
+  }
+}
+
 void print(const char* fmt, ...)
 {
     va_list args;
@@ -26,15 +32,31 @@ void print(const char* fmt, ...)
       if (*fmt == '%') {
         fmt++;
 
-        if (*fmt == 's') {
-          // string
-          const char* str = va_arg(args, const char*);
-          while (*str) {
-            putchar(*str++);
+        switch (*fmt) {
+          case 's':
+          {
+            // string
+            const char* str = va_arg(args, const char*);
+            putstr(str);
+            fmt++;
+            break;
           }
-          fmt++;
-        } else if (*fmt != '%') {
-          __builtin_unreachable();
+          case 'u':
+          {
+            // Unsigned decimal
+            char num_str[6];
+            unsigned num = va_arg(args, unsigned);
+            uint_to_str(num, num_str);
+            putstr(num_str);
+            fmt++;
+            break;
+          }
+          case '%':
+            // Escaped char, print normally
+            break;
+          default:
+            __builtin_unreachable();
+            break;
         }
       }
 
@@ -45,15 +67,15 @@ void print(const char* fmt, ...)
 }
 
 // unsigned base 10 only
-size_t uint_to_str(uint32_t num, char* out) {
+size_t uint_to_str(unsigned num, char* out) {
   size_t len = 0;
 
   if (num) {
     char* start = out;
 
-    uint32_t div = 10;
+    unsigned div = 10;
     while (num) {
-      uint32_t digit = num % div;
+      unsigned digit = num % div;
       *out++ = ((char)digit)+48;
       len++;
       num /= div;

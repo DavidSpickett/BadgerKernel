@@ -10,10 +10,12 @@ void setup(void) {
   print("%% Print Demo %%\n");
 
   // Use up some IDs
-  for (int i=0; i<8; ++i) {
+  unsigned padding = 8;
+  for (int i=0; i<padding; ++i) {
     add_thread(work);
     thread_cancel(i);
   }
+  print("Added then cancelled %u threads.\n", padding);
 
   // ID 7
   add_thread(work);

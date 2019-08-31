@@ -9,23 +9,14 @@ typedef struct {
   uint32_t column;
 } SourceInfo;
 
-void print_source_info(SourceInfo* info) {
-  char line_no[5];
-  uint_to_str(info->line, line_no);
-  char col_no[5];
-  uint_to_str(info->column, col_no);
-
-  print("%s:%s:%s\n", info->filename, line_no, col_no);
-}
-
 // Attribute used for when we're using LTO
-#define ubhandler(NAME, ...) \
-__attribute__((used)) \
+#define ubhandler(NAME, ...)                               \
+__attribute__((used))                                      \
 void __ubsan_handle_##NAME(SourceInfo* s, ##__VA_ARGS__) { \
-  print("UBSAN: " #NAME " @ "); \
-  print_source_info(s); \
-  exit(1); \
-  __builtin_unreachable(); \
+  print("UBSAN: " #NAME " @ %s:%u:%u\n",                   \
+        s->filename, s->line, s->column);                  \
+  exit(1);                                                 \
+  __builtin_unreachable();                                 \
 }
 
 ubhandler(divrem_overflow, void* a, void* b);
