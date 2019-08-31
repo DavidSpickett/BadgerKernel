@@ -3,16 +3,18 @@
 
 #ifdef linux
 #include <stdlib.h>
+#include <fcntl.h>
+#include <unistd.h>
 #else
+#include <stddef.h>
+
+#define O_RDONLY 0
+
+int open(char* path, int oflag);
+size_t read(int filedes, void* buf, size_t nbyte);
+int close(int filedes);
 void exit(int status);
 
-static inline unsigned get_semihosting_event(int status) {
-  if (status == 0) {
-    return 0x20026; //ADP_Stopped_ApplicationExit
-  } else {
-    return 0x20024; //ADP_Stopped_InternalError
-  }
-}
 #endif
 
 #endif /* ifdef UTIL_H */

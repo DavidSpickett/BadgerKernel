@@ -109,10 +109,9 @@ else()
   set( BASE_SOURCES ${BASE_SOURCES}
        src/hw/${PLATFORM_SRC}/vectors.s
        src/hw/${PLATFORM_SRC}/startup.s
-       src/hw/${PLATFORM_SRC}/util.c
        src/hw/${PLATFORM_SRC}/timer.c
        src/emutls.c
-       src/semihosting.c
+       src/util.c
   )
 
   if(UBSAN)
@@ -206,6 +205,7 @@ add_demo_app(timer)
 add_demo_app(conditionvariables)
 add_demo_app(cancel)
 add_demo_app(printthreadname)
+add_demo_app(file)
 
 # For the random demo generator
 add_demo_app(generated)

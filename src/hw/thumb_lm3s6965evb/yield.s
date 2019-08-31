@@ -108,28 +108,17 @@ exc_err:
 
 semihosting:
   /* We need to use the PSP here and the thread's
-     r0-r3 because that will contain the semihosting
+     r0/r1 because that will contain the semihosting
      call args */
-  mrs r0, psp
-  mov sp, r0         // MSP = PSP (we can always reload monitor_stack_top)
-  ldr r0, [sp]       // pop r0
-  add sp, #4         // no direct post increment in thumb
-  ldr r1, [sp]       // pop r1
-  add sp, #4
-  ldr r2, [sp]       // pop r2
-  add sp, #4
-  ldr r3, [sp]       // pop r3
-  add sp, #4
-  add sp, sp, #(4*4) // skip other stacked regs
-  /* let's assume the psp didn't need alignent before
-     regs were stacked */
+  mrs r2, psp
+  ldr r0, [r2]       // pop r0
+  add r2, #4         // no direct post increment in thumb
+  ldr r1, [r2]       // pop r1
 
   bkpt 0xab          // actual semihosting call, handled by Qemu
 
-  /* We don't use the monitor stack but we might as well
-     keep it consistent. */
-  ldr r0, =monitor_stack_top
-  ldr r0, [r0]
+  sub r2, #4         // save the return value from r0
+  str r0, [r2]       // will get restored to thread automatically
 
   bx lr              // return to thread
 

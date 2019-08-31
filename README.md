@@ -62,6 +62,7 @@ make
 | threadlocalstorage (Arm/Thumb) | Using thread local storage (TLS) to give each thread it's own 'global' variables. |
 | conditionvariables             | Waiting on, signalling and broadcasting to condition variables.                   |
 | cancel                         | Cancelling threads.                                                               |
+| file                           | Read from a file. (via semihosting on bare metal)                                 |
 
 Each demo has 'run_<demo>', 'debug_<demo>' and 'test_<demo>' make targets. To test all demos, use 'make test_demos' or use lit. (best done in a virtualenv)
 

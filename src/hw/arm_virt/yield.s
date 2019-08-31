@@ -106,9 +106,9 @@ finalise_timer:
 
 semihosting:
   pop {r0-r1}
+  srsdb sp!, #SYSTEM_MODE // save CPSR and lr
   cps #SYSTEM_MODE // use user sp to get args
   svc 0x123456     // picked up by Qemu
-  srsdb sp!, #SYSTEM_MODE // save CPSR and lr
   b exc_return
 
 __thread_switch:
