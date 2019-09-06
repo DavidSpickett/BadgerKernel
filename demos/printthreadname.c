@@ -18,9 +18,7 @@ void setup(void) {
   printf("Added then cancelled %u threads.\n", padding);
 
   // ID 7
-  add_thread(work);
-  // Would be ID 9
   add_named_thread(work, "name_that_gets_cut_off");
-  // ID 10
-  add_thread(work);
+  // The rest
+  while(add_thread(work) != -1) {} //!OCLINT
 }
