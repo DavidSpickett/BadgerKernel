@@ -2,5 +2,5 @@
 Added then cancelled 8 threads.
 Thread     <HIDDEN>: starting scheduler
 Thread            8: exiting
-Thread     mushroom: exiting
+Thread name_that_ge: exiting
 Thread           10: exiting
