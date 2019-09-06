@@ -267,7 +267,7 @@ bool yield_next(void) {
 
   // Don't call this in the scheduler
   if ((id == -1) || (id >= MAX_THREADS)) {
-    return false;
+    exit(1);
   }
 
   // Check every other thread than this one
