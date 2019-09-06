@@ -265,11 +265,6 @@ bool yield_next(void) {
   // Yield to next valid thread, wrapping around the list
   int id = get_thread_id();
 
-  // Don't call this in the scheduler
-  if ((id == -1) || (id >= MAX_THREADS)) {
-    exit(1);
-  }
-
   // Check every other thread than this one
   size_t limit = id+MAX_THREADS;
   for (size_t idx=id+1; idx < limit; ++idx) {

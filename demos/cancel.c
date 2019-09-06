@@ -1,4 +1,5 @@
 #include "thread.h"
+#include "util.h"
 
 void work() {
   for (int num=0; num<3; ++num) {
@@ -8,6 +9,11 @@ void work() {
 }
 
 void canceller() {
+  // Can't cancel an invalid thread
+  if (thread_cancel(99)) {
+    exit(1);
+  }
+
   // So thread 2 is never run
   log_event("cancelling thread 2");
   thread_cancel(2);
