@@ -14,6 +14,9 @@ void thread2() {
   if (yield_next()) {
     log_event("yield_next shouldn't have found another thread!");
   }
+  if (yield_to(0)) {
+    exit(1);
+  }
 }
 
 void setup(void) {
