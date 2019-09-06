@@ -87,7 +87,7 @@ endif(UBSAN)
 
 if(COVERAGE AND LINUX)
   set( CFLAGS "${CFLAGS} --coverage " )
-endif(COVERAGE)
+endif()
 
 set( CMAKE_C_FLAGS "${PLATFORM} ${CFLAGS}" )
 
