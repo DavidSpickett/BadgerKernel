@@ -1,12 +1,17 @@
 #include <string.h>
 #include "thread.h"
 #include "mutex.h"
+#include "util.h"
 
 Mutex buffer_mutex;
 char buffer[4];
 
 void thread_work(const char* word) {
   while (!lock_mutex(&buffer_mutex)) {
+    // Can't unlock a mutex you didn't lock
+    if (unlock_mutex(&buffer_mutex)) {
+      exit(1);
+    }
     yield_next();
   }
 
