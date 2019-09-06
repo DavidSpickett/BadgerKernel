@@ -4,6 +4,7 @@ cmake_minimum_required( VERSION 3.7 )
 set( BUILD_PLATFORM "arm" CACHE STRING "Architecture to build for." )
 set( OPT_LEVEL "3" CACHE STRING "Compiler optmisation level." )
 option( UBSAN "Enable undefined behaviour sanitiser." OFF )
+option( COVERAGE "Generate coverage data. (Linux only)" OFF )
 option( LTO "Enable link time optimisation." OFF )
 option( NATIVE "Set ON to run Arm Linux demos on real hardware." OFF )
 set( STACK_SIZE   1 ) # In KB
@@ -83,6 +84,10 @@ if(UBSAN)
     set( CFLAGS "${CFLAGS} -fno-sanitize-recover ")
   endif()
 endif(UBSAN)
+
+if(COVERAGE AND LINUX)
+  set( CFLAGS "${CFLAGS} --coverage " )
+endif(COVERAGE)
 
 set( CMAKE_C_FLAGS "${PLATFORM} ${CFLAGS}" )
 
