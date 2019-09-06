@@ -8,8 +8,6 @@ demos = []
 demo_folder = "demos"
 # Usual Linux excludes
 excludes = ["stackcheck", "threadlocalstorage", "selfyield"]
-# These crash trying to save the coverage files
-excludes.extend(["timer", "message", "yielding"])
 
 # Find all demos
 for f in os.listdir(demo_folder):
