@@ -5,12 +5,12 @@
 // Arm semihosting routines
 // platform specific asm in generic_semihosting_call
 
-#define SYS_OPEN   1
-#define SYS_CLOSE  2
-#define SYS_WRITE  5
-#define SYS_READ   6
-#define SYS_REMOVE 15
-#define SYS_EXIT   24
+#define SYS_OPEN   0x01
+#define SYS_CLOSE  0x02
+#define SYS_WRITE  0x05
+#define SYS_READ   0x06
+#define SYS_REMOVE 0x0E
+#define SYS_EXIT   0x18
 
 size_t get_semihosting_event(int status) {
   if (status == 0) {

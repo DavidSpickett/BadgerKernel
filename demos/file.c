@@ -57,8 +57,8 @@ void read_new(void) {
 
 void delete_new(void) {
   log_event("Removing temp file");
-  int ret = remove(temp_file);
-  ASSERT(ret == 0);
+  ASSERT(!remove(temp_file));
+  ASSERT(remove(temp_file) == -1);
 }
 
 void setup(void) {
