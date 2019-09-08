@@ -1,12 +1,14 @@
 #ifndef UTIL_H
 #define UTIL_H
 
+#include "print.h"
+
 #define str(x) #x
 #define str_(x) str(x)
 #define STR__LINE__ str_(__LINE__)
 #define ASSERT(expr) \
-  if (!(expr)) { \
-    printf(__FILE__":"STR__LINE__" Expected: "#expr"\n"); \
+  if (!(expr)) { /*!OCLINT*/ \
+    printf("%s\n", __FILE__":"STR__LINE__" Expected: "#expr); \
     exit(1); \
   }
 

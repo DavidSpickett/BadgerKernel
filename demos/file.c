@@ -47,9 +47,10 @@ void read_new(void) {
   int newfile = open(temp_file, O_RDONLY);
   ASSERT(newfile != -1);
   size_t len = strlen(temp_contents);
-  char got[len];
+  char got[len+1];
   size_t ret = read(newfile, got, len);
   ASSERT(ret == len);
+  got[len] = '\0';
   printf(got);
   ASSERT(!close(newfile));
 }

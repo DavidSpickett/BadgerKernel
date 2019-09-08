@@ -413,7 +413,6 @@ __attribute__((noreturn)) void do_scheduler(void) {
       }
 
       if (all_threads[idx].id != idx) {
-        // Error so always log
         log_event("thread ID and position inconsistent!");
         exit(1);
       }

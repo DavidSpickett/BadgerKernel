@@ -10,9 +10,7 @@ void work() {
 
 void canceller() {
   // Can't cancel an invalid thread
-  if (thread_cancel(99)) {
-    exit(1);
-  }
+  ASSERT(!thread_cancel(99));
 
   // So thread 2 is never run
   log_event("cancelling thread 2");
