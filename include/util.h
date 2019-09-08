@@ -6,10 +6,17 @@
 #define str(x) #x
 #define str_(x) str(x)
 #define STR__LINE__ str_(__LINE__)
+/* Delcare the conditon first then test it,
+   to get around OCLint seeing multiple !! and such.
+   Can't use the usual !OCLINT comment in a macro.
+*/
 #define ASSERT(expr) \
-  if (!(expr)) { /*!OCLINT*/ \
-    printf("%s\n", __FILE__":"STR__LINE__" Expected: "#expr); \
-    exit(1); \
+  { \
+    bool condition = expr; \
+    if (!condition) { \
+      printf("%s\n", __FILE__":"STR__LINE__" Expected: "#expr); \
+      exit(1); \
+    } \
   }
 
 #ifdef linux
