@@ -5,10 +5,12 @@
 // Arm semihosting routines
 // platform specific asm in generic_semihosting_call
 
-#define SYS_OPEN  1
-#define SYS_READ  6
-#define SYS_CLOSE 2
-#define SYS_EXIT  24
+#define SYS_OPEN   1
+#define SYS_CLOSE  2
+#define SYS_WRITE  5
+#define SYS_READ   6
+#define SYS_REMOVE 15
+#define SYS_EXIT   24
 
 size_t get_semihosting_event(int status) {
   if (status == 0) {
@@ -54,17 +56,30 @@ static size_t generic_semihosting_call(
    contents.
 */
 
-int open(char* path, int oflag) {
+int open(const char* path, int oflag, ...) {
   volatile size_t parameters[] = {
     (size_t)path, oflag, strlen(path)};
   return generic_semihosting_call(SYS_OPEN, parameters);
 }
 
-size_t read(int filedes, void* buf, size_t nbyte) {
+size_t read(int fildes, void* buf, size_t nbyte) {
   volatile size_t parameters[] = {
-    filedes, (size_t)buf, nbyte};
+    fildes, (size_t)buf, nbyte};
   size_t ret = generic_semihosting_call(SYS_READ, parameters);
   return nbyte-ret;
+}
+
+size_t write(int fildes, const void *buf, size_t nbyte) {
+  volatile size_t parameters[] = {
+    fildes, (size_t)buf, nbyte};
+  size_t ret = generic_semihosting_call(SYS_WRITE, parameters);
+  return nbyte-ret;
+}
+
+int remove(const char *path) {
+  size_t parameters[] = {
+    (size_t)path, strlen(path)};
+  return generic_semihosting_call(SYS_REMOVE, parameters);
 }
 
 int close(int filedes) {

@@ -1,3 +1,12 @@
 Thread     <HIDDEN>: starting scheduler
+Thread       reader: Reading demo src
 Thread       reader: /* Hello file demo! */
 Thread       reader: exiting
+Thread    fail_open: exiting
+Thread    write_new: Writing temp file
+Thread    write_new: exiting
+Thread     read_new: Reading temp file
+new file for file demo!
+Thread     read_new: exiting
+Thread   delete_new: Removing temp file
+Thread   delete_new: exiting
