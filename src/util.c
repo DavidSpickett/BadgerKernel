@@ -77,7 +77,7 @@ size_t write(int fildes, const void *buf, size_t nbyte) {
 }
 
 int remove(const char *path) {
-  size_t parameters[] = {
+  volatile size_t parameters[] = {
     (size_t)path, strlen(path)};
   return generic_semihosting_call(SYS_REMOVE, parameters);
 }
