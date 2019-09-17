@@ -1,7 +1,7 @@
 /* Hello file demo! */
+#include "print.h"
 #include "thread.h"
 #include "util.h"
-#include "print.h"
 #include <string.h>
 
 void fail_open(void) {
@@ -20,8 +20,7 @@ void read_file(void) {
   read(file, content, buf_sz);
 
   char* ptr = content;
-  while (*ptr != '\n')
-  {
+  while (*ptr != '\n') {
     ptr++;
   }
   *ptr = '\0';
@@ -47,7 +46,7 @@ void read_new(void) {
   int newfile = open(temp_file, O_RDONLY);
   ASSERT(newfile != -1);
   size_t len = strlen(temp_contents);
-  char got[len+1];
+  char got[len + 1];
   size_t ret = read(newfile, got, len);
   ASSERT(ret == len);
   got[len] = '\0';
@@ -64,9 +63,9 @@ void delete_new(void) {
 void setup(void) {
   config.log_scheduler = false;
 
-  add_named_thread(read_file,  "reader");
-  add_named_thread(fail_open,  "fail_open");
-  add_named_thread(write_new,  "write_new");
-  add_named_thread(read_new,   "read_new");
+  add_named_thread(read_file, "reader");
+  add_named_thread(fail_open, "fail_open");
+  add_named_thread(write_new, "write_new");
+  add_named_thread(read_new, "read_new");
   add_named_thread(delete_new, "delete_new");
 }

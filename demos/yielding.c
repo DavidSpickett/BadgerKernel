@@ -3,7 +3,7 @@
 
 __attribute__((noreturn)) void thread_worker_1() {
   while (1) {
-    for (int i=0; ; ++i) {
+    for (int i = 0;; ++i) {
       if (i == 2) {
         log_event("working");
         log_event("exiting");
@@ -16,8 +16,8 @@ __attribute__((noreturn)) void thread_worker_1() {
 
 __attribute__((noreturn)) void thread_worker_0() {
   while (1) {
-      log_event("working");
-      yield();
+    log_event("working");
+    yield();
   }
 }
 

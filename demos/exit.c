@@ -1,9 +1,9 @@
-#include <stddef.h>
 #include "thread.h"
 #include "util.h"
+#include <stddef.h>
 
 void work(int num) {
-  for (int i=0; i<num; ++i) {
+  for (int i = 0; i < num; ++i) {
     yield();
   }
 }
@@ -12,7 +12,7 @@ void counter() {
   int our_id = get_thread_id();
 
   // Since we're the last thread added, we're the upper bound on ID
-  for (int i=0; i<our_id; ++i) {
+  for (int i = 0; i < our_id; ++i) {
     ThreadState state;
     thread_join(i, &state);
     if (state == finished) {

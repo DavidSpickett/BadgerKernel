@@ -1,27 +1,26 @@
-#include <stdint.h>
-#include <stddef.h>
-#include <string.h>
 #include "thread.h"
 #include "util.h"
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
 
 extern void* current_thread;
 
-#define ALLOC_SIZE 500 
-__attribute__((noinline))
-void recurse(int repeat) {
+#define ALLOC_SIZE 500
+__attribute__((noinline)) void recurse(int repeat) {
   char dummy[ALLOC_SIZE];
   memset((void*)dummy, 0, ALLOC_SIZE);
   if (repeat) {
-    recurse(repeat-1);
+    recurse(repeat - 1);
   }
   return;
 }
 
 void underflow() {
   char dummy;
-  size_t distance = (void*)(&dummy)-current_thread;
+  size_t distance = (void*)(&dummy) - current_thread;
   log_event("recursing");
-  recurse(distance/ALLOC_SIZE);
+  recurse(distance / ALLOC_SIZE);
   /* Don't log_event here because under some settings
      not all of the memory is 0. So name or id aren't 0. */
   yield();
@@ -29,7 +28,7 @@ void underflow() {
 
 void overflow() {
   char dummy;
-  size_t distance = (void*)(&dummy)-current_thread;
+  size_t distance = (void*)(&dummy) - current_thread;
   log_event("overflowing");
   /* We're probably very close to top of stack
      so this is overkill. At least we can be sure that:
@@ -38,7 +37,9 @@ void overflow() {
   */
   // Set -1 so scheduler doesn't check that position == ID
   memset((void*)&dummy, -1, distance);
-  while (1) { yield(); }
+  while (1) {
+    yield();
+  }
 }
 
 void watcher() {
@@ -46,7 +47,7 @@ void watcher() {
   // Note we do not include ourselves
   int tids[] = {0, 2};
 
-  for (int i=0; i<num_threads; ++i) {
+  for (int i = 0; i < num_threads; ++i) {
     if (thread_join(tids[i], NULL)) {
       log_event("thread did not error!");
     }

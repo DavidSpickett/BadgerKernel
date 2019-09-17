@@ -2,7 +2,7 @@
 #include "util.h"
 
 void work() {
-  for (int num=0; num<3; ++num) {
+  for (int num = 0; num < 3; ++num) {
     log_event("foo");
     yield();
   }

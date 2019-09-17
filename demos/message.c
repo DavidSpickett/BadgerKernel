@@ -14,14 +14,15 @@ __attribute__((noreturn)) void sender() {
 }
 
 __attribute__((noreturn)) void spammer() {
-  for (int i= 0; ; ++i) {
+  for (int i = 0;; ++i) {
     if (i == 2) {
       // just one msg this time
       send_msg(2, -1);
       log_event("not spamming");
     } else {
       // Clog the receivers messages
-      while (send_msg(2, -1)); //!OCLINT
+      while (send_msg(2, -1)) { // !OCLINT
+      }
       log_event("spammed");
     }
 

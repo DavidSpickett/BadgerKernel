@@ -8,9 +8,9 @@ __thread char msg[7] = {'H', 'e', 'l', 'l', 'o', '!', '\0'};
 void thread_worker() {
   // Make i different for each thread
   num = num * (get_thread_id() + 1);
-  for ( ; num > 0; --num) {
-      log_event(msg);
-      yield();
+  for (; num > 0; --num) {
+    log_event(msg);
+    yield();
   }
 }
 

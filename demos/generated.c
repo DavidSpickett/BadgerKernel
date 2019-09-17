@@ -5,4 +5,5 @@
 
 #include "thread.h"
 
-void setup(void) {}
+void setup(void) {
+}

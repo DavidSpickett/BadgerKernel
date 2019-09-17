@@ -1,5 +1,5 @@
-#include "thread.h"
 #include "condition_variable.h"
+#include "thread.h"
 
 ConditionVariable cond_var;
 
@@ -19,7 +19,7 @@ void signaller(void) {
   yield();
 
   // Signal a few individually
-  for (unsigned i=0; i<2; ++i) {
+  for (unsigned i = 0; i < 2; ++i) {
     log_event("Signalling");
     signal(&cond_var);
     yield_next();
@@ -47,7 +47,7 @@ void setup(void) {
   init_condition_variable(&cond_var);
 
   const unsigned num_waiting = 5;
-  for (unsigned i=0; i < num_waiting; ++i) {
+  for (unsigned i = 0; i < num_waiting; ++i) {
     add_thread(waiter);
   }
   add_named_thread(signaller, "signaller");

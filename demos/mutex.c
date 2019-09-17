@@ -1,7 +1,7 @@
-#include <string.h>
-#include "thread.h"
 #include "mutex.h"
+#include "thread.h"
 #include "util.h"
+#include <string.h>
 
 Mutex buffer_mutex;
 char buffer[4];
@@ -20,7 +20,7 @@ void thread_work(const char* word) {
     *dest++ = *word++;
     log_event("copying...");
     yield_next();
-  } 
+  }
 
   log_event(buffer);
   unlock_mutex(&buffer_mutex);

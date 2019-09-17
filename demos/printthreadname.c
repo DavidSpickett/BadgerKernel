@@ -1,7 +1,8 @@
-#include "thread.h"
 #include "print.h"
+#include "thread.h"
 
-void work(void) {}
+void work(void) {
+}
 
 void setup(void) {
   config.log_scheduler = false;
@@ -11,7 +12,7 @@ void setup(void) {
 
   // Use up some IDs
   unsigned padding = 8;
-  for (int i=0; i<padding; ++i) {
+  for (int i = 0; i < padding; ++i) {
     add_thread(work);
     thread_cancel(i);
   }
@@ -20,5 +21,6 @@ void setup(void) {
   // ID 7
   add_named_thread(work, "name_that_gets_cut_off");
   // The rest
-  while(add_thread(work) != -1) {} //!OCLINT
+  while (add_thread(work) != -1) { // !OCLINT
+  }
 }

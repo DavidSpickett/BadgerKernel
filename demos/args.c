@@ -1,9 +1,9 @@
-#include <stddef.h>
 #include "thread.h"
 #include "util.h"
+#include <stddef.h>
 
 void printer(int repeat, char* phrase, int sub_printer, int start) {
-  for( ; repeat; --repeat) {
+  for (; repeat; --repeat) {
     log_event(phrase);
   }
   // Tell the next thread where to start
@@ -19,11 +19,11 @@ void sub_printer(char** words, int num_phrases, unsigned int offset) {
   }
 
   for (int idx = start; idx != num_phrases; ++idx) {
-    log_event(words[idx]+offset);
+    log_event(words[idx] + offset);
   }
 }
 
-static const char *words[] = {"food", "alligator", "magazine", "raptor"};
+static const char* words[] = {"food", "alligator", "magazine", "raptor"};
 
 void setup(void) {
   config.log_scheduler = false;
