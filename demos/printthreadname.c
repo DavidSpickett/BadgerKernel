@@ -21,6 +21,8 @@ void setup(void) {
   // ID 7
   add_named_thread(work, "name_that_gets_cut_off");
   // The rest
-  while (add_thread(work) != -1) { //!OCLINT
-  }
+  int tid = -1;
+  do {
+    tid = add_thread(work);
+  } while (tid != -1);
 }

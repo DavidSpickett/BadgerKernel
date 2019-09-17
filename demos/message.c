@@ -21,8 +21,10 @@ __attribute__((noreturn)) void spammer() {
       log_event("not spamming");
     } else {
       // Clog the receivers messages
-      while (send_msg(2, -1)) { //!OCLINT
-      }
+      bool sent = false;
+      do {
+        sent = send_msg(2, -1);
+      } while (sent);
       log_event("spammed");
     }
 
