@@ -50,7 +50,7 @@ void read_new(void) {
   size_t ret = read(newfile, got, len);
   ASSERT(ret == len);
   got[len] = '\0';
-  printf(got);
+  printf("%s", got);
   ASSERT(!close(newfile));
 }
 
