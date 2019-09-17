@@ -19,14 +19,14 @@ typedef struct {
   void* a4;
 } ThreadArgs;
 
-#define make_args(a,b,c,d) \
-{ (void*)a, (void*)b, (void*)c, (void*)d }
+#define make_args(a, b, c, d)                                                  \
+  { (void*)a, (void*)b, (void*)c, (void*)d }
 
 typedef enum {
   // Fixed values for use in assembly
-  init=0,
-  running=1,
-  suspended=2,
+  init = 0,
+  running = 1,
+  suspended = 2,
   waiting,
   finished,
   cancelled
@@ -34,7 +34,8 @@ typedef enum {
 
 int add_thread(void (*worker)(void));
 int add_named_thread(void (*worker)(void), const char* name);
-int add_named_thread_with_args(void (*worker)(), const char* name, ThreadArgs args);
+int add_named_thread_with_args(void (*worker)(), const char* name,
+                               ThreadArgs args);
 
 bool is_valid_thread(int tid);
 int get_thread_id(void);

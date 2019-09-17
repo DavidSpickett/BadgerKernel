@@ -7,7 +7,7 @@
 #include <stdint.h>
 #include <string.h>
 
-int printf(const char *fmt, ...);
+int printf(const char* fmt, ...);
 int sprintf(char* str, const char* fmt, ...);
 
 #endif // !linux
