@@ -21,7 +21,7 @@ void thread_work() {
   curr_msg++;
   add_thread(thread_work);
   enable_timer();
-  while (1) { // !OCLINT
+  while (1) { //!OCLINT
   }
 }
 
