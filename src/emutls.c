@@ -1,9 +1,9 @@
+#include "print.h"
+#include "thread.h"
+#include "util.h"
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
-#include "thread.h"
-#include "util.h"
-#include "print.h"
 
 typedef struct __emutls_control {
   size_t size;
@@ -17,7 +17,7 @@ typedef struct __emutls_control {
 } __emutls_control;
 
 #define ALLOC_SPACE_SIZE 256
-#define MAX_TLS_VARS 3
+#define MAX_TLS_VARS     3
 static void* address_arrays[MAX_THREADS][MAX_TLS_VARS];
 static uint8_t alloc_space[ALLOC_SPACE_SIZE];
 static uint8_t* alloc_ptr = alloc_space;
@@ -33,7 +33,7 @@ static void emutls_init_var(__emutls_control* control) {
     memcpy(alloc_ptr, control->value, control->size);
 
     // Put its address in this thread's address array
-    address_arrays[get_thread_id()][control->object.index-1] = alloc_ptr;
+    address_arrays[get_thread_id()][control->object.index - 1] = alloc_ptr;
 
     // update for next allocation
     alloc_ptr = new_ptr;
@@ -57,13 +57,13 @@ static uintptr_t emutls_get_index(__emutls_control* control) {
 static void* emutls_get_var_addr(__emutls_control* control) {
   uintptr_t index = emutls_get_index(control);
 
-  void* var_ptr = address_arrays[get_thread_id()][index-1];
+  void* var_ptr = address_arrays[get_thread_id()][index - 1];
   // First time accessing the var on this thread
   if (var_ptr == NULL) {
     emutls_init_var(control);
   }
 
-  return address_arrays[get_thread_id()][index-1];
+  return address_arrays[get_thread_id()][index - 1];
 }
 
 __attribute__((used)) // For LTO builds

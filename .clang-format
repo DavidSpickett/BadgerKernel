@@ -1,0 +1,7 @@
+BasedOnStyle: LLVM
+AlignConsecutiveMacros: 'true'
+AllowShortFunctionsOnASingleLine: None
+AllowShortLoopsOnASingleLine: 'true'
+Language: Cpp
+PointerAlignment: Left
+UseTab: Never

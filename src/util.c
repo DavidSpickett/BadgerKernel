@@ -14,28 +14,28 @@
 
 size_t get_semihosting_event(int status) {
   if (status == 0) {
-    return 0x20026; //ADP_Stopped_ApplicationExit
+    return 0x20026; // ADP_Stopped_ApplicationExit
   }
 
-  return 0x20024; //ADP_Stopped_InternalError
+  return 0x20024; // ADP_Stopped_InternalError
 }
 
 #ifdef __aarch64__
-#define RCHR "x"
+#define RCHR   "x"
 #define SHCALL "svc 0x3333\n\t"
 #elif defined __thumb__
-#define RCHR "r"
+#define RCHR   "r"
 #define SHCALL "svc 0xAB\n\t"
 #else
-#define RCHR "r"
+#define RCHR   "r"
 #define SHCALL "svc 0x00123456\n\t"
 #endif
 
-static size_t generic_semihosting_call(
-  size_t operation,
-  volatile size_t* parameters) {
+static size_t generic_semihosting_call(size_t operation,
+                                       volatile size_t* parameters) {
   size_t ret;
 
+  // clang-format off
   asm volatile (
     "mov "RCHR"0, %[operation]\n\t"
     "mov "RCHR"1, %[parameters]\n\t"
@@ -45,6 +45,7 @@ static size_t generic_semihosting_call(
     :[parameters]"r"(parameters), [operation]"r"(operation)
     :RCHR"0", RCHR"1"
   );
+  // clang-format on
 
   return ret;
 }
@@ -57,28 +58,24 @@ static size_t generic_semihosting_call(
 */
 
 int open(const char* path, int oflag, ...) {
-  volatile size_t parameters[] = {
-    (size_t)path, oflag, strlen(path)};
+  volatile size_t parameters[] = {(size_t)path, oflag, strlen(path)};
   return generic_semihosting_call(SYS_OPEN, parameters);
 }
 
 size_t read(int fildes, void* buf, size_t nbyte) {
-  volatile size_t parameters[] = {
-    fildes, (size_t)buf, nbyte};
+  volatile size_t parameters[] = {fildes, (size_t)buf, nbyte};
   size_t ret = generic_semihosting_call(SYS_READ, parameters);
-  return nbyte-ret;
+  return nbyte - ret;
 }
 
-size_t write(int fildes, const void *buf, size_t nbyte) {
-  volatile size_t parameters[] = {
-    fildes, (size_t)buf, nbyte};
+size_t write(int fildes, const void* buf, size_t nbyte) {
+  volatile size_t parameters[] = {fildes, (size_t)buf, nbyte};
   size_t ret = generic_semihosting_call(SYS_WRITE, parameters);
-  return nbyte-ret;
+  return nbyte - ret;
 }
 
-int remove(const char *path) {
-  volatile size_t parameters[] = {
-    (size_t)path, strlen(path)};
+int remove(const char* path) {
+  volatile size_t parameters[] = {(size_t)path, strlen(path)};
   return generic_semihosting_call(SYS_REMOVE, parameters);
 }
 

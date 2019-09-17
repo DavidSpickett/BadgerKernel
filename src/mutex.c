@@ -3,7 +3,7 @@
 
 /* Surprise! The data is just the thread ID.
    At least it's hidden a little bit. */
-#define ID(x) (int)(x)
+#define ID(x)   (int)(x)
 #define DATA(x) (size_t)(x)
 
 void init_mutex(Mutex* mut) {

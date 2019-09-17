@@ -1,17 +1,17 @@
-#include <stdint.h>
-#include <stdbool.h>
-#include <stddef.h>
-#include <string.h>
 #include "thread.h"
 #include "print.h"
 #include "util.h"
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
 
-#define THREAD_STACK_SIZE 1024*STACK_SIZE
+#define THREAD_STACK_SIZE 1024 * STACK_SIZE
 // 2 registers on AArch64
-#define MONITOR_STACK_SIZE 2*8
-#define THREAD_NAME_SIZE 12
+#define MONITOR_STACK_SIZE    2 * 8
+#define THREAD_NAME_SIZE      12
 #define THREAD_MSG_QUEUE_SIZE 5
-#define STACK_CANARY 0xcafebeefdeadf00d
+#define STACK_CANARY          0xcafebeefdeadf00d
 
 typedef struct {
   int src;
@@ -39,44 +39,37 @@ typedef struct {
 extern void thread_switch_initial(void);
 extern void thread_switch(void);
 
-__attribute__((section(".thread_structs")))
-Thread all_threads[MAX_THREADS];
+__attribute__((section(".thread_structs"))) Thread all_threads[MAX_THREADS];
 // Don't care if this gets corrupted, we'll just reset it's stack anyway
-__attribute__((section(".thread_structs")))
-static Thread dummy_thread;
+__attribute__((section(".thread_structs"))) static Thread dummy_thread;
 
-__attribute__((section(".scheduler_thread")))
-Thread scheduler_thread;
+__attribute__((section(".scheduler_thread"))) Thread scheduler_thread;
 
 // Use these struct names to ensure that these are
 // placed *after* the thread structs to prevent
 // stack overflow corrupting them.
-__attribute__((section(".thread_vars")))
-Thread* current_thread;
-__attribute__((section(".thread_vars")))
-Thread* next_thread;
-__attribute__((section(".thread_vars")))
-size_t thread_stack_offset = offsetof(Thread, stack);
+__attribute__((section(".thread_vars"))) Thread* current_thread;
+__attribute__((section(".thread_vars"))) Thread* next_thread;
+__attribute__((section(".thread_vars"))) size_t thread_stack_offset =
+    offsetof(Thread, stack);
 
 // Known good stack to save registers to while we check stack extent
 // In a seperate section so we can garauntee it's alignement for AArch64
 __attribute__((section(".monitor_vars")))
 uint8_t monitor_stack[MONITOR_STACK_SIZE];
-__attribute__((section(".thread_vars")))
-uint8_t* monitor_stack_top = &monitor_stack[MONITOR_STACK_SIZE];
+__attribute__((section(".thread_vars"))) uint8_t* monitor_stack_top =
+    &monitor_stack[MONITOR_STACK_SIZE];
 
 __attribute__((section(".thread_vars")))
-MonitorConfig config = {
-  .destroy_on_stack_err = false,
-  .exit_when_no_threads = true,
-  .log_scheduler = true
-};
+MonitorConfig config = {.destroy_on_stack_err = false,
+                        .exit_when_no_threads = true,
+                        .log_scheduler = true};
 
 extern void setup(void);
 void start_scheduler(void);
 __attribute__((noreturn)) void entry(void) {
   // Invalidate all threads in the pool
-  for (size_t idx=0; idx < MAX_THREADS; ++idx) {
+  for (size_t idx = 0; idx < MAX_THREADS; ++idx) {
     all_threads[idx].id = -1;
   }
 
@@ -88,16 +81,12 @@ __attribute__((noreturn)) void entry(void) {
 }
 
 bool is_valid_thread(int tid) {
-  return (tid >= 0) &&
-    (tid < MAX_THREADS) &&
-    all_threads[tid].id != -1;
+  return (tid >= 0) && (tid < MAX_THREADS) && all_threads[tid].id != -1;
 }
 
 static bool can_schedule_thread(int tid) {
-  return is_valid_thread(tid) && (
-    all_threads[tid].state == suspended ||
-    all_threads[tid].state == init
-  );
+  return is_valid_thread(tid) && (all_threads[tid].state == suspended ||
+                                  all_threads[tid].state == init);
 }
 
 int get_thread_id(void) {
@@ -118,8 +107,8 @@ static void inc_msg_pointer(Thread* thr, Message** ptr) {
 
 bool get_msg(int* sender, int* message) {
   // If message box is not empty, or it is full
-  if (current_thread->next_msg != current_thread->end_msgs
-      || current_thread->msgs_full) {
+  if (current_thread->next_msg != current_thread->end_msgs ||
+      current_thread->msgs_full) {
     *sender = current_thread->next_msg->src;
     *message = current_thread->next_msg->content;
 
@@ -135,12 +124,10 @@ bool get_msg(int* sender, int* message) {
 bool send_msg(int destination, int message) {
   if (
       // Invalid destination
-      destination >= MAX_THREADS ||
-      destination < 0 ||
+      destination >= MAX_THREADS || destination < 0 ||
       all_threads[destination].id == -1 ||
       // Buffer is full
-      all_threads[destination].msgs_full
-  ) {
+      all_threads[destination].msgs_full) {
     return false;
   }
 
@@ -156,7 +143,7 @@ bool send_msg(int destination, int message) {
 
 void format_thread_name(char* out) {
   // fill with spaces (no +1 as we'll terminate it later)
-  for (size_t idx=0; idx < THREAD_NAME_SIZE; ++idx) {
+  for (size_t idx = 0; idx < THREAD_NAME_SIZE; ++idx) {
     out[idx] = ' ';
   }
 
@@ -173,7 +160,7 @@ void format_thread_name(char* out) {
       // Just show the ID number (assume max 999 threads)
       char idstr[4];
       int len = sprintf(idstr, "%u", tid);
-      strcpy(&out[THREAD_NAME_SIZE-len], idstr);
+      strcpy(&out[THREAD_NAME_SIZE - len], idstr);
     }
   } else {
     size_t name_len = strlen(name);
@@ -183,7 +170,7 @@ void format_thread_name(char* out) {
       name_len = THREAD_NAME_SIZE;
     }
 
-    size_t padding = THREAD_NAME_SIZE-name_len;
+    size_t padding = THREAD_NAME_SIZE - name_len;
     strncpy(&out[padding], name, name_len);
   }
 
@@ -191,7 +178,7 @@ void format_thread_name(char* out) {
 }
 
 void log_event(const char* event) {
-  char thread_name[THREAD_NAME_SIZE+1];
+  char thread_name[THREAD_NAME_SIZE + 1];
   format_thread_name(thread_name);
   printf("Thread %s: %s\n", thread_name, event);
 }
@@ -204,15 +191,19 @@ void stack_extent_failed(void) {
 
 void check_stack(void) {
   bool underflow = current_thread->bottom_canary != STACK_CANARY;
-  bool overflow  = current_thread->top_canary != STACK_CANARY;
+  bool overflow = current_thread->top_canary != STACK_CANARY;
 
   if (underflow || overflow) {
     // Don't schedule this again, or rely on its ID
     current_thread->id = -1;
     current_thread->name = NULL;
 
-    if (underflow) { log_event("Stack underflow!"); }
-    if (overflow)  { log_event("Stack overflow!"); }
+    if (underflow) {
+      log_event("Stack underflow!");
+    }
+    if (overflow) {
+      log_event("Stack overflow!");
+    }
 
     if (config.destroy_on_stack_err) {
       /* Use the dummy thread to yield back to the scheduler
@@ -240,10 +231,14 @@ void thread_yield(Thread* next) {
 
   check_stack();
 
-  if (log) { log_event("yielding"); }
+  if (log) {
+    log_event("yielding");
+  }
   next_thread = next;
   thread_switch();
-  if (log) { log_event("resuming"); }
+  if (log) {
+    log_event("resuming");
+  }
 }
 
 void yield(void) {
@@ -266,8 +261,8 @@ bool yield_next(void) {
   int id = get_thread_id();
 
   // Check every other thread than this one
-  size_t limit = id+MAX_THREADS;
-  for (size_t idx=id+1; idx < limit; ++idx) {
+  size_t limit = id + MAX_THREADS;
+  for (size_t idx = id + 1; idx < limit; ++idx) {
     size_t idx_in_range = idx % MAX_THREADS;
     if (can_schedule_thread(idx_in_range)) {
       thread_yield(&all_threads[idx_in_range]);
@@ -305,7 +300,9 @@ bool thread_cancel(int tid) {
 bool thread_join(int tid, ThreadState* state) {
   while (1) {
     // Initial ID is invalid, or it was destroyed due to stack err
-    if (!is_valid_thread(tid)) { return false; }
+    if (!is_valid_thread(tid)) {
+      return false;
+    }
 
     ThreadState ts = all_threads[tid].state;
     if (ts == finished || ts == cancelled) {
@@ -323,12 +320,8 @@ __attribute__((noreturn)) void thread_start(void) {
   // Every thread starts by entering this function
 
   // Call thread's actual function
-  current_thread->work(
-    current_thread->args.a1,
-    current_thread->args.a2,
-    current_thread->args.a3,
-    current_thread->args.a4
-  );
+  current_thread->work(current_thread->args.a1, current_thread->args.a2,
+                       current_thread->args.a3, current_thread->args.a4);
 
   // Yield back to the scheduler
   log_event("exiting");
@@ -356,11 +349,8 @@ __attribute__((noreturn)) void thread_start(void) {
   __builtin_unreachable();
 }
 
-void init_thread(Thread* thread,
-                 int tid,
-                 const char* name,
-                 void (*do_work)(void),
-                 ThreadArgs args) {
+void init_thread(Thread* thread, int tid, const char* name,
+                 void (*do_work)(void), ThreadArgs args) {
   // thread_start will jump to this
   thread->work = do_work;
   thread->state = init;
@@ -382,10 +372,9 @@ void init_thread(Thread* thread,
   thread->stack_ptr = (uint8_t*)(stack_ptr & ~0xF);
 }
 
-int add_named_thread_with_args(void (*worker)(),
-                               const char* name,
+int add_named_thread_with_args(void (*worker)(), const char* name,
                                ThreadArgs args) {
-  for (size_t idx=0; idx < MAX_THREADS; ++idx) {
+  for (size_t idx = 0; idx < MAX_THREADS; ++idx) {
     if (all_threads[idx].id == -1) {
       init_thread(&all_threads[idx], idx, name, worker, args);
       return idx;
@@ -399,7 +388,7 @@ int add_thread(void (*worker)()) {
 }
 
 int add_named_thread(void (*worker)(), const char* name) {
-  ThreadArgs args = {0,0,0,0};
+  ThreadArgs args = {0, 0, 0, 0};
   return add_named_thread_with_args(worker, name, args);
 }
 
@@ -407,7 +396,7 @@ __attribute__((noreturn)) void do_scheduler(void) {
   while (1) {
     bool live_threads = false;
 
-    for (size_t idx=0; idx < MAX_THREADS; ++idx) {
+    for (size_t idx = 0; idx < MAX_THREADS; ++idx) {
       if (!can_schedule_thread(idx)) {
         continue;
       }
@@ -434,11 +423,11 @@ __attribute__((noreturn)) void do_scheduler(void) {
       }
       exit(0);
     }
-  } 
+  }
 }
 
 __attribute__((noreturn)) void start_scheduler(void) {
-  ThreadArgs args = {0,0,0,0};
+  ThreadArgs args = {0, 0, 0, 0};
 
   // Hidden so that the scheduler doesn't run itself somehow
   init_thread(&scheduler_thread, -1, "<scheduler>", do_scheduler, args);

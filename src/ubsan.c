@@ -1,7 +1,7 @@
+#include "print.h"
+#include "util.h"
 #include <stdint.h>
 #include <string.h>
-#include "util.h"
-#include "print.h"
 
 typedef struct {
   const char* filename;
@@ -10,14 +10,13 @@ typedef struct {
 } SourceInfo;
 
 // Attribute used for when we're using LTO
-#define ubhandler(NAME, ...)                               \
-__attribute__((used))                                      \
-void __ubsan_handle_##NAME(SourceInfo* s, ##__VA_ARGS__) { \
-  printf("UBSAN: " #NAME " @ %s:%u:%u\n",                  \
-        s->filename, s->line, s->column);                  \
-  exit(1);                                                 \
-  __builtin_unreachable();                                 \
-}
+#define ubhandler(NAME, ...)                                                   \
+  __attribute__((used)) void __ubsan_handle_##NAME(SourceInfo* s,              \
+                                                   ##__VA_ARGS__) {            \
+    printf("UBSAN: " #NAME " @ %s:%u:%u\n", s->filename, s->line, s->column);  \
+    exit(1);                                                                   \
+    __builtin_unreachable();                                                   \
+  }
 
 ubhandler(divrem_overflow, void* a, void* b);
 ubhandler(add_overflow, void* a, void* b);
