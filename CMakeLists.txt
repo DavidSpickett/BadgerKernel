@@ -118,6 +118,7 @@ else()
        src/emutls.c
        src/print.c
        src/util.c
+       src/alloc.c
   )
 
   if(UBSAN)
@@ -222,4 +223,5 @@ if(NOT LINUX)
   endif()
   add_demo_app(stackcheck)
   add_demo_app(selfyield)
+  add_demo_app(alloc)
 endif()

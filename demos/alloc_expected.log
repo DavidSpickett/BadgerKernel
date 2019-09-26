@@ -1,0 +1,5 @@
+Thread     <HIDDEN>: starting scheduler
+Thread  basic_types: exiting
+Thread  large_alloc: exiting
+Thread   fragmented: exiting
+Thread       errors: exiting

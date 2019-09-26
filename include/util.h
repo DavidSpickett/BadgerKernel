@@ -2,6 +2,7 @@
 #define UTIL_H
 
 #include "print.h"
+#include <stdbool.h>
 
 #define str(x)      #x
 #define str_(x)     str(x)

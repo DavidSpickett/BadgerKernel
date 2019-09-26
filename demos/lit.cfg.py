@@ -45,6 +45,7 @@ if 'linux' in platform.lower():
   config.excludes.extend([
     'stackcheck.c',
     'threadlocalstorage.c',
-    'selfyield.c'])
+    'selfyield.c',
+    'alloc.c'])
 if platform.lower() == 'aarch64':
   config.excludes.append('threadlocalstorage.c')
