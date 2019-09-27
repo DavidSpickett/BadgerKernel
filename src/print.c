@@ -1,5 +1,6 @@
 #include "print.h"
 #include <stdarg.h>
+#include <stdint.h>
 
 int putchar(int chr) {
   // This must be a an int write not a char
@@ -16,19 +17,19 @@ int putstr(const char* str) {
   return len;
 }
 
-// unsigned base 10 only
-size_t uint_to_str(unsigned num, char* out) {
+size_t uint_to_str(uint64_t num, char* out, unsigned base) {
   size_t len = 0;
 
   if (num) {
     char* start = out;
 
-    unsigned div = 10;
     while (num) {
-      unsigned digit = num % div;
-      *out++ = ((char)digit) + 48;
+      uint64_t digit = num % base;
+      char new_char = digit >= 10 ? 65 : 48;
+      new_char += digit % 10;
+      *out++ = new_char;
       len++;
-      num /= div;
+      num /= base;
     }
 
     // Now reverse the digits
@@ -67,9 +68,12 @@ int printf(const char* fmt, ...) {
         break;
       }
       case 'u': // Unsigned decimal
+      case 'x': // unsigned hex
       {
-        char num_str[6];
-        uint_to_str(va_arg(args, unsigned), num_str);
+        unsigned base = *fmt == 'u' ? 10 : 16;
+        // 64 bit hex plus null terminator
+        char num_str[17];
+        uint_to_str(va_arg(args, uint64_t), num_str, base);
         len += putstr(num_str);
         fmt++;
         break;
@@ -100,9 +104,9 @@ int sprintf(char* str, const char* fmt, ...) {
     if (*fmt == '%') {
       fmt++;
 
-      if (*fmt == 'u') {
-        unsigned num = va_arg(args, unsigned);
-        str += uint_to_str(num, str);
+      if (*fmt == 'u' || *fmt == 'x') {
+        unsigned base = *fmt == 'u' ? 10 : 16;
+        str += uint_to_str(va_arg(args, uint64_t), str, base);
         fmt++;
       } else if (*fmt == '%') {
         *str++ = *fmt++;

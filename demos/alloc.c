@@ -3,7 +3,6 @@
 #include "alloc.h"
 #include <stdint.h>
 
-__attribute__((annotate("oclint:suppress[high ncss method]")))
 void basic_types(void) {
   // Anything <=8 bytes
   uint8_t*  u08 = malloc(sizeof(uint8_t));
@@ -18,12 +17,10 @@ void basic_types(void) {
   *u64 = 0xABCDABCDABCDABCD;
 
   // No one should overwrite another
-  ASSERT(*u08 == 0xFF);
-  ASSERT(*u16 == 0xF0F0);
-  ASSERT(*u32 == 0x0A0A0A0A);
-  ASSERT(*u64 == 0xABCDABCDABCDABCD);
-
-  // TODO: printf %x for some log output
+  printf(" u8: 0x%x\n", *u08);
+  printf("u16: 0x%x\n", *u16);
+  printf("u32: 0x%x\n", *u32);
+  printf("u64: 0x%x\n", *u64);
 
   // Free the second item
   free(u16);

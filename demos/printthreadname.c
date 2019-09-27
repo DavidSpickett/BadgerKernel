@@ -10,6 +10,11 @@ void setup(void) {
   // Check we can escape %
   printf("%% Print Demo %%\n");
 
+  char buf[100];
+  sprintf(buf, "Sprintf hex: 0x%x 0x%x\n",
+    0xABAB, 0xCAFEF00DDEADBEEF);
+  printf("%s", buf);
+
   // Use up some IDs
   unsigned padding = 8;
   for (int i = 0; i < padding; ++i) {
