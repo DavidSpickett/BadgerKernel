@@ -11,7 +11,7 @@ void setup(void) {
   printf("%% Print Demo %%\n");
 
   char buf[100];
-  sprintf(buf, "Sprintf hex: 0x%x 0x%x\n",
+  sprintf(buf, "Sprintf hex: 0x%X 0x%llX\n",
     0xABAB, 0xCAFEF00DDEADBEEF);
   printf("%s", buf);
 
