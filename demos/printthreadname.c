@@ -1,5 +1,6 @@
 #include "print.h"
 #include "thread.h"
+#include <stdint.h>
 
 void work(void) {
 }
@@ -11,8 +12,8 @@ void setup(void) {
   printf("%% Print Demo %%\n");
 
   char buf[100];
-  sprintf(buf, "Sprintf hex: 0x%X 0x%llX\n",
-    0xABAB, 0xCAFEF00DDEADBEEF);
+  sprintf(buf, "Sprintf hex: 0x%X 0x%" PRIX64 "\n",
+    0xABAB, (uint64_t)0xCAFEF00DDEADBEEF);
   printf("%s", buf);
 
   // Use up some IDs

@@ -60,6 +60,11 @@ int printf(const char* fmt, ...) {
     if (*fmt == '%') {
       fmt++;
 
+      // Ignore %l/%ll
+      while (*fmt == 'l') {
+        fmt++;
+      }
+
       switch (*fmt) {
       case 's': // string
       {
@@ -67,14 +72,6 @@ int printf(const char* fmt, ...) {
         fmt++;
         break;
       }
-      case 'l': // 64 bit unsigned 'llu' or 'llx'
-        if (*(fmt+1) == 'l') {
-          // Pickup the u/x like normal next loop
-          fmt += 2;
-        } else {
-          __builtin_unreachable();
-        }
-        break;
       case 'u': // Unsigned decimal
       case 'x': // unsigned hex
       case 'X':
@@ -113,7 +110,7 @@ int sprintf(char* str, const char* fmt, ...) {
     if (*fmt == '%') {
       fmt++;
 
-      //TODO: ugly
+      // Skip ls since we don't treat them differently yet
       while (*fmt == 'l') {
         fmt++;
       }
