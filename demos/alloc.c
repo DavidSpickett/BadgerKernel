@@ -20,7 +20,9 @@ void basic_types(void) {
   printf(" u8: 0x%x\n", *u08);
   printf("u16: 0x%x\n", *u16);
   printf("u32: 0x%x\n", *u32);
-  printf("u64: 0x%x\n", *u64);
+  /* Rather than go through the hassle of getting
+     64 bit types to print correctly. */
+  ASSERT(*u64 == 0xABCDABCDABCDABCD);
 
   // Free the second item
   free(u16);

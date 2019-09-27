@@ -2,7 +2,6 @@ Thread     <HIDDEN>: starting scheduler
  u8: 0xFF
 u16: 0xF0F0
 u32: 0xA0A0A0A
-u64: 0xABCDABCDABCDABCD
 Thread  basic_types: exiting
 Thread  large_alloc: exiting
 Thread   fragmented: exiting

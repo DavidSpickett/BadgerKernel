@@ -73,7 +73,7 @@ int printf(const char* fmt, ...) {
         unsigned base = *fmt == 'u' ? 10 : 16;
         // 64 bit hex plus null terminator
         char num_str[17];
-        uint_to_str(va_arg(args, uint64_t), num_str, base);
+        uint_to_str(va_arg(args, size_t), num_str, base);
         len += putstr(num_str);
         fmt++;
         break;
@@ -104,9 +104,9 @@ int sprintf(char* str, const char* fmt, ...) {
     if (*fmt == '%') {
       fmt++;
 
-      if (*fmt == 'u' || *fmt == 'x') {
+      if (*fmt == 'u' || *fmt == 'x' || *fmt == 'X') {
         unsigned base = *fmt == 'u' ? 10 : 16;
-        str += uint_to_str(va_arg(args, uint64_t), str, base);
+        str += uint_to_str(va_arg(args, size_t), str, base);
         fmt++;
       } else if (*fmt == '%') {
         *str++ = *fmt++;
