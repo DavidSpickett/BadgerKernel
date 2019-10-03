@@ -17,7 +17,8 @@ void read_file(void) {
 
   size_t buf_sz = 100;
   char content[buf_sz];
-  read(file, content, buf_sz);
+  size_t got = read(file, content, buf_sz);
+  ASSERT(got == buf_sz);
 
   char* ptr = content;
   while (*ptr != '\n') {

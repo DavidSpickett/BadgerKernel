@@ -44,7 +44,6 @@ config.excludes = ['generated.c'] # Not a real test just a dummy file
 if 'linux' in platform.lower():
   config.excludes.extend([
     'stackcheck.c',
-    'threadlocalstorage.c',
     'selfyield.c',
     'alloc.c'])
 if platform.lower() == 'aarch64':

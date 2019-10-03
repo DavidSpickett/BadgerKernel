@@ -24,7 +24,7 @@
 .global thread_switch_initial
 thread_switch_initial:
   /* Called when starting scheduler (trashing regs is fine) */
-  ldr x0, =current_thread // init stack pointer to
+  ldr x0, =_current_thread // init stack pointer to
   ldr x0, [x0]            // stack pointer of dummy thread
   ldr x0, [x0]            // so we can pass the check normally
   mov sp, x0
@@ -123,7 +123,7 @@ semihosting:
 __thread_switch:
   /* Validate stack extent */
   ldr x0, =thread_stack_offset
-  ldr x1, =current_thread
+  ldr x1, =_current_thread
   ldr x0, [x0]              // chase it
   ldr x1, [x1]              // chase current thread too
   add x0, x1, x0            // get minimum valid stack pointer
@@ -165,7 +165,7 @@ __thread_switch:
   stp x29, x30, [sp, #-16]!
 
   /* Setup pointers in some high reg numbers we won't overwrite */
-  ldr x10, =current_thread
+  ldr x10, =_current_thread
   ldr x11, =next_thread
 
   /* Save our stack pointer */
@@ -184,7 +184,7 @@ dont_update_state:
 
   /* Switch to new thread */
   ldr x11, [x11]         // chase to get actual address of the new thread
-  str x11, [x10]         // current_thread = new_thread
+  str x11, [x10]         // _current_thread = new_thread
   ldr x3, [x11], #8      // restore stack pointer of new thread
   mov sp, x3
 

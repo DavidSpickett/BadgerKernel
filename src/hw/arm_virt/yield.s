@@ -52,7 +52,7 @@ handle_timer:
 .global thread_switch_initial
 thread_switch_initial:
   /* Called when starting the scheduler, so we can trash regs here */
-  ldr r0, =current_thread // Set the actual stack pointer to
+  ldr r0, =_current_thread // Set the actual stack pointer to
   ldr r0, [r0]            // that of the dummy thread
   ldr r0, [r0]            // so that we can pass the stack check
   mov sp, r0              // without having more than one entry point
@@ -114,7 +114,7 @@ semihosting:
 __thread_switch:
   /* Check stack extent */
   ldr r0, =thread_stack_offset
-  ldr r1, =current_thread
+  ldr r1, =_current_thread
   ldr r0, [r0]                // chase offset
   ldr r1, [r1]                // chase current
   add r0, r1, r0              // get min. valid stack pointer
@@ -134,7 +134,7 @@ __thread_switch:
   push {r0-r12, r14} // lr also included here
 
   /* Setup pointers in some high reg numbers we won't overwrite */
-  ldr r10, =current_thread
+  ldr r10, =_current_thread
   ldr r11, =next_thread
 
   ldr r1, [r10]           // get actual adress of current thread

@@ -18,7 +18,7 @@ thread_switch:
 .thumb_func
 thread_switch_initial:
   /* Init stack ptr to dummy thread so we can yield to scheduler */
-  ldr r0, =current_thread // Set the actual stack pointer to
+  ldr r0, =_current_thread // Set the actual stack pointer to
   ldr r0, [r0]            // that of the dummy thread
   ldr r0, [r0]            // so that we can pass the stack check
   mov sp, r0              // without having more than one entry point
@@ -74,7 +74,7 @@ handle_interrupt:
   str r0, [r1]
 
   /* set state to suspended */
-  ldr r0, =current_thread
+  ldr r0, =_current_thread
   ldr r0, [r0]
   add r0, #4         // Skip stack ptr
   mov r1, #SUSPENDED
@@ -129,7 +129,7 @@ __thread_switch:
      an underflow we'll detect it too.
   */
   ldr r0, =thread_stack_offset
-  ldr r1, =current_thread
+  ldr r1, =_current_thread
   ldr r0, [r0]                 // chase offset
   ldr r1, [r1]                 // chase current
   add r0, r1, r0               // get min. valid stack pointer
@@ -149,7 +149,7 @@ stack_check_passed:
   push {r4-r11} // no lr, it's already on the stack
 
   /* Setup pointers some high reg numbers */
-  ldr r6, =current_thread
+  ldr r6, =_current_thread
   ldr r7, =next_thread
 
   /* Save stack pointer */
@@ -169,7 +169,7 @@ dont_update_state:
 
   /* Switch to new thread */
   ldr r7, [r7]          // chase to get actual address of next thread
-  str r7, [r6]          // current_thread = next_thread
+  str r7, [r6]          // _current_thread = next_thread
   ldr r5, [r7]          // restore stack pointer of new thread
   mov sp, r5            // MSP = thread stack pointer
   add r7, #4

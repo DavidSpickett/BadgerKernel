@@ -6,7 +6,6 @@ set( OPT_LEVEL "3" CACHE STRING "Compiler optmisation level." )
 option( UBSAN "Enable undefined behaviour sanitiser." OFF )
 option( COVERAGE "Generate coverage data. (Linux only)" OFF )
 option( LTO "Enable link time optimisation." OFF )
-option( NATIVE "Set ON to run Arm Linux demos on real hardware." OFF )
 set( STACK_SIZE   1 ) # In KB
 
 string( TOLOWER "${BUILD_PLATFORM}" BP_LOWER )
@@ -14,29 +13,10 @@ message(STATUS "BUILD_PLATFORM is ${BP_LOWER}")
 message(STATUS "OPT_LEVEL is -O${OPT_LEVEL}")
 message(STATUS "UBSAN is ${UBSAN}")
 message(STATUS "LTO is ${LTO}")
-message(STATUS "NATIVE is ${NATIVE}")
 message(STATUS "COVERAGE is ${COVERAGE}")
 
-if ( BP_LOWER STREQUAL "arm_linux")
-  set( PLATFORM_SRC "arm_linux" )
+if (BP_LOWER STREQUAL "linux")
   set( LINUX ON )
-  set( STACK_SIZE 10 )
-  if (NOT NATIVE)
-    # Do *not* generate Thumb code!
-    set( PLATFORM "-static -mcpu=cortex-a15 -marm" )
-    # Note: soft float
-    set( PREFIX "arm-linux-gnueabi-")
-    set( QEMU_CMD "qemu-arm --cpu cortex-a15")
-  endif()
-elseif ( BP_LOWER STREQUAL "aarch64_linux")
-  set( PLATFORM_SRC "aarch64_linux" )
-  set( LINUX ON )
-  set( STACK_SIZE 10 )
-  if (NOT NATIVE)
-    set( PLATFORM "-static -mcpu=cortex-a57 -mgeneral-regs-only" )
-    set( PREFIX "aarch64-linux-gnu-")
-    set( QEMU_CMD "qemu-aarch64 --cpu cortex-a57")
-  endif()
 elseif( BP_LOWER STREQUAL "arm" )
   set( PREFIX       "arm-none-eabi-" )
   set( PLATFORM     "-mcpu=cortex-a15" )
@@ -68,7 +48,7 @@ set( CMAKE_C_COMPILER "${PREFIX}gcc" )
 set( CFLAGS "-DSTACK_SIZE=${STACK_SIZE}")
 
 if (LINUX)
-  set( CFLAGS "${CFLAGS} -Wall -g -O${OPT_LEVEL} -std=gnu11" )
+  set( CFLAGS "${CFLAGS} -Wall -g -O${OPT_LEVEL} -std=gnu11 -pthread" )
 else()
   set( QEMU "${QEMU_CMD} -m 64M -nographic -semihosting -kernel" )
   set( CFLAGS "${CFLAGS} -Wall -ffreestanding -nostdlib -g -O${OPT_LEVEL} -std=gnu11 -DUART_BASE=${UART_BASE}" )
@@ -94,15 +74,10 @@ set( CMAKE_C_FLAGS "${PLATFORM} ${CFLAGS}" )
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-set_property(SOURCE src/hw/${PLATFORM_SRC}/startup.s PROPERTY LANGUAGE C)
-set_property(SOURCE src/hw/${PLATFORM_SRC}/yield.s PROPERTY LANGUAGE C)
-set_property(SOURCE src/hw/${PLATFORM_SRC}/vectors.s PROPERTY LANGUAGE C)
-
 set( BASE_SOURCES
   src/thread.c
   src/mutex.c
   src/condition_variable.c
-  src/hw/${PLATFORM_SRC}/yield.s
 )
 
 if(LINUX)
@@ -111,15 +86,20 @@ if(LINUX)
        src/hw/linux/timer.c
   )
 else()
-  set( BASE_SOURCES ${BASE_SOURCES}
+    set( BASE_SOURCES ${BASE_SOURCES}
        src/hw/${PLATFORM_SRC}/vectors.s
        src/hw/${PLATFORM_SRC}/startup.s
+       src/hw/${PLATFORM_SRC}/yield.s
        src/hw/${PLATFORM_SRC}/timer.c
        src/emutls.c
        src/print.c
        src/util.c
        src/alloc.c
   )
+
+  set_property(SOURCE src/hw/${PLATFORM_SRC}/startup.s PROPERTY LANGUAGE C)
+  set_property(SOURCE src/hw/${PLATFORM_SRC}/yield.s   PROPERTY LANGUAGE C)
+  set_property(SOURCE src/hw/${PLATFORM_SRC}/vectors.s PROPERTY LANGUAGE C)
 
   if(UBSAN)
     set( BASE_SOURCES ${BASE_SOURCES} src/ubsan.c )
@@ -153,7 +133,7 @@ function(add_demo_app NAME)
 
         if(LINUX)
           add_custom_command(TARGET run_${NAME} POST_BUILD
-            COMMAND eval "${QEMU_CMD} ./${NAME}"
+            COMMAND eval "./${NAME}"
             VERBATIM)
         else()
            add_custom_command(TARGET run_${NAME} POST_BUILD
@@ -165,15 +145,9 @@ function(add_demo_app NAME)
         add_dependencies(debug_${NAME} ${NAME})
 
         if(LINUX)
-          if(NATIVE)
-            add_custom_command(TARGET debug_${NAME} POST_BUILD
-              COMMAND eval "gdb ./${NAME}"
-              VERBATIM)
-          else()
-            add_custom_command(TARGET debug_${NAME} POST_BUILD
-              COMMAND eval "${QEMU_CMD} -g 1234 ./${NAME}"
-              VERBATIM)
-          endif()
+          add_custom_command(TARGET debug_${NAME} POST_BUILD
+            COMMAND eval "gdb ./${NAME}"
+            VERBATIM)
         else()
           add_custom_command(TARGET debug_${NAME} POST_BUILD
             COMMAND eval "${QEMU} ${NAME} -s -S"
@@ -186,7 +160,7 @@ function(add_demo_app NAME)
 
         if(LINUX)
           add_custom_command(TARGET test_${NAME} POST_BUILD
-            COMMAND eval "${QEMU_CMD} ./${NAME} > ${NAME}_got.log"
+            COMMAND eval "./${NAME} > ${NAME}_got.log"
             COMMAND diff demos/${NAME}_expected.log ${NAME}_got.log
             VERBATIM)
         else()
@@ -217,10 +191,11 @@ add_demo_app(file)
 # For the random demo generator
 add_demo_app(generated)
 
+if(NOT BP_LOWER STREQUAL "aarch64" )
+  add_demo_app(threadlocalstorage)
+endif()
+
 if(NOT LINUX)
-  if(NOT BP_LOWER STREQUAL "aarch64" )
-    add_demo_app(threadlocalstorage)
-  endif()
   add_demo_app(stackcheck)
   add_demo_app(selfyield)
   add_demo_app(alloc)

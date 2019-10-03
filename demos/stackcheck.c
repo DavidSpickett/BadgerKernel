@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <string.h>
 
-extern void* current_thread;
+extern void* _current_thread;
 
 #define ALLOC_SIZE 500
 __attribute__((noinline)) void recurse(int repeat) {
@@ -18,7 +18,7 @@ __attribute__((noinline)) void recurse(int repeat) {
 
 void underflow() {
   char dummy;
-  size_t distance = (void*)(&dummy) - current_thread;
+  size_t distance = (void*)(&dummy) - _current_thread;
   log_event("recursing");
   recurse(distance / ALLOC_SIZE);
   /* Don't log_event here because under some settings
@@ -28,7 +28,7 @@ void underflow() {
 
 void overflow() {
   char dummy;
-  size_t distance = (void*)(&dummy) - current_thread;
+  size_t distance = (void*)(&dummy) - _current_thread;
   log_event("overflowing");
   /* We're probably very close to top of stack
      so this is overkill. At least we can be sure that:
