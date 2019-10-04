@@ -404,7 +404,7 @@ void* thread_entry() {
   // Go back to scheduler
   next_thread = &scheduler_thread;
 
-  return NULL; //OCLINT!
+  return NULL; //!OCLINT
 }
 
 void thread_switch(void) {
@@ -432,7 +432,7 @@ void start_scheduler(void) {
                  (void * (*)(void *))do_scheduler,
                  NULL);
 
-  while (1) {} //OCLINT!
+  while (1) {} //!OCLINT
 }
 
 #else
