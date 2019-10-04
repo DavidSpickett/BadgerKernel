@@ -1,5 +1,5 @@
 set -e
-for platform in "arm" "thumb" "aarch64"; do
+for platform in "arm" "thumb" "aarch64" "linux"; do
   for opt_level in "0" "3" "s"; do
     for ubsan in "ON" "OFF"; do
       for lto in "ON" "OFF"; do
