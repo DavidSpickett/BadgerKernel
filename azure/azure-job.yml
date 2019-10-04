@@ -56,7 +56,7 @@ jobs:
                 set -ex
                 # Each script has its own environment so we need to do this here
                 export PATH=$(pwd)/toolchain/bin/:$PATH
-                cmake . -DBUILD_PLATFORM=${{build_platform}} -DOPT_LEVEL=${{opt_level}} -DUBSAN=${{ubsan}} -DLTO=${{lto}} -DNATIVE=OFF
+                cmake . -DBUILD_PLATFORM=${{build_platform}} -DOPT_LEVEL=${{opt_level}} -DUBSAN=${{ubsan}} -DLTO=${{lto}}
                 make clean
                 make make_demos
               displayName: build-O${{opt_level}}_UBSAN_${{ubsan}}_LTO_${{lto}}
