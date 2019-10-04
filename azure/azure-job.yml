@@ -15,7 +15,7 @@ jobs:
       - script: |
           sudo apt-get update
           sudo apt-get install -y python3-pip
-        displayName: apt-get-qemu
+        displayName: apt-get-py3pip
 
       - ${{ if in(build_platform, 'ARM', 'THUMB', 'AARCH64') }}:
         - script: |
