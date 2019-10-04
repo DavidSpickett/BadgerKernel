@@ -42,7 +42,9 @@ elseif( BP_LOWER STREQUAL "thumb" )
   set( QEMU_CMD     "qemu-system-arm -M lm3s6965evb -cpu cortex-m4" )
 endif()
 
-message(STATUS "STACK_SIZE is ${STACK_SIZE}KB")
+if (NOT LINUX)
+  message(STATUS "STACK_SIZE is ${STACK_SIZE}KB")
+endif()
 
 set( CMAKE_C_COMPILER "${PREFIX}gcc" )
 set( CFLAGS "-DSTACK_SIZE=${STACK_SIZE}")
