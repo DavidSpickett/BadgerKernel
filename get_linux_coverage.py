@@ -7,7 +7,7 @@ from itertools import chain
 demos = []
 demo_folder = "demos"
 # Usual Linux excludes
-excludes = ["stackcheck", "threadlocalstorage", "selfyield"]
+excludes = ["stackcheck", "selfyield", "alloc"]
 
 # Find all demos
 for f in os.listdir(demo_folder):
@@ -26,7 +26,7 @@ map(os.mkdir, ["cov/{}_cov".format(d) for d in demos])
 
 # Configure for Linux
 subprocess.check_call(["cmake", ".",
-    "-DBUILD_PLATFORM=arm_linux",
+    "-DBUILD_PLATFORM=linux",
     "-DOPT_LEVEL=0",
     "-DCOVERAGE=ON"])
 

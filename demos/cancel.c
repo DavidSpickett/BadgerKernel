@@ -24,10 +24,11 @@ void canceller() {
   yield();
 
   ThreadState state;
+  // Can't join on an invalid thread
+  ASSERT(!thread_join(99, &state));
+
   thread_join(0, &state);
-  if (state != cancelled) {
-    log_event("thread 0 not cancelled!");
-  }
+  ASSERT(state == cancelled);
 }
 
 void setup(void) {
