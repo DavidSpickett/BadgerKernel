@@ -14,8 +14,13 @@ jobs:
     steps:
       - script: |
           sudo apt-get update
-          sudo apt-get install -y qemu-system-arm qemu-user python3-pip
+          sudo apt-get install -y python3-pip
         displayName: apt-get-qemu
+
+      - ${{ if in(build_platform, 'ARM', 'THUMB', 'AARCH64') }}:
+        - script: |
+            sudo apt-get install -y qemu-system-arm
+          displayName: apt-get-qemu
 
       - ${{ if in(build_platform, 'ARM', 'THUMB') }}:
         - script: sudo apt-get install -y gcc-arm-none-eabi libnewlib-arm-none-eabi
@@ -25,16 +30,6 @@ jobs:
         - template: get-linaro-toolchain.yml
           parameters:
             toolchain_url: 7.4-2019.02/aarch64-elf/gcc-linaro-7.4.1-2019.02-x86_64_aarch64-elf.tar.xz
-
-      - ${{ if eq(build_platform, 'ARM_LINUX') }}:
-        - template: get-linaro-toolchain.yml
-          parameters:
-            toolchain_url: 7.4-2019.02/arm-linux-gnueabi/gcc-linaro-7.4.1-2019.02-x86_64_arm-linux-gnueabi.tar.xz
-
-      - ${{ if eq(build_platform, 'AARCH64_LINUX') }}:
-        - template: get-linaro-toolchain.yml
-          parameters:
-            toolchain_url: 7.4-2019.02/aarch64-linux-gnu/gcc-linaro-7.4.1-2019.02-x86_64_aarch64-linux-gnu.tar.xz
 
       - script: |
           # Running it in a venv is the best way to be able to just run 'lit', not some random path or "python -c" invocation.

@@ -321,7 +321,7 @@ void init_thread(Thread* thread, int tid, const char* name,
 }
 
 #ifdef linux
-void* thread_entry(void* params);
+void* thread_entry();
 #endif
 int add_named_thread_with_args(void (*worker)(), const char* name,
                                ThreadArgs args) {
@@ -383,8 +383,7 @@ Thread* current_thread(void) {
   return &scheduler_thread;
 }
 
-void* thread_entry(void* params) {
-  // TODO: remove params?
+void* thread_entry() {
 
   while (next_thread != current_thread()) {
     pthread_yield();
@@ -405,7 +404,7 @@ void* thread_entry(void* params) {
   // Go back to scheduler
   next_thread = &scheduler_thread;
 
-  return NULL;
+  return NULL; //OCLINT!
 }
 
 void thread_switch(void) {
@@ -432,7 +431,8 @@ void start_scheduler(void) {
                  NULL,
                  (void * (*)(void *))do_scheduler,
                  NULL);
-  while (1) {}
+
+  while (1) {} //OCLINT!
 }
 
 #else
