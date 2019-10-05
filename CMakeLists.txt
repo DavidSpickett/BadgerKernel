@@ -3,7 +3,7 @@ cmake_minimum_required( VERSION 3.7 )
 
 set( BUILD_PLATFORM "arm" CACHE STRING "Architecture to build for." )
 set( OPT_LEVEL "3" CACHE STRING "Compiler optmisation level." )
-option( UBSAN "Enable undefined behaviour sanitiser." OFF )
+option( SANITIZERS "Enable UBSAN/ASAN (ASAN Linux only)." OFF )
 option( COVERAGE "Generate coverage data. (Linux only)" OFF )
 option( LTO "Enable link time optimisation." OFF )
 set( STACK_SIZE   1 ) # In KB
@@ -11,7 +11,7 @@ set( STACK_SIZE   1 ) # In KB
 string( TOLOWER "${BUILD_PLATFORM}" BP_LOWER )
 message(STATUS "BUILD_PLATFORM is ${BP_LOWER}")
 message(STATUS "OPT_LEVEL is -O${OPT_LEVEL}")
-message(STATUS "UBSAN is ${UBSAN}")
+message(STATUS "SANITIZERS are ${SANITIZERS}")
 message(STATUS "LTO is ${LTO}")
 message(STATUS "COVERAGE is ${COVERAGE}")
 
@@ -60,13 +60,13 @@ if(LTO)
   set( CFLAGS "${CFLAGS} -flto -ffunction-sections" )
 endif()
 
-if(UBSAN)
-  set( CFLAGS "${CFLAGS} -fsanitize=undefined " )
-  # Failing is the default on bare metal, but it doesn't recognise the option
+if(SANITIZERS)
+  set( CFLAGS "${CFLAGS} -fsanitize=undefined" )
   if (LINUX)
-    set( CFLAGS "${CFLAGS} -fno-sanitize-recover=all")
+  # Failing is the default on bare metal, but it doesn't recognise the option
+    set( CFLAGS "${CFLAGS} -fno-sanitize-recover=all -fsanitize=address")
   endif()
-endif(UBSAN)
+endif(SANITIZERS)
 
 if(COVERAGE AND LINUX)
   set( CFLAGS "${CFLAGS} --coverage " )
@@ -103,7 +103,7 @@ else()
   set_property(SOURCE src/hw/${PLATFORM_SRC}/yield.s   PROPERTY LANGUAGE C)
   set_property(SOURCE src/hw/${PLATFORM_SRC}/vectors.s PROPERTY LANGUAGE C)
 
-  if(UBSAN)
+  if(SANITIZERS)
     set( BASE_SOURCES ${BASE_SOURCES} src/ubsan.c )
   endif()
 
