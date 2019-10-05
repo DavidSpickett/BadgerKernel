@@ -37,6 +37,45 @@ void basic_types(void) {
   free(u64);
 }
 
+void free_clears_tags() {
+  /* something larger than a block so that it covers
+     a potential tag location. */
+  size_t foo_sz = 64;
+  uint8_t* foo = malloc(foo_sz);
+  ASSERT(foo);
+
+  //fill this with a number > blocks in the heap
+  for (size_t i=0; i<foo_sz; ++i) {
+    foo[i] = 0xFF;
+  }
+
+  /* Something after to check that free didn't
+     overshoot clearing tag locations */
+  int* canary = malloc(sizeof(int));
+
+  free(foo);
+
+  /* Can't ask whether a pointer is still allocated.
+     Next best is to keep allocating and check it never
+     gives us the address of the canary.
+     Since freeing foo has also cleared some blocks. */
+  size_t temps_sz = 5;
+  int* temps[temps_sz];
+  for (int i=0; i<temps_sz; ++i) {
+    temps[i] = malloc(sizeof(int));
+    /* If free didn't clear all potential tag locations
+       it'd think we'd run out of space. */
+    ASSERT(temps[i]);
+    // If free free'd canary, it could give us its pointer
+    ASSERT(temps[i] != canary);
+  }
+  for (int i=0; i<temps_sz; ++i) {
+    free(temps[i]);
+  }
+
+  free(canary);
+}
+
 void large_alloc(void) {
   // Buffer >1 block size
   const size_t alloc_size = 123;
@@ -95,6 +134,11 @@ void fragmented(void) {
 
   // >1 block fails
   ASSERT(malloc(64) == NULL);
+
+  // cleanup
+  for (size_t i=1; i < num_allocations; i+=2) {
+    free(allocated[i]);
+  }
 }
 
 void errors() {
@@ -106,8 +150,9 @@ void setup(void)
 {
   config.log_scheduler = false;
 
-  add_named_thread(basic_types,    "basic_types");
-  add_named_thread(large_alloc,    "large_alloc");
-  add_named_thread(fragmented,     "fragmented");
-  add_named_thread(errors,         "errors");
+  add_named_thread(basic_types,      "basic_types");
+  add_named_thread(large_alloc,      "large_alloc");
+  add_named_thread(fragmented,       "fragmented");
+  add_named_thread(errors,           "errors");
+  add_named_thread(free_clears_tags, "free_clears_tags");
 }
