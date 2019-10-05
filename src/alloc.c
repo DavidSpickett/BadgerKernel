@@ -48,10 +48,10 @@ void* malloc(size_t size) {
       *search_ptr = num_blocks;
       // Return aligned ptr for use
       return search_ptr + align_amount;
-    } else {
-      // Skip forward and carry on searching
-      search_ptr = potential_alloc;
     }
+
+    // Skip forward and carry on searching
+    search_ptr = potential_alloc;
   }
 
   return NULL; //!OCLINT
