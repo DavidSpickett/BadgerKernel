@@ -15,12 +15,8 @@ void counter() {
   for (int i = 0; i < our_id; ++i) {
     ThreadState state;
     thread_join(i, &state);
-    if (state == finished) {
-      log_event("a thread exited");
-    } else {
-      log_event("unexpected thread state!");
-      break;
-    }
+    ASSERT(state == finished);
+    log_event("a thread exited");
   }
 }
 

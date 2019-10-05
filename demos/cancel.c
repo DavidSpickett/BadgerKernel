@@ -1,11 +1,12 @@
 #include "thread.h"
 #include "util.h"
 
-void work() {
+__attribute__((noreturn)) void work() {
   for (int num = 0; num < 3; ++num) {
     log_event("foo");
     yield();
   }
+  __builtin_unreachable();
 }
 
 void canceller() {

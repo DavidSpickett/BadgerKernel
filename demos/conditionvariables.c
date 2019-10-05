@@ -1,5 +1,6 @@
 #include "condition_variable.h"
 #include "thread.h"
+#include "util.h"
 
 ConditionVariable cond_var;
 
@@ -31,9 +32,7 @@ void signaller(void) {
   yield();
 
   // Should be false, no yield...
-  if (signal(&cond_var)) {
-    yield();
-  }
+  ASSERT(!signal(&cond_var));
 
   // Show that a new thread can wait after some have been signalled
   add_named_thread(final_signal, "final_signal");

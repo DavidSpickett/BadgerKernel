@@ -11,9 +11,7 @@ void thread2() {
   yield_next(); // switch to "last"
   yield_next(); // switch back to "last"
   // Run ourselves again, shouldn't actually do a switch
-  if (yield_next()) {
-    log_event("yield_next shouldn't have found another thread!");
-  }
+  ASSERT(!yield_next());
   ASSERT(!yield_to(0));
 }
 
