@@ -1,8 +1,6 @@
-.set TIMER_AMOUNT, 100000
+#include "thread_state.h"
 
-.set INIT,      0
-.set RUNNING,   1
-.set SUSPENDED, 2
+.set TIMER_AMOUNT, 100000
 
 .macro DISABLE_TIMER
   mov x0, #2    // Disable timer output, mask the interrupt
@@ -171,10 +169,10 @@ __thread_switch:
 
   /* update state */
   ldr x2, [x1]
-  mov x3, #RUNNING
+  mov x3, #running
   cmp x2, x3
   bne dont_update_state
-  mov x2, #SUSPENDED
+  mov x2, #suspended
   str x2, [x1]
 dont_update_state:
 
@@ -186,11 +184,11 @@ dont_update_state:
 
   /* Check that the new thread has been run at least once */
   ldr x3, [x11]
-  mov x4, #INIT
+  mov x4, #init
   cmp x3, x4
 
   /* either way we start running */
-  mov x4, #RUNNING
+  mov x4, #running
   str x4, [x11]
 
   bne restore_regs

@@ -91,7 +91,7 @@ else()
     set( BASE_SOURCES ${BASE_SOURCES}
        src/hw/${PLATFORM_SRC}/vectors.s
        src/hw/${PLATFORM_SRC}/startup.s
-       src/hw/${PLATFORM_SRC}/yield.s
+       src/hw/${PLATFORM_SRC}/yield.S
        src/hw/${PLATFORM_SRC}/timer.c
        src/emutls.c
        src/print.c
@@ -100,7 +100,7 @@ else()
   )
 
   set_property(SOURCE src/hw/${PLATFORM_SRC}/startup.s PROPERTY LANGUAGE C)
-  set_property(SOURCE src/hw/${PLATFORM_SRC}/yield.s   PROPERTY LANGUAGE C)
+  set_property(SOURCE src/hw/${PLATFORM_SRC}/yield.S   PROPERTY LANGUAGE C)
   set_property(SOURCE src/hw/${PLATFORM_SRC}/vectors.s PROPERTY LANGUAGE C)
 
   if(SANITIZERS)

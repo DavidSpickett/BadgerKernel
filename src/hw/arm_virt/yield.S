@@ -1,10 +1,8 @@
+#include "thread_state.h"
+
 .set SYSTEM_MODE,     0x1f
 .set SUPERVISOR_MODE, 0x13
 .set USER_MODE,       0x10
-
-.set INIT,      0
-.set RUNNING,   1
-.set SUSPENDED, 2
 
 .macro DISABLE_TIMER
   mov r0, #2                 // Disable timer and mask interrupt
@@ -140,10 +138,10 @@ __thread_switch:
 
   /* update state */
   ldr r2, [r1]
-  mov r3, #RUNNING
+  mov r3, #running
   cmp r2, r3              // if we're something other than running, leave it as it is
   bne dont_set_state
-  mov r3, #SUSPENDED      // otherwise move to suspended
+  mov r3, #suspended      // otherwise move to suspended
   str r3, [r1]
 dont_set_state:
 
@@ -154,10 +152,10 @@ dont_set_state:
 
   /* check that this thread has been run at least once */
   ldr r3, [r11]           // get state of new thread
-  mov r4, #INIT
+  mov r4, #init
   cmp r3, r4
 
-  mov r4, #RUNNING        // either way it'll start running
+  mov r4, #running        // either way it'll start running
   str r4, [r11]
 
   bne restore_regs

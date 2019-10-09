@@ -1,12 +1,10 @@
+#include "thread_state.h"
+
 // This allows us to use push/pop with high registers
 .syntax unified
 
 .set ICSR, 0xE000ED04
 .set NVIC_ICER0, 0XE000E180
-
-.set INIT,      0
-.set RUNNING,   1
-.set SUSPENDED, 2
 
 .global thread_switch
 .thumb_func
@@ -77,7 +75,7 @@ handle_interrupt:
   ldr r0, =_current_thread
   ldr r0, [r0]
   add r0, #4         // Skip stack ptr
-  mov r1, #SUSPENDED
+  mov r1, #suspended
 
   beq __thread_switch
   /* Pending status is cleared by exception return */
@@ -162,10 +160,10 @@ stack_check_passed:
 
   /* Update state */
   ldr r2, [r1]
-  mov r3, #RUNNING
+  mov r3, #running
   cmp r2, r3
   bne dont_update_state
-  mov r2, #SUSPENDED
+  mov r2, #suspended
   str r2, [r1]
 dont_update_state:
 
@@ -179,11 +177,11 @@ dont_update_state:
 
   /* check that thread has been scheduled at least once already */
   ldr r3, [r7]          // load state
-  mov r4, #INIT
+  mov r4, #init
   cmp r3, r4
 
   /* either way it'll start running */
-  mov r4, #RUNNING
+  mov r4, #running
   str r4, [r7]
 
   bne restore_regs

@@ -2,6 +2,7 @@
 #define THREAD_H
 
 #include <stdbool.h>
+#include "thread_state.h"
 
 #define MAX_THREADS 11
 
@@ -21,16 +22,6 @@ typedef struct {
 
 #define make_args(a, b, c, d)                                                  \
   { (void*)a, (void*)b, (void*)c, (void*)d }
-
-typedef enum {
-  // Fixed values for use in assembly
-  init = 0,
-  running = 1,
-  suspended = 2,
-  waiting,
-  finished,
-  cancelled
-} ThreadState;
 
 int add_thread(void (*worker)(void));
 int add_named_thread(void (*worker)(void), const char* name);
