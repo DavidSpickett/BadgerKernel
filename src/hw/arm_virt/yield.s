@@ -63,6 +63,12 @@ thread_switch:
   svc 0xdead
   bx lr
 
+.macro CHECK_SVC code, handler
+  ldr r1, =\code
+  cmp r0, r1
+  beq \handler
+.endm
+
 .global handle_svc
 handle_svc:
   CHECK_MONITOR_STACK
@@ -72,18 +78,10 @@ monitor_stack_ok:
   ldr r0, [lr, #-4]        // load svc instruction used
   ldr r1, =0xFFFFFF        // mask to get code
   and r0, r0, r1           //
-  ldr r1, =0x00dead        // thread switch
-  cmp r0, r1
-  beq __thread_switch
-  ldr r1, =0x123456        // semihosting call
-  cmp r0, r1
-  beq semihosting
-  mov r1, #1               // enable timer
-  cmp r0, r1
-  beq enable_timer
-  mov r1, #0               // disable timer
-  cmp r0, r1
-  beq disable_timer
+  CHECK_SVC 0x00dead, __thread_switch
+  CHECK_SVC 0x123456, semihosting
+  CHECK_SVC 0x000001, enable_timer
+  CHECK_SVC 0x000000, disable_timer
   /* Unkown svc code */
   b .
 

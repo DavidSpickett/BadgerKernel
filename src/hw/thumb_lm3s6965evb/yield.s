@@ -82,6 +82,12 @@ handle_interrupt:
   beq __thread_switch
   /* Pending status is cleared by exception return */
 
+.macro CHECK_SVC code, handler
+  mov r1, #\code
+  cmp r0, r1
+  beq \handler
+.endm
+
 handle_svc:
   mrs r0, psp
   mov r1, #(6*4)
@@ -94,13 +100,9 @@ handle_svc:
   mov r1, #0xff   // mask out the svc number
   and r0, r1, r0
 
-  mov r1, #0xff   // thread switch
-  cmp r0, r1
-  beq __thread_switch
-  mov r1, #0xab   // semihosting call
-  cmp r0, r1
-  beq semihosting
-  b exc_err
+  CHECK_SVC 0xff, __thread_switch
+  CHECK_SVC 0xab, semihosting
+  /* timer control is done from user mode */
 
 exc_err:
   /* something unexpected */

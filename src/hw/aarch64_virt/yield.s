@@ -54,6 +54,12 @@ handle_timer:
 
   b __thread_switch
 
+.macro CHECK_SVC code, handler
+  mov x1, #\code
+  cmp x0, x1
+  beq \handler
+.endm
+
 .global handle_svc
 handle_svc:
   CHECK_MONITOR_STACK
@@ -71,20 +77,10 @@ check_svc:
   mrs x0, ESR_EL1    // Reload then check svc code
   mov x1, #0xFFFF    // mask svc number
   and x0, x0, x1
-  mov x1, #0xdead    // thread switch
-  cmp x0, x1
-  beq __thread_switch
-  mov x1, #0x3333    // semihosting
-  cmp x0, x1
-  beq semihosting
-  mov x1, #1         // enable virtual timer
-  cmp x0, x1
-  beq enable_timer
-  mov x1, #0         // disable virtual timer
-  cmp x0, x1
-  beq disable_timer
-
-  b unknown_exc
+  CHECK_SVC 0xdead, __thread_switch
+  CHECK_SVC 0x3333, semihosting
+  CHECK_SVC 1,      enable_timer
+  CHECK_SVC 0,      disable_timer
 
 unknown_exc:
   /* Otherwise it's something we weren't expecting */
