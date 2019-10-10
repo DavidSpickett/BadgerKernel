@@ -1,4 +1,5 @@
 #include "util.h"
+#include "thread_state.h"
 #include <stddef.h>
 #include <string.h>
 
@@ -34,10 +35,12 @@ static size_t generic_semihosting_call(size_t operation,
   asm volatile (
     "mov "RCHR"0, %[operation]\n\t"
     "mov "RCHR"1, %[parameters]\n\t"
-    "svc 1\n\t"
+    "svc %[semihost]\n\t"
     "mov %[ret], "RCHR"0\n\t"
     :[ret]"=r"(ret)
-    :[parameters]"r"(parameters), [operation]"r"(operation)
+    :[parameters]"r"(parameters),
+     [operation]"r"(operation),
+     [semihost]"i"(svc_semihosting)
     :RCHR"0", RCHR"1"
   );
   // clang-format on

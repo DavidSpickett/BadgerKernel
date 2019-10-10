@@ -1,12 +1,17 @@
 #include <stddef.h>
 #include "timer.h"
+#include "thread_state.h"
 
 void enable_timer() {
-  asm volatile ("svc 2":::"memory");
+  asm volatile ("svc %0" :
+    :"i"(svc_enable_timer)
+    :"memory");
 }
 
 void disable_timer() {
-  asm volatile ("svc 3":::"memory");
+  asm volatile ("svc %0" :
+    :"i"(svc_disable_timer)
+    :"memory");
 }
 
 // GDB helpers

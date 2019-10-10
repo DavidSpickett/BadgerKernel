@@ -20,4 +20,11 @@ ENUM_VALUE(finished,  4)
 ENUM_VALUE(cancelled, 5)
 ENUM_END(ThreadState)
 
+ENUM_START
+ENUM_VALUE(svc_thread_switch, 0)
+ENUM_VALUE(svc_semihosting,   1)
+ENUM_VALUE(svc_enable_timer,  2)
+ENUM_VALUE(svc_disable_timer, 3)
+ENUM_END(SVCCodes)
+
 #endif /* ifdef THREAD_STATE_H */

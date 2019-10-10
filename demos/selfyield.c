@@ -11,7 +11,9 @@ void log_things() {
 
   // Manual thread switch (current=this thread, next=this thread)
   // Simulates an interrupt
-  asm volatile("svc 0" ::: "memory");
+  asm volatile("svc %0" :
+    :"i"(svc_thread_switch)
+    : "memory");
 
   log_event("two");
 }
