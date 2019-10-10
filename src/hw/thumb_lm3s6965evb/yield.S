@@ -9,7 +9,7 @@
 .global thread_switch
 .thumb_func
 thread_switch:
-  svc 0xFF
+  svc 0
   bx lr
 
 .global thread_switch_initial
@@ -98,8 +98,8 @@ handle_svc:
   mov r1, #0xff   // mask out the svc number
   and r0, r1, r0
 
-  CHECK_SVC 0xff, __thread_switch
-  CHECK_SVC 0xab, semihosting
+  CHECK_SVC 0, __thread_switch
+  CHECK_SVC 1, semihosting
   /* timer control is done from user mode */
 
 exc_err:

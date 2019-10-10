@@ -30,7 +30,7 @@ thread_switch_initial:
 
 .global thread_switch
 thread_switch:
-  svc 0xdead
+  svc 0
   ret
 
 /* Having this as a seperate handler is easier than
@@ -75,10 +75,10 @@ check_svc:
   mrs x0, ESR_EL1    // Reload then check svc code
   mov x1, #0xFFFF    // mask svc number
   and x0, x0, x1
-  CHECK_SVC 0xdead, __thread_switch
-  CHECK_SVC 0x3333, semihosting
-  CHECK_SVC 1,      enable_timer
-  CHECK_SVC 0,      disable_timer
+  CHECK_SVC 0, __thread_switch
+  CHECK_SVC 1, semihosting
+  CHECK_SVC 2, enable_timer
+  CHECK_SVC 3, disable_timer
 
 unknown_exc:
   /* Otherwise it's something we weren't expecting */

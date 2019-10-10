@@ -2,11 +2,11 @@
 #include "timer.h"
 
 void enable_timer() {
-  asm volatile ("svc 1":::"memory");
+  asm volatile ("svc 2":::"memory");
 }
 
 void disable_timer() {
-  asm volatile ("svc 0":::"memory");
+  asm volatile ("svc 3":::"memory");
 }
 
 /* GDB helpers */

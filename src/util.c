@@ -22,13 +22,8 @@ size_t get_semihosting_event(int status) {
 
 #ifdef __aarch64__
 #define RCHR   "x"
-#define SHCALL "svc 0x3333\n\t"
-#elif defined __thumb__
-#define RCHR   "r"
-#define SHCALL "svc 0xAB\n\t"
 #else
 #define RCHR   "r"
-#define SHCALL "svc 0x00123456\n\t"
 #endif
 
 static size_t generic_semihosting_call(size_t operation,
@@ -39,7 +34,7 @@ static size_t generic_semihosting_call(size_t operation,
   asm volatile (
     "mov "RCHR"0, %[operation]\n\t"
     "mov "RCHR"1, %[parameters]\n\t"
-    SHCALL
+    "svc 1\n\t"
     "mov %[ret], "RCHR"0\n\t"
     :[ret]"=r"(ret)
     :[parameters]"r"(parameters), [operation]"r"(operation)

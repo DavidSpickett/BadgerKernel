@@ -11,11 +11,7 @@ void log_things() {
 
   // Manual thread switch (current=this thread, next=this thread)
   // Simulates an interrupt
-#ifdef __thumb__
-  asm volatile("svc 0xff" ::: "memory");
-#else
-  asm volatile("svc 0xdead" ::: "memory");
-#endif
+  asm volatile("svc 0" ::: "memory");
 
   log_event("two");
 }

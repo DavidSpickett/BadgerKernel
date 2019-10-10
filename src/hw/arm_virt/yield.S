@@ -58,7 +58,7 @@ thread_switch_initial:
 
 .global thread_switch
 thread_switch:
-  svc 0xdead
+  svc 0
   bx lr
 
 .macro CHECK_SVC code, handler
@@ -76,10 +76,10 @@ monitor_stack_ok:
   ldr r0, [lr, #-4]        // load svc instruction used
   ldr r1, =0xFFFFFF        // mask to get code
   and r0, r0, r1           //
-  CHECK_SVC 0x00dead, __thread_switch
-  CHECK_SVC 0x123456, semihosting
-  CHECK_SVC 0x000001, enable_timer
-  CHECK_SVC 0x000000, disable_timer
+  CHECK_SVC 0, __thread_switch
+  CHECK_SVC 1, semihosting
+  CHECK_SVC 2, enable_timer
+  CHECK_SVC 3, disable_timer
   /* Unkown svc code */
   b .
 
