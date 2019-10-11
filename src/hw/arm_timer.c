@@ -15,6 +15,24 @@ void disable_timer() {
 }
 
 /* GDB helpers */
+
+#ifdef __aarch64__
+size_t rtc() {
+  size_t res;
+  asm volatile ("mrs %0, CNTV_CTL_EL0"
+    : "=r"(res)
+  );
+  return res;
+}
+
+size_t rt() {
+  size_t res;
+  asm volatile ("mrs %0, CNTVCT_EL0"
+    : "=r"(res)
+  );
+  return res;
+}
+#else
 size_t rtc() {
   size_t res;
   asm volatile ("mrc p15, 0, %0, c14, c2, 1"
@@ -31,3 +49,4 @@ size_t rt() {
   );
   return res;
 }
+#endif // ifdef __aarch64__

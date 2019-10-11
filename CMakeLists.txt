@@ -84,20 +84,25 @@ set( BASE_SOURCES
 
 if(LINUX)
   set( BASE_SOURCES ${BASE_SOURCES}
-       src/hw/linux/main.c
-       src/hw/linux/timer.c
+    src/hw/linux/main.c
+    src/hw/linux/timer.c
   )
 else()
-    set( BASE_SOURCES ${BASE_SOURCES}
-       src/hw/${PLATFORM_SRC}/vectors.s
-       src/hw/${PLATFORM_SRC}/startup.s
-       src/hw/${PLATFORM_SRC}/yield.S
-       src/hw/${PLATFORM_SRC}/timer.c
-       src/emutls.c
-       src/print.c
-       src/util.c
-       src/alloc.c
+  set( BASE_SOURCES ${BASE_SOURCES}
+    src/hw/${PLATFORM_SRC}/vectors.s
+    src/hw/${PLATFORM_SRC}/startup.s
+    src/hw/${PLATFORM_SRC}/yield.S
+    src/emutls.c
+    src/print.c
+    src/util.c
+    src/alloc.c
   )
+
+  if(BP_LOWER STREQUAL "thumb" )
+    set( BASE_SOURCES ${BASE_SOURCES} src/hw/${PLATFORM_SRC}/timer.c)
+  else()
+    set( BASE_SOURCES ${BASE_SOURCES} src/hw/arm_timer.c)
+  endif()
 
   set_property(SOURCE src/hw/${PLATFORM_SRC}/startup.s PROPERTY LANGUAGE C)
   set_property(SOURCE src/hw/${PLATFORM_SRC}/yield.S   PROPERTY LANGUAGE C)
