@@ -92,9 +92,9 @@ else()
     src/hw/${PLATFORM_SRC}/vectors.s
     src/hw/${PLATFORM_SRC}/startup.s
     src/hw/${PLATFORM_SRC}/yield.S
+    src/hw/arm_util.c
     src/emutls.c
     src/print.c
-    src/util.c
     src/alloc.c
   )
 
