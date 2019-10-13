@@ -33,7 +33,7 @@ void* find_free_space(size_t num_blocks) {
     }
   }
 
-  return NULL;
+  return NULL; //!OCLINT
 }
 
 size_t pointer_to_tag_idx(void* ptr) {
@@ -42,10 +42,14 @@ size_t pointer_to_tag_idx(void* ptr) {
   return raw_ptr / BLOCK_SIZE;
 }
 
+size_t to_blocks(size_t size) {
+  return (size + BLOCK_SIZE - 1) / BLOCK_SIZE;
+}
+
 //TODO: mutex!!
 void* malloc(size_t size) {
   // Divide rounding up
-  size_t num_blocks = (size + BLOCK_SIZE - 1) / BLOCK_SIZE;
+  size_t num_blocks = to_blocks(size);
   void* alloc = find_free_space(num_blocks);
 
   if (alloc) {
@@ -56,29 +60,34 @@ void* malloc(size_t size) {
   return alloc;
 }
 
-size_t* block_align_ptr(void* ptr) {
-  size_t raw_ptr = (size_t)ptr;
-  return (size_t*)( raw_ptr - (raw_ptr % BLOCK_SIZE));
-}
-
 __attribute__((annotate("oclint:suppress[prefer early exits and continue]")))
 void* realloc (void* ptr, size_t size) {
-  void* new_ptr = malloc(size);
   // realloc NULL is just malloc
   if (!ptr) {
-    return new_ptr;
+    return malloc(size);
   }
 
+  size_t num_blocks = to_blocks(size);
+  size_t tag_idx = pointer_to_tag_idx(ptr);
+  size_t old_tag = block_tags[tag_idx];
+
+  // Temporarily free the current allocation
+  block_tags[tag_idx] = 0;
+  // Look for space as if the current one didn't exist
+  void* new_ptr = find_free_space(num_blocks);
+
   if (new_ptr) {
-    size_t old_tag = block_tags[pointer_to_tag_idx(ptr)];
     // This will overshoot some but that's fine
     size_t old_size = old_tag * BLOCK_SIZE;
     // Use new size if we're shrinking the allocation
     size_t copy_size = size < old_size ? size : old_size;
     // Copy data to new location
     memcpy(new_ptr, ptr, copy_size);
-    // Delete the original
-    free(ptr);
+    // Set new allocation tag
+    block_tags[pointer_to_tag_idx(new_ptr)] = num_blocks;
+  } else {
+    // Restore original allocation
+    block_tags[tag_idx] = old_tag;
   }
 
   return new_ptr;

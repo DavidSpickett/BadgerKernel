@@ -124,7 +124,7 @@ void realloc_more() {
     ASSERT(foo[i] == i);
   }
 
-  size_t num_pad_allocs = 3;
+  size_t num_pad_allocs = 2;
   uint64_t pad_value = 0xcafef00ddeadbeef;
   uint64_t* pad_allocs[num_pad_allocs];
   for (size_t i=0; i<num_pad_allocs; ++i) {
@@ -132,15 +132,13 @@ void realloc_more() {
     *pad_allocs[i] = pad_value;
   }
 
-  /* Free the first two to leave a gap for foo
-     to be realloc-ed into. */
+  /* Free the first to leave a gap for foo to grow */
   free(pad_allocs[0]);
-  free(pad_allocs[1]);
 
   // Realloc to 2 blocks
   uint32_t* old_foo = foo;
   foo = realloc(foo, 16*sizeof(uint32_t));
-  ASSERT(foo == (uint32_t*)pad_allocs[0]);
+  ASSERT(foo == old_foo);
 
   // foo's data was copied
   for (size_t i=0; i<array_sz; ++i) {
@@ -149,23 +147,14 @@ void realloc_more() {
   // Rest is uninitialised
   ASSERT(foo[array_sz] != array_sz);
 
-  /* Padding 0 was overwritten since
-     it's in the first block. */
-  ASSERT(*pad_allocs[0] != pad_value);
-  /* Padding 1 remains because we only copied
-     the original size of foo */
-  ASSERT(*pad_allocs[1] == pad_value);
+  // intact because we copy based on the old size
+  ASSERT(*pad_allocs[0] == pad_value);
   // last one is intact
-  ASSERT(*pad_allocs[2] == pad_value);
-
-  // A new allocation goes where foo was originally
-  uint64_t* temp = malloc(sizeof(uint64_t));
-  ASSERT(temp == (uint64_t*)old_foo);
-  free(temp);
+  ASSERT(*pad_allocs[1] == pad_value);
 
   // cleanup
   free(foo);
-  free(pad_allocs[2]);
+  free(pad_allocs[1]);
 }
 
 void realloc_less() {
@@ -179,8 +168,8 @@ void realloc_less() {
   *canary = canary_value;
 
   /* Initially two blocks so we have
-     pad canary foo */
-  size_t array_sz = 32;
+     pad canary foo[0] foo[1] */
+  size_t array_sz = 64;
   uint8_t* foo = malloc(array_sz);
   for (size_t i=0; i<array_sz; ++i) {
     foo[i] = i;
@@ -189,7 +178,7 @@ void realloc_less() {
   // Gives us space at the beginning for the new foo
   free(pad);
 
-  size_t new_array_sz = 16;
+  size_t new_array_sz = 32;
   foo = realloc(foo, new_array_sz);
   // Now is where pad was, with the canary after it
   ASSERT(foo == (uint8_t*)pad);
@@ -202,13 +191,12 @@ void realloc_less() {
 }
 
 void realloc_free() {
-  // TODO: make this test work
   /* Check that when we realloc we do so based on what
      space we *could* have if the original allocation
      were freed. */
   uint32_t* allocation = malloc(sizeof(uint32_t));
 
-  // Fill up the heap
+  // Fill up the rest of the heap
   size_t num_padding = 64;
   uint32_t* pad_allocs[num_padding];
   for (size_t i=0; i<num_padding; ++i) {
@@ -218,12 +206,11 @@ void realloc_free() {
   // Free the one in front of the first allocation
   free(pad_allocs[0]);
 
-  //uint32_t* old_allocation = allocation;
+  uint32_t* old_allocation = allocation;
   // Two blocks requires freeing first
   allocation = realloc(allocation, 64);
-  ASSERT(!allocation);
-  // ASSERT(allocation);
-  // ASSERT(old_allocation == allocation);
+  ASSERT(allocation);
+  ASSERT(old_allocation == allocation);
 
   free(allocation);
   for (size_t i=1; i<num_padding; ++i) {
