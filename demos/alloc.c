@@ -240,6 +240,35 @@ void realloc_less() {
   free(foo);
 }
 
+void realloc_free() {
+  // TODO: make this test work
+  /* Check that when we realloc we do so based on what
+     space we *could* have if the original allocation
+     were freed. */
+  uint32_t* allocation = malloc(sizeof(uint32_t));
+
+  // Fill up the heap
+  size_t num_padding = 64;
+  uint32_t* pad_allocs[num_padding];
+  for (size_t i=0; i<num_padding; ++i) {
+    pad_allocs[i] = malloc(sizeof(uint32_t));
+  }
+
+  // Free the one in front of the first allocation
+  free(pad_allocs[0]);
+
+  //uint32_t* old_allocation = allocation;
+  allocation = realloc(allocation, 32);
+  ASSERT(!allocation);
+  // ASSERT(allocation);
+  // ASSERT(old_allocation == allocation);
+
+  free(allocation);
+  for (size_t i=1; i<num_padding; ++i) {
+    free(pad_allocs[i]);
+  }
+}
+
 void setup(void)
 {
   config.log_scheduler = false;
@@ -251,4 +280,5 @@ void setup(void)
   add_named_thread(free_clears_tags, "free_clears_tags");
   add_named_thread(realloc_more,     "realloc_more");
   add_named_thread(realloc_less,     "realloc_less");
+  add_named_thread(realloc_free,     "realloc_free");
 }
