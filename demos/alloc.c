@@ -218,6 +218,25 @@ void realloc_free() {
   }
 }
 
+void realloc_fail() {
+  /* Make sure that we restore the tag after
+     a failed realloc. */
+  size_t num_allocs = 64;
+  uint32_t* allocs[num_allocs];
+  for (size_t i=0; i<num_allocs; ++i) {
+    allocs[i] = malloc(sizeof(uint32_t));
+  }
+
+  ASSERT(!realloc(allocs[0], 64));
+  /* If we forgot to restore the tag then
+     this would be successful. */
+  ASSERT(!malloc(sizeof(uint32_t)));
+
+  for (size_t i=0; i<num_allocs; ++i) {
+    free(allocs[i]);
+  }
+}
+
 void setup(void)
 {
   config.log_scheduler = false;
@@ -229,4 +248,5 @@ void setup(void)
   add_named_thread(realloc_more,     "realloc_more");
   add_named_thread(realloc_less,     "realloc_less");
   add_named_thread(realloc_free,     "realloc_free");
+  add_named_thread(realloc_fail,     "realloc_fail");
 }

@@ -9,3 +9,4 @@ Thread       errors: exiting
 Thread realloc_more: exiting
 Thread realloc_less: exiting
 Thread realloc_free: exiting
+Thread realloc_fail: exiting
