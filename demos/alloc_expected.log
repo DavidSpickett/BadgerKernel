@@ -6,7 +6,6 @@ Thread  basic_types: exiting
 Thread  large_alloc: exiting
 Thread   fragmented: exiting
 Thread       errors: exiting
-Thread free_clears_: exiting
 Thread realloc_more: exiting
 Thread realloc_less: exiting
 Thread realloc_free: exiting

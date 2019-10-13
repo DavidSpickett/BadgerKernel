@@ -37,45 +37,6 @@ void basic_types(void) {
   free(u64);
 }
 
-void free_clears_tags() {
-  /* something larger than a block so that it covers
-     a potential tag location. */
-  size_t foo_sz = 64;
-  uint8_t* foo = malloc(foo_sz);
-  ASSERT(foo);
-
-  //fill this with a number > blocks in the heap
-  for (size_t i=0; i<foo_sz; ++i) {
-    foo[i] = 0xFF;
-  }
-
-  /* Something after to check that free didn't
-     overshoot clearing tag locations */
-  int* canary = malloc(sizeof(int));
-
-  free(foo);
-
-  /* Can't ask whether a pointer is still allocated.
-     Next best is to keep allocating and check it never
-     gives us the address of the canary.
-     Since freeing foo has also cleared some blocks. */
-  size_t temps_sz = 5;
-  int* temps[temps_sz];
-  for (int i=0; i<temps_sz; ++i) {
-    temps[i] = malloc(sizeof(int));
-    /* If free didn't clear all potential tag locations
-       it'd think we'd run out of space. */
-    ASSERT(temps[i]);
-    // If free free'd canary, it could give us its pointer
-    ASSERT(temps[i] != canary);
-  }
-  for (int i=0; i<temps_sz; ++i) {
-    free(temps[i]);
-  }
-
-  free(canary);
-}
-
 void large_alloc(void) {
   // Buffer >1 block size
   const size_t alloc_size = 123;
@@ -148,23 +109,22 @@ void errors() {
 
 void realloc_more() {
   // Realloc with nullptr is just malloc
-  size_t array_sz = 25;
-  uint8_t* foo = realloc(NULL, array_sz);
+  size_t array_sz = 8;
+  uint32_t* foo = realloc(NULL, array_sz*sizeof(uint32_t));
   ASSERT(foo);
 
   for(size_t i=0; i<array_sz; ++i) {
     foo[i] = i;
   }
 
-  // Realloc fails, the origninal is unharmed
+  // Realloc fails, the original is unharmed
   ASSERT(!realloc(foo, 123456));
 
   for(size_t i=0; i<array_sz; ++i) {
     ASSERT(foo[i] == i);
   }
 
-  size_t num_pad_allocs = 4;
-  // Deliberatley 64 bit type here
+  size_t num_pad_allocs = 3;
   uint64_t pad_value = 0xcafef00ddeadbeef;
   uint64_t* pad_allocs[num_pad_allocs];
   for (size_t i=0; i<num_pad_allocs; ++i) {
@@ -176,12 +136,11 @@ void realloc_more() {
      to be realloc-ed into. */
   free(pad_allocs[0]);
   free(pad_allocs[1]);
-  free(pad_allocs[2]);
 
-  // Realloc to 3 blocks
-  uint8_t* old_foo = foo;
-  foo = realloc(foo, 64);
-  ASSERT(foo == (uint8_t*)pad_allocs[0]);
+  // Realloc to 2 blocks
+  uint32_t* old_foo = foo;
+  foo = realloc(foo, 16*sizeof(uint32_t));
+  ASSERT(foo == (uint32_t*)pad_allocs[0]);
 
   // foo's data was copied
   for (size_t i=0; i<array_sz; ++i) {
@@ -190,12 +149,14 @@ void realloc_more() {
   // Rest is uninitialised
   ASSERT(foo[array_sz] != array_sz);
 
-  // padding 0/1/2 were overwritten
-  for (size_t i=0; i<3; ++i) {
-    ASSERT(*pad_allocs[0] != pad_value);
-  }
+  /* Padding 0 was overwritten since
+     it's in the first block. */
+  ASSERT(*pad_allocs[0] != pad_value);
+  /* Padding 1 remains because we only copied
+     the original size of foo */
+  ASSERT(*pad_allocs[1] == pad_value);
   // last one is intact
-  ASSERT(*pad_allocs[3] == pad_value);
+  ASSERT(*pad_allocs[2] == pad_value);
 
   // A new allocation goes where foo was originally
   uint64_t* temp = malloc(sizeof(uint64_t));
@@ -204,7 +165,7 @@ void realloc_more() {
 
   // cleanup
   free(foo);
-  free(pad_allocs[3]);
+  free(pad_allocs[2]);
 }
 
 void realloc_less() {
@@ -258,7 +219,8 @@ void realloc_free() {
   free(pad_allocs[0]);
 
   //uint32_t* old_allocation = allocation;
-  allocation = realloc(allocation, 32);
+  // Two blocks requires freeing first
+  allocation = realloc(allocation, 64);
   ASSERT(!allocation);
   // ASSERT(allocation);
   // ASSERT(old_allocation == allocation);
@@ -277,7 +239,6 @@ void setup(void)
   add_named_thread(large_alloc,      "large_alloc");
   add_named_thread(fragmented,       "fragmented");
   add_named_thread(errors,           "errors");
-  add_named_thread(free_clears_tags, "free_clears_tags");
   add_named_thread(realloc_more,     "realloc_more");
   add_named_thread(realloc_less,     "realloc_less");
   add_named_thread(realloc_free,     "realloc_free");
