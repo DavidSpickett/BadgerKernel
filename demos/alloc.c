@@ -146,6 +146,100 @@ void errors() {
   ASSERT(malloc(2048) == NULL);
 }
 
+void realloc_more() {
+  // Realloc with nullptr is just malloc
+  size_t array_sz = 25;
+  uint8_t* foo = realloc(NULL, array_sz);
+  ASSERT(foo);
+
+  for(size_t i=0; i<array_sz; ++i) {
+    foo[i] = i;
+  }
+
+  // Realloc fails, the origninal is unharmed
+  ASSERT(!realloc(foo, 123456));
+
+  for(size_t i=0; i<array_sz; ++i) {
+    ASSERT(foo[i] == i);
+  }
+
+  size_t num_pad_allocs = 4;
+  // Deliberatley 64 bit type here
+  uint64_t pad_value = 0xcafef00ddeadbeef;
+  uint64_t* pad_allocs[num_pad_allocs];
+  for (size_t i=0; i<num_pad_allocs; ++i) {
+    pad_allocs[i] = malloc(sizeof(uint64_t));
+    *pad_allocs[i] = pad_value;
+  }
+
+  /* Free the first two to leave a gap for foo
+     to be realloc-ed into. */
+  free(pad_allocs[0]);
+  free(pad_allocs[1]);
+  free(pad_allocs[2]);
+
+  // Realloc to 3 blocks
+  uint8_t* old_foo = foo;
+  foo = realloc(foo, 64);
+  ASSERT(foo == (uint8_t*)pad_allocs[0]);
+
+  // foo's data was copied
+  for (size_t i=0; i<array_sz; ++i) {
+    ASSERT(foo[i] == i);
+  }
+  // Rest is uninitialised
+  ASSERT(foo[array_sz] != array_sz);
+
+  // padding 0/1/2 were overwritten
+  for (size_t i=0; i<3; ++i) {
+    ASSERT(*pad_allocs[0] != pad_value);
+  }
+  // last one is intact
+  ASSERT(*pad_allocs[3] == pad_value);
+
+  // A new allocation goes where foo was originally
+  uint64_t* temp = malloc(sizeof(uint64_t));
+  ASSERT(temp == (uint64_t*)old_foo);
+  free(temp);
+
+  // cleanup
+  free(foo);
+  free(pad_allocs[3]);
+}
+
+void realloc_less() {
+  // Fill up some space that we'll realloc into later
+  uint64_t* pad = malloc(sizeof(uint64_t));
+
+  /* Canary to make sure we don't copy based on the
+    original size only. */
+  uint64_t canary_value = 0x1122334455667788;
+  uint64_t* canary = malloc(sizeof(uint64_t));
+  *canary = canary_value;
+
+  /* Initially two blocks so we have
+     pad canary foo */
+  size_t array_sz = 32;
+  uint8_t* foo = malloc(array_sz);
+  for (size_t i=0; i<array_sz; ++i) {
+    foo[i] = i;
+  }
+
+  // Gives us space at the beginning for the new foo
+  free(pad);
+
+  size_t new_array_sz = 16;
+  foo = realloc(foo, new_array_sz);
+  // Now is where pad was, with the canary after it
+  ASSERT(foo == (uint8_t*)pad);
+
+  // Canary is intact if we used the *new* size to copy
+  ASSERT(*canary == canary_value);
+
+  free(canary);
+  free(foo);
+}
+
 void setup(void)
 {
   config.log_scheduler = false;
@@ -155,4 +249,6 @@ void setup(void)
   add_named_thread(fragmented,       "fragmented");
   add_named_thread(errors,           "errors");
   add_named_thread(free_clears_tags, "free_clears_tags");
+  add_named_thread(realloc_more,     "realloc_more");
+  add_named_thread(realloc_less,     "realloc_less");
 }
