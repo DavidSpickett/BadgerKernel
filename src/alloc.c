@@ -67,15 +67,17 @@ size_t* block_align_ptr(void* ptr) {
   return (size_t*)( raw_ptr - (raw_ptr % BLOCK_SIZE));
 }
 
+__attribute__((annotate("oclint:suppress[prefer early exits and continue]")))
 void* realloc (void* ptr, size_t size) {
-  void* new_ptr = malloc(size);
-
-  // Acts like malloc
+  // realloc NULL is just malloc
   if (!ptr) {
-    return new_ptr;
+    return malloc(size);
   }
 
+  void* new_ptr = malloc(size);
+
   // TODO: see whether we can realloc if we free first
+  // some kind of "exclude" param to can_allocate?
   if (new_ptr) {
     size_t old_size = (*(block_align_ptr(ptr))) * BLOCK_SIZE;
     /* Since we only store in number of blocks, we will
