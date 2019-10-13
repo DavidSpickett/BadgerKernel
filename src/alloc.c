@@ -1,6 +1,7 @@
 #include "alloc.h"
 #include "util.h"
 #include <stdint.h>
+#include <string.h>
 
 #define BLOCK_SIZE    32
 #define HEAP_SIZE     1024
