@@ -50,7 +50,7 @@ set( CMAKE_C_COMPILER "${PREFIX}gcc" )
 set( CFLAGS "-DSTACK_SIZE=${STACK_SIZE}")
 
 if (LINUX)
-  set( CFLAGS "${CFLAGS} -Wall -g -O${OPT_LEVEL} -std=gnu11 -pthread" )
+  set( CFLAGS "${CFLAGS} -Wall -g3 -O${OPT_LEVEL} -std=gnu11 -pthread" )
 else()
   set( QEMU "${QEMU_CMD} -m 64M -nographic -semihosting -kernel" )
   set( CFLAGS "${CFLAGS} -Wall -ffreestanding -nostdlib -g -O${OPT_LEVEL} -std=gnu11 -DUART_BASE=${UART_BASE}" )
