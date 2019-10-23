@@ -47,13 +47,13 @@ if (NOT LINUX)
 endif()
 
 set( CMAKE_C_COMPILER "${PREFIX}gcc" )
-set( CFLAGS "-DSTACK_SIZE=${STACK_SIZE} -g3")
+set( CFLAGS "-DSTACK_SIZE=${STACK_SIZE} -g3 -O${OPT_LEVEL} -Wall -std=gnu11")
 
 if (LINUX)
-  set( CFLAGS "${CFLAGS} -Wall -O${OPT_LEVEL} -std=gnu11 -pthread" )
+  set( CFLAGS "${CFLAGS} -pthread" )
 else()
   set( QEMU "${QEMU_CMD} -m 64M -nographic -semihosting -kernel" )
-  set( CFLAGS "${CFLAGS} -Wall -ffreestanding -nostdlib -O${OPT_LEVEL} -std=gnu11 -DUART_BASE=${UART_BASE}" )
+  set( CFLAGS "${CFLAGS} -ffreestanding -nostdlib -DUART_BASE=${UART_BASE}" )
 endif()
 
 if(LTO)
