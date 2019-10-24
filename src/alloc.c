@@ -60,7 +60,6 @@ void* malloc(size_t size) {
   return alloc;
 }
 
-__attribute__((annotate("oclint:suppress[prefer early exits and continue]")))
 void* realloc (void* ptr, size_t size) {
   // realloc NULL is just malloc
   if (!ptr) {

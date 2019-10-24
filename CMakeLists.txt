@@ -47,7 +47,7 @@ if (NOT LINUX)
 endif()
 
 set( CMAKE_C_COMPILER "${PREFIX}gcc" )
-set( CFLAGS "-DSTACK_SIZE=${STACK_SIZE} -g3 -O${OPT_LEVEL} -Wall -std=gnu11")
+set( CFLAGS "-DSTACK_SIZE=${STACK_SIZE} -g3 -O${OPT_LEVEL} -Wall -Werror -std=gnu11")
 
 if (LINUX)
   set( CFLAGS "${CFLAGS} -pthread" )
