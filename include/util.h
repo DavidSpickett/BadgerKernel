@@ -26,6 +26,7 @@
 #include <unistd.h>
 #else
 #include <stddef.h>
+#include <sys/types.h>
 
 // These are semihosting values, not posix
 #define O_RDONLY 0
@@ -37,8 +38,8 @@
 #define S_IRUSR  0
 
 int open(const char* path, int oflag, ...);
-size_t read(int fildes, void* buf, size_t nbyte);
-size_t write(int fildes, const void* buf, size_t nbyte);
+ssize_t read(int fildes, void* buf, size_t nbyte);
+ssize_t write(int fildes, const void* buf, size_t nbyte);
 int remove(const char* path);
 int close(int filedes);
 void exit(int status);

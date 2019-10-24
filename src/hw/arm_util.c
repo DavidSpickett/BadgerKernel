@@ -32,6 +32,12 @@ static size_t generic_semihosting_call(size_t operation,
   size_t ret;
 
   // clang-format off
+  /* I never intend to run this function on Linux,
+     but OCLint checks as if it were Linux and rejects
+     this assembly. */
+#ifdef linux
+  ret = 0; (void)operation; (void)parameters;
+#else
   asm volatile (
     "mov "RCHR"0, %[operation]\n\t"
     "mov "RCHR"1, %[parameters]\n\t"
@@ -43,6 +49,7 @@ static size_t generic_semihosting_call(size_t operation,
      [semihost]"i"(svc_semihosting)
     :RCHR"0", RCHR"1"
   );
+#endif
   // clang-format on
 
   return ret;
@@ -60,13 +67,13 @@ int open(const char* path, int oflag, ...) {
   return generic_semihosting_call(SYS_OPEN, parameters);
 }
 
-size_t read(int fildes, void* buf, size_t nbyte) {
+ssize_t read(int fildes, void* buf, size_t nbyte) {
   volatile size_t parameters[] = {fildes, (size_t)buf, nbyte};
   size_t ret = generic_semihosting_call(SYS_READ, parameters);
   return nbyte - ret;
 }
 
-size_t write(int fildes, const void* buf, size_t nbyte) {
+ssize_t write(int fildes, const void* buf, size_t nbyte) {
   volatile size_t parameters[] = {fildes, (size_t)buf, nbyte};
   size_t ret = generic_semihosting_call(SYS_WRITE, parameters);
   return nbyte - ret;
@@ -95,4 +102,5 @@ void exit(int status) {
   size_t* parameters = (size_t*)event;
 #endif
   generic_semihosting_call(SYS_EXIT, parameters);
+  __builtin_unreachable();
 }
