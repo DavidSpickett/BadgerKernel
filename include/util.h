@@ -4,29 +4,25 @@
 #include "print.h"
 #include <stdbool.h>
 
-#define str(x)      #x
-#define str_(x)     str(x)
-#define STR__LINE__ str_(__LINE__)
-/* Delcare the conditon first then test it,
-   to get around OCLint seeing multiple !! and such.
-   Can't use the usual !OCLINT comment in a macro.
-*/
-#define ASSERT(expr)                                                           \
-  {                                                                            \
-    bool condition = expr;                                                     \
-    if (!condition) {                                                          \
-      printf("%s\n", __FILE__ ":" STR__LINE__ " Expected: " #expr);            \
-      exit(1);                                                                 \
-    }                                                                          \
-  }
-
 #ifdef linux
 #include <fcntl.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <assert.h>
 #else
 #include <stddef.h>
 #include <sys/types.h>
+
+__attribute__((noreturn))
+void __assert_fail (const char *__assertion, const char *__file,
+         unsigned int __line, const char *__function);
+
+#ifdef NDEBUG
+#define assert(expr) (void)expr
+#else
+#define assert(expr) \
+expr ? 0 : __assert_fail(#expr, __FILE__, __LINE__, __func__)
+#endif
 
 // These are semihosting values, not posix
 #define O_RDONLY 0

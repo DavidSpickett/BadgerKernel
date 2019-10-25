@@ -32,7 +32,8 @@ void signaller(void) {
   yield();
 
   // Should be false, no yield...
-  ASSERT(!signal(&cond_var));
+  bool signalled = signal(&cond_var);
+  assert(!signalled);
 
   // Show that a new thread can wait after some have been signalled
   add_named_thread(final_signal, "final_signal");

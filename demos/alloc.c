@@ -22,13 +22,13 @@ void basic_types(void) {
   printf("u32: 0x%x\n", *u32);
   /* Rather than go through the hassle of getting
      64 bit types to print correctly. */
-  ASSERT(*u64 == 0xABCDABCDABCDABCD);
+  assert(*u64 == 0xABCDABCDABCDABCD);
 
   // Free the second item
   free(u16);
   // Should be the same ptr as before
   uint16_t* new_u16 = malloc(sizeof(uint16_t));
-  ASSERT(new_u16 == u16);
+  assert(new_u16 == u16);
   free(new_u16);
 
   // Clean up the rest
@@ -52,20 +52,20 @@ void large_alloc(void) {
     temp[i] = i;
   }
 
-  ASSERT(*temp_check == 0xdeadbeef);
+  assert(*temp_check == 0xdeadbeef);
   free(temp);
 
   /* This should not be the same as temp, since it's
      bigger and there's an allocated guard right after
      where temp was. */
   uint8_t* new_temp = malloc(alloc_size*2);
-  ASSERT(new_temp != temp);
+  assert(new_temp != temp);
   free(new_temp);
 
   /* This one *will* give us the same ptr.
      As it fits and has the same alignment as temp. */
   uint64_t* temp64 = malloc(sizeof(uint64_t));
-  ASSERT((uint8_t*)temp64 == temp);
+  assert((uint8_t*)temp64 == temp);
   free(temp64);
 
   free(temp_check);
@@ -90,11 +90,12 @@ void fragmented(void) {
 
   // small alloc is fine
   uint32_t* less_than_a_block = malloc(sizeof(uint32_t*));
-  ASSERT(less_than_a_block != NULL);
+  assert(less_than_a_block != NULL);
   free(less_than_a_block);
 
   // >1 block fails
-  ASSERT(malloc(64) == NULL);
+  void* greater_than_block = malloc(64);
+  assert(!greater_than_block);
 
   // cleanup
   for (size_t i=1; i < num_allocations; i+=2) {
@@ -104,24 +105,26 @@ void fragmented(void) {
 
 void errors() {
   // Shouldn't be able to allocate > heap size
-  ASSERT(malloc(2048) == NULL);
+  void* bad_malloc = malloc(2048);
+  assert(!bad_malloc);
 }
 
 void realloc_more() {
   // Realloc with nullptr is just malloc
   size_t array_sz = 8;
   uint32_t* foo = realloc(NULL, array_sz*sizeof(uint32_t));
-  ASSERT(foo);
+  assert(foo);
 
   for(size_t i=0; i<array_sz; ++i) {
     foo[i] = i;
   }
 
   // Realloc fails, the original is unharmed
-  ASSERT(!realloc(foo, 123456));
+  void* failed_realloc = realloc(foo, 123456);
+  assert(!failed_realloc);
 
   for(size_t i=0; i<array_sz; ++i) {
-    ASSERT(foo[i] == i);
+    assert(foo[i] == i);
   }
 
   size_t num_pad_allocs = 2;
@@ -138,19 +141,19 @@ void realloc_more() {
   // Realloc to 2 blocks
   uint32_t* old_foo = foo;
   foo = realloc(foo, 16*sizeof(uint32_t));
-  ASSERT(foo == old_foo);
+  assert(foo == old_foo);
 
   // foo's data was copied
   for (size_t i=0; i<array_sz; ++i) {
-    ASSERT(foo[i] == i);
+    assert(foo[i] == i);
   }
   // Rest is uninitialised
-  ASSERT(foo[array_sz] != array_sz);
+  assert(foo[array_sz] != array_sz);
 
   // intact because we copy based on the old size
-  ASSERT(*pad_allocs[0] == pad_value);
+  assert(*pad_allocs[0] == pad_value);
   // last one is intact
-  ASSERT(*pad_allocs[1] == pad_value);
+  assert(*pad_allocs[1] == pad_value);
 
   // cleanup
   free(foo);
@@ -181,10 +184,10 @@ void realloc_less() {
   size_t new_array_sz = 32;
   foo = realloc(foo, new_array_sz);
   // Now is where pad was, with the canary after it
-  ASSERT(foo == (uint8_t*)pad);
+  assert(foo == (uint8_t*)pad);
 
   // Canary is intact if we used the *new* size to copy
-  ASSERT(*canary == canary_value);
+  assert(*canary == canary_value);
 
   free(canary);
   free(foo);
@@ -209,8 +212,8 @@ void realloc_free() {
   uint32_t* old_allocation = allocation;
   // Two blocks requires freeing first
   allocation = realloc(allocation, 64);
-  ASSERT(allocation);
-  ASSERT(old_allocation == allocation);
+  assert(allocation);
+  assert(old_allocation == allocation);
 
   free(allocation);
   for (size_t i=1; i<num_padding; ++i) {
@@ -227,10 +230,12 @@ void realloc_fail() {
     allocs[i] = malloc(sizeof(uint32_t));
   }
 
-  ASSERT(!realloc(allocs[0], 64));
+  void* realloc_fails = realloc(allocs[0], 64);
+  assert(!realloc_fails);
   /* If we forgot to restore the tag then
      this would be successful. */
-  ASSERT(!malloc(sizeof(uint32_t)));
+  void* malloc_fails = malloc(sizeof(uint32_t));
+  assert(!malloc_fails);
 
   for (size_t i=0; i<num_allocs; ++i) {
     free(allocs[i]);

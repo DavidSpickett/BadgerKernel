@@ -15,7 +15,7 @@ void counter() {
   for (int i = 0; i < our_id; ++i) {
     ThreadState state;
     thread_join(i, &state);
-    ASSERT(state == finished);
+    assert(state == finished);
     log_event("a thread exited");
   }
 }

@@ -6,19 +6,19 @@
 
 void fail_open(void) {
   int badfile = open("demos/not_a_demo.xyz", O_RDONLY);
-  ASSERT(badfile == -1);
+  assert(badfile == -1);
 }
 
 void read_file(void) {
   log_event("Reading demo src");
   const char* path = "demos/file.c";
   int file = open(path, O_RDONLY);
-  ASSERT(file != -1);
+  assert(file != -1);
 
   size_t buf_sz = 100;
   char content[buf_sz];
   size_t got = read(file, content, buf_sz);
-  ASSERT(got == buf_sz);
+  assert(got == buf_sz);
 
   char* ptr = content;
   while (*ptr != '\n') {
@@ -27,7 +27,8 @@ void read_file(void) {
   *ptr = '\0';
 
   log_event(content);
-  ASSERT(!close(file));
+  int closed = close(file);
+  assert(!closed);
 }
 
 const char* temp_file = "demos/file_demo_temp_file";
@@ -35,30 +36,34 @@ const char* temp_contents = "new file for file demo!\n";
 void write_new(void) {
   log_event("Writing temp file");
   int newfile = open(temp_file, O_WRONLY | O_CREAT, S_IRUSR);
-  ASSERT(newfile != -1);
+  assert(newfile != -1);
   size_t len = strlen(temp_contents);
   size_t ret = write(newfile, temp_contents, len);
-  ASSERT(ret == len);
-  ASSERT(!close(newfile));
+  assert(ret == len);
+  int closed = close(newfile);
+  assert(!closed);
 }
 
 void read_new(void) {
   log_event("Reading temp file");
   int newfile = open(temp_file, O_RDONLY);
-  ASSERT(newfile != -1);
+  assert(newfile != -1);
   size_t len = strlen(temp_contents);
   char got[len + 1];
   size_t ret = read(newfile, got, len);
-  ASSERT(ret == len);
+  assert(ret == len);
   got[len] = '\0';
   printf("%s", got);
-  ASSERT(!close(newfile));
+  int closed = close(newfile);
+  assert(!closed);
 }
 
 void delete_new(void) {
   log_event("Removing temp file");
-  ASSERT(!remove(temp_file));
-  ASSERT(remove(temp_file) == -1);
+  int removed = remove(temp_file);
+  assert(!removed);
+  removed = remove(temp_file);
+  assert(removed == -1);
 }
 
 void setup(void) {

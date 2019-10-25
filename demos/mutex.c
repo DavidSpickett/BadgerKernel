@@ -9,7 +9,8 @@ char buffer[4];
 void thread_work(const char* word) {
   while (!lock_mutex(&buffer_mutex)) {
     // Can't unlock a mutex you didn't lock
-    ASSERT(!unlock_mutex(&buffer_mutex));
+    bool unlocked = unlock_mutex(&buffer_mutex);
+    assert(!unlocked);
     yield_next();
   }
 

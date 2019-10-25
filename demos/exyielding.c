@@ -11,8 +11,10 @@ void thread2() {
   yield_next(); // switch to "last"
   yield_next(); // switch back to "last"
   // Run ourselves again, shouldn't actually do a switch
-  ASSERT(!yield_next());
-  ASSERT(!yield_to(0));
+  bool yielded = yield_next();
+  assert(!yielded);
+  yielded = yield_to(0);
+  assert(!yielded);
 }
 
 void setup(void) {

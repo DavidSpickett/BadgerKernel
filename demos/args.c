@@ -13,7 +13,7 @@ void printer(int repeat, char* phrase, int sub_printer, int start) {
 void sub_printer(char** words, int num_phrases, unsigned int offset) {
   int sender, start;
   bool got = get_msg(&sender, &start);
-  ASSERT(got);
+  assert(got);
 
   for (int idx = start; idx != num_phrases; ++idx) {
     log_event(words[idx] + offset);
