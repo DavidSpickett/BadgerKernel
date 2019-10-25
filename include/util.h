@@ -4,15 +4,10 @@
 #include "print.h"
 #include <stdbool.h>
 
-#ifdef linux
-#include <fcntl.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <assert.h>
-#else
-#include <stddef.h>
-#include <sys/types.h>
-
+/* Turns out, OCLint will complain about the macros
+   in <assert.h> as well! Hooray. So we'll make our
+   own macro, with solitaire and diet coke.
+*/
 __attribute__((noreturn))
 void __assert_fail (const char *__assertion, const char *__file,
          unsigned int __line, const char *__function);
@@ -21,8 +16,19 @@ void __assert_fail (const char *__assertion, const char *__file,
 #define assert(expr) (void)expr
 #else
 #define assert(expr) \
-expr ? 0 : __assert_fail(#expr, __FILE__, __LINE__, __func__)
+{ \
+  bool condition = expr; \
+  condition ? 0 : __assert_fail(#expr, __FILE__, __LINE__, __func__); \
+}
 #endif
+
+#ifdef linux
+#include <fcntl.h>
+#include <stdlib.h>
+#include <unistd.h>
+#else
+#include <stddef.h>
+#include <sys/types.h>
 
 // These are semihosting values, not posix
 #define O_RDONLY 0
