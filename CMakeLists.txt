@@ -130,6 +130,17 @@ function(add_demo_app NAME)
           target_link_libraries(${NAME} PRIVATE "-Wl,-T,linker.ld,-defsym=ram_start=${RAM_START},-lgcc,-lc,-N,--build-id=none")
         endif()
 
+        if (NAME STREQUAL "filesystem")
+          # Use in memory file system
+          target_sources(${NAME} PRIVATE src/file_system.c)
+          target_compile_definitions(${NAME} PRIVATE USE_FS=1)
+        else()
+          # Otherwise use semihosting or standard Posix
+          if(NOT LINUX)
+            target_sources(${NAME} PRIVATE src/hw/arm_file.c)
+          endif()
+        endif()
+
         add_custom_command(TARGET ${NAME} PRE_BUILD
           COMMAND eval "${CMAKE_C_COMPILER} --version | head -n 1"
           VERBATIM)
@@ -194,6 +205,7 @@ add_demo_app(conditionvariables)
 add_demo_app(cancel)
 add_demo_app(printthreadname)
 add_demo_app(file)
+add_demo_app(filesystem)
 
 # For the random demo generator
 add_demo_app(generated)

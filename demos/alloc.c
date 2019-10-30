@@ -105,7 +105,7 @@ void fragmented(void) {
 
 void errors() {
   // Shouldn't be able to allocate > heap size
-  void* bad_malloc = malloc(2048);
+  void* bad_malloc = malloc(99999);
   assert(!bad_malloc);
 }
 

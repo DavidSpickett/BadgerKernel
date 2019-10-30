@@ -4,7 +4,7 @@
 #include <string.h>
 
 #define BLOCK_SIZE    32
-#define HEAP_SIZE     1024
+#define HEAP_SIZE     2048
 #define NUM_BLOCKS    HEAP_SIZE/BLOCK_SIZE
 
 size_t block_tags[NUM_BLOCKS];

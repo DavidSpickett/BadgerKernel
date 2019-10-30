@@ -30,6 +30,21 @@ void __assert_fail (const char *__assertion, const char *__file,
 #include <stddef.h>
 #include <sys/types.h>
 
+// For semihosting assembly blocks
+#ifdef __aarch64__
+#define RCHR   "x"
+#else
+#define RCHR   "r"
+#endif
+
+// Semihosting operation codes
+#define SYS_OPEN   0x01
+#define SYS_CLOSE  0x02
+#define SYS_WRITE  0x05
+#define SYS_READ   0x06
+#define SYS_REMOVE 0x0E
+#define SYS_EXIT   0x18
+
 // These are semihosting values, not posix
 #define O_RDONLY 0
 #define O_WRONLY 6

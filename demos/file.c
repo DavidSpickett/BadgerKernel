@@ -1,4 +1,5 @@
 /* Hello file demo! */
+// This demo is for semihosting file access
 #include "print.h"
 #include "thread.h"
 #include "util.h"
