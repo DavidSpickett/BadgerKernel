@@ -45,7 +45,7 @@ jobs:
           wget -qO- https://github.com/oclint/oclint/releases/download/v0.13.1/oclint-0.13.1-x86_64-linux-4.4.0-112-generic.tar.gz | tar xzf - -C oclint --strip-components=1
           export PATH=$(pwd)/toolchain/bin/:$(pwd)/oclint/bin/:$PATH
           cmake . -DBUILD_PLATFORM=${{build_platform}} -DOPT_LEVEL=0 -DSANITIZERS=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
-          oclint -p . `find -not \( -path ./oclint -prune \) -not \( -path ./CMakeFiles -prune \) -regex ".*\.c" | grep -vP "demos\/alloc"` -max-priority-1 0 -max-priority-2 0 -max-priority-3 0
+          oclint -p . `find -not \( -path ./oclint -prune \) -not \( -path ./CMakeFiles -prune \) -not \( -path ./demos -prune \) -regex ".*\.c"` -max-priority-1 0 -max-priority-2 0 -max-priority-3 0
         displayName: oclint
         continueOnError: true
 
