@@ -22,6 +22,16 @@ void __assert_fail (const char *__assertion, const char *__file,
 }
 #endif
 
+// Semihosting operation codes
+// Always defined so we an lint code that uses them
+#define SYS_OPEN   0x01
+#define SYS_CLOSE  0x02
+#define SYS_WRITE  0x05
+#define SYS_READ   0x06
+#define SYS_REMOVE 0x0E
+#define SYS_EXIT   0x18
+
+
 #ifdef linux
 #include <fcntl.h>
 #include <stdlib.h>
@@ -36,14 +46,6 @@ void __assert_fail (const char *__assertion, const char *__file,
 #else
 #define RCHR   "r"
 #endif
-
-// Semihosting operation codes
-#define SYS_OPEN   0x01
-#define SYS_CLOSE  0x02
-#define SYS_WRITE  0x05
-#define SYS_READ   0x06
-#define SYS_REMOVE 0x0E
-#define SYS_EXIT   0x18
 
 // These are semihosting values, not posix
 #define O_RDONLY 0

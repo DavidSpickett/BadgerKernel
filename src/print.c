@@ -1,6 +1,7 @@
 #include "print.h"
 #include <stdarg.h>
 #include <stdint.h>
+#include <string.h>
 
 int putchar(int chr) {
   // This must be a an int write not a char
