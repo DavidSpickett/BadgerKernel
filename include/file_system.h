@@ -30,6 +30,7 @@ void exit(int status);
 #ifdef USE_FS
 void init_file_system(void);
 void destroy_file_system(void);
+void walk(const char* path, char** out);
 
 typedef struct FileInfo {
   const char* name;

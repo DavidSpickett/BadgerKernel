@@ -65,50 +65,6 @@ void basics(void) {
   assert(open(file_path, O_RDONLY) == -1);
 }
 
-void walk(const char* path, char** out) {
-  FileInfo* list = ls_path(path);
-
-  // Print all names
-  *out += sprintf(*out, "%s\n  ", path);
-  for (FileInfo* file=list; file; file=file->next) {
-    *out += sprintf(*out, "%s ", file->name);
-  }
-  *out += sprintf(*out, "\n");
-
-  // Print all folders from this level
-  for (FileInfo* folder=list; folder; folder=folder->next) {
-    if (folder->is_file) {
-      continue;
-    }
-
-    // Need to add another / if we're not root
-    bool is_root = !strcmp(path, "/");
-    size_t path_len = strlen(path);
-
-    // 1 for null byte
-    size_t new_path_size = path_len+strlen(folder->name)+1;
-    // 1 for new /
-    new_path_size += is_root ? 0 : 1;
-
-    char* new_path = malloc(new_path_size);
-    char* copy_dest = new_path;
-
-    strcpy(copy_dest, path);
-    copy_dest += path_len;
-
-    if (!is_root) {
-      *copy_dest++ = '/';
-    }
-
-    strcpy(copy_dest, folder->name);
-
-    walk(new_path, out);
-    free(new_path);
-  }
-
-  free_ls_result(list);
-}
-
 void list_files(void) {
 #define MAKE_PATH(path) open(path, O_WRONLY)
   MAKE_PATH("/l1a");
