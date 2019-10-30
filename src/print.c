@@ -110,6 +110,11 @@ int sprintf(char* str, const char* fmt, ...) {
         fmt++;
       } else if (*fmt == '%') {
         *str++ = *fmt++;
+      } else if (*fmt == 's') {
+        const char* in_str = va_arg(args, const char*);
+        strcpy(str, in_str);
+        str += strlen(in_str);
+        fmt++;
       } else {
         __builtin_unreachable();
       }

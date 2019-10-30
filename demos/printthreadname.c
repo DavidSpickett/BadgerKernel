@@ -11,7 +11,8 @@ void setup(void) {
   printf("%% Print Demo %%\n");
 
   char buf[100];
-  sprintf(buf, "Sprintf hex: 0x%X\n", 0xABAB);
+  const char* hex = "hex";
+  sprintf(buf, "Sprintf %s: 0x%X\n", hex, 0xABAB);
   printf("%s", buf);
 
   // Use up some IDs
