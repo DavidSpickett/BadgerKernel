@@ -98,6 +98,8 @@ FileNode* add_child_node(FileNode* node, const char* name) {
 
 void init_file_system(void) {
   init_node(&root, "/");
+  file_descriptors = NULL;
+  num_file_descriptors = 0;
 }
 
 void replace_seperator(char* path) {
