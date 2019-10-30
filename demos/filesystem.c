@@ -5,20 +5,29 @@
 #include "alloc.h"
 #include "thread.h"
 
-void basics(void) {
+void errors(void) {
   // Can't open a non existent file
   assert(open("/bad/path/here", O_RDONLY) == -1);
-
-  // Make a new file
-  char* file_path = "/bar/foo.txt";
-  int handle = open(file_path, O_WRONLY);
-  assert(handle != -1);
 
   // Can't write to invalid FD
   assert(!write(-1, NULL, 0));
 
   // Won't write anything from a null buffer
   assert(!write(1, NULL, 0));
+
+  // Can't close an invalid FD
+  assert(close(-10) == -1);
+  assert(close(99) == -1);
+
+  // Can't remove a non existent file
+  assert(remove("/not/a/file") == -1);
+}
+
+void basics(void) {
+  // Make a new file
+  char* file_path = "/bar/foo.txt";
+  int handle = open(file_path, O_WRONLY);
+  assert(handle != -1);
 
   // Write some real content
   const char* content = "The quick brown fox.";
@@ -28,10 +37,6 @@ void basics(void) {
 
   // Allows us to close
   assert(!close(handle));
-
-  // Can't close an ivalid FD
-  assert(close(-10) == -1);
-  assert(close(99) == -1);
 
   // Open something else to re-use the FD
   const char *temp_path = "/a/b/c/d";
@@ -54,9 +59,6 @@ void basics(void) {
   assert(!close(got_handle));
   remove(temp_path);
 
-  // Can't remove a non existent file
-  assert(remove("/not/a/file") == -1);
-
   // Remove test file
   assert(!remove(file_path));
   // Can't open a removed file
@@ -64,17 +66,17 @@ void basics(void) {
 }
 
 void walk(const char* path, char** out) {
-  FileInfo* ls = ls_path(path);
+  FileInfo* list = ls_path(path);
 
   // Print all names
   *out += sprintf(*out, "%s\n  ", path);
-  for (FileInfo* file=ls; file; file=file->next) {
+  for (FileInfo* file=list; file; file=file->next) {
     *out += sprintf(*out, "%s ", file->name);
   }
   *out += sprintf(*out, "\n");
 
   // Print all folders from this level
-  for (FileInfo* folder=ls; folder; folder=folder->next) {
+  for (FileInfo* folder=list; folder; folder=folder->next) {
     if (folder->is_file) {
       continue;
     }
@@ -104,7 +106,7 @@ void walk(const char* path, char** out) {
     free(new_path);
   }
 
-  free_ls_result(ls);
+  free_ls_result(list);
 }
 
 void list_files(void) {
@@ -162,6 +164,7 @@ void test_##test() { \
   test(); \
   destroy_file_system(); \
 }
+FS_TEST(errors)
 FS_TEST(basics)
 FS_TEST(nested_files)
 FS_TEST(list_files)
@@ -170,6 +173,7 @@ void setup() {
   config.log_scheduler = false;
 
 #define ADD_TEST(test) add_named_thread(test_##test, #test)
+  ADD_TEST(errors);
   ADD_TEST(basics);
   ADD_TEST(nested_files);
   ADD_TEST(list_files);

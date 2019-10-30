@@ -209,35 +209,31 @@ static FileNode* get_node_from_split_path(const char* path_part,
       if (last_path_part) {
         // Found the target
         return node;
-      } else {
-        // Go down one dir
-        current = node;
       }
+
+      // Go down one dir
+      current = node;
     } else {
-      switch (oflag) {
-        case O_RDONLY:
-          // invalid path
+      if (oflag == O_RDONLY) {
+        // invalid path
+        return NULL;
+      } else if (oflag == O_WRONLY) {
+        // Can't have a subdir of a file
+        if (current->is_file) {
           return NULL;
-        case O_WRONLY:
-        {
-          // Can't have a subdir of a file
-          if (current->is_file) {
-            return NULL;
-          }
-
-          // Otherwise add a new dir
-          FileNode* new_node = add_child_node(current, path_part);
-
-          if (last_path_part) {
-            return new_node;
-          } else {
-            // Continue making dir structure
-            current = new_node;
-          }
-          break;
         }
-        default:
-          __builtin_unreachable();
+
+        // Otherwise add a new dir
+        FileNode* new_node = add_child_node(current, path_part);
+
+        if (last_path_part) {
+          return new_node;
+        }
+
+        // Continue making dir structure
+        current = new_node;
+      } else {
+        __builtin_unreachable();
       }
     }
 
@@ -304,12 +300,12 @@ int close(int fildes) {
   return 0;
 }
 
-ssize_t write(int fd, const void *buf, size_t count) {
-  if (!check_fd(fd)) {
+ssize_t write(int filedes, const void *buf, size_t count) {
+  if (!check_fd(filedes)) {
     return 0;
   } 
 
-  FileNode* file = file_descriptors[fd];
+  FileNode* file = file_descriptors[filedes];
   file->content = checked_realloc(file->content,
                           file->size+count);
   memcpy(file->content+file->size, buf, count); 
@@ -317,12 +313,12 @@ ssize_t write(int fd, const void *buf, size_t count) {
   return count;
 }
 
-ssize_t read(int fd, void *buf, size_t count) {
-  if (!check_fd(fd)) {
+ssize_t read(int filedes, void *buf, size_t count) {
+  if (!check_fd(filedes)) {
     return 0;
   }
 
-  FileNode* file = file_descriptors[fd];
+  FileNode* file = file_descriptors[filedes];
   memcpy(buf, file->content, count);
 
   return count;
@@ -384,9 +380,10 @@ void free_ls_result(FileInfo* head) {
     return;
   }
   
-  while (head) {
-    FileInfo* next = head->next;
-    free(head);
-    head = next;
+  FileInfo* current = head;
+  while (current) {
+    FileInfo* next = current->next;
+    free(current);
+    current = next;
   }  
 }

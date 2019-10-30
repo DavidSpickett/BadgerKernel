@@ -1,4 +1,5 @@
 Thread     <HIDDEN>: starting scheduler
+Thread       errors: exiting
 Thread       basics: exiting
 Thread nested_files: exiting
 Thread   list_files: 
