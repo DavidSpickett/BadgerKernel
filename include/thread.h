@@ -1,8 +1,8 @@
 #ifndef THREAD_H
 #define THREAD_H
 
-#include <stdbool.h>
 #include "thread_state.h"
+#include <stdbool.h>
 
 #define MAX_THREADS 11
 

@@ -3,32 +3,32 @@
 #include <stdint.h>
 #include <string.h>
 
-#define BLOCK_SIZE    32
-#define HEAP_SIZE     2048
-#define NUM_BLOCKS    HEAP_SIZE/BLOCK_SIZE
+#define BLOCK_SIZE 32
+#define HEAP_SIZE  2048
+#define NUM_BLOCKS HEAP_SIZE / BLOCK_SIZE
 
 size_t block_tags[NUM_BLOCKS];
 uint8_t heap[HEAP_SIZE] __attribute__((aligned(BLOCK_SIZE)));
-const uint8_t* heap_end = heap+HEAP_SIZE;
+const uint8_t* heap_end = heap + HEAP_SIZE;
 
 void* find_free_space(size_t num_blocks) {
   size_t free_found = 0;
   size_t start_idx = 0;
-  for (size_t idx = 0; idx<NUM_BLOCKS; ++idx) {
+  for (size_t idx = 0; idx < NUM_BLOCKS; ++idx) {
     if (block_tags[idx]) {
       // Reset run of free space
       free_found = 0;
       // Skip over blocks we know are allocated
       // (-1 / +1 here because of the for loop)
-      idx += (block_tags[idx]-1);
+      idx += (block_tags[idx] - 1);
       // Start new potential run of space
-      start_idx = idx+1;
+      start_idx = idx + 1;
     } else {
       free_found++;
 
       if (free_found == num_blocks) {
         // Return pointer into actual heap space
-        return heap+(start_idx*BLOCK_SIZE);
+        return heap + (start_idx * BLOCK_SIZE);
       }
     }
   }
@@ -46,7 +46,7 @@ size_t to_blocks(size_t size) {
   return (size + BLOCK_SIZE - 1) / BLOCK_SIZE;
 }
 
-//TODO: mutex!!
+// TODO: mutex!!
 void* malloc(size_t size) {
   // Divide rounding up
   size_t num_blocks = to_blocks(size);
@@ -60,7 +60,7 @@ void* malloc(size_t size) {
   return alloc;
 }
 
-void* realloc (void* ptr, size_t size) {
+void* realloc(void* ptr, size_t size) {
   // realloc NULL is just malloc
   if (!ptr) {
     return malloc(size);

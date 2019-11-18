@@ -17,10 +17,10 @@
 #define CPU_PMR  PTR(GICC_BASE + 0x004) // Priority mask
 #define CPU_BPR  PTR(GICC_BASE + 0x008) // Binary point
 
-#define DIST_CTLR          PTR(GICD_BASE)                     // Distributor control
-#define DIST_ISENABLER(n)  PTR(GICD_BASE + 0x100 + ( n * 4 )) // Set enable
-#define DIST_IPRIORITYR(n) PTR(GICD_BASE + 0x400 + ( n * 4 )) // Priority
-#define DIST_ITARGETSR(n)  PTR(GICD_BASE + 0x800 + ( n * 4 )) // Processor targets
+#define DIST_CTLR          PTR(GICD_BASE) // Distributor control
+#define DIST_ISENABLER(n)  PTR(GICD_BASE + 0x100 + (n * 4)) // Set enable
+#define DIST_IPRIORITYR(n) PTR(GICD_BASE + 0x400 + (n * 4)) // Priority
+#define DIST_ITARGETSR(n)  PTR(GICD_BASE + 0x800 + (n * 4)) // Processor targets
 
 // On AArch64 we have to be careful about how we call it
 #if __ARM_ARCH_7A__
@@ -49,15 +49,15 @@ void gic_init(unsigned irq_no)
   *DIST_CTLR = 0;
 
   // 0 aka highest priority, 4, 8 bit fields per register
-  *DIST_IPRIORITYR(irq_no/4) = 0;
+  *DIST_IPRIORITYR(irq_no / 4) = 0;
 
   // 4, 8 bit fields per processor target register
   uint32_t shift = (irq_no % 4) * 8;
   // send interrupt to 1 aka CPU 0 interface
-  *DIST_ITARGETSR(irq_no/4) = 1 << shift;
+  *DIST_ITARGETSR(irq_no / 4) = 1 << shift;
 
   // Enable interrupt (one bit per)
-  *DIST_ISENABLER(irq_no/32) = 1 << irq_no;
+  *DIST_ISENABLER(irq_no / 32) = 1 << irq_no;
 
   // Re-enable
   *DIST_CTLR = 1;
@@ -68,6 +68,6 @@ void gic_init(unsigned irq_no)
      the link register and corrupt it (at -O3).
      So just branch to a global label instead.
   */
-  asm volatile ("b gic_init_ret");
+  asm volatile("b gic_init_ret");
 #endif
 }

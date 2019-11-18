@@ -1,11 +1,11 @@
+#include "alloc.h"
 #include "thread.h"
 #include "util.h"
-#include "alloc.h"
 #include <stdint.h>
 
 void basic_types(void) {
   // Anything <=8 bytes
-  uint8_t*  u08 = malloc(sizeof(uint8_t));
+  uint8_t* u08 = malloc(sizeof(uint8_t));
   uint16_t* u16 = malloc(sizeof(uint16_t));
   uint32_t* u32 = malloc(sizeof(uint32_t));
   uint64_t* u64 = malloc(sizeof(uint64_t));
@@ -48,7 +48,7 @@ void large_alloc(void) {
   *temp_check = 0xdeadbeef;
 
   // Write to buffer, should not affect temp_check
-  for (size_t i=0; i < alloc_size; ++i) {
+  for (size_t i = 0; i < alloc_size; ++i) {
     temp[i] = i;
   }
 
@@ -58,7 +58,7 @@ void large_alloc(void) {
   /* This should not be the same as temp, since it's
      bigger and there's an allocated guard right after
      where temp was. */
-  uint8_t* new_temp = malloc(alloc_size*2);
+  uint8_t* new_temp = malloc(alloc_size * 2);
   assert(new_temp != temp);
   free(new_temp);
 
@@ -77,14 +77,14 @@ void fragmented(void) {
 
   size_t num_allocations = 64;
   uint64_t* allocated[num_allocations];
-  for(size_t i=0; i < num_allocations; ++i) {
+  for (size_t i = 0; i < num_allocations; ++i) {
     // This will start to return NULL at some point
     // As long as we fill the heap that's fine
     allocated[i] = malloc(sizeof(uint64_t));
   }
 
   // free every second one to cause fragmentation
-  for (size_t i=0; i < num_allocations; i+=2) {
+  for (size_t i = 0; i < num_allocations; i += 2) {
     free(allocated[i]);
   }
 
@@ -98,7 +98,7 @@ void fragmented(void) {
   assert(!greater_than_block);
 
   // cleanup
-  for (size_t i=1; i < num_allocations; i+=2) {
+  for (size_t i = 1; i < num_allocations; i += 2) {
     free(allocated[i]);
   }
 }
@@ -112,10 +112,10 @@ void errors() {
 void realloc_more() {
   // Realloc with nullptr is just malloc
   size_t array_sz = 8;
-  uint32_t* foo = realloc(NULL, array_sz*sizeof(uint32_t));
+  uint32_t* foo = realloc(NULL, array_sz * sizeof(uint32_t));
   assert(foo);
 
-  for(size_t i=0; i<array_sz; ++i) {
+  for (size_t i = 0; i < array_sz; ++i) {
     foo[i] = i;
   }
 
@@ -123,14 +123,14 @@ void realloc_more() {
   void* failed_realloc = realloc(foo, 123456);
   assert(!failed_realloc);
 
-  for(size_t i=0; i<array_sz; ++i) {
+  for (size_t i = 0; i < array_sz; ++i) {
     assert(foo[i] == i);
   }
 
   size_t num_pad_allocs = 2;
   uint64_t pad_value = 0xcafef00ddeadbeef;
   uint64_t* pad_allocs[num_pad_allocs];
-  for (size_t i=0; i<num_pad_allocs; ++i) {
+  for (size_t i = 0; i < num_pad_allocs; ++i) {
     pad_allocs[i] = malloc(sizeof(uint64_t));
     *pad_allocs[i] = pad_value;
   }
@@ -140,11 +140,11 @@ void realloc_more() {
 
   // Realloc to 2 blocks
   uint32_t* old_foo = foo;
-  foo = realloc(foo, 16*sizeof(uint32_t));
+  foo = realloc(foo, 16 * sizeof(uint32_t));
   assert(foo == old_foo);
 
   // foo's data was copied
-  for (size_t i=0; i<array_sz; ++i) {
+  for (size_t i = 0; i < array_sz; ++i) {
     assert(foo[i] == i);
   }
   // Rest is uninitialised
@@ -174,7 +174,7 @@ void realloc_less() {
      pad canary foo[0] foo[1] */
   size_t array_sz = 64;
   uint8_t* foo = malloc(array_sz);
-  for (size_t i=0; i<array_sz; ++i) {
+  for (size_t i = 0; i < array_sz; ++i) {
     foo[i] = i;
   }
 
@@ -202,7 +202,7 @@ void realloc_free() {
   // Fill up the rest of the heap
   size_t num_padding = 64;
   uint32_t* pad_allocs[num_padding];
-  for (size_t i=0; i<num_padding; ++i) {
+  for (size_t i = 0; i < num_padding; ++i) {
     pad_allocs[i] = malloc(sizeof(uint32_t));
   }
 
@@ -216,7 +216,7 @@ void realloc_free() {
   assert(old_allocation == allocation);
 
   free(allocation);
-  for (size_t i=1; i<num_padding; ++i) {
+  for (size_t i = 1; i < num_padding; ++i) {
     free(pad_allocs[i]);
   }
 }
@@ -226,7 +226,7 @@ void realloc_fail() {
      a failed realloc. */
   size_t num_allocs = 64;
   uint32_t* allocs[num_allocs];
-  for (size_t i=0; i<num_allocs; ++i) {
+  for (size_t i = 0; i < num_allocs; ++i) {
     allocs[i] = malloc(sizeof(uint32_t));
   }
 
@@ -237,21 +237,20 @@ void realloc_fail() {
   void* malloc_fails = malloc(sizeof(uint32_t));
   assert(!malloc_fails);
 
-  for (size_t i=0; i<num_allocs; ++i) {
+  for (size_t i = 0; i < num_allocs; ++i) {
     free(allocs[i]);
   }
 }
 
-void setup(void)
-{
+void setup(void) {
   config.log_scheduler = false;
 
-  add_named_thread(basic_types,      "basic_types");
-  add_named_thread(large_alloc,      "large_alloc");
-  add_named_thread(fragmented,       "fragmented");
-  add_named_thread(errors,           "errors");
-  add_named_thread(realloc_more,     "realloc_more");
-  add_named_thread(realloc_less,     "realloc_less");
-  add_named_thread(realloc_free,     "realloc_free");
-  add_named_thread(realloc_fail,     "realloc_fail");
+  add_named_thread(basic_types, "basic_types");
+  add_named_thread(large_alloc, "large_alloc");
+  add_named_thread(fragmented, "fragmented");
+  add_named_thread(errors, "errors");
+  add_named_thread(realloc_more, "realloc_more");
+  add_named_thread(realloc_less, "realloc_less");
+  add_named_thread(realloc_free, "realloc_free");
+  add_named_thread(realloc_fail, "realloc_fail");
 }

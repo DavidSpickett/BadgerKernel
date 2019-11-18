@@ -2,8 +2,8 @@
 #define _GNU_SOURCE
 #include <pthread.h>
 #endif
-#include "thread.h"
 #include "print.h"
+#include "thread.h"
 #include "util.h"
 #include <stdbool.h>
 #include <stddef.h>
@@ -13,8 +13,8 @@
 #ifndef linux
 #define THREAD_STACK_SIZE 1024 * STACK_SIZE
 // 2 registers on AArch64
-#define MONITOR_STACK_SIZE    2 * 8
-#define STACK_CANARY          0xcafebeefdeadf00d
+#define MONITOR_STACK_SIZE 2 * 8
+#define STACK_CANARY       0xcafebeefdeadf00d
 #endif
 
 #define THREAD_NAME_SIZE      12
@@ -147,9 +147,9 @@ void check_stack(void);
 void thread_yield(Thread* next) {
   bool log = get_thread_id() != -1 || config.log_scheduler;
 
-  #ifndef linux
+#ifndef linux
   check_stack();
-  #endif
+#endif
 
   if (log) {
     log_event("yielding");
@@ -329,10 +329,9 @@ int add_named_thread_with_args(void (*worker)(), const char* name,
     if (all_threads[idx].id == -1) {
       init_thread(&all_threads[idx], idx, name, worker, args);
 
-      #ifdef linux
-      pthread_create(&all_threads[idx].self, 
-                     NULL, thread_entry, NULL);
-      #endif
+#ifdef linux
+      pthread_create(&all_threads[idx].self, NULL, thread_entry, NULL);
+#endif
 
       return idx;
     }
@@ -375,7 +374,7 @@ void thread_switch_alrm() {
 
 Thread* current_thread(void) {
   pthread_t self = pthread_self();
-  for (int i=0; i<MAX_THREADS; ++i) {
+  for (int i = 0; i < MAX_THREADS; ++i) {
     if (all_threads[i].self == self) {
       return &all_threads[i];
     }
@@ -389,11 +388,8 @@ void* thread_entry() {
     pthread_yield();
   }
 
-  current_thread()->work(
-    current_thread()->args.a1,
-    current_thread()->args.a2,
-    current_thread()->args.a3,
-    current_thread()->args.a4);
+  current_thread()->work(current_thread()->args.a1, current_thread()->args.a2,
+                         current_thread()->args.a3, current_thread()->args.a4);
 
   // Yield back to the scheduler
   log_event("exiting");
@@ -416,9 +412,7 @@ void thread_switch(void) {
 void start_scheduler(void) {
 
   ThreadArgs args = {0, 0, 0, 0};
-  init_thread(&scheduler_thread, -1, NULL,
-                 do_scheduler /*redundant*/, 
-              args);
+  init_thread(&scheduler_thread, -1, NULL, do_scheduler /*redundant*/, args);
 
   // Hack around us not having a dummy thread here
   // Start with an empty name to get <HIDDEN>
@@ -427,9 +421,7 @@ void start_scheduler(void) {
   // Then properly name it
   scheduler_thread.name = "<scheduler>";
 
-  pthread_create(&scheduler_thread.self,
-                 NULL,
-                 (void * (*)(void *))do_scheduler,
+  pthread_create(&scheduler_thread.self, NULL, (void* (*)(void*))do_scheduler,
                  NULL);
 
   while (1) {} //!OCLINT
@@ -507,10 +499,8 @@ __attribute__((noreturn)) void thread_start(void) {
   // Every thread starts by entering this function
 
   // Call thread's actual function
-  current_thread()->work(current_thread()->args.a1,
-                         current_thread()->args.a2,
-                         current_thread()->args.a3,
-                         current_thread()->args.a4);
+  current_thread()->work(current_thread()->args.a1, current_thread()->args.a2,
+                         current_thread()->args.a3, current_thread()->args.a4);
 
   // Yield back to the scheduler
   log_event("exiting");

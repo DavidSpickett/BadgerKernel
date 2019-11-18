@@ -8,18 +8,19 @@
    in <assert.h> as well! Hooray. So we'll make our
    own macro, with solitaire and diet coke.
 */
-__attribute__((noreturn))
-void __assert_fail (const char *__assertion, const char *__file,
-         unsigned int __line, const char *__function);
+__attribute__((noreturn)) void __assert_fail(const char* __assertion,
+                                             const char* __file,
+                                             unsigned int __line,
+                                             const char* __function);
 
 #ifdef NDEBUG
 #define assert(expr) (void)expr
 #else
-#define assert(expr) \
-{ \
-  bool condition = expr; \
-  condition ? 0 : __assert_fail(#expr, __FILE__, __LINE__, __func__); \
-}
+#define assert(expr)                                                           \
+  {                                                                            \
+    bool condition = expr;                                                     \
+    condition ? 0 : __assert_fail(#expr, __FILE__, __LINE__, __func__);        \
+  }
 #endif
 
 // Semihosting operation codes
@@ -31,7 +32,6 @@ void __assert_fail (const char *__assertion, const char *__file,
 #define SYS_REMOVE 0x0E
 #define SYS_EXIT   0x18
 
-
 #ifdef linux
 #include <fcntl.h>
 #include <stdlib.h>
@@ -42,9 +42,9 @@ void __assert_fail (const char *__assertion, const char *__file,
 
 // For semihosting assembly blocks
 #ifdef __aarch64__
-#define RCHR   "x"
+#define RCHR "x"
 #else
-#define RCHR   "r"
+#define RCHR "r"
 #endif
 
 // These are semihosting values, not posix

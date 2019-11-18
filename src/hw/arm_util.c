@@ -1,7 +1,7 @@
-#include <string.h>
-#include <stddef.h>
-#include "util.h"
 #include "thread_state.h"
+#include "util.h"
+#include <stddef.h>
+#include <string.h>
 
 // Arm semihosting routines
 // platform specific asm in generic_semihosting_call
@@ -15,13 +15,12 @@ size_t get_semihosting_event(int status) {
 }
 
 #ifdef __aarch64__
-#define RCHR   "x"
+#define RCHR "x"
 #else
-#define RCHR   "r"
+#define RCHR "r"
 #endif
 
-size_t generic_semihosting_call(size_t operation,
-                                       volatile size_t* parameters) {
+size_t generic_semihosting_call(size_t operation, volatile size_t* parameters) {
   size_t ret;
 
   // clang-format off
@@ -72,9 +71,10 @@ void exit(int status) {
    so we can choose at build time whether to use those
    or the in memory file system. */
 
-__attribute__((noreturn))
-void __assert_fail(const char *__assertion, const char *__file,
-			   unsigned int __line, const char *__function) {
+__attribute__((noreturn)) void __assert_fail(const char* __assertion,
+                                             const char* __file,
+                                             unsigned int __line,
+                                             const char* __function) {
   printf("%s:%u (%s) Expected: %s\n", __file, __line, __function, __assertion);
   exit(1);
   __builtin_unreachable();

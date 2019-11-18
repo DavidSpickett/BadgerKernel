@@ -1,6 +1,8 @@
 #ifndef FILE_SYSTEM_H
 #define FILE_SYSTEM_H
 
+#include <stdbool.h>
+
 #ifdef linux
 #include <fcntl.h>
 #include <stdlib.h>
@@ -8,7 +10,6 @@
 #else
 #include <stddef.h>
 #include <sys/types.h>
-#include <stdbool.h>
 
 // These are semihosting values, not posix
 #define O_RDONLY 0

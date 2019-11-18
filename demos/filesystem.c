@@ -1,9 +1,9 @@
 // This demo is for the in memory file system
-#include <string.h>
-#include "util.h"
-#include "file_system.h"
 #include "alloc.h"
+#include "file_system.h"
 #include "thread.h"
+#include "util.h"
+#include <string.h>
 
 void errors(void) {
   // Can't open a non existent file
@@ -31,7 +31,7 @@ void basics(void) {
 
   // Write some real content
   const char* content = "The quick brown fox.";
-  size_t write_sz = strlen(content)+1;
+  size_t write_sz = strlen(content) + 1;
   size_t wrote = write(handle, content, write_sz);
   assert(wrote == write_sz);
 
@@ -39,7 +39,7 @@ void basics(void) {
   assert(!close(handle));
 
   // Open something else to re-use the FD
-  const char *temp_path = "/a/b/c/d";
+  const char* temp_path = "/a/b/c/d";
   int temp_handle = open(temp_path, O_WRONLY);
   assert(temp_handle != -1);
   assert(temp_handle == handle);
@@ -75,7 +75,7 @@ void list_files(void) {
   MAKE_PATH("/f1/f2/l3b");
 
   char walk_res[200];
-  char *out = walk_res;
+  char* out = walk_res;
   walk("/", &out);
 
   log_event("");
@@ -88,11 +88,11 @@ void nested_files(void) {
   assert(top_file != -1);
 
   const char* folder_file_1_path = "/abc/a";
-  int folder_file_1   = open(folder_file_1_path, O_WRONLY);
+  int folder_file_1 = open(folder_file_1_path, O_WRONLY);
   assert(folder_file_1 != -1);
 
   const char* folder_file_2_path = "/abc/b";
-  int folder_file_2   = open(folder_file_2_path, O_WRONLY);
+  int folder_file_2 = open(folder_file_2_path, O_WRONLY);
   assert(folder_file_2 != -1);
 
   close(top_file);
@@ -114,12 +114,12 @@ void nested_files(void) {
   assert(open(folder_file_1_path, O_RDONLY) == -1);
 }
 
-#define FS_TEST(test) \
-void test_##test() { \
-  init_file_system(); \
-  test(); \
-  destroy_file_system(); \
-}
+#define FS_TEST(test)                                                          \
+  void test_##test() {                                                         \
+    init_file_system();                                                        \
+    test();                                                                    \
+    destroy_file_system();                                                     \
+  }
 FS_TEST(errors)
 FS_TEST(basics)
 FS_TEST(nested_files)

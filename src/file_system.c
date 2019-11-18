@@ -1,16 +1,16 @@
-#include <string.h>
-#include <stdint.h>
-#include "util.h"
-#include "alloc.h"
 #include "file_system.h"
+#include "alloc.h"
+#include "util.h"
+#include <stdint.h>
+#include <string.h>
 
 static void* checked_malloc(size_t size) {
-    void* ptr = malloc(size);
-    if (!ptr) {
-      printf("malloc failed!\n");
-      exit(1);
-    }
-    return ptr;
+  void* ptr = malloc(size);
+  if (!ptr) {
+    printf("malloc failed!\n");
+    exit(1);
+  }
+  return ptr;
 }
 
 static void* checked_realloc(void* ptr, size_t size) {
@@ -20,7 +20,7 @@ static void* checked_realloc(void* ptr, size_t size) {
     exit(1);
   }
   return new_ptr;
-} 
+}
 
 typedef struct FileNode {
   char* name;
@@ -37,7 +37,7 @@ typedef struct FileNode {
 } FileNode;
 
 FileNode root;
-int num_file_descriptors= 0;
+int num_file_descriptors = 0;
 FileNode** file_descriptors = NULL;
 
 void init_node(FileNode* node, char* name) {
@@ -63,7 +63,7 @@ int new_file_descriptor(FileNode* node) {
   int idx = num_file_descriptors;
   num_file_descriptors++;
   file_descriptors = checked_realloc(file_descriptors,
-    sizeof(FileNode*)*num_file_descriptors);
+                                     sizeof(FileNode*) * num_file_descriptors);
   file_descriptors[idx] = node;
   node->descriptor = idx;
   return idx;
@@ -72,7 +72,7 @@ int new_file_descriptor(FileNode* node) {
 FileNode* add_child_node(FileNode* node, const char* name) {
   FileNode* child = checked_malloc(sizeof(FileNode));
   // New copy in case this came from a split path
-  char* name_copy = checked_malloc(strlen(name)+1);
+  char* name_copy = checked_malloc(strlen(name) + 1);
   strcpy(name_copy, name);
   init_node(child, name_copy);
 
@@ -197,8 +197,7 @@ FileNode* find_parent_of(FileNode* current, const FileNode* node) {
 }
 
 static FileNode* get_node_from_split_path(const char* path_part,
-                                          const char* path_end,
-                                          int oflag) {
+                                          const char* path_end, int oflag) {
   FileNode* current = &root;
 
   while (path_part != path_end) {
@@ -239,8 +238,8 @@ static FileNode* get_node_from_split_path(const char* path_part,
 
     // +1 to skip next null terminator
     path_part += strlen(path_part) + 1;
-  } 
-   
+  }
+
   return NULL;
 }
 
@@ -250,10 +249,10 @@ FileNode* get_node(const char* path, int oflag) {
     return &root;
   }
 
-  const char* _path = path+1;
-  size_t path_len   = strlen(_path);
-  char* split_path  = checked_malloc(path_len+1);
-  char* path_end    = split_path + path_len;
+  const char* _path = path + 1;
+  size_t path_len = strlen(_path);
+  char* split_path = checked_malloc(path_len + 1);
+  char* path_end = split_path + path_len;
 
   strcpy(split_path, _path);
   replace_seperator(split_path);
@@ -283,9 +282,7 @@ void remove_file_descriptor(FileNode* file) {
 }
 
 bool check_fd(int fd) {
-  if ((fd < 0) ||
-      (fd >= num_file_descriptors) ||
-      !file_descriptors[fd]) {
+  if ((fd < 0) || (fd >= num_file_descriptors) || !file_descriptors[fd]) {
     return false;
   }
   return true;
@@ -300,20 +297,19 @@ int close(int fildes) {
   return 0;
 }
 
-ssize_t write(int filedes, const void *buf, size_t count) {
+ssize_t write(int filedes, const void* buf, size_t count) {
   if (!check_fd(filedes)) {
     return 0;
-  } 
+  }
 
   FileNode* file = file_descriptors[filedes];
-  file->content = checked_realloc(file->content,
-                          file->size+count);
-  memcpy(file->content+file->size, buf, count); 
+  file->content = checked_realloc(file->content, file->size + count);
+  memcpy(file->content + file->size, buf, count);
 
   return count;
 }
 
-ssize_t read(int filedes, void *buf, size_t count) {
+ssize_t read(int filedes, void* buf, size_t count) {
   if (!check_fd(filedes)) {
     return 0;
   }
@@ -324,7 +320,7 @@ ssize_t read(int filedes, void *buf, size_t count) {
   return count;
 }
 
-int remove(const char *path) {
+int remove(const char* path) {
   FileNode* file = get_node(path, O_RDONLY);
   if (!file) {
     return -1;
@@ -354,7 +350,7 @@ FileInfo* ls_path(const char* path) {
   FileInfo* current = NULL;
   FileNode* child = file->first_child;
 
-  while(child) {
+  while (child) {
     prev = current;
     current = checked_malloc(sizeof(FileInfo));
     if (!ret) {
@@ -379,13 +375,13 @@ void free_ls_result(FileInfo* head) {
   if (!head) {
     return;
   }
-  
+
   FileInfo* current = head;
   while (current) {
     FileInfo* next = current->next;
     free(current);
     current = next;
-  }  
+  }
 }
 
 void walk(const char* path, char** out) {
@@ -393,13 +389,13 @@ void walk(const char* path, char** out) {
 
   // Print all names
   *out += sprintf(*out, "%s\n  ", path);
-  for (FileInfo* file=list; file; file=file->next) {
+  for (FileInfo* file = list; file; file = file->next) {
     *out += sprintf(*out, "%s ", file->name);
   }
   *out += sprintf(*out, "\n");
 
   // Print all folders from this level
-  for (FileInfo* folder=list; folder; folder=folder->next) {
+  for (FileInfo* folder = list; folder; folder = folder->next) {
     if (folder->is_file) {
       continue;
     }
@@ -409,7 +405,7 @@ void walk(const char* path, char** out) {
     size_t path_len = strlen(path);
 
     // 1 for null byte
-    size_t new_path_size = path_len+strlen(folder->name)+1;
+    size_t new_path_size = path_len + strlen(folder->name) + 1;
     // 1 for new /
     new_path_size += is_root ? 0 : 1;
 

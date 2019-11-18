@@ -1,11 +1,10 @@
+#include "util.h"
 #include <stddef.h>
 #include <string.h>
-#include "util.h"
 
 /* Semihosting file handling */
-extern size_t generic_semihosting_call(
-  size_t operation, 
-  volatile size_t* parameters);
+extern size_t generic_semihosting_call(size_t operation,
+                                       volatile size_t* parameters);
 
 int open(const char* path, int oflag, ...) {
   volatile size_t parameters[] = {(size_t)path, oflag, strlen(path)};
