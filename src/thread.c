@@ -424,7 +424,8 @@ void start_scheduler(void) {
   pthread_create(&scheduler_thread.self, NULL, (void* (*)(void*))do_scheduler,
                  NULL);
 
-  while (1) {} //!OCLINT
+  while (1) { //!OCLINT
+  }
 }
 
 #else
