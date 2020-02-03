@@ -3,10 +3,10 @@ cmake_minimum_required( VERSION 3.7 )
 
 set( BUILD_PLATFORM "arm" CACHE STRING "Architecture to build for." )
 set( OPT_LEVEL "3" CACHE STRING "Compiler optmisation level." )
+set( COMPILER "gcc" CACHE STRING "Name of compiler to use." )
 option( SANITIZERS "Enable UBSAN/ASAN (ASAN Linux only)." OFF )
 option( COVERAGE "Generate coverage data. (Linux only)" OFF )
 option( LTO "Enable link time optimisation." OFF )
-option( USE_CLANG "Compile with Clang instead of GCC." OFF )
 set( STACK_SIZE   1 ) # In KB
 
 string( TOLOWER "${BUILD_PLATFORM}" BP_LOWER )
@@ -15,7 +15,7 @@ message(STATUS "OPT_LEVEL is -O${OPT_LEVEL}")
 message(STATUS "SANITIZERS are ${SANITIZERS}")
 message(STATUS "LTO is ${LTO}")
 message(STATUS "COVERAGE is ${COVERAGE}")
-message(STATUS "USE_CLANG is ${USE_CLANG}")
+message(STATUS "COMPILER is ${COMPILER}")
 
 if (BP_LOWER STREQUAL "linux")
   set( LINUX ON )
@@ -48,14 +48,8 @@ if (NOT LINUX)
   message(STATUS "STACK_SIZE is ${STACK_SIZE}KB")
 endif()
 
-if (USE_CLANG)
-  if (NOT LINUX)
-    message(FATAL_ERROR "Clang only supported on Linux.")
-  endif()
-  set( CMAKE_C_COMPILER "clang" )
-else()
-  set( CMAKE_C_COMPILER "${PREFIX}gcc" )
-endif(USE_CLANG)
+# Note that anything but GCC isn't going to work for bare metal
+set( CMAKE_C_COMPILER "${PREFIX}${COMPILER}" )
 
 set( CFLAGS "-DSTACK_SIZE=${STACK_SIZE} -g3 -O${OPT_LEVEL} -Wall -Werror -std=gnu11")
 

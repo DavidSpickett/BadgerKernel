@@ -22,4 +22,4 @@ jobs:
       opt_level: [0, s, 3]
       sanitizers: [OFF, ON]
       lto: [OFF, ON]
-      use_clang: ON
+      compiler: "clang"
