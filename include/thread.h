@@ -11,7 +11,7 @@ typedef struct {
   bool exit_when_no_threads;
   bool log_scheduler;
 } MonitorConfig;
-MonitorConfig config;
+extern MonitorConfig config;
 
 typedef struct {
   void* a1;
