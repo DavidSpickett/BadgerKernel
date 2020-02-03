@@ -6,6 +6,7 @@ set( OPT_LEVEL "3" CACHE STRING "Compiler optmisation level." )
 option( SANITIZERS "Enable UBSAN/ASAN (ASAN Linux only)." OFF )
 option( COVERAGE "Generate coverage data. (Linux only)" OFF )
 option( LTO "Enable link time optimisation." OFF )
+option( USE_CLANG "Compile with Clang instead of GCC." OFF )
 set( STACK_SIZE   1 ) # In KB
 
 string( TOLOWER "${BUILD_PLATFORM}" BP_LOWER )
@@ -14,6 +15,7 @@ message(STATUS "OPT_LEVEL is -O${OPT_LEVEL}")
 message(STATUS "SANITIZERS are ${SANITIZERS}")
 message(STATUS "LTO is ${LTO}")
 message(STATUS "COVERAGE is ${COVERAGE}")
+message(STATUS "USE_CLANG is ${USE_CLANG}")
 
 if (BP_LOWER STREQUAL "linux")
   set( LINUX ON )
@@ -46,7 +48,15 @@ if (NOT LINUX)
   message(STATUS "STACK_SIZE is ${STACK_SIZE}KB")
 endif()
 
-set( CMAKE_C_COMPILER "${PREFIX}gcc" )
+if (USE_CLANG)
+  if (NOT LINUX)
+    message(FATAL_ERROR "Clang only supported on Linux.")
+  endif()
+  set( CMAKE_C_COMPILER "clang" )
+else()
+  set( CMAKE_C_COMPILER "${PREFIX}gcc" )
+endif(USE_CLANG)
+
 set( CFLAGS "-DSTACK_SIZE=${STACK_SIZE} -g3 -O${OPT_LEVEL} -Wall -Werror -std=gnu11")
 
 if (LINUX)
