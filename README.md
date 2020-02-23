@@ -10,7 +10,7 @@ All bare metal platforms use exceptions for switching threads. Either by yieldin
 
 ### Bare Metal
 
-Install cmake and an arm-none-eabi or aarch64-elf toolchain. (Linaro releases are the easiest way to get these)
+Install cmake, ninja and an arm-none-eabi or aarch64-elf toolchain. (Linaro releases are the easiest way to get these)
 
 Install QEMU with Arm support (this will get you aarch64 too):
 ```
@@ -19,21 +19,21 @@ sudo apt-get install qemu-system-arm
 
 Then configure according to which toolchain you installed, and build:
 ```
-cmake . -DBUILD_PLATFORM=arm
-make
+cmake . -DBUILD_PLATFORM=arm -G Ninja
+ninja
 
-cmake . -DBUILD_PLATFORM=aarch64
-make
+cmake . -DBUILD_PLATFORM=aarch64 -G Ninja
+ninja
 
-cmake . -DBUILD_PLATFORM=thumb
-make
+cmake . -DBUILD_PLATFORM=thumb -G Ninja
+ninja
 ```
 
 ### Linux
 
 ```
-cmake . -DBUILD_PLATFORM=linux
-make
+cmake . -DBUILD_PLATFORM=linux -G Ninja
+ninja
 ```
 
 ## Demos

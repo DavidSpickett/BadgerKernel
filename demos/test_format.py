@@ -6,7 +6,7 @@ from textwrap import dedent
 class MakeTest(lit.formats.base.TestFormat):
   def execute(self, test, litConfig):
     filename = os.path.basename(test.getSourcePath())
-    cmd = ["make", "test_" + os.path.splitext(filename)[0]]
+    cmd = ["ninja", "test_" + os.path.splitext(filename)[0]]
     out, err, exitCode = lit.util.executeCommand(cmd)
 
     if not exitCode and not err.strip():
