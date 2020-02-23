@@ -11,7 +11,7 @@ jobs:
 - ${{ each build_platform in parameters.build_platform }}:
   - job: ${{build_platform}}_${{parameters.compiler}}
     pool:
-      vmImage: 'Ubuntu-16.04'
+      vmImage: 'ubuntu-18.04'
     steps:
       - script: |
           sudo apt-get update
