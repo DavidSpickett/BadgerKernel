@@ -15,8 +15,8 @@ jobs:
     steps:
       - script: |
           sudo apt-get update
-          sudo apt-get install -y python3-pip ninja-build
-        displayName: apt-get-py3pip-ninja
+          sudo apt-get install -y python3-pip
+        displayName: apt-get-py3pip
 
       - ${{ if in(build_platform, 'ARM', 'THUMB', 'AARCH64') }}:
         - script: |
@@ -54,7 +54,7 @@ jobs:
           mkdir oclint
           wget -qO- https://github.com/oclint/oclint/releases/download/v0.13.1/oclint-0.13.1-x86_64-linux-4.4.0-112-generic.tar.gz | tar xzf - -C oclint --strip-components=1
           export PATH=$(pwd)/toolchain/bin/:$(pwd)/oclint/bin/:$PATH
-          cmake . -DBUILD_PLATFORM=${{build_platform}} -DOPT_LEVEL=0 -DSANITIZERS=ON -DCOMPILER=${{parameters.compiler}} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -G Ninja
+          cmake . -DBUILD_PLATFORM=${{build_platform}} -DOPT_LEVEL=0 -DSANITIZERS=ON -DCOMPILER=${{parameters.compiler}} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
           oclint -p . `find -not \( -path ./oclint -prune \) -not \( -path ./CMakeFiles -prune \) -not \( -path ./demos -prune \) -regex ".*\.c"` -max-priority-1 0 -max-priority-2 0 -max-priority-3 0
         displayName: oclint
         continueOnError: true
@@ -66,9 +66,9 @@ jobs:
                 set -ex
                 # Each script has its own environment so we need to do this here
                 export PATH=$(pwd)/toolchain/bin/:$PATH
-                cmake . -DBUILD_PLATFORM=${{build_platform}} -DOPT_LEVEL=${{opt_level}} -DSANITIZERS=${{sanitizers}} -DLTO=${{lto}} -G Ninja
-                ninja clean
-                ninja make_demos
+                cmake . -DBUILD_PLATFORM=${{build_platform}} -DOPT_LEVEL=${{opt_level}} -DSANITIZERS=${{sanitizers}} -DLTO=${{lto}}
+                make clean
+                make make_demos
               displayName: build-O${{opt_level}}_SANITIZERS_${{sanitizers}}_LTO_${{lto}}
 
             - script: |

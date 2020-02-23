@@ -4,9 +4,9 @@ for platform in "arm" "thumb" "aarch64" "linux"; do
     for sanitizers in "ON" "OFF"; do
       for lto in "ON" "OFF"; do
         cmake . -DBUILD_PLATFORM=${platform} -DOPT_LEVEL=${opt_level} -DSANITIZERS=${sanitizers} -DLTO=${lto}
-        ninja make_demos
+        make demos
         lit demos/
-        ninja clean
+        make clean
       done
     done
   done
