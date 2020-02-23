@@ -15,7 +15,6 @@ jobs:
       opt_level: [0, s, 3]
       sanitizers: [OFF, ON]
       lto: [OFF, ON]
-  # Clang on Linux
   - template: azure-job.yml
     parameters:
       build_platform: [LINUX]

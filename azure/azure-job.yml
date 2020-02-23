@@ -27,6 +27,13 @@ jobs:
         - script: sudo apt-get install -y gcc-arm-none-eabi libnewlib-arm-none-eabi
           displayName: apt-get-toolchain
 
+      - ${{ if eq(parameters.compiler, 'clang') }}:
+        - script: |
+            sudo apt-get install -y clang-9
+            # Make 'clang' be clang-9
+            sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-9 100
+          displayName: apt-get-clang-9
+
       - ${{ if eq(build_platform, 'AARCH64') }}:
         - template: get-linaro-toolchain.yml
           parameters:
@@ -64,8 +71,6 @@ jobs:
 
             - script: |
                 source testenv/bin/activate
-                # Ignore false positive on Linux/Clang-6
-                export ASAN_OPTIONS=detect_odr_violation=0
                 # Don't be fooled, this is actually JUnit format
                 lit demos --xunit-xml-output ${{build_platform}}_O${{opt_level}}_SANITIZERS_${{sanitizers}}_LTO_${{lto}}_results.xml
               displayName: test-O${{opt_level}}_SANITIZERS_${{sanitizers}}_LTO_${{lto}}
