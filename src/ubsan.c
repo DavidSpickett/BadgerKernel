@@ -29,3 +29,5 @@ ubhandler(out_of_bounds, void* a);
 ubhandler(vla_bound_not_positive, void* a);
 ubhandler(shift_out_of_bounds, void* a, void* b);
 ubhandler(mul_overflow, void* a, void* b);
+ubhandler(type_mismatch_v1, void* a, void* b);
+ubhandler(pointer_overflow, void* a, void* b, void* c);
