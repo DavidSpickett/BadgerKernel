@@ -69,8 +69,8 @@ thread_switch:
   svc svc_thread_switch
   bx lr
 
-.global handle_svc
-handle_svc:
+.global handle_exception
+handle_exception:
   CHECK_MONITOR_STACK
 
   /* See if this is semihosting or a thread switch */
@@ -86,11 +86,11 @@ handle_svc:
 
 start_thread_switch:
   /* If the current thread has never run, don't save anything.
-     Used for inital scheduler start, and recovering from stack
+     Used for inital scheduler start and recovering from stack
      boundary issues. */
   ldr r0, =_current_thread // r0 = &_current_thread
   ldr r0, [r0]             // r0 = _current_thread
-  ldr r0, [r0, #4]         // r0 = _current_thread.state
+  ldr r0, [r0, #4]         // r0 = _current_thread->state
   mov r1, #init
   cmp r0, r1
   bne check_stack_extent
@@ -150,17 +150,17 @@ load_next_thread:
   ldr r4, =thread_start // init link register
   mov r5, #USER_MODE    // not sure of mode but flags should be 0
   stmdb sp!, {r4,r5}
-  b exc_return          // don't restore other regs, just these two when we return
+  b exception_return          // don't restore other regs, just these two when we return
 
 restore_regs:
   pop {r0-r12, r14}     // restore our own regs (no sp/pc)
-  b exc_return
+  b exception_return
 
 semihosting:
   // user user sp to get arguments
   POP_TEMPS_GOTO_SYSTEM_MODE
   svc 0x123456     // picked up by Qemu
-  b exc_return
+  b exception_return
 
 enable_timer:
   ldr r0, =1000
@@ -175,7 +175,7 @@ disable_timer:
 
 finalise_timer:
   POP_TEMPS_GOTO_SYSTEM_MODE
-  b exc_return
+  b exception_return
 
-exc_return:
+exception_return:
   rfeia sp! // restore CPSR and lr then eret
