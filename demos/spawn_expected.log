@@ -1,4 +1,4 @@
-Thread     <HIDDEN>: starting scheduler
+Thread  <scheduler>: starting scheduler
 Thread      spawner: spawned demons
 Thread      spawner: yielding
 Thread      Morgoth: Hello my name is

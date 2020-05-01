@@ -1,4 +1,4 @@
-Thread     <HIDDEN>: starting scheduler
+Thread  <scheduler>: starting scheduler
 Thread  <scheduler>: scheduling new thread
 Thread  <scheduler>: yielding
 Thread        first: yielding

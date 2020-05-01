@@ -410,17 +410,9 @@ void thread_switch(void) {
 }
 
 void start_scheduler(void) {
-
   ThreadArgs args = {0, 0, 0, 0};
-  init_thread(&scheduler_thread, -1, NULL, do_scheduler /*redundant*/, args);
-
-  // Hack around us not having a dummy thread here
-  // Start with an empty name to get <HIDDEN>
+  init_thread(&scheduler_thread, -1, "<scheduler>", do_scheduler /*redundant*/, args);
   log_event("starting scheduler");
-
-  // Then properly name it
-  scheduler_thread.name = "<scheduler>";
-
   pthread_create(&scheduler_thread.self, NULL, (void* (*)(void*))do_scheduler,
                  NULL);
 
@@ -429,9 +421,6 @@ void start_scheduler(void) {
 }
 
 #else
-
-// Don't care if this gets corrupted, we'll just reset it's stack anyway
-__attribute__((section(".thread_structs"))) static Thread dummy_thread;
 
 // Use these struct names to ensure that these are
 // placed *after* the thread structs to prevent
@@ -476,20 +465,16 @@ void check_stack(void) {
     }
 
     if (config.destroy_on_stack_err) {
-      /* Use the dummy thread to yield back to the scheduler
-         without doing any more damage. */
-      _current_thread = &dummy_thread;
-
-      /* Reset dummy's stack ptr so repeated exits here doesn't
-         corrupt *that* stack. */
-      dummy_thread.stack_ptr = &dummy_thread.stack[THREAD_STACK_SIZE];
-
-      next_thread = &scheduler_thread;
-      /* Setting -1 here, instead of state=finished is fine,
+     /* Setting -1 here, instead of state=finished is fine,
          because A: the thread didn't actually finish
                  B: the thread struct is actually invalid */
       current_thread()->id = -1;
-      thread_switch_initial();
+
+      _current_thread = &scheduler_thread;
+      next_thread = &scheduler_thread;
+      // Aka don't save any state, just load the scheduler
+      current_thread()->state = init;
+      thread_switch();
     } else {
       exit(1);
     }
@@ -531,18 +516,13 @@ __attribute__((noreturn)) void thread_start(void) {
 
 __attribute__((noreturn)) void start_scheduler(void) {
   ThreadArgs args = {0, 0, 0, 0};
-
-  // Hidden so that the scheduler doesn't run itself somehow
   init_thread(&scheduler_thread, -1, "<scheduler>", do_scheduler, args);
 
-  // Need a dummy thread here otherwise we'll try to write to address 0
-  init_thread(&dummy_thread, -1, NULL, (void (*)(void))(0), args);
-
   // Actual current thread here, not the getter
-  _current_thread = &dummy_thread;
+  _current_thread = &scheduler_thread;
   next_thread = &scheduler_thread;
   log_event("starting scheduler");
-  thread_switch_initial();
+  thread_switch();
 
   __builtin_unreachable();
 }

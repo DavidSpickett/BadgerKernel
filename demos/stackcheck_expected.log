@@ -1,4 +1,4 @@
-Thread     <HIDDEN>: starting scheduler
+Thread  <scheduler>: starting scheduler
 Thread    underflow: recursing
 Thread     <HIDDEN>: Stack underflow!
 Thread      watcher: yielding

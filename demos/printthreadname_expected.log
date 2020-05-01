@@ -1,7 +1,7 @@
 % Print Demo %
 Sprintf hex: 0xABAB
 Added then cancelled 8 threads.
-Thread     <HIDDEN>: starting scheduler
+Thread  <scheduler>: starting scheduler
 Thread name_that_ge: exiting
 Thread            9: exiting
 Thread           10: exiting

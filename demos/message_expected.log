@@ -1,4 +1,4 @@
-Thread     <HIDDEN>: starting scheduler
+Thread  <scheduler>: starting scheduler
 Thread      spammer: spammed
 Thread      spammer: yielding
 Thread      spammer: message box was full

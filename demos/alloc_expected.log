@@ -1,4 +1,4 @@
-Thread     <HIDDEN>: starting scheduler
+Thread  <scheduler>: starting scheduler
  u8: 0xFF
 u16: 0xF0F0
 u32: 0xA0A0A0A
