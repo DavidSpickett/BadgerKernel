@@ -3,7 +3,7 @@
 .set TIMER_AMOUNT, 100000
 
 .macro DISABLE_TIMER
-  mov x0, #2    // Disable timer output, mask the interrupt
+  mov x0, #2                 // Disable timer and mask interrupt
   msr CNTV_CTL_EL0, x0
 .endm
 
@@ -15,8 +15,7 @@
   ldr x0, =monitor_stack // check that monitor stack is valid
   mov x1, sp
   cmp x0, x1
-  beq 1f                 // monitor stack is valid
-  b .                    // probably a re-entry
+  bne .                    // probably a re-entry
 .endm
 
 .macro CURRENT_IN_X10_NEXT_IN_X11
@@ -38,13 +37,12 @@ thread_switch:
 .global handle_timer
 handle_timer:
   CHECK_MONITOR_STACK
-1:
   DISABLE_TIMER
 
-  /* Always set next thread to scheduler */
+  /* Next thread is always the scheduler on interrupt */
   ldr x0, =scheduler_thread
   ldr x1, =next_thread
-  str x0, [x1]
+  str x0, [x1]         // next_thread = &scheduler_thread
 
   b start_thread_switch
 
@@ -62,27 +60,24 @@ handle_timer:
 .global handle_svc
 handle_svc:
   CHECK_MONITOR_STACK
-1:
   /* See what brought us here. */
   mrs x0, ESR_EL1
   lsr x0, x0, #26    // check exception code
   mov x1, #0x15      // SVC
   cmp x0, x1
   beq check_svc
-
-  b unknown_exc
+  /* unknown source */
+  b .
 
 check_svc:
   mrs x0, ESR_EL1    // Reload then check svc code
-  mov x1, #0xFFFF    // mask svc number
+  mov x1, #0xFFFF    // mask to get code
   and x0, x0, x1
   CHECK_SVC svc_thread_switch, start_thread_switch
   CHECK_SVC svc_semihosting, semihosting
   CHECK_SVC svc_enable_timer, enable_timer
   CHECK_SVC svc_disable_timer, disable_timer
-
-unknown_exc:
-  /* Otherwise it's something we weren't expecting */
+  /* unknown svc */
   b .
 
 enable_timer:
@@ -115,30 +110,32 @@ semihosting:
   eret
 
 start_thread_switch:
-  /* If the current thread has not run, don't save anything */
+  /* If the current thread has never run, don't save anything.
+     Used for initial scheduler start and recovering from stack
+     boundary issues. */
   ldr x0, =_current_thread // x0 = &_current_thread
   ldr x0, [x0]             // x0 = _current_thread
   ldr x0, [x0, #4]         // x0 = _current_thread->state
   mov x1, #init
   cmp x0, x1
   bne check_stack_extent
-  CURRENT_IN_X10_NEXT_IN_X11
   POP_MONITOR_TEMPS_USE_EL0_SP
+  CURRENT_IN_X10_NEXT_IN_X11
   b load_next_thread
 
 check_stack_extent:
-  /* Validate stack extent */
   ldr x0, =thread_stack_offset
   ldr x1, =_current_thread
-  ldr x0, [x0]              // chase it
-  ldr x1, [x1]              // chase current thread too
+  ldr x0, [x0]              // x0 = thread_stack_offset
+  ldr x1, [x1]              // x1 = _current_thread
   add x0, x1, x0            // get minimum valid stack pointer
-  msr SPSel, #0             // get the thread's sp
+  msr SPSel, #0             // get thread's stack pointer
   mov x1, sp
   sub x1, x1, #((31+2+1)*8) // take away space we want to use
   cmp x0, x1                // is potential sp < min valid sp?
-  b.hs stack_extent_failed  // Use thread's stack for this, we will exit anyway
+  bhs stack_extent_failed  // call C function to error and exit
 
+save_current_thread:
   msr SPSel, #1
   POP_MONITOR_TEMPS_USE_EL0_SP
 
@@ -170,41 +167,40 @@ check_stack_extent:
 
   CURRENT_IN_X10_NEXT_IN_X11
 
-  /* Save our stack pointer */
-  ldr x1, [x10]    // get actual adress of current thread
+  /* Save stack pointer */
+  ldr x1, [x10]        // x1 = _current_thread
   mov x3, sp
-  str x3, [x1], #8
+  str x3, [x1], #8     // _current_thread->stack_ptr=sp
 
-  /* update state */
-  ldr x2, [x1]
+  /* Update state */
+  ldr x2, [x1]         // x2 = _current_thread->state
   mov x3, #running
-  cmp x2, x3
+  cmp x2, x3           // if we're something other than running, leave it as it is
   bne load_next_thread
-  mov x2, #suspended
-  str x2, [x1]
+  mov x2, #suspended   // otherwise move to suspended
+  str x2, [x1]         // _current_thread->state = suspended
 
 load_next_thread:
-  /* Switch to new thread */
   ldr x11, [x11]         // x11 = next_thread
   str x11, [x10]         // _current_thread = next_thread
   ldr x3, [x11], #8      // x3 = next_thread->stack_ptr
   mov sp, x3
 
-  /* Check that the new thread has been run at least once */
-  ldr x3, [x11]
+  /* check that this thread has been run at least once */
+  ldr x3, [x11]          // x3 = next_thread->state
   mov x4, #init
   cmp x3, x4
 
-  /* either way we start running */
-  mov x4, #running
-  str x4, [x11]
+  mov x4, #running      // either way it'll start running
+  str x4, [x11]         // next_thread->state = running
 
+  /* Don't restore if it's never run before */
   bne restore_regs
 
-  /* Fake return PC value (doesn't matter what reg we use here)*/
+  /* Fake return PC value */
   ldr x30, =thread_start
   msr ELR_EL1, x30
-  b exc_return
+  b exception_return
 
 restore_regs:
   /* Restore all registers of the new thread */
@@ -235,5 +231,5 @@ restore_regs:
   /* Actual x0 and x1 */
   ldp x0,  x1,  [sp], #16
 
-exc_return:
+exception_return:
   eret

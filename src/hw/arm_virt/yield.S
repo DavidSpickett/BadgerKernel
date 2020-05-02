@@ -29,7 +29,7 @@
   sub r0, r0, #8   // 2 Arm registers
   mov r1, sp
   cmp r0, r1
-  bne . // probably a re-entry
+  bne .                    // probably a re-entry
 .endm
 
 .macro POP_TEMPS_GOTO_SYSTEM_MODE
@@ -54,13 +54,12 @@ handle_timer:
   add sp, sp, #4   // Don't want IRQ mode sp
 
   CHECK_MONITOR_STACK
+  DISABLE_TIMER
 
   /* Next thread is always the scheduler on interrupt */
   ldr r0, =scheduler_thread
   ldr r1, =next_thread
   str r0, [r1]         // next_thread = &scheduler_thread
-
-  DISABLE_TIMER
 
   b start_thread_switch
 
@@ -78,8 +77,8 @@ handle_exception:
   ldr r1, =0xFFFFFF        // mask to get code
   and r0, r0, r1
   CHECK_SVC svc_thread_switch, start_thread_switch
-  CHECK_SVC svc_semihosting,   semihosting
-  CHECK_SVC svc_enable_timer,  enable_timer
+  CHECK_SVC svc_semihosting, semihosting
+  CHECK_SVC svc_enable_timer, enable_timer
   CHECK_SVC svc_disable_timer, disable_timer
   /* unknown svc */
   b .
@@ -103,7 +102,7 @@ check_stack_extent:
   ldr r1, =_current_thread
   ldr r0, [r0]                 // r0 = thread_stack_offset
   ldr r1, [r1]                 // r1 = _current_thread
-  add r0, r1, r0               // get min. valid stack pointer
+  add r0, r1, r0               // get minimum valid stack pointer
   cps #SYSTEM_MODE
   mov r1, sp                   // get thread's stack pointer
   cps #SUPERVISOR_MODE
@@ -121,20 +120,20 @@ save_current_thread:
 
   /* Save stack pointer */
   ldr r1, [r6]         // r1 = _current_thread
-  str sp, [r1], #4      // _current_thread->stack_ptr=sp
+  str sp, [r1], #4     // _current_thread->stack_ptr=sp
 
   /* Update state */
-  ldr r2, [r1]          // r2 = _current_thread->state
+  ldr r2, [r1]         // r2 = _current_thread->state
   mov r3, #running
-  cmp r2, r3            // if we're something other than running, leave it as it is
+  cmp r2, r3           // if we're something other than running, leave it as it is
   bne load_next_thread
-  mov r3, #suspended    // otherwise move to suspended
-  str r3, [r1]          // _current_thread->state = suspended
+  mov r3, #suspended   // otherwise move to suspended
+  str r3, [r1]         // _current_thread->state = suspended
 
 load_next_thread:
-  ldr r7, [r7]          // r11 = next_thread
-  str r7, [r6]          // _current_thread = next_thread
-  ldr sp, [r7], #4      // sp = next_thread->stack_ptr
+  ldr r7, [r7]         // r11 = next_thread
+  str r7, [r6]         // _current_thread = next_thread
+  ldr sp, [r7], #4     // sp = next_thread->stack_ptr
 
   /* check that this thread has been run at least once */
   ldr r3, [r7]          // r3 = next_thread->state
