@@ -19,14 +19,10 @@
   b .                    // probably a re-entry
 .endm
 
-.global thread_switch_initial
-thread_switch_initial:
-  /* Called when starting scheduler (trashing regs is fine) */
-  ldr x0, =_current_thread // init stack pointer to
-  ldr x0, [x0]            // stack pointer of dummy thread
-  ldr x0, [x0]            // so we can pass the check normally
-  mov sp, x0
-  bl thread_switch
+.macro CURRENT_IN_X10_NEXT_IN_X11
+  ldr x10, =_current_thread
+  ldr x11, =next_thread
+.endm
 
 .global thread_switch
 thread_switch:
@@ -50,12 +46,17 @@ handle_timer:
   ldr x1, =next_thread
   str x0, [x1]
 
-  b __thread_switch
+  b start_thread_switch
 
 .macro CHECK_SVC code, handler
   mov x1, #\code
   cmp x0, x1
   beq \handler
+.endm
+
+.macro POP_MONITOR_TEMPS_USE_EL0_SP
+  ldp x0, x1, [sp], #16
+  msr SPSel, #0
 .endm
 
 .global handle_svc
@@ -75,7 +76,7 @@ check_svc:
   mrs x0, ESR_EL1    // Reload then check svc code
   mov x1, #0xFFFF    // mask svc number
   and x0, x0, x1
-  CHECK_SVC svc_thread_switch, __thread_switch
+  CHECK_SVC svc_thread_switch, start_thread_switch
   CHECK_SVC svc_semihosting, semihosting
   CHECK_SVC svc_enable_timer, enable_timer
   CHECK_SVC svc_disable_timer, disable_timer
@@ -100,7 +101,7 @@ disable_timer:
   b finalise_timer
 
 finalise_timer:
-  ldp x0, x1, [sp], #16 // restore thread's regs
+  POP_MONITOR_TEMPS_USE_EL0_SP
   eret
 
 semihosting:
@@ -109,12 +110,23 @@ semihosting:
      a halt's exception link register is the halt,
      not the next instr. Which makes things complicated.
   */
-  ldp x0, x1, [sp], #16 // restore thread's regs which hold the args
-  msr SPSel, #0         // use thread's sp (points to semihosting data)
+  POP_MONITOR_TEMPS_USE_EL0_SP // Thread's sp points to arguments
   hlt 0xf000
   eret
 
-__thread_switch:
+start_thread_switch:
+  /* If the current thread has not run, don't save anything */
+  ldr x0, =_current_thread // x0 = &_current_thread
+  ldr x0, [x0]             // x0 = _current_thread
+  ldr x0, [x0, #4]         // x0 = _current_thread->state
+  mov x1, #init
+  cmp x0, x1
+  bne check_stack_extent
+  CURRENT_IN_X10_NEXT_IN_X11
+  POP_MONITOR_TEMPS_USE_EL0_SP
+  b load_next_thread
+
+check_stack_extent:
   /* Validate stack extent */
   ldr x0, =thread_stack_offset
   ldr x1, =_current_thread
@@ -128,9 +140,7 @@ __thread_switch:
   b.hs stack_extent_failed  // Use thread's stack for this, we will exit anyway
 
   msr SPSel, #1
-  ldp x0, x1, [sp], #16     // Restore thread's regs for saving
-
-  msr SPSel, #0             // Switch to thread's stack (EL0_SP)
+  POP_MONITOR_TEMPS_USE_EL0_SP
 
   /* Save all registers to stack */
   stp x0,  x1,  [sp, #-16]!
@@ -158,12 +168,10 @@ __thread_switch:
   stp x27, x28, [sp, #-16]!
   stp x29, x30, [sp, #-16]!
 
-  /* Setup pointers in some high reg numbers we won't overwrite */
-  ldr x10, =_current_thread
-  ldr x11, =next_thread
+  CURRENT_IN_X10_NEXT_IN_X11
 
   /* Save our stack pointer */
-  ldr x1, [x10]          // get actual adress of current thread
+  ldr x1, [x10]    // get actual adress of current thread
   mov x3, sp
   str x3, [x1], #8
 
@@ -171,15 +179,15 @@ __thread_switch:
   ldr x2, [x1]
   mov x3, #running
   cmp x2, x3
-  bne dont_update_state
+  bne load_next_thread
   mov x2, #suspended
   str x2, [x1]
-dont_update_state:
 
+load_next_thread:
   /* Switch to new thread */
-  ldr x11, [x11]         // chase to get actual address of the new thread
-  str x11, [x10]         // _current_thread = new_thread
-  ldr x3, [x11], #8      // restore stack pointer of new thread
+  ldr x11, [x11]         // x11 = next_thread
+  str x11, [x10]         // _current_thread = next_thread
+  ldr x3, [x11], #8      // x3 = next_thread->stack_ptr
   mov sp, x3
 
   /* Check that the new thread has been run at least once */
