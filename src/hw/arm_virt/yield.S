@@ -4,6 +4,17 @@
 .set SUPERVISOR_MODE, 0x13
 .set USER_MODE,       0x10
 
+.macro CHECK_SVC code, handler
+  mov r1, #\code
+  cmp r0, r1
+  beq \handler
+.endm
+
+.macro CURRENT_IN_R6_NEXT_IN_R7
+  ldr r6, =_current_thread
+  ldr r7, =next_thread
+.endm
+
 .macro DISABLE_TIMER
   mov r0, #2                 // Disable timer and mask interrupt
   mcr p15, 0, r0, c14, c2, 1 // CNTP_CTL
@@ -21,21 +32,10 @@
   bne . // probably a re-entry
 .endm
 
-.macro CHECK_SVC code, handler
-  mov r1, #\code
-  cmp r0, r1
-  beq \handler
-.endm
-
 .macro POP_TEMPS_GOTO_SYSTEM_MODE
   pop {r0, r1}            // pop temps from supervisor stack
   srsdb sp!, #SYSTEM_MODE // save CPSR and lr to system mode stack pointer
   cps #SYSTEM_MODE        // continue in system mode
-.endm
-
-.macro CURRENT_IN_R10_NEXT_IN_R11
-  ldr r10, =_current_thread
-  ldr r11, =next_thread
 .endm
 
 .global handle_timer
@@ -58,7 +58,7 @@ handle_timer:
   /* Next thread is always the scheduler on interrupt */
   ldr r0, =scheduler_thread
   ldr r1, =next_thread
-  str r0, [r1]
+  str r0, [r1]         // next_thread = &scheduler_thread
 
   DISABLE_TIMER
 
@@ -81,12 +81,12 @@ handle_exception:
   CHECK_SVC svc_semihosting,   semihosting
   CHECK_SVC svc_enable_timer,  enable_timer
   CHECK_SVC svc_disable_timer, disable_timer
-  /* Unkown svc code */
+  /* unknown svc */
   b .
 
 start_thread_switch:
   /* If the current thread has never run, don't save anything.
-     Used for inital scheduler start and recovering from stack
+     Used for initial scheduler start and recovering from stack
      boundary issues. */
   ldr r0, =_current_thread // r0 = &_current_thread
   ldr r0, [r0]             // r0 = _current_thread
@@ -95,21 +95,21 @@ start_thread_switch:
   cmp r0, r1
   bne check_stack_extent
   POP_TEMPS_GOTO_SYSTEM_MODE
-  CURRENT_IN_R10_NEXT_IN_R11
+  CURRENT_IN_R6_NEXT_IN_R7
   b load_next_thread
 
 check_stack_extent:
   ldr r0, =thread_stack_offset
   ldr r1, =_current_thread
-  ldr r0, [r0]                // r0 = thread_stack_offset
-  ldr r1, [r1]                // r1 = _current_thread
-  add r0, r1, r0              // get min. valid stack pointer
+  ldr r0, [r0]                 // r0 = thread_stack_offset
+  ldr r1, [r1]                 // r1 = _current_thread
+  add r0, r1, r0               // get min. valid stack pointer
   cps #SYSTEM_MODE
-  mov r1, sp                  // get thread's stack pointer
+  mov r1, sp                   // get thread's stack pointer
   cps #SUPERVISOR_MODE
-  sub r1, r1, #((13+1+1+1)*4) // 13 gp regs plus lr plus lr+CPSR
-  cmp r0, r1                  // is potential sp < min valid sp?
-  bhs stack_extent_failed     // call C function to error and exit
+  sub r1, r1, #((13+1+1+1)*4)  // 13 gp regs plus lr plus lr+CPSR
+  cmp r0, r1                   // is potential sp < min valid sp?
+  bhs stack_extent_failed      // call C function to error and exit
 
 save_current_thread:
   POP_TEMPS_GOTO_SYSTEM_MODE
@@ -117,12 +117,13 @@ save_current_thread:
   /* Push all regs apart from sp and pc, but including lr */
   push {r0-r12, r14}
 
-  CURRENT_IN_R10_NEXT_IN_R11
+  CURRENT_IN_R6_NEXT_IN_R7
 
-  ldr r1, [r10]         // r1 = _current_thread 
+  /* Save stack pointer */
+  ldr r1, [r6]         // r1 = _current_thread
   str sp, [r1], #4      // _current_thread->stack_ptr=sp
 
-  /* update state */
+  /* Update state */
   ldr r2, [r1]          // r2 = _current_thread->state
   mov r3, #running
   cmp r2, r3            // if we're something other than running, leave it as it is
@@ -131,17 +132,17 @@ save_current_thread:
   str r3, [r1]          // _current_thread->state = suspended
 
 load_next_thread:
-  ldr r11, [r11]        // r11 = next_thread
-  str r11, [r10]        // _current_thread = next_thread
-  ldr sp, [r11], #4     // sp = next_thread->stack_ptr
+  ldr r7, [r7]          // r11 = next_thread
+  str r7, [r6]          // _current_thread = next_thread
+  ldr sp, [r7], #4      // sp = next_thread->stack_ptr
 
   /* check that this thread has been run at least once */
-  ldr r3, [r11]         // r3 = next_thread->state
+  ldr r3, [r7]          // r3 = next_thread->state
   mov r4, #init
   cmp r3, r4
 
   mov r4, #running      // either way it'll start running
-  str r4, [r11]         // next_thread->state = running
+  str r4, [r7]          // next_thread->state = running
 
   /* Don't restore if it's never run before */
   bne restore_regs
@@ -157,7 +158,7 @@ restore_regs:
   b exception_return
 
 semihosting:
-  // user user sp to get arguments
+  // use user r0/r1 and sp to get arguments
   POP_TEMPS_GOTO_SYSTEM_MODE
   svc 0x123456     // picked up by Qemu
   b exception_return

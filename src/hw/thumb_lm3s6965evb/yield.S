@@ -66,8 +66,7 @@ handle_interrupt:
   mvn r1, #0     // aka 0xFFFFFFFF, write ones to disable all
   str r1, [r0]
 
-  /* Set next thread to be the scheduler regardless of what
-     it currently is. Since we've no idea what we interrupted. */
+  /* Next thread is always the scheduler on interrupt */
   ldr r0, =scheduler_thread
   ldr r1, =next_thread
   str r0, [r1]         // next_thread = &scheduler_thread
@@ -117,8 +116,8 @@ check_stack_extent:
   */
   ldr r0, =thread_stack_offset
   ldr r1, =_current_thread
-  ldr r0, [r0]                 // chase offset
-  ldr r1, [r1]                 // chase current
+  ldr r0, [r0]                 // r0 = thread_stack_offset
+  ldr r1, [r1]                 // r1 = _current_thread
   add r0, r1, r0               // get min. valid stack pointer
   mrs r1, psp                  // get current sp
   sub r1, r1, #(7*4)           // take away (extra) space we want to use
@@ -140,30 +139,30 @@ save_current_thread:
 
   /* Update state */
   add r1, r1, #4
-  ldr r2, [r1]
+  ldr r2, [r1]          // r2 = _current_thread->state
   mov r3, #running
-  cmp r2, r3
-  bne load_next_thread   // If we weren't running don't suspend
-  mov r2, #suspended
-  str r2, [r1]
+  cmp r2, r3            // if we're something other than running, leave it as it is
+  bne load_next_thread
+  mov r3, #suspended    // otherwise move to suspended
+  str r3, [r1]          // _current_thread->state = suspended
 
 load_next_thread:
-  ldr r7, [r7]          // chase to get actual address of next thread
+  ldr r7, [r7]          // r11 = next_thread
   str r7, [r6]          // _current_thread = next_thread
-  ldr r5, [r7]          // restore stack pointer of new thread
+  ldr r5, [r7]          // sp = next_thread->stack_ptr
   mov sp, r5            // MSP = thread stack pointer
   /* no need to restore PC, exc return will do that */
 
-  /* check that thread has been scheduled at least once already */
+  /* check that this thread has been run at least once */
   add r7, #4
-  ldr r3, [r7]          // load state
+  ldr r3, [r7]          // r3 = next_thread->state
   mov r4, #init
   cmp r3, r4
 
-  /* either way it'll start running */
-  mov r4, #running
-  str r4, [r7]
+  mov r4, #running      // either way it'll start running
+  str r4, [r7]          // next_thread->state = running
 
+  /* Don't restore if it's never run before */
   bne restore_regs
 
   /* If it's never been scheduled we need to fake PC and EPSR
@@ -174,29 +173,22 @@ load_next_thread:
   mov r1, #1           // Set Thumb bit in EPSR
   lsl r1, #24
   str r1, [sp, #(7*4)] // store intial EPSR
-  b exc_return
+  b exception_return
 
 restore_regs:
   pop {r4-r11}
 
-exc_return:
+exception_return:
   /* Set the psp *after* we've unstacked r4-r7.
      So it's where the automatic unstack expects it to be.
   */
   mov r0, sp
   msr psp, r0
 
-  /* We don't use the monitor stack but we might as well
-     keep it consistent. */
-  ldr r0, =monitor_stack_top
-  ldr r0, [r0]
-
   bx lr
 
 semihosting:
-  /* We need to use the PSP here and the thread's
-     r0/r1 because that will contain the semihosting
-     call args */
+  // use user r0/r1 and sp to get arguments
   mrs r2, psp
   ldr r0, [r2]       // pop r0
   add r2, #4         // no direct post increment in thumb
