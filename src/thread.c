@@ -49,10 +49,11 @@ typedef struct {
 #endif
 } Thread;
 
+__attribute__((section(".thread_vars"))) Thread* _current_thread;
+
 __attribute__((section(".thread_structs"))) Thread all_threads[MAX_THREADS];
 // Volatile is here for the pthread implementation
 __attribute__((section(".thread_vars"))) Thread* volatile next_thread;
-__attribute__((section(".scheduler_thread"))) Thread scheduler_thread;
 
 __attribute__((section(".thread_vars")))
 MonitorConfig config = {.destroy_on_stack_err = false,
@@ -79,7 +80,8 @@ int get_thread_id(void) {
 }
 
 extern void setup(void);
-void start_scheduler(void);
+void do_scheduler(void);
+extern void start_thread_switch(void);
 __attribute__((noreturn)) void entry(void) {
   // Invalidate all threads in the pool
   for (size_t idx = 0; idx < MAX_THREADS; ++idx) {
@@ -88,8 +90,10 @@ __attribute__((noreturn)) void entry(void) {
 
   // Call user setup
   setup();
-  start_scheduler();
-
+  log_event("starting scheduler");
+  // TODO: cleanup
+  // Already in kernel mode here
+  start_thread_switch();
   __builtin_unreachable();
 }
 
@@ -154,6 +158,8 @@ void thread_yield(Thread* next) {
   if (log) {
     log_event("yielding");
   }
+  // TODO: null means scheduler decides
+  // Anything else use that?
   next_thread = next;
   thread_switch();
   if (log) {
@@ -163,7 +169,7 @@ void thread_yield(Thread* next) {
 
 void yield(void) {
   // To be called in user threads
-  thread_yield(&scheduler_thread);
+  thread_yield(NULL);
 }
 
 void format_thread_name(char* out) {
@@ -172,10 +178,12 @@ void format_thread_name(char* out) {
     out[idx] = ' ';
   }
 
+  // TODO: how do I know I'm in kernel mode?
   const char* name = current_thread()->name;
+  
   if (name == NULL) {
     int tid = get_thread_id();
-
+  
     if (tid == -1) {
       const char* hidden = "<HIDDEN>";
       size_t h_len = strlen(hidden);
@@ -208,38 +216,42 @@ void log_event(const char* event) {
   printf("Thread %s: %s\n", thread_name, event);
 }
 
-__attribute__((noreturn)) void do_scheduler(void) {
-  while (1) {
-    bool live_threads = false;
+void do_scheduler(void) {
+  //bool live_threads = false;
 
-    for (size_t idx = 0; idx < MAX_THREADS; ++idx) {
-      if (!can_schedule_thread(idx)) {
-        continue;
-      }
+  size_t start_thread_idx = _current_thread - &all_threads[0];
+  start_thread_idx += 1;
+  size_t max_thread_idx = start_thread_idx + MAX_THREADS;
+  for (size_t idx = start_thread_idx; idx < max_thread_idx; ++idx) {
+    // Wrap into range of array
+    size_t _idx = idx % MAX_THREADS;
 
-      if (all_threads[idx].id != idx) {
-        log_event("thread ID and position inconsistent!");
-        exit(1);
-      }
-
-      if (config.log_scheduler) {
-        log_event("scheduling new thread");
-      }
-
-      live_threads = true;
-      thread_yield(&all_threads[idx]);
-      if (config.log_scheduler) {
-        log_event("thread yielded");
-      }
+    if (!can_schedule_thread(_idx)) {
+      continue;
     }
 
-    if (!live_threads && config.exit_when_no_threads) {
-      if (config.log_scheduler) {
-        log_event("all threads finished");
-      }
-      exit(0);
+    if (all_threads[_idx].id != _idx) {
+      log_event("thread ID and position inconsistent!");
+      // TODO: exit(1);
     }
+
+    if (config.log_scheduler) {
+      log_event("scheduling new thread");
+    }
+
+    //live_threads = true;
+    if (config.log_scheduler) {
+      log_event("next thread chosen");
+    }
+    next_thread = &all_threads[_idx];
+    return;
   }
+
+  // TODO: if (!live_threads && config.exit_when_no_threads) {
+  //     log_event("all threads finished");
+  //   }
+  //   exit(0);
+  // }
 }
 
 static bool set_thread_state(int tid, ThreadState state) {
@@ -342,7 +354,8 @@ int add_named_thread_with_args(void (*worker)(), const char* name,
 void thread_wait(void) {
   current_thread()->state = waiting;
   // Call thread_switch directly to keep state intact
-  next_thread = &scheduler_thread;
+  // TODO
+  //next_thread = &scheduler_thread;
   thread_switch();
 }
 
@@ -425,18 +438,8 @@ void start_scheduler(void) {
 // Use these struct names to ensure that these are
 // placed *after* the thread structs to prevent
 // stack overflow corrupting them.
-__attribute__((section(".thread_vars"))) Thread* _current_thread;
 __attribute__((section(".thread_vars"))) size_t thread_stack_offset =
     offsetof(Thread, stack);
-
-// Known good stack to save registers to while we check stack extent
-// In a seperate section so we can garauntee it's alignement for AArch64
-__attribute__((section(".monitor_vars")))
-uint8_t monitor_stack[MONITOR_STACK_SIZE];
-__attribute__((section(".thread_vars"))) uint8_t* monitor_stack_top =
-    &monitor_stack[MONITOR_STACK_SIZE];
-
-extern void thread_switch_initial(void);
 
 Thread* current_thread(void) {
   return _current_thread;
@@ -470,8 +473,9 @@ void check_stack(void) {
                  B: the thread struct is actually invalid */
       current_thread()->id = -1;
 
-      _current_thread = &scheduler_thread;
-      next_thread = &scheduler_thread;
+      // TODO:
+      //_current_thread = &scheduler_thread;
+      //next_thread = &scheduler_thread;
       // Aka don't save any state, just load the scheduler
       current_thread()->state = init;
       thread_switch();
@@ -506,22 +510,10 @@ __attribute__((noreturn)) void thread_start(void) {
      away anyway.
   */
 
-  next_thread = &scheduler_thread;
+  // TODO: ??
+  //next_thread = &scheduler_thread;
   // Calling thread_switch directly so we don't print 'yielding'
   // TODO: we save state here that we don't need to
-  thread_switch();
-
-  __builtin_unreachable();
-}
-
-__attribute__((noreturn)) void start_scheduler(void) {
-  ThreadArgs args = {0, 0, 0, 0};
-  init_thread(&scheduler_thread, -1, "<scheduler>", do_scheduler, args);
-
-  // Actual current thread here, not the getter
-  _current_thread = &scheduler_thread;
-  next_thread = &scheduler_thread;
-  log_event("starting scheduler");
   thread_switch();
 
   __builtin_unreachable();

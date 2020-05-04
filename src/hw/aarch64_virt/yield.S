@@ -11,11 +11,7 @@
   msr SPSel, #1
   /* Use the monitor stack, we can't trust the thread stack here */
   stp x0, x1, [sp, #-16]!
-
-  ldr x0, =monitor_stack // check that monitor stack is valid
-  mov x1, sp
-  cmp x0, x1
-  bne .                    // probably a re-entry
+  // TODO: change macro name
 .endm
 
 .macro CURRENT_IN_X10_NEXT_IN_X11
@@ -38,13 +34,13 @@ thread_switch:
 handle_timer:
   CHECK_MONITOR_STACK
   DISABLE_TIMER
-
+  b .
   /* Next thread is always the scheduler on interrupt */
-  ldr x0, =scheduler_thread
-  ldr x1, =next_thread
-  str x0, [x1]         // next_thread = &scheduler_thread
-
-  b start_thread_switch
+//  ldr x0, =scheduler_thread
+//  ldr x1, =next_thread
+//  str x0, [x1]         // next_thread = &scheduler_thread
+//
+//  b start_thread_switch
 
 .macro CHECK_SVC code, handler
   mov x1, #\code
@@ -109,12 +105,22 @@ semihosting:
   hlt 0xf000
   eret
 
+.global start_thread_switch
 start_thread_switch:
   /* If the current thread has never run, don't save anything.
      Used for initial scheduler start and recovering from stack
      boundary issues. */
   ldr x0, =_current_thread // x0 = &_current_thread
   ldr x0, [x0]             // x0 = _current_thread
+  mov x1, #0               // nullptr means we just started up
+  cmp x0, x1
+  bne check_state
+  // Don't need to do anything with temps, already in kernel mode
+  CURRENT_IN_X10_NEXT_IN_X11
+  // Just go to user stack
+  msr SPSel, #0             // get thread's stack pointer
+  b load_next_thread
+check_state:
   ldr x0, [x0, #4]         // x0 = _current_thread->state
   mov x1, #init
   cmp x0, x1
@@ -182,17 +188,38 @@ save_current_thread:
 
 load_next_thread:
   ldr x11, [x11]         // x11 = next_thread
+  /* null next_thread means ask the scheduler for next */
+  mov x12, #0
+  cmp x11, x12
+  bne actually_load_thread
+  msr SPSel, #1 // Use kernel's stack
+  bl do_scheduler
+  msr SPSel, #0
+  // Now next_thread is set
+  // TODO: dedupe
+  CURRENT_IN_X10_NEXT_IN_X11
+  // Reload it
+  ldr x11, [x11]
+  
+actually_load_thread:
   str x11, [x10]         // _current_thread = next_thread
-  ldr x3, [x11], #8      // x3 = next_thread->stack_ptr
+  mov x12, #0            // Set next to null for next switch to call scheduler
+  // Get address of next_thread again
+  // TODO: dedupe
+  CURRENT_IN_X10_NEXT_IN_X11
+  ldr x10, [x10] // Need to chase current again here
+  str x12, [x11]
+
+  ldr x3, [x10], #8      // x3 = _current_thread->stack_ptr
   mov sp, x3
 
   /* check that this thread has been run at least once */
-  ldr x3, [x11]          // x3 = next_thread->state
+  ldr x3, [x10]          // x3 = _current_thread->state
   mov x4, #init
   cmp x3, x4
 
   mov x4, #running      // either way it'll start running
-  str x4, [x11]         // next_thread->state = running
+  str x4, [x10]         // _current_thread->state = running
 
   /* Don't restore if it's never run before */
   bne restore_regs
@@ -224,12 +251,12 @@ restore_regs:
   msr ELR_EL1, x1
 
   /* This is FPSR/PSR */
-  ldp x0,  x1,  [sp], #16
+  ldp x0, x1, [sp], #16
   msr FPSR, x0
   msr SPSR_EL1, x1
 
   /* Actual x0 and x1 */
-  ldp x0,  x1,  [sp], #16
+  ldp x0, x1, [sp], #16
 
 exception_return:
   eret

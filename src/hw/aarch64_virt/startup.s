@@ -8,9 +8,7 @@ _Reset:
   isb
 
   /* Init stack for exceptions */
-  ldr x0, =monitor_stack_top
-  ldr x0, [x0]  // Chase to get actual value
-  msr SPSel, #1
+  ldr x0, =stack_top
   mov sp, x0
 
   /* Setup timer
@@ -21,11 +19,6 @@ _Reset:
   msr CNTKCTL_EL1, x0
   ldr x0, =1000000            // 1 MHz timer freq
   msr CNTFRQ_EL0, x0
-
-  /* Init stack for application */
-  ldr x0, =stack_top
-  msr SPSel, #0
-  mov sp, x0
 
   /* Configure interrupt routing
      Uses stack but this is fine because of the setup above. */
@@ -40,10 +33,8 @@ _Reset:
   ldr x1,=el1_table
   msr vbar_el1,x1  // Qemu boots in EL1
 
-  /* Go to entry as El0 */
-  ldr x0, =entry
-  msr ELR_EL1, x0
-  eret
+  /* Go to entry as El1 */
+  b entry
 
  /* Current EL with SP0 */
  .balign 0x800
