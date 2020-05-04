@@ -220,8 +220,15 @@ void do_scheduler(void) {
   bool live_threads = false;
   const char* name = "   scheduler";
 
-  size_t start_thread_idx = _current_thread - &all_threads[0];
-  start_thread_idx += 1;
+  size_t start_thread_idx;
+  /* On startup _current_thread will be NULL */
+  if (_current_thread) {
+    // +1 to skip the current thread
+    start_thread_idx = _current_thread - &all_threads[0] + 1;
+  } else {
+    start_thread_idx = 0;
+  }
+  
   size_t max_thread_idx = start_thread_idx + MAX_THREADS;
   for (size_t idx = start_thread_idx; idx < max_thread_idx; ++idx) {
     // Wrap into range of array
