@@ -7,11 +7,10 @@
   msr CNTV_CTL_EL0, x0
 .endm
 
-.macro CHECK_MONITOR_STACK
+.macro SAVE_KERNEL_TEMPS
   msr SPSel, #1
-  /* Use the monitor stack, we can't trust the thread stack here */
+  /* Use the kernel stack, we can't trust the thread stack here */
   stp x0, x1, [sp, #-16]!
-  // TODO: change macro name
 .endm
 
 .macro CURRENT_IN_X10_NEXT_IN_X11
@@ -32,15 +31,15 @@ thread_switch:
 */
 .global handle_timer
 handle_timer:
-  CHECK_MONITOR_STACK
+  SAVE_KERNEL_TEMPS
   DISABLE_TIMER
-  b .
+
   /* Next thread is always the scheduler on interrupt */
-//  ldr x0, =scheduler_thread
-//  ldr x1, =next_thread
-//  str x0, [x1]         // next_thread = &scheduler_thread
-//
-//  b start_thread_switch
+  mov x0, #0
+  ldr x1, =next_thread
+  str x0, [x1] // next_thread = NULL
+
+  b start_thread_switch
 
 .macro CHECK_SVC code, handler
   mov x1, #\code
@@ -55,7 +54,7 @@ handle_timer:
 
 .global handle_svc
 handle_svc:
-  CHECK_MONITOR_STACK
+  SAVE_KERNEL_TEMPS
   /* See what brought us here. */
   mrs x0, ESR_EL1
   lsr x0, x0, #26    // check exception code
