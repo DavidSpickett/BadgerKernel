@@ -89,8 +89,8 @@ __attribute__((noreturn)) void entry(void) {
   }
 
   // Call user setup
+  // TODO: (which also runs in kernel mode, hmmmmmm
   setup();
-  log_event("starting scheduler");
   // TODO: cleanup
   // Already in kernel mode here
   start_thread_switch();
@@ -217,7 +217,8 @@ void log_event(const char* event) {
 }
 
 void do_scheduler(void) {
-  //bool live_threads = false;
+  bool live_threads = false;
+  const char* name = "   scheduler";
 
   size_t start_thread_idx = _current_thread - &all_threads[0];
   start_thread_idx += 1;
@@ -231,27 +232,26 @@ void do_scheduler(void) {
     }
 
     if (all_threads[_idx].id != _idx) {
-      log_event("thread ID and position inconsistent!");
-      // TODO: exit(1);
+      printf("Thread %s: %s\n", name, "thread ID and position inconsistent!");
+      exit(1);
     }
 
     if (config.log_scheduler) {
-      log_event("scheduling new thread");
+      printf("Thread %s: %s\n", name, "scheduling new thread");
     }
 
-    //live_threads = true;
+    live_threads = true;
     if (config.log_scheduler) {
-      log_event("next thread chosen");
+      printf("Thread %s: %s\n", name, "next thread chosen");
     }
     next_thread = &all_threads[_idx];
     return;
   }
 
-  // TODO: if (!live_threads && config.exit_when_no_threads) {
-  //     log_event("all threads finished");
-  //   }
-  //   exit(0);
-  // }
+  if (!live_threads && config.exit_when_no_threads) {
+      printf("Thread %s: %s\n", name, "all threads finished");
+      exit(0);
+  }
 }
 
 static bool set_thread_state(int tid, ThreadState state) {

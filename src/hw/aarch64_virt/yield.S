@@ -101,7 +101,12 @@ semihosting:
      a halt's exception link register is the halt,
      not the next instr. Which makes things complicated.
   */
-  POP_MONITOR_TEMPS_USE_EL0_SP // Thread's sp points to arguments
+  /* TODO: this works from kernel mode because
+     semihosting doesn't use the stack pointer.
+     When we re-enter kernel mode we save x0/x1 to kernel
+     stack, then reload them here. So they're correct. */
+  // TODO: previous SPsel *seems* to be restored on eret
+  POP_MONITOR_TEMPS_USE_EL0_SP // Thread's registers points to arguments
   hlt 0xf000
   eret
 
