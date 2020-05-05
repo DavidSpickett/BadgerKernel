@@ -12,9 +12,10 @@
   stp x0, x1, [sp, #-16]!
 .endm
 
-.macro CURRENT_IN_X10_NEXT_IN_X11
-  ldr x10, =_current_thread
-  ldr x11, =next_thread
+.macro CURRENT_IN_X20_NEXT_IN_X21
+  // Deliberatley callee saved so we can call the scheduler easily
+  ldr x20, =_current_thread
+  ldr x21, =next_thread
 .endm
 
 .global thread_switch
@@ -118,7 +119,7 @@ start_thread_switch:
   cmp x0, x1
   bne check_stack_extent   // If current is valid, save its context
   POP_MONITOR_TEMPS_USE_EL0_SP
-  CURRENT_IN_X10_NEXT_IN_X11
+  CURRENT_IN_X20_NEXT_IN_X21
   b load_next_thread       // Otherwise skip to loading the next thread
 
 check_stack_extent:
@@ -163,10 +164,10 @@ save_current_thread:
   stp x27, x28, [sp, #-16]!
   stp x29, x30, [sp, #-16]!
 
-  CURRENT_IN_X10_NEXT_IN_X11
+  CURRENT_IN_X20_NEXT_IN_X21
 
   /* Save stack pointer */
-  ldr x1, [x10]        // x1 = _current_thread
+  ldr x1, [x20]        // x1 = _current_thread
   mov x3, sp
   str x3, [x1], #8     // _current_thread->stack_ptr=sp
 
@@ -180,31 +181,30 @@ save_current_thread:
 
 load_next_thread:
   /* null next_thread means ask the scheduler for next */
-  ldr x6, [x11]              // x6 = next_thread
+  ldr x6, [x21]              // x6 = next_thread
   mov x7, #0                 // next_thread = 0?
   cmp x6, x7
   bne actually_load_thread   // next already set, just load it
   msr SPSel, #1              // Use kernel's stack
   bl do_scheduler            // This will set next_thread
   msr SPSel, #0              // Back to user stack
-  CURRENT_IN_X10_NEXT_IN_X11 // Must reload in case C used them
-  ldr x6, [x11]              // Get new next_thread
+  ldr x6, [x21]              // Get new next_thread
   
 actually_load_thread:
-  str x6, [x10]            // _current_thread = next_thread
+  str x6, [x20]            // _current_thread = next_thread
   mov x12, #0              // Set next to null for next switch to call scheduler
-  str x12, [x11]           // next_thread = NULL
-  ldr x10, [x10]           // x10 = _current_thread
-  ldr x3, [x10], #8        // x3 = _current_thread->stack_ptr
+  str x12, [x21]           // next_thread = NULL
+  ldr x20, [x20]           // x20 = _current_thread
+  ldr x3, [x20], #8        // x3 = _current_thread->stack_ptr
   mov sp, x3
 
   /* check that this thread has been run at least once */
-  ldr x3, [x10]            // x3 = _current_thread->state
+  ldr x3, [x20]            // x3 = _current_thread->state
   mov x4, #init
   cmp x3, x4
 
   mov x4, #running         // either way it'll start running
-  str x4, [x10]            // _current_thread->state = running
+  str x4, [x20]            // _current_thread->state = running
 
   /* Don't restore if it's never run before */
   bne restore_regs
