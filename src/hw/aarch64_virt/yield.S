@@ -180,14 +180,15 @@ save_current_thread:
 
 load_next_thread:
   /* null next_thread means ask the scheduler for next */
-  ldr x6, [x11]            // x6 = next_thread
-  mov x7, #0               // next_thread = 0?
+  ldr x6, [x11]              // x6 = next_thread
+  mov x7, #0                 // next_thread = 0?
   cmp x6, x7
-  bne actually_load_thread // next already set, just load it
-  msr SPSel, #1            // Use kernel's stack
-  bl do_scheduler          // This will set next_thread
-  msr SPSel, #0            // Back to user stack
-  ldr x6, [x11]            // Get new next_thread
+  bne actually_load_thread   // next already set, just load it
+  msr SPSel, #1              // Use kernel's stack
+  bl do_scheduler            // This will set next_thread
+  msr SPSel, #0              // Back to user stack
+  CURRENT_IN_X10_NEXT_IN_X11 // Must reload in case C used them
+  ldr x6, [x11]              // Get new next_thread
   
 actually_load_thread:
   str x6, [x10]            // _current_thread = next_thread
