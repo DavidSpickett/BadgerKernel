@@ -8,8 +8,7 @@
 .endm
 
 .macro SAVE_KERNEL_TEMPS
-  msr SPSel, #1
-  /* Use the kernel stack, we can't trust the thread stack here */
+  msr SPSel, #1           // Use kernel stack
   stp x0, x1, [sp, #-16]!
 .endm
 
@@ -34,7 +33,7 @@ handle_timer:
   SAVE_KERNEL_TEMPS
   DISABLE_TIMER
 
-  /* Next thread is always the scheduler on interrupt */
+  /* Set next to NULL to run the scheduler */
   mov x0, #0
   ldr x1, =next_thread
   str x0, [x1] // next_thread = NULL
@@ -52,6 +51,10 @@ handle_timer:
   msr SPSel, #0
 .endm
 
+.macro POP_MONITOR_TEMPS
+  ldp x0, x1, [sp], #16
+.endm
+
 .global handle_svc
 handle_svc:
   SAVE_KERNEL_TEMPS
@@ -61,8 +64,7 @@ handle_svc:
   mov x1, #0x15      // SVC
   cmp x0, x1
   beq check_svc
-  /* unknown source */
-  b .
+  b .                // unknown source
 
 check_svc:
   mrs x0, ESR_EL1    // Reload then check svc code
@@ -72,8 +74,7 @@ check_svc:
   CHECK_SVC svc_semihosting, semihosting
   CHECK_SVC svc_enable_timer, enable_timer
   CHECK_SVC svc_disable_timer, disable_timer
-  /* unknown svc */
-  b .
+  b .                // unknown SVC
 
 enable_timer:
   mrs x0, CNTVCT_EL0     // Get current count
@@ -88,68 +89,55 @@ enable_timer:
 
 disable_timer:
   DISABLE_TIMER
-  b finalise_timer
-
 finalise_timer:
-  POP_MONITOR_TEMPS_USE_EL0_SP
+  POP_MONITOR_TEMPS
   eret
 
 semihosting:
   /* Do semihosting call
      We don't let threads hlt directly because
      a halt's exception link register is the halt,
-     not the next instr. Which makes things complicated.
+     not the next instr. Which makes things complicated
+     for the handler.
+
+     This code is also called from kernel mode. This is
+     fine because on entry to the handler we save x0/x1
+     to kernel stack. Then here we restore them. So
+     semihosting args are intact.
   */
-  /* TODO: this works from kernel mode because
-     semihosting doesn't use the stack pointer.
-     When we re-enter kernel mode we save x0/x1 to kernel
-     stack, then reload them here. So they're correct. */
-  // TODO: previous SPsel *seems* to be restored on eret
-  POP_MONITOR_TEMPS_USE_EL0_SP // Thread's registers points to arguments
+  POP_MONITOR_TEMPS // Thread's registers point to arguments
   hlt 0xf000
   eret
 
 .global start_thread_switch
 start_thread_switch:
-  /* If the current thread has never run, don't save anything.
-     Used for initial scheduler start and recovering from stack
-     boundary issues. */
+  /* If no thread has run before then we have nothing to restore */
   ldr x0, =_current_thread // x0 = &_current_thread
   ldr x0, [x0]             // x0 = _current_thread
-  mov x1, #0               // nullptr means we just started up
+  mov x1, #0               // NULL means we just started up
   cmp x0, x1
-  bne check_state
-  // Don't need to do anything with temps, already in kernel mode
-  CURRENT_IN_X10_NEXT_IN_X11
-  // Just go to user stack
-  msr SPSel, #0             // get thread's stack pointer
-  b load_next_thread
-check_state:
-  ldr x0, [x0, #4]         // x0 = _current_thread->state
-  mov x1, #init
-  cmp x0, x1
-  bne check_stack_extent
+  bne check_stack_extent   // If current is valid, save its context
   POP_MONITOR_TEMPS_USE_EL0_SP
   CURRENT_IN_X10_NEXT_IN_X11
-  b load_next_thread
+  b load_next_thread       // Otherwise skip to loading the next thread
 
 check_stack_extent:
-  ldr x0, =thread_stack_offset
-  ldr x1, =_current_thread
-  ldr x0, [x0]              // x0 = thread_stack_offset
-  ldr x1, [x1]              // x1 = _current_thread
-  add x0, x1, x0            // get minimum valid stack pointer
-  msr SPSel, #0             // get thread's stack pointer
+  ldr x0, =thread_stack_offset // x0 = &thread_stack_offset
+  ldr x1, =_current_thread     // x1 = &_current_thread
+  ldr x0, [x0]                 // x0 = thread_stack_offset
+  ldr x1, [x1]                 // x1 = _current_thread
+  add x0, x1, x0               // get minimum valid stack pointer
+  msr SPSel, #0                // get thread's stack pointer
   mov x1, sp
-  sub x1, x1, #((31+2+1)*8) // take away space we want to use
-  cmp x0, x1                // is potential sp < min valid sp?
-  bhs stack_extent_failed  // call C function to error and exit
+  msr SPSel, #1                // back to kernel stack
+  sub x1, x1, #((31+2+1)*8)    // take away space we want to use
+  cmp x0, x1                   // is potential sp < min valid sp?
+  bhs stack_extent_failed      // call C function to error and exit
 
 save_current_thread:
-  msr SPSel, #1
   POP_MONITOR_TEMPS_USE_EL0_SP
 
-  /* Save all registers to stack */
+  /* Save all registers to user stack */
   stp x0,  x1,  [sp, #-16]!
 
   mrs x0, FPSR              // Restore these second to last
@@ -191,39 +179,31 @@ save_current_thread:
   str x2, [x1]         // _current_thread->state = suspended
 
 load_next_thread:
-  ldr x11, [x11]         // x11 = next_thread
   /* null next_thread means ask the scheduler for next */
-  mov x12, #0
-  cmp x11, x12
-  bne actually_load_thread
-  msr SPSel, #1 // Use kernel's stack
-  bl do_scheduler
-  msr SPSel, #0
-  // Now next_thread is set
-  // TODO: dedupe
-  CURRENT_IN_X10_NEXT_IN_X11
-  // Reload it
-  ldr x11, [x11]
+  ldr x6, [x11]            // x6 = next_thread
+  mov x7, #0               // next_thread = 0?
+  cmp x6, x7
+  bne actually_load_thread // next already set, just load it
+  msr SPSel, #1            // Use kernel's stack
+  bl do_scheduler          // This will set next_thread
+  msr SPSel, #0            // Back to user stack
+  ldr x6, [x11]            // Get new next_thread
   
 actually_load_thread:
-  str x11, [x10]         // _current_thread = next_thread
-  mov x12, #0            // Set next to null for next switch to call scheduler
-  // Get address of next_thread again
-  // TODO: dedupe
-  CURRENT_IN_X10_NEXT_IN_X11
-  ldr x10, [x10] // Need to chase current again here
-  str x12, [x11]
-
-  ldr x3, [x10], #8      // x3 = _current_thread->stack_ptr
+  str x6, [x10]            // _current_thread = next_thread
+  mov x12, #0              // Set next to null for next switch to call scheduler
+  str x12, [x11]           // next_thread = NULL
+  ldr x10, [x10]           // x10 = _current_thread
+  ldr x3, [x10], #8        // x3 = _current_thread->stack_ptr
   mov sp, x3
 
   /* check that this thread has been run at least once */
-  ldr x3, [x10]          // x3 = _current_thread->state
+  ldr x3, [x10]            // x3 = _current_thread->state
   mov x4, #init
   cmp x3, x4
 
-  mov x4, #running      // either way it'll start running
-  str x4, [x10]         // _current_thread->state = running
+  mov x4, #running         // either way it'll start running
+  str x4, [x10]            // _current_thread->state = running
 
   /* Don't restore if it's never run before */
   bne restore_regs
