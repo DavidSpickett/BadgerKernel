@@ -1,4 +1,3 @@
-Thread  <scheduler>: starting scheduler
 Thread            0: foo
 Thread            0: yielding
 Thread            1: cancelling thread 2

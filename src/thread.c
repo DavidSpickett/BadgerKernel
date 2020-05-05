@@ -218,7 +218,7 @@ void log_event(const char* event) {
 
 void do_scheduler(void) {
   bool live_threads = false;
-  const char* name = "   scheduler";
+  const char* name = " <scheduler>";
 
   size_t start_thread_idx;
   /* On startup _current_thread will be NULL */
@@ -256,7 +256,9 @@ void do_scheduler(void) {
   }
 
   if (!live_threads && config.exit_when_no_threads) {
-      printf("Thread %s: %s\n", name, "all threads finished");
+      if (config.log_scheduler) {
+        printf("Thread %s: %s\n", name, "all threads finished");
+      }
       exit(0);
   }
 }

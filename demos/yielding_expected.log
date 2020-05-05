@@ -1,37 +1,26 @@
-Thread  <scheduler>: starting scheduler
 Thread  <scheduler>: scheduling new thread
-Thread  <scheduler>: yielding
+Thread  <scheduler>: next thread chosen
 Thread            0: working
 Thread            0: yielding
-Thread  <scheduler>: resuming
-Thread  <scheduler>: thread yielded
 Thread  <scheduler>: scheduling new thread
-Thread  <scheduler>: yielding
+Thread  <scheduler>: next thread chosen
 Thread            1: yielding
-Thread  <scheduler>: resuming
-Thread  <scheduler>: thread yielded
 Thread  <scheduler>: scheduling new thread
-Thread  <scheduler>: yielding
+Thread  <scheduler>: next thread chosen
 Thread            0: resuming
 Thread            0: working
 Thread            0: yielding
-Thread  <scheduler>: resuming
-Thread  <scheduler>: thread yielded
 Thread  <scheduler>: scheduling new thread
-Thread  <scheduler>: yielding
+Thread  <scheduler>: next thread chosen
 Thread            1: resuming
 Thread            1: yielding
-Thread  <scheduler>: resuming
-Thread  <scheduler>: thread yielded
 Thread  <scheduler>: scheduling new thread
-Thread  <scheduler>: yielding
+Thread  <scheduler>: next thread chosen
 Thread            0: resuming
 Thread            0: working
 Thread            0: yielding
-Thread  <scheduler>: resuming
-Thread  <scheduler>: thread yielded
 Thread  <scheduler>: scheduling new thread
-Thread  <scheduler>: yielding
+Thread  <scheduler>: next thread chosen
 Thread            1: resuming
 Thread            1: working
 Thread            1: exiting
