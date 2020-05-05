@@ -216,9 +216,14 @@ void log_event(const char* event) {
   printf("Thread %s: %s\n", thread_name, event);
 }
 
+void log_scheduler_event(const char* event) {
+  if (config.log_scheduler) {
+    printf("Thread  <scheduler>: %s\n", event);
+  }
+}
+
 void do_scheduler(void) {
   bool live_threads = false;
-  const char* name = " <scheduler>";
 
   size_t start_thread_idx;
   /* On startup _current_thread will be NULL */
@@ -239,26 +244,20 @@ void do_scheduler(void) {
     }
 
     if (all_threads[_idx].id != _idx) {
-      printf("Thread %s: %s\n", name, "thread ID and position inconsistent!");
+      printf("thread ID %u and position %u inconsistent!\n", _idx, all_threads[_idx].id);
       exit(1);
     }
 
-    if (config.log_scheduler) {
-      printf("Thread %s: %s\n", name, "scheduling new thread");
-    }
+    log_scheduler_event("scheduling new thread");
 
     live_threads = true;
-    if (config.log_scheduler) {
-      printf("Thread %s: %s\n", name, "next thread chosen");
-    }
+    log_scheduler_event("next thread chosen");
     next_thread = &all_threads[_idx];
     return;
   }
 
   if (!live_threads && config.exit_when_no_threads) {
-      if (config.log_scheduler) {
-        printf("Thread %s: %s\n", name, "all threads finished");
-      }
+      log_scheduler_event("all threads finished");
       exit(0);
   }
 }
