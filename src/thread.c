@@ -89,11 +89,18 @@ __attribute__((noreturn)) void entry(void) {
   }
 
   // Call user setup
-  // TODO: (which also runs in kernel mode, hmmmmmm
   setup();
-  // TODO: cleanup
+
+#ifdef linux
+  // TODO: is this a race condition?
+  do_scheduler();
+  // Let pthreads run
+  while (1) {}
+#else
   // Already in kernel mode here
   start_thread_switch();
+#endif
+
   __builtin_unreachable();
 }
 
@@ -158,8 +165,6 @@ void thread_yield(Thread* next) {
   if (log) {
     log_event("yielding");
   }
-  // TODO: null means scheduler decides
-  // Anything else use that?
   next_thread = next;
   thread_switch();
   if (log) {
@@ -226,12 +231,18 @@ void do_scheduler(void) {
   bool live_threads = false;
 
   size_t start_thread_idx;
-  /* On startup _current_thread will be NULL */
-  if (_current_thread) {
+  Thread* curr = current_thread();
+  if (curr) {
     // +1 to skip the current thread
-    start_thread_idx = _current_thread - &all_threads[0] + 1;
+    start_thread_idx = curr - &all_threads[0] + 1;
   } else {
+#ifdef linux
+    // Non pthread code responded to sigalrm?
+    __builtin_unreachable();
+#else
+    /* On startup _current_thread will be NULL on bare metal */
     start_thread_idx = 0;
+#endif
   }
   
   size_t max_thread_idx = start_thread_idx + MAX_THREADS;
@@ -244,7 +255,7 @@ void do_scheduler(void) {
     }
 
     if (all_threads[_idx].id != _idx) {
-      printf("thread ID %u and position %u inconsistent!\n", _idx, all_threads[_idx].id);
+      printf("thread ID %u and position %u inconsistent!\n", (unsigned)_idx, all_threads[_idx].id);
       exit(1);
     }
 
@@ -361,9 +372,8 @@ int add_named_thread_with_args(void (*worker)(), const char* name,
 
 void thread_wait(void) {
   current_thread()->state = waiting;
-  // Call thread_switch directly to keep state intact
-  // TODO
-  //next_thread = &scheduler_thread;
+  // Skip the yielding print
+  next_thread = NULL;
   thread_switch();
 }
 
@@ -389,7 +399,12 @@ bool thread_join(int tid, ThreadState* state) {
 #ifdef linux
 
 void thread_switch_alrm() {
-  next_thread = &scheduler_thread;
+  if (!current_thread()) {
+    // Something other than a user thread caught the signal
+    printf("Rejecting alrm\n");
+    return;
+  }  
+  next_thread = NULL;
   thread_switch();
 }
 
@@ -400,11 +415,10 @@ Thread* current_thread(void) {
       return &all_threads[i];
     }
   }
-  return &scheduler_thread;
+  return NULL;
 }
 
 void* thread_entry() {
-
   while (next_thread != current_thread()) {
     pthread_yield();
   }
@@ -418,26 +432,18 @@ void* thread_entry() {
   // Make sure we're not scheduled again
   current_thread()->state = finished;
 
-  // Go back to scheduler
-  next_thread = &scheduler_thread;
+  // Must call this so we check if there are threads left
+  do_scheduler();
 
   return NULL; //!OCLINT
 }
 
 void thread_switch(void) {
+  if (!next_thread) {
+    do_scheduler();
+  } 
   while (next_thread != current_thread()) {
     pthread_yield();
-  }
-}
-
-void start_scheduler(void) {
-  ThreadArgs args = {0, 0, 0, 0};
-  init_thread(&scheduler_thread, -1, "<scheduler>", do_scheduler /*redundant*/, args);
-  log_event("starting scheduler");
-  pthread_create(&scheduler_thread.self, NULL, (void* (*)(void*))do_scheduler,
-                 NULL);
-
-  while (1) { //!OCLINT
   }
 }
 
@@ -481,9 +487,6 @@ void check_stack(void) {
                  B: the thread struct is actually invalid */
       current_thread()->id = -1;
 
-      // TODO:
-      //_current_thread = &scheduler_thread;
-      //next_thread = &scheduler_thread;
       // Aka don't save any state, just load the scheduler
       current_thread()->state = init;
       thread_switch();
