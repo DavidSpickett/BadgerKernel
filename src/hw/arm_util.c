@@ -30,6 +30,30 @@ size_t generic_semihosting_call(size_t operation, volatile size_t* parameters) {
 #ifdef linux
   ret = 0; (void)operation; (void)parameters;
 #else
+#ifdef __thumb__
+  /* Haven't figured out how to allow another exception
+     if you're already handling the first one. So just
+     see if we're already using MSP aka in the kernel
+     and skip the svc if so.
+  */
+  size_t control;
+  asm volatile ("mrs %0, control":"=r"(control));
+  if (!(control & 0x2)) {
+    // bkpt directly instead
+    asm volatile (
+      "mov "RCHR"0, %[operation]\n\t"
+      "mov "RCHR"1, %[parameters]\n\t"
+      "bkpt 0xab\n\t"
+      "mov %[ret], "RCHR"0\n\t"
+      :[ret]"=r"(ret)
+      :[parameters]"r"(parameters),
+       [operation]"r"(operation)
+      :RCHR"0", RCHR"1"
+    );
+    return ret;
+  }
+  // Otherwise use the svc sequence below...
+#endif // ifdef __thumb__
   asm volatile (
     "mov "RCHR"0, %[operation]\n\t"
     "mov "RCHR"1, %[parameters]\n\t"
