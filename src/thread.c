@@ -1,7 +1,6 @@
 #ifdef linux
 #define _GNU_SOURCE
 #include <pthread.h>
-#include <signal.h>
 #endif
 #include "print.h"
 #include "thread.h"
@@ -95,10 +94,8 @@ __attribute__((noreturn)) void entry(void) {
 #ifdef linux
   // TODO: is this a race condition?
   do_scheduler();
-  // Let pthreads run, ignore all signals
-  sigset_t set;
-  sigfillset(&set);
-  sigsuspend(&set);
+  // Let pthreads run
+  while (1) {}
 #else
   // Already in kernel mode here
   start_thread_switch();
@@ -402,6 +399,11 @@ bool thread_join(int tid, ThreadState* state) {
 #ifdef linux
 
 void thread_switch_alrm() {
+  if (!current_thread()) {
+    // Something other than a user thread caught the signal
+    printf("Rejecting alrm\n");
+    return;
+  }  
   next_thread = NULL;
   thread_switch();
 }
