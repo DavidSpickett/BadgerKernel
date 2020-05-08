@@ -48,7 +48,7 @@ make
 | stackcheck (Arm/Thumb/AArch64) | Detection of thread stack underflow or overflow when they try to yield.           |
 | args                           | Passing arguments to a thread.                                                    |
 | mutex                          | Locking a buffer using a mutex.                                                   |
-| timer                          | Thread switching using a timer interrupt.                                         |
+| timer (Arm/Thumb/AArch64)      | Thread switching using a timer interrupt.                                         |
 | threadlocalstorage             | Using thread local storage (TLS) to give each thread it's own 'global' variables. |
 | conditionvariables             | Waiting on, signalling and broadcasting to condition variables.                   |
 | cancel                         | Cancelling threads.                                                               |
