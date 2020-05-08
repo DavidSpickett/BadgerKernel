@@ -10,9 +10,10 @@
   beq \handler
 .endm
 
-.macro CURRENT_IN_R6_NEXT_IN_R7
-  ldr r6, =_current_thread
-  ldr r7, =next_thread
+.macro CURRENT_IN_R10_NEXT_IN_R11
+  // Deliberatley callee saved registers so we can call do_scheduler easily
+  ldr r10, =_current_thread
+  ldr r11, =next_thread
 .endm
 
 .macro DISABLE_TIMER
@@ -20,21 +21,22 @@
   mcr p15, 0, r0, c14, c2, 1 // CNTP_CTL
 .endm
 
-.macro CHECK_MONITOR_STACK
-  push {r0-r1}     // push to monitor stack
+.macro SAVE_KERNEL_TEMPS
+  push {r0-r1}
+.endm
 
-  /* Check monitor stack */
-  ldr r0, =monitor_stack_top
-  ldr r0, [r0]
-  sub r0, r0, #8   // 2 Arm registers
-  mov r1, sp
-  cmp r0, r1
-  bne .                    // probably a re-entry
+.macro POP_KERNEL_TEMPS
+  pop {r0-r1}
 .endm
 
 .macro POP_TEMPS_GOTO_SYSTEM_MODE
-  pop {r0, r1}            // pop temps from supervisor stack
+  POP_KERNEL_TEMPS
   srsdb sp!, #SYSTEM_MODE // save CPSR and lr to system mode stack pointer
+  cps #SYSTEM_MODE        // continue in system mode
+.endm
+
+.macro POP_KERNEL_TEMPS_USE_SYSTEM_SP
+  POP_KERNEL_TEMPS
   cps #SYSTEM_MODE        // continue in system mode
 .endm
 
@@ -53,13 +55,13 @@ handle_timer:
   pop {lr}         // Want IRQ mode LR
   add sp, sp, #4   // Don't want IRQ mode sp
 
-  CHECK_MONITOR_STACK
+  SAVE_KERNEL_TEMPS
   DISABLE_TIMER
 
-  /* Next thread is always the scheduler on interrupt */
-  ldr r0, =scheduler_thread
-  ldr r1, =next_thread
-  str r0, [r1]         // next_thread = &scheduler_thread
+  /* Next thread is always NULL so that we run the scheduler */
+  mov r0, #0
+  ldr r1, =next_thread // r1 = &next_thread
+  str r0, [r1]         // next_thread = NULL
 
   b start_thread_switch
 
@@ -70,9 +72,8 @@ thread_switch:
 
 .global handle_exception
 handle_exception:
-  CHECK_MONITOR_STACK
+  SAVE_KERNEL_TEMPS
 
-  /* See if this is semihosting or a thread switch */
   ldr r0, [lr, #-4]        // load svc instruction used
   ldr r1, =0xFFFFFF        // mask to get code
   and r0, r0, r1
@@ -80,26 +81,23 @@ handle_exception:
   CHECK_SVC svc_semihosting, semihosting
   CHECK_SVC svc_enable_timer, enable_timer
   CHECK_SVC svc_disable_timer, disable_timer
-  /* unknown svc */
-  b .
+  b . //unknown svc
 
+.global start_thread_switch
 start_thread_switch:
-  /* If the current thread has never run, don't save anything.
-     Used for initial scheduler start and recovering from stack
-     boundary issues. */
-  ldr r0, =_current_thread // r0 = &_current_thread
-  ldr r0, [r0]             // r0 = _current_thread
-  ldr r0, [r0, #4]         // r0 = _current_thread->state
-  mov r1, #init
+  /* If no thread has run before then there's nothing to restore. */
+  ldr r0, =_current_thread       // r0 = &_current_thread
+  ldr r0, [r0]                   // r0 = _current_thread
+  mov r1, #0                     // NULL means we just started up
   cmp r0, r1
-  bne check_stack_extent
-  POP_TEMPS_GOTO_SYSTEM_MODE
-  CURRENT_IN_R6_NEXT_IN_R7
-  b load_next_thread
+  bne check_stack_extent         // If current is valid, save its context
+  POP_KERNEL_TEMPS_USE_SYSTEM_SP // Just switch sp, no lr/pc to save to return stack
+  CURRENT_IN_R10_NEXT_IN_R11
+  b load_next_thread             // Otherwise skip to loading the next thread
 
 check_stack_extent:
-  ldr r0, =thread_stack_offset
-  ldr r1, =_current_thread
+  ldr r0, =thread_stack_offset // r0 = &thread_stack_offset
+  ldr r1, =_current_thread     // r0 = &_current_thread
   ldr r0, [r0]                 // r0 = thread_stack_offset
   ldr r1, [r1]                 // r1 = _current_thread
   add r0, r1, r0               // get minimum valid stack pointer
@@ -116,10 +114,10 @@ save_current_thread:
   /* Push all regs apart from sp and pc, but including lr */
   push {r0-r12, r14}
 
-  CURRENT_IN_R6_NEXT_IN_R7
+  CURRENT_IN_R10_NEXT_IN_R11
 
   /* Save stack pointer */
-  ldr r1, [r6]         // r1 = _current_thread
+  ldr r1, [r10]        // r1 = _current_thread
   str sp, [r1], #4     // _current_thread->stack_ptr=sp
 
   /* Update state */
@@ -131,17 +129,30 @@ save_current_thread:
   str r3, [r1]         // _current_thread->state = suspended
 
 load_next_thread:
-  ldr r7, [r7]         // r11 = next_thread
-  str r7, [r6]         // _current_thread = next_thread
-  ldr sp, [r7], #4     // sp = next_thread->stack_ptr
+  /* null next_thread means ask the scheduler for next */
+  ldr r4, [r11]            // r4 = next_thread
+  mov r5, #0               // next_thread == 0 ?
+  cmp r4, r5
+  bne actually_load_thread // next already set, just load it
+  cps #SUPERVISOR_MODE     // Use kernel's stack
+  bl do_scheduler          // This will set next_thread
+  cps #SYSTEM_MODE         // Back to user stack
+  ldr r4, [r11]            // Get new next_thread
+
+actually_load_thread:
+  str r4, [r10]        // _current_thread = next_thread
+  mov r5, #0           // Set next to null for next switch to call scheduler
+  str r5, [r11]        // next_thread = NULL
+  ldr r10, [r10]       // r10 = _current_thread
+  ldr sp, [r10], #4    // sp = current_thread->stack_ptr
 
   /* check that this thread has been run at least once */
-  ldr r3, [r7]          // r3 = next_thread->state
+  ldr r3, [r10]        // r3 = _current_thread->state
   mov r4, #init
   cmp r3, r4
 
   mov r4, #running      // either way it'll start running
-  str r4, [r7]          // next_thread->state = running
+  str r4, [r10]         // _current_thread->state = running
 
   /* Don't restore if it's never run before */
   bne restore_regs
@@ -150,15 +161,25 @@ load_next_thread:
   ldr r4, =thread_start // init link register
   mov r5, #USER_MODE    // not sure of mode but flags should be 0
   stmdb sp!, {r4,r5}
-  b exception_return          // don't restore other regs, just these two when we return
+  b exception_return    // don't restore other regs, just these two when we return
 
 restore_regs:
   pop {r0-r12, r14}     // restore our own regs (no sp/pc)
   b exception_return
 
 semihosting:
-  // use user r0/r1 and sp to get arguments
-  POP_TEMPS_GOTO_SYSTEM_MODE
+  /* Kernel or user can end up here, so check original mode */
+  mrs r0, SPSR
+  and r0, #0x1F               // Get M field
+  mov r1, #SUPERVISOR_MODE
+  cmp r0, r1
+  bne was_user_mode
+  POP_KERNEL_TEMPS            // use kernel r0/r1 to get arguments
+  srsdb sp!, #SUPERVISOR_MODE // setup for return to kernel mode
+  b do_semihosting
+was_user_mode:
+  POP_TEMPS_GOTO_SYSTEM_MODE // go to user and set up for return to user mode
+do_semihosting:
   svc 0x123456     // picked up by Qemu
   b exception_return
 
