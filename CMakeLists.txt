@@ -89,7 +89,6 @@ set( BASE_SOURCES
 if(LINUX)
   set( BASE_SOURCES ${BASE_SOURCES}
     src/hw/linux/main.c
-    src/hw/linux/timer.c
   )
 else()
   set( BASE_SOURCES ${BASE_SOURCES}
@@ -204,7 +203,6 @@ add_demo_app(exit)
 add_demo_app(spawn)
 add_demo_app(args)
 add_demo_app(mutex)
-add_demo_app(timer)
 add_demo_app(conditionvariables)
 add_demo_app(cancel)
 add_demo_app(printthreadname)
@@ -222,4 +220,5 @@ if(NOT LINUX)
   add_demo_app(stackcheck)
   add_demo_app(selfyield)
   add_demo_app(alloc)
+  add_demo_app(timer)
 endif()

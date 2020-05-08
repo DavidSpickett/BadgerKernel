@@ -92,7 +92,10 @@ __attribute__((noreturn)) void entry(void) {
   setup();
 
 #ifdef linux
-  // TODO: is this a race condition?
+  /* I don't think this is a race condition because
+     next_thread is NULL until this sets it.
+     The other threads will just yield back here
+     until next_thread is set. */
   do_scheduler();
   // Let pthreads run
   while (1) {}
@@ -236,13 +239,8 @@ void do_scheduler(void) {
     // +1 to skip the current thread
     start_thread_idx = curr - &all_threads[0] + 1;
   } else {
-#ifdef linux
-    // Non pthread code responded to sigalrm?
-    __builtin_unreachable();
-#else
-    /* On startup _current_thread will be NULL on bare metal */
+    // On startup current_thread will be NULL
     start_thread_idx = 0;
-#endif
   }
   
   size_t max_thread_idx = start_thread_idx + MAX_THREADS;
@@ -415,6 +413,11 @@ Thread* current_thread(void) {
       return &all_threads[i];
     }
   }
+  // Main thread should only hit this once when it
+  // calls do_scheduler for the first time.
+  static bool called_on_main = false;
+  if (called_on_main) __builtin_unreachable();
+  called_on_main = true;
   return NULL;
 }
 
