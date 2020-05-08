@@ -1,4 +1,6 @@
+#!/bin/bash
 set -e
+
 for platform in "arm" "thumb" "aarch64" "linux"; do
   for opt_level in "0" "3" "s"; do
     for sanitizers in "ON" "OFF"; do
