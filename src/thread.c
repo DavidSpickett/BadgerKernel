@@ -186,7 +186,6 @@ void format_thread_name(char* out) {
     out[idx] = ' ';
   }
 
-  // TODO: how do I know I'm in kernel mode?
   const char* name = current_thread()->name;
   
   if (name == NULL) {
@@ -524,8 +523,6 @@ __attribute__((noreturn)) void thread_start(void) {
      away anyway.
   */
 
-  // TODO: ??
-  //next_thread = &scheduler_thread;
   // Calling thread_switch directly so we don't print 'yielding'
   // TODO: we save state here that we don't need to
   thread_switch();

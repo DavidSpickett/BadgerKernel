@@ -49,7 +49,6 @@ el1_table:
 
   /* Current EL with SPxELR_EL3 */
   .balign 128
-  // TODO: correct for svc from kernel mode?
   .extern handle_svc
   b handle_svc // sync
   .balign 128
