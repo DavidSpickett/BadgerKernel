@@ -98,7 +98,8 @@ __attribute__((noreturn)) void entry(void) {
      until next_thread is set. */
   do_scheduler();
   // Let pthreads run
-  while (1) {}
+  while (1) { //!OCLINT
+  }
 #else
   // Already in kernel mode here
   start_thread_switch();
@@ -261,7 +262,7 @@ void do_scheduler(void) {
     live_threads = true;
     log_scheduler_event("next thread chosen");
     next_thread = &all_threads[_idx];
-    return;
+    return; //!OCLINT
   }
 
   if (!live_threads && config.exit_when_no_threads) {
