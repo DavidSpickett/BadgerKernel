@@ -234,15 +234,7 @@ void do_scheduler(void) {
   bool live_threads = false;
 
   size_t start_thread_idx;
-#ifdef linux
-  // On Linux the alrm signal might be picked up by any thread
-  // So use next_thread to track what the interrupted thread was
-  // This gives us what we think "current" should be
-  Thread* curr = next_thread;
-#else
   Thread* curr = current_thread();
-#endif
-
   if (curr) {
     // +1 to skip the current thread
     start_thread_idx = curr - &all_threads[0] + 1;
@@ -410,7 +402,8 @@ bool thread_join(int tid, ThreadState* state) {
 #ifdef linux
 
 void thread_switch_alrm() {
-  do_scheduler();
+  next_thread = NULL;
+  thread_switch();
 }
 
 Thread* current_thread(void) {
@@ -514,7 +507,22 @@ __attribute__((noreturn)) void thread_start(void) {
   // Make sure we're not scheduled again
   current_thread()->state = finished;
 
+  /* You might think this is a timing issue.
+     What if we're interrupted here?
+
+     Well, we'd go to thread_switch, next_thread
+     is set to the scheduler automatically.
+     Since our state is finished, it won't be updated
+     to suspended. Meaning, we'll never come back here.
+
+     Which is just fine, since we were going to switch
+     away anyway.
+  */
+
+  // TODO: ??
+  //next_thread = &scheduler_thread;
   // Calling thread_switch directly so we don't print 'yielding'
+  // TODO: we save state here that we don't need to
   thread_switch();
 
   __builtin_unreachable();
