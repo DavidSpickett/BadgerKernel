@@ -1,13 +1,14 @@
+#!/bin/bash
 set -e
 
 while true; do
   python3 gen_random_demo.py > demos/generated.c
-  make generated 2>&1 > /dev/null
+  make generated > /dev/null 2>&1
   make run_generated > /tmp/generated.log
   cat /tmp/generated.log
 
   # Check output formatting (second part is for make's status messages)
-  if cat /tmp/generated.log | grep -v -P "(Thread\s.*:\s.*|\[.*\]\s.*)"; then
+  if grep -v -P "(Thread\s.*:\s.*|\[.*\]\s.*)" /tmp/generated.log; then
     echo "Inconsistent log output!"
     exit 1
   else
@@ -15,6 +16,6 @@ while true; do
   fi
 
   # Should exit normally
-  cat /tmp/generated.log | grep "all threads finished"
+  grep "all threads finished" /tmp/generated.log
   echo "**************************************************"
 done
