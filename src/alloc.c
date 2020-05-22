@@ -125,6 +125,23 @@ void* realloc(void* ptr, size_t size) {
   return new_ptr;
 }
 
+void free_all(int tid) {
+  for (size_t idx = 0; idx < NUM_BLOCKS; ++idx) {
+    if (block_tags[idx].tag) {
+      // Skip over blocks we know are allocated
+      // -1 here because the for loop will +1
+      size_t new_idx = idx + (block_tags[idx].tag - 1);
+
+      // Free this thread's allocations
+      if (block_tags[idx].tid == tid) {
+        block_tags[idx].tag = 0;
+      }
+
+      idx = new_idx;
+    }
+  }
+}
+
 void free(void* ptr) {
   if (!can_realloc_free(ptr)) {
     return;

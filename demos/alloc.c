@@ -278,6 +278,15 @@ void check_protect() {
   free(new_alloc);
 }
 
+uint32_t* freed_on_exit;
+void free_on_exit() {
+  freed_on_exit = malloc(sizeof(uint32_t));
+}
+
+void exit_freed() {
+  assert(malloc(sizeof(uint32_t)) == freed_on_exit);
+}
+
 void setup(void) {
   config.log_scheduler = false;
 
@@ -291,4 +300,6 @@ void setup(void) {
   add_named_thread(realloc_fail, "realloc_fail");
   add_named_thread(protect_alloc, "protect_alloc");
   add_named_thread(check_protect, "check_protect");
+  add_named_thread(free_on_exit, "free_on_exit");
+  add_named_thread(exit_freed, "exit_freed");
 }

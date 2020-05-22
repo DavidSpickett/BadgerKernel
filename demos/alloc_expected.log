@@ -11,5 +11,7 @@ Thread realloc_free: exiting
 Thread realloc_fail: exiting
 Thread protect_allo: yielding
 Thread check_protec: exiting
+Thread free_on_exit: exiting
+Thread   exit_freed: exiting
 Thread protect_allo: resuming
 Thread protect_allo: exiting

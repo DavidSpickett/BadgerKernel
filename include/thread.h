@@ -4,7 +4,7 @@
 #include "thread_state.h"
 #include <stdbool.h>
 
-#define MAX_THREADS 11
+#define MAX_THREADS 12
 
 typedef struct {
   bool destroy_on_stack_err;

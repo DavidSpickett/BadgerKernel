@@ -11,6 +11,7 @@
 #include <string.h>
 
 #ifndef linux
+#include "alloc.h"
 #define THREAD_STACK_SIZE 1024 * STACK_SIZE
 // 2 registers on AArch64
 #define MONITOR_STACK_SIZE 2 * 8
@@ -429,8 +430,6 @@ void* thread_entry() {
   // Make sure we're not scheduled again
   current_thread()->state = finished;
 
-  // TODO: free all heap allocations
-
   // Must call this so we check if there are threads left
   do_scheduler();
 
@@ -486,6 +485,8 @@ void check_stack(void) {
                  B: the thread struct is actually invalid */
       current_thread()->id = -1;
 
+      // Would clear heap allocs here but we can't trust the thread ID
+
       // Aka don't save any state, just load the scheduler
       current_thread()->state = init;
       thread_switch();
@@ -519,6 +520,9 @@ __attribute__((noreturn)) void thread_start(void) {
      Which is just fine, since we were going to switch
      away anyway.
   */
+
+  // Free any lingering heap allocations
+  free_all(get_thread_id());
 
   // Calling thread_switch directly so we don't print 'yielding'
   // TODO: we save state here that we don't need to
