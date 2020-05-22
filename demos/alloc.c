@@ -89,7 +89,7 @@ void fragmented(void) {
   }
 
   // small alloc is fine
-  uint32_t* less_than_a_block = malloc(sizeof(uint32_t*));
+  uint32_t* less_than_a_block = malloc(sizeof(uint32_t));
   assert(less_than_a_block != NULL);
   free(less_than_a_block);
 
