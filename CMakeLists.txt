@@ -56,7 +56,8 @@ endif()
 # Note that anything but GCC isn't going to work for bare metal
 set( CMAKE_C_COMPILER "${PREFIX}${COMPILER}" )
 
-set( CFLAGS "-DSTACK_SIZE=${STACK_SIZE} -g3 -O${OPT_LEVEL} -Wall -Werror -std=gnu11")
+# Ignore attr error so we can use oclint annotations
+set( CFLAGS "-DSTACK_SIZE=${STACK_SIZE} -g3 -O${OPT_LEVEL} -Wall -Werror -Wno-error=attributes -std=gnu11")
 
 if (LINUX)
   set( CFLAGS "${CFLAGS} -pthread" )

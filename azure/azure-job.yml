@@ -57,7 +57,7 @@ jobs:
           cmake . -DBUILD_PLATFORM=${{build_platform}} -DOPT_LEVEL=0 -DSANITIZERS=ON -DCOMPILER=${{parameters.compiler}} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
           tmpfile=$(mktemp)
           # Violations will fail with non zero exit code
-          oclint -enable-clang-static-analyzer `find -not \( -path ./oclint -prune \) -not \( -path ./CMakeFiles -prune \) -not \( -path ./demos -prune \) -regex ".*\.c"` -max-priority-1 0 -max-priority-2 0 -max-priority-3 0 | tee $tmpfile
+          oclint -enable-clang-static-analyzer `find -not \( -path ./oclint -prune \) -not \( -path ./CMakeFiles -prune \) -regex ".*\.c"` -max-priority-1 0 -max-priority-2 0 -max-priority-3 0 | tee $tmpfile
           # Static analyser results don't affect return code so do it ourselves
           ! awk '/Clang Static Analyzer Results:/{flag=1; next} /OCLint Report/{flag=0}flag' $tmpfile | grep -qve "^$"
         displayName: oclint

@@ -109,6 +109,9 @@ void errors() {
   assert(!bad_malloc);
 }
 
+__attribute__((
+  annotate("oclint:suppress[high cyclomatic complexity]"),
+  annotate("oclint:suppress[high ncss method]")))
 void realloc_more() {
   // Realloc with nullptr is just malloc
   size_t array_sz = 8;

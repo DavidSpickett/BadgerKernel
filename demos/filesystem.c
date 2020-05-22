@@ -23,6 +23,9 @@ void errors(void) {
   assert(remove("/not/a/file") == -1);
 }
 
+__attribute__((
+  annotate("oclint:suppress[high cyclomatic complexity]"),
+  annotate("oclint:suppress[high ncss method]")))
 void basics(void) {
   // Make a new file
   char* file_path = "/bar/foo.txt";
