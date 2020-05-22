@@ -14,7 +14,8 @@ jobs:
       vmImage: 'ubuntu-18.04'
     steps:
       - checkout: self
-          path: 'ARMMultiTasking'
+        path: 'ARMMultiTasking'
+
       - script: |
           sudo apt-get update
           sudo apt-get install -y python3-pip
