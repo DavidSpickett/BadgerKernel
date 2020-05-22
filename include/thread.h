@@ -8,7 +8,6 @@
 
 typedef struct {
   bool destroy_on_stack_err;
-  bool exit_when_no_threads;
   bool log_scheduler;
 } MonitorConfig;
 extern MonitorConfig config;

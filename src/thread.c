@@ -57,7 +57,6 @@ __attribute__((section(".thread_vars"))) Thread* volatile next_thread;
 
 __attribute__((section(".thread_vars")))
 MonitorConfig config = {.destroy_on_stack_err = false,
-                        .exit_when_no_threads = true,
                         .log_scheduler = true};
 
 bool is_valid_thread(int tid) {
@@ -231,8 +230,6 @@ void log_scheduler_event(const char* event) {
 }
 
 void do_scheduler(void) {
-  bool live_threads = false;
-
   size_t start_thread_idx;
   Thread* curr = current_thread();
   if (curr) {
@@ -259,16 +256,13 @@ void do_scheduler(void) {
 
     log_scheduler_event("scheduling new thread");
 
-    live_threads = true;
     log_scheduler_event("next thread chosen");
     next_thread = &all_threads[_idx];
     return; //!OCLINT
   }
 
-  if (!live_threads && config.exit_when_no_threads) {
-      log_scheduler_event("all threads finished");
-      exit(0);
-  }
+  log_scheduler_event("all threads finished");
+  exit(0);
 }
 
 static bool set_thread_state(int tid, ThreadState state) {
