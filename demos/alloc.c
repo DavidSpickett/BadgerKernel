@@ -262,17 +262,21 @@ void protect_alloc() {
 void check_protect() {
   uint32_t* old_alloc_addr = the_protected_alloc;
 
-  // Won't allow us to free it
-  free(the_protected_alloc);
-  // If it did then this alloc would have the same address
+  // Check realloc first so that Clang static analyser
+  // doesnt flag us trying to realloc a freed pointer
+  // (which isn't actually freed, that's the point of the test)
+
+  // realloc will return the same ptr
+  uint32_t* realloc_addr = realloc(the_protected_alloc, 2);
+  assert(realloc_addr == old_alloc_addr);
+  // a new alloc will be a different address
   uint32_t* new_alloc = malloc(sizeof(uint32_t));
   assert(new_alloc != old_alloc_addr);
   free(new_alloc);
 
-  // Same thing for realloc, but it will return the same ptr
-  uint32_t* realloc_addr = realloc(the_protected_alloc, 2);
-  assert(realloc_addr == old_alloc_addr);
-  // Again a new alloc will be a different address
+  // Won't allow us to free it
+  free(the_protected_alloc);
+  // If it did then this alloc would have the same address
   new_alloc = malloc(sizeof(uint32_t));
   assert(new_alloc != old_alloc_addr);
   free(new_alloc);
