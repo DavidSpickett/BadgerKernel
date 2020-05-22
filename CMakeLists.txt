@@ -17,6 +17,11 @@ message(STATUS "LTO is ${LTO}")
 message(STATUS "COVERAGE is ${COVERAGE}")
 message(STATUS "COMPILER is ${COMPILER}")
 
+# Match to catch clang/clang-XYZ
+if (COMPILER MATCHES "clang")
+  set( CLANG ON)
+endif()
+
 if (BP_LOWER STREQUAL "linux")
   set( LINUX ON )
 elseif( BP_LOWER STREQUAL "arm" )
@@ -55,6 +60,9 @@ set( CFLAGS "-DSTACK_SIZE=${STACK_SIZE} -g3 -O${OPT_LEVEL} -Wall -Werror -std=gn
 
 if (LINUX)
   set( CFLAGS "${CFLAGS} -pthread" )
+  if (CLANG)
+    set( CFLAGS "${CFLAGS} -femulated-tls" )
+  endif()
 else()
   set( QEMU "${QEMU_CMD} -m 64M -nographic -semihosting -kernel" )
   set( CFLAGS "${CFLAGS} -ffreestanding -nostdlib -DUART_BASE=${UART_BASE}" )
@@ -90,16 +98,22 @@ if(LINUX)
   set( BASE_SOURCES ${BASE_SOURCES}
     src/hw/linux/main.c
   )
+  if(CLANG)
+    set( BASE_SOURCES ${BASE_SOURCES} src/emutls.c)
+  endif()
 else()
   set( BASE_SOURCES ${BASE_SOURCES}
     src/hw/${PLATFORM_SRC}/vectors.s
     src/hw/${PLATFORM_SRC}/startup.s
     src/hw/${PLATFORM_SRC}/yield.S
     src/hw/arm_util.c
-    src/emutls.c
     src/print.c
     src/alloc.c
   )
+
+  if(NOT BP_LOWER STREQUAL "aarch64")
+    set( BASE_SOURCES ${BASE_SOURCES} src/emutls.c)
+  endif()
 
   if(BP_LOWER STREQUAL "thumb" )
     set( BASE_SOURCES ${BASE_SOURCES} src/hw/${PLATFORM_SRC}/timer.c)
@@ -212,7 +226,7 @@ add_demo_app(filesystem)
 # For the random demo generator
 add_demo_app(generated)
 
-if(NOT BP_LOWER STREQUAL "aarch64" )
+if(NOT BP_LOWER STREQUAL "aarch64" OR (LINUX AND CLANG))
   add_demo_app(threadlocalstorage)
 endif()
 
