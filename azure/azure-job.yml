@@ -13,6 +13,8 @@ jobs:
     pool:
       vmImage: 'ubuntu-18.04'
     steps:
+      - checkout: self
+          path: 'ARMMultiTasking'
       - script: |
           sudo apt-get update
           sudo apt-get install -y python3-pip
@@ -54,10 +56,11 @@ jobs:
           mkdir oclint
           wget -qO- https://github.com/oclint/oclint/releases/download/v0.13.1/oclint-0.13.1-x86_64-linux-4.4.0-112-generic.tar.gz | tar xzf - -C oclint --strip-components=1
           export PATH=$(pwd)/toolchain/bin/:$(pwd)/oclint/bin/:$PATH
+          cd ARMMultiTasking
           cmake . -DBUILD_PLATFORM=${{build_platform}} -DOPT_LEVEL=0 -DSANITIZERS=ON -DCOMPILER=${{parameters.compiler}} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
           tmpfile=$(mktemp)
           # Violations will fail with non zero exit code
-          oclint -enable-clang-static-analyzer `find -not \( -path ./oclint -prune \) -not \( -path ./CMakeFiles -prune \) -regex ".*\.c"` -max-priority-1 0 -max-priority-2 0 -max-priority-3 0 | tee $tmpfile
+          oclint -enable-clang-static-analyzer `find -not \( -path ./CMakeFiles -prune \) -regex ".*\.c"` -max-priority-1 0 -max-priority-2 0 -max-priority-3 0 | tee $tmpfile
           # Static analyser results don't affect return code so do it ourselves
           ! awk '/Clang Static Analyzer Results:/{flag=1; next} /OCLint Report/{flag=0}flag' $tmpfile | grep -qve "^$"
         displayName: oclint
@@ -70,6 +73,7 @@ jobs:
                 set -ex
                 # Each script has its own environment so we need to do this here
                 export PATH=$(pwd)/toolchain/bin/:$PATH
+                cd ARMMutliTasking
                 cmake . -DBUILD_PLATFORM=${{build_platform}} -DOPT_LEVEL=${{opt_level}} -DSANITIZERS=${{sanitizers}} -DLTO=${{lto}}
                 make clean
                 make make_demos
@@ -77,6 +81,7 @@ jobs:
 
             - script: |
                 source testenv/bin/activate
+                cd ARMMutliTasking
                 # Don't be fooled, this is actually JUnit format
                 lit demos --xunit-xml-output ${{build_platform}}_O${{opt_level}}_SANITIZERS_${{sanitizers}}_LTO_${{lto}}_results.xml -a
               displayName: test-O${{opt_level}}_SANITIZERS_${{sanitizers}}_LTO_${{lto}}
