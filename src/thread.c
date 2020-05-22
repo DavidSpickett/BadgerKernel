@@ -429,6 +429,8 @@ void* thread_entry() {
   // Make sure we're not scheduled again
   current_thread()->state = finished;
 
+  // TODO: free all heap allocations
+
   // Must call this so we check if there are threads left
   do_scheduler();
 

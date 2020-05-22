@@ -245,6 +245,39 @@ void realloc_fail() {
   }
 }
 
+uint32_t* the_protected_alloc;
+void protect_alloc() {
+  the_protected_alloc = malloc(sizeof(uint32_t));
+  uint32_t* old_alloc_addr = the_protected_alloc;
+  yield_next();
+
+  // If the other thread managed to free/reallloc it
+  // then this addr will be the same as the original alloc
+  uint32_t* new_alloc = malloc(sizeof(uint32_t));
+  assert(new_alloc != old_alloc_addr);
+  free(new_alloc);
+  free(the_protected_alloc);
+}
+
+void check_protect() {
+  uint32_t* old_alloc_addr = the_protected_alloc;
+
+  // Won't allow us to free it
+  free(the_protected_alloc);
+  // If it did then this alloc would have the same address
+  uint32_t* new_alloc = malloc(sizeof(uint32_t));
+  assert(new_alloc != old_alloc_addr);
+  free(new_alloc);
+
+  // Same thing for realloc, but it will return the same ptr
+  uint32_t* realloc_addr = realloc(the_protected_alloc, 2);
+  assert(realloc_addr == old_alloc_addr);
+  // Again a new alloc will be a different address
+  new_alloc = malloc(sizeof(uint32_t));
+  assert(new_alloc != old_alloc_addr);
+  free(new_alloc);
+}
+
 void setup(void) {
   config.log_scheduler = false;
 
@@ -256,4 +289,6 @@ void setup(void) {
   add_named_thread(realloc_less, "realloc_less");
   add_named_thread(realloc_free, "realloc_free");
   add_named_thread(realloc_fail, "realloc_fail");
+  add_named_thread(protect_alloc, "protect_alloc");
+  add_named_thread(check_protect, "check_protect");
 }
