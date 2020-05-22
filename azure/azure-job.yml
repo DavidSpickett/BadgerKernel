@@ -50,6 +50,7 @@ jobs:
           python3 -m virtualenv testenv
           source testenv/bin/activate
           pip3 install lit
+        workingDirectory: $(Agent.BuildDirectory)
         displayName: install-lit
 
       - script: |
@@ -64,6 +65,7 @@ jobs:
           oclint -enable-clang-static-analyzer `find -not \( -path ./CMakeFiles -prune \) -regex ".*\.c"` -max-priority-1 0 -max-priority-2 0 -max-priority-3 0 | tee $tmpfile
           # Static analyser results don't affect return code so do it ourselves
           ! awk '/Clang Static Analyzer Results:/{flag=1; next} /OCLint Report/{flag=0}flag' $tmpfile | grep -qve "^$"
+        workingDirectory: $(Agent.BuildDirectory)
         displayName: oclint
         continueOnError: true
 
@@ -74,17 +76,19 @@ jobs:
                 set -ex
                 # Each script has its own environment so we need to do this here
                 export PATH=$(pwd)/toolchain/bin/:$PATH
-                cd ARMMutliTasking
+                cd ARMMultiTasking
                 cmake . -DBUILD_PLATFORM=${{build_platform}} -DOPT_LEVEL=${{opt_level}} -DSANITIZERS=${{sanitizers}} -DLTO=${{lto}}
                 make clean
                 make make_demos
+              workingDirectory: $(Agent.BuildDirectory)
               displayName: build-O${{opt_level}}_SANITIZERS_${{sanitizers}}_LTO_${{lto}}
 
             - script: |
                 source testenv/bin/activate
-                cd ARMMutliTasking
+                cd ARMMultiTasking
                 # Don't be fooled, this is actually JUnit format
                 lit demos --xunit-xml-output ${{build_platform}}_O${{opt_level}}_SANITIZERS_${{sanitizers}}_LTO_${{lto}}_results.xml -a
+              workingDirectory: $(Agent.BuildDirectory)
               displayName: test-O${{opt_level}}_SANITIZERS_${{sanitizers}}_LTO_${{lto}}
               # So we'll get a failed build when tests fail
               continueOnError: true
