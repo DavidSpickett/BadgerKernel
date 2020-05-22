@@ -202,8 +202,7 @@ function(add_demo_app NAME)
         else()
           add_custom_command(TARGET test_${NAME} POST_BUILD
             # Why eval? Well, I've spent way too much time trying to get this argument substitution to work.
-            COMMAND eval "${QEMU} ${NAME} -serial file:${NAME}_got.log"
-            COMMAND cat ${NAME}_got.log
+            COMMAND eval "${QEMU} ${NAME} -serial file:${NAME}_got.log > /dev/null 2>&1"
             COMMAND diff demos/${NAME}_expected.log ${NAME}_got.log
             VERBATIM)
         endif()

@@ -6,13 +6,10 @@ from textwrap import dedent
 class MakeTest(lit.formats.base.TestFormat):
   def execute(self, test, litConfig):
     filename = os.path.basename(test.getSourcePath())
-    cmd = ["make", "--trace", "test_" + os.path.splitext(filename)[0]]
+    cmd = ["make", "test_" + os.path.splitext(filename)[0]]
     out, err, exitCode = lit.util.executeCommand(cmd)
 
-    # Don't check err here. Sometimes CI will think the files
-    # have changed and rebuild with warnings about oclint attributes
-    # TODO: why would the files have changed?
-    if not exitCode:
+    if not exitCode and not err.strip():
       return lit.Test.PASS,''
 
     report = dedent('''\
