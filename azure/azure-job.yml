@@ -77,7 +77,8 @@ jobs:
                 # Each script has its own environment so we need to do this here
                 export PATH=$(pwd)/toolchain/bin/:$PATH
                 cd ARMMultiTasking
-                cmake . -DBUILD_PLATFORM=${{build_platform}} -DOPT_LEVEL=${{opt_level}} -DSANITIZERS=${{sanitizers}} -DLTO=${{lto}}
+                rm CMakeCache.txt
+                cmake . -DBUILD_PLATFORM=${{build_platform}} -DOPT_LEVEL=${{opt_level}} -DSANITIZERS=${{sanitizers}} -DLTO=${{lto}} -DCOMPILER=${{parameters.compiler}}
                 make clean
                 make make_demos
               workingDirectory: $(Agent.BuildDirectory)
