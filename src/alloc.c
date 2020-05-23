@@ -3,16 +3,10 @@
 #include "thread.h"
 #include <stdint.h>
 #include <string.h>
-#include <assert.h>
-#include <limits.h>
 
 #define BLOCK_SIZE 32
 #define HEAP_SIZE  2048
 #define NUM_BLOCKS HEAP_SIZE / BLOCK_SIZE
-
-// Will use UCHAR_MAX as the invalid value
-static_assert(UCHAR_MAX > NUM_BLOCKS,
-  "Tag type too small to hold max alloc size!");
 
 typedef struct {
   int tid;
@@ -22,28 +16,42 @@ BlockTag block_tags[NUM_BLOCKS];
 uint8_t heap[HEAP_SIZE] __attribute__((aligned(BLOCK_SIZE)));
 const uint8_t* heap_end = heap + HEAP_SIZE;
 
+// Tag walker
+size_t next_tag(size_t idx) {
+  if (block_tags[idx].tag) {
+    // Skip runs of allocated blocks
+    idx += block_tags[idx].tag;
+  } else{
+    // One at a time over free blocks
+    idx += 1;
+  }
+  // SIZE_MAX means walk ended
+  return idx < NUM_BLOCKS ? idx : SIZE_MAX;
+}
+
 size_t find_free_space(size_t num_blocks) {
   size_t free_found = 0;
   size_t start_idx = 0;
-  for (size_t idx = 0; idx < NUM_BLOCKS; ++idx) {
-    if (block_tags[idx].tag) {
+  size_t current_idx = 0;
+
+  do {
+    if (block_tags[current_idx].tag) {
       // Reset run of free space
       free_found = 0;
-      // Skip over blocks we know are allocated
-      // (-1 / +1 here because of the for loop)
-      idx += (block_tags[idx].tag - 1);
       // Start new potential run of space
-      start_idx = idx + 1;
+      current_idx = next_tag(current_idx);
+      start_idx = current_idx;
     } else {
       free_found++;
+      current_idx = next_tag(current_idx);
 
       if (free_found == num_blocks) {
         return start_idx;
       }
     }
-  }
+  } while (current_idx != SIZE_MAX);
 
-  return UCHAR_MAX;
+  return SIZE_MAX;
 }
 
 size_t pointer_to_tag_idx(void* ptr) {
@@ -66,7 +74,7 @@ void* malloc(size_t size) {
   size_t num_blocks = to_blocks(size);
   size_t alloc_idx = find_free_space(num_blocks);
 
-  if (alloc_idx != UCHAR_MAX) {
+  if (alloc_idx != SIZE_MAX) {
     // Actually claim the space
     block_tags[alloc_idx].tag = num_blocks;
     block_tags[alloc_idx].tid = get_thread_id();
@@ -110,7 +118,7 @@ void* realloc(void* ptr, size_t size) {
   // Look for space as if the current one didn't exist
   size_t alloc_idx = find_free_space(num_blocks);
 
-  if (alloc_idx != UCHAR_MAX) {
+  if (alloc_idx != SIZE_MAX) {
     size_t old_size = old_tag * BLOCK_SIZE;
     // Use new size if we're shrinking the allocation
     size_t copy_size = size < old_size ? size : old_size;
@@ -133,20 +141,14 @@ void* realloc(void* ptr, size_t size) {
 }
 
 void free_all(int tid) {
-  for (size_t idx = 0; idx < NUM_BLOCKS; ++idx) {
-    if (block_tags[idx].tag) {
-      // Skip over blocks we know are allocated
-      // -1 here because the for loop will +1
-      size_t new_idx = idx + (block_tags[idx].tag - 1);
-
-      // Free this thread's allocations
-      if (block_tags[idx].tid == tid) {
-        block_tags[idx].tag = 0;
-      }
-
-      idx = new_idx;
+  size_t current_idx = 0;
+  do {
+    if (block_tags[current_idx].tag &&
+        block_tags[current_idx].tid == tid) {
+      block_tags[current_idx].tag = 0;
     }
-  }
+    current_idx = next_tag(current_idx);
+  } while (current_idx != SIZE_MAX);
 }
 
 void free(void* ptr) {
