@@ -2,22 +2,21 @@ ENTRY(_Reset)
 SECTIONS
 {
  .vectors . : { *vectors.s.o(.text) }
- . = ram_start;
  .startup . : { *startup.s.o(.text) }
  .text : { *(.text) }
+ . = ram_start;
  .data : { *(.data) }
  /* align 16 for AArch64 */
  . = ALIGN(16);
- . = . + 0x400; /* 1kB of stack memory for entry */
+ . = . + 0x400; /* 1kB of stack for kernel */
  stack_top = .;
- /* This is here so that it's read/write on Cortex M */
  .bss : {
     /* Thread structs go first! */
     *(.thread_structs)
-    /* including the scheduler thread */
-    *(.scheduler_thread)
     /* then the important globals */
     *(.thread_vars)
     *(.bss COMMON)
   }
+  ram_end = .;
+  ASSERT((ram_end <= (ram_start + ram_size)), "Too much data for RAM!")
 }

@@ -8,6 +8,7 @@ option( SANITIZERS "Enable UBSAN/ASAN (ASAN Linux only)." OFF )
 option( COVERAGE "Generate coverage data. (Linux only)" OFF )
 option( LTO "Enable link time optimisation." OFF )
 set( STACK_SIZE   1 ) # In KB
+set( RAM_SIZE 0x100000 ) # 1MB in bytes
 
 string( TOLOWER "${BUILD_PLATFORM}" BP_LOWER )
 message(STATUS "BUILD_PLATFORM is ${BP_LOWER}")
@@ -45,6 +46,8 @@ elseif( BP_LOWER STREQUAL "thumb" )
   set( PLATFORM     "-mthumb -mcpu=cortex-m4" )
   set( PLATFORM_SRC "thumb_lm3s6965evb" )
   set( RAM_START    "0x20000000" )
+  # 64k of RAM
+  set( RAM_SIZE     0x10000)
   set( UART_BASE    "0x4000C000" )
   set( QEMU_CMD     "qemu-system-arm -M lm3s6965evb -cpu cortex-m4" )
 endif()
@@ -65,7 +68,8 @@ if (LINUX)
     set( CFLAGS "${CFLAGS} -femulated-tls" )
   endif()
 else()
-  set( QEMU "${QEMU_CMD} -m 64M -nographic -semihosting -kernel" )
+  # Note that the thumb board ignores -M
+  set( QEMU "${QEMU_CMD} -m 1M -nographic -semihosting -kernel" )
   set( CFLAGS "${CFLAGS} -ffreestanding -nostdlib -DUART_BASE=${UART_BASE}" )
 endif()
 
@@ -145,7 +149,7 @@ function(add_demo_app NAME)
         add_executable ( ${NAME} demos/${NAME}.c $<TARGET_OBJECTS:support> )
 
         if(NOT LINUX)
-          target_link_libraries(${NAME} PRIVATE "-Wl,-T,linker.ld,-defsym=ram_start=${RAM_START},-lgcc,-lc,-N,--build-id=none")
+          target_link_libraries(${NAME} PRIVATE "-Wl,-T,linker.ld,-defsym=ram_start=${RAM_START},-defsym=ram_size=${RAM_SIZE},-lgcc,-lc,-N,--build-id=none")
         endif()
 
         if (NAME STREQUAL "filesystem")
