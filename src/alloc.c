@@ -10,7 +10,8 @@
 #define HEAP_SIZE  2048
 #define NUM_BLOCKS HEAP_SIZE / BLOCK_SIZE
 
-static_assert(UCHAR_MAX >= NUM_BLOCKS,
+// Will use UCHAR_MAX as the invalid value
+static_assert(UCHAR_MAX > NUM_BLOCKS,
   "Tag type too small to hold max alloc size!");
 
 typedef struct {
@@ -21,7 +22,7 @@ BlockTag block_tags[NUM_BLOCKS];
 uint8_t heap[HEAP_SIZE] __attribute__((aligned(BLOCK_SIZE)));
 const uint8_t* heap_end = heap + HEAP_SIZE;
 
-void* find_free_space(size_t num_blocks) {
+size_t find_free_space(size_t num_blocks) {
   size_t free_found = 0;
   size_t start_idx = 0;
   for (size_t idx = 0; idx < NUM_BLOCKS; ++idx) {
@@ -37,13 +38,12 @@ void* find_free_space(size_t num_blocks) {
       free_found++;
 
       if (free_found == num_blocks) {
-        // Return pointer into actual heap space
-        return heap + (start_idx * BLOCK_SIZE);
+        return start_idx;
       }
     }
   }
 
-  return NULL; //!OCLINT
+  return UCHAR_MAX;
 }
 
 size_t pointer_to_tag_idx(void* ptr) {
@@ -56,20 +56,24 @@ size_t to_blocks(size_t size) {
   return (size + BLOCK_SIZE - 1) / BLOCK_SIZE;
 }
 
+void* to_heap_ptr(size_t tag_idx) {
+  return heap + (tag_idx * BLOCK_SIZE);
+}
+
 // TODO: mutex!!
 void* malloc(size_t size) {
   // Divide rounding up
   size_t num_blocks = to_blocks(size);
-  void* alloc = find_free_space(num_blocks);
+  size_t alloc_idx = find_free_space(num_blocks);
 
-  if (alloc) {
+  if (alloc_idx != UCHAR_MAX) {
     // Actually claim the space
-    size_t tag_idx = pointer_to_tag_idx(alloc);
-    block_tags[tag_idx].tag = num_blocks;
-    block_tags[tag_idx].tid = get_thread_id();
+    block_tags[alloc_idx].tag = num_blocks;
+    block_tags[alloc_idx].tid = get_thread_id();
+    return to_heap_ptr(alloc_idx);
   }
 
-  return alloc;
+  return NULL;
 }
 
 bool can_realloc_free(void* ptr) {
@@ -104,25 +108,28 @@ void* realloc(void* ptr, size_t size) {
   // Temporarily free the current allocation
   block_tags[tag_idx].tag = 0;
   // Look for space as if the current one didn't exist
-  void* new_ptr = find_free_space(num_blocks);
+  size_t alloc_idx = find_free_space(num_blocks);
 
-  if (new_ptr) {
-    // This will overshoot some but that's fine
+  if (alloc_idx != UCHAR_MAX) {
     size_t old_size = old_tag * BLOCK_SIZE;
     // Use new size if we're shrinking the allocation
     size_t copy_size = size < old_size ? size : old_size;
+
+    void* new_ptr = to_heap_ptr(alloc_idx);
     // Copy data to new location
     memcpy(new_ptr, ptr, copy_size);
     // Set new allocation tag
-    size_t new_tag_idx = pointer_to_tag_idx(new_ptr);
-    block_tags[new_tag_idx].tag = num_blocks;
-    block_tags[new_tag_idx].tid = get_thread_id();
-  } else {
-    // Restore original allocation
-    block_tags[tag_idx].tag = old_tag;
+    block_tags[alloc_idx].tag = num_blocks;
+    block_tags[alloc_idx].tid = get_thread_id();
+
+    // Return the new address
+    return new_ptr;
   }
 
-  return new_ptr;
+  // Restore original allocation
+  block_tags[tag_idx].tag = old_tag;
+  // Return nullptr on failure
+  return NULL;
 }
 
 void free_all(int tid) {
