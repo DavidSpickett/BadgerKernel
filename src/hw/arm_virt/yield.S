@@ -176,6 +176,8 @@ semihosting:
   bne was_user_mode
   POP_KERNEL_TEMPS            // use kernel r0/r1 to get arguments
   srsdb sp!, #SUPERVISOR_MODE // setup for return to kernel mode
+  // TODO: this return from exception doesn't actually work
+  // It looked like it did, only because exit doesn't return back here
   b do_semihosting
 was_user_mode:
   POP_TEMPS_GOTO_SYSTEM_MODE // go to user and set up for return to user mode
