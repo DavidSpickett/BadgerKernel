@@ -212,6 +212,11 @@ actually_load_thread:
   /* Fake return PC value */
   ldr x30, =thread_start
   msr ELR_EL1, x30
+  /* Make sure we return to EL0
+     Since the first start_threadswitch will
+     just be called from EL1 directly */
+  mov x30, #0
+  msr SPSR_EL1, x30
   b exception_return
 
 restore_regs:
