@@ -64,7 +64,7 @@ MonitorConfig config = {.destroy_on_stack_err = false,
 // TODO: own section?
 // TODO: some way to track how many of these we've loaded and such
 #define MAX_LOADED_SIZE 256
-__attribute__((section(".thread_vars"))) uint8_t loaded_code[MAX_LOADED_SIZE];
+__attribute__((section(".loaded_code"))) uint8_t loaded_code[MAX_LOADED_SIZE];
 
 bool is_valid_thread(int tid) {
   return (tid >= 0) && (tid < MAX_THREADS) && all_threads[tid].id != -1;

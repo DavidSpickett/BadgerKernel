@@ -15,6 +15,9 @@ SECTIONS
     *(.thread_structs)
     /* then the important globals */
     *(.thread_vars)
+    /* Thumb fns will be aligned to a 4 byte start address */
+    . = ALIGN(4);
+    *(.loaded_code)
     *(.bss COMMON)
   }
   ram_end = .;
