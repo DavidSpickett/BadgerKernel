@@ -63,7 +63,9 @@ MonitorConfig config = {.destroy_on_stack_err = false,
 
 // TODO: own section?
 // TODO: some way to track how many of these we've loaded and such
-#define MAX_LOADED_SIZE 256
+//#define MAX_LOADED_SIZE 256
+// Because I can't get ld to stop padding the sections to be 4K page size *shrug*
+#define MAX_LOADED_SIZE 5120
 __attribute__((section(".loaded_code"))) uint8_t loaded_code[MAX_LOADED_SIZE];
 
 bool is_valid_thread(int tid) {
@@ -333,7 +335,8 @@ int add_thread_from_file(const char* filename) {
   printf("Loaded %u bytes of code from %s\n", got, filename);
   // TODO HACK HACK HACK
   // Need to call this function using thumb mode hence the or 1
-  void (*worker)(void) = (void (*) (void))((size_t)loaded_code | 1);
+  //void (*worker)(void) = (void (*) (void))((size_t)loaded_code| 1);
+  void (*worker)(void) = (void (*) (void))(loaded_code);
   return add_named_thread(worker, filename);
 }
 

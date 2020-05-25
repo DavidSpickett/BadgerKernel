@@ -17,8 +17,9 @@ SECTIONS
     *(.thread_vars)
     /* Thumb fns will be aligned to a 4 byte start address */
     . = ALIGN(4);
-    *(.loaded_code)
     *(.bss COMMON)
+    /* on the end in case of weird stuff writing beyond */
+    *(.loaded_code)
   }
   ram_end = .;
   ASSERT((ram_end <= (ram_start + ram_size)), "Too much data for RAM!")

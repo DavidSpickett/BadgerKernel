@@ -1,5 +1,9 @@
 #include "thread.h"
 
-void setup(void) {
+void loader() {
   add_thread_from_file("loadable.bin");
+}
+
+void setup(void) {
+  add_thread(loader);
 }
