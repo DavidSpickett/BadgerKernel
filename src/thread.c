@@ -5,6 +5,7 @@
 #include "print.h"
 #include "thread.h"
 #include "util.h"
+#include "file_system.h"
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -59,6 +60,11 @@ __attribute__((section(".thread_vars"))) Thread* volatile next_thread;
 __attribute__((section(".thread_vars")))
 MonitorConfig config = {.destroy_on_stack_err = false,
                         .log_scheduler = true};
+
+// TODO: own section?
+// TODO: some way to track how many of these we've loaded and such
+#define MAX_LOADED_SIZE 256
+__attribute__((section(".thread_vars"))) uint8_t loaded_code[MAX_LOADED_SIZE];
 
 bool is_valid_thread(int tid) {
   return (tid >= 0) && (tid < MAX_THREADS) && all_threads[tid].id != -1;
@@ -309,6 +315,26 @@ bool yield_next(void) {
 
   // Don't switch just continue to run current thread
   return false;
+}
+
+int add_thread_from_file(const char* filename) {
+  int file = open(filename, O_RDONLY);
+  if (file < 0) {
+    printf("Couldn't load %s", filename);
+    exit(1);
+  }
+
+  size_t got = read(file, loaded_code, MAX_LOADED_SIZE);
+  if (!got) {
+    printf("Didn't get any data from %s", filename);
+    exit(1);
+  }
+
+  printf("Loaded %u bytes of code from %s\n", got, filename);
+  // TODO HACK HACK HACK
+  // Need to call this function using thumb mode hence the or 1
+  void (*worker)(void) = (void (*) (void))((size_t)loaded_code | 1);
+  return add_named_thread(worker, filename);
 }
 
 int add_thread(void (*worker)(void)) {

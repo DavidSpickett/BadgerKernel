@@ -23,6 +23,12 @@ ssize_t write(int fildes, const void* buf, size_t nbyte) {
   return nbyte - ret;
 }
 
+// Following the arm semihosting spec here not posix lseek
+int seek(int filedes, size_t offset) {
+  volatile size_t parameters[] = {filedes, offset};
+  return generic_semihosting_call(SYS_SEEK, parameters);
+}
+
 int remove(const char* path) {
   volatile size_t parameters[] = {(size_t)path, strlen(path)};
   return generic_semihosting_call(SYS_REMOVE, parameters);
