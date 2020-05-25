@@ -168,20 +168,7 @@ restore_regs:
   b exception_return
 
 semihosting:
-  /* Kernel or user can end up here, so check original mode */
-  mrs r0, SPSR
-  and r0, #0x1F               // Get M field
-  mov r1, #SUPERVISOR_MODE
-  cmp r0, r1
-  bne was_user_mode
-  POP_KERNEL_TEMPS            // use kernel r0/r1 to get arguments
-  srsdb sp!, #SUPERVISOR_MODE // setup for return to kernel mode
-  // TODO: this return from exception doesn't actually work
-  // It looked like it did, only because exit doesn't return back here
-  b do_semihosting
-was_user_mode:
   POP_TEMPS_GOTO_SYSTEM_MODE // go to user and set up for return to user mode
-do_semihosting:
   svc 0x123456     // picked up by Qemu
   b exception_return
 

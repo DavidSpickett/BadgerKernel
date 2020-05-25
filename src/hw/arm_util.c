@@ -16,8 +16,13 @@ size_t get_semihosting_event(int status) {
 
 #ifdef __aarch64__
 #define RCHR "x"
-#else
+#define DIRECT_CALL "b .\n\t" // Unused
+#elif defined __thumb__
 #define RCHR "r"
+#define DIRECT_CALL "bkpt 0xab\n\t"
+#else /* Arm */
+#define RCHR "r"
+#define DIRECT_CALL "svc 0x123456\n\t"
 #endif
 
 size_t generic_semihosting_call(size_t operation, volatile size_t* parameters) {
@@ -30,42 +35,46 @@ size_t generic_semihosting_call(size_t operation, volatile size_t* parameters) {
 #ifdef linux
   ret = 0; (void)operation; (void)parameters;
 #else
-#ifdef __thumb__
   /* Haven't figured out how to allow another exception
      if you're already handling the first one. So just
-     see if we're already using MSP aka in the kernel
-     and skip the svc if so.
+     see if we're already in the kernel first.
   */
+#ifdef __thumb__
   size_t control;
   asm volatile ("mrs %0, control":"=r"(control));
-  if (!(control & 0x2)) {
-    // bkpt directly instead
+  bool in_kernel = !(control & 0x2);
+#elif defined __aarch64__
+  bool in_kernel = false;
+#else /* Arm */
+  size_t cpsr;
+  asm volatile ("mrs %0, cpsr":"=r"(cpsr));
+  bool in_kernel = (cpsr & 0xF) == 3;
+#endif /* defined __thumb__ */
+  if (in_kernel) {
     asm volatile (
       "mov "RCHR"0, %[operation]\n\t"
       "mov "RCHR"1, %[parameters]\n\t"
-      "bkpt 0xab\n\t"
+      DIRECT_CALL
       "mov %[ret], "RCHR"0\n\t"
       :[ret]"=r"(ret)
       :[parameters]"r"(parameters),
        [operation]"r"(operation)
       :RCHR"0", RCHR"1"
     );
-    return ret;
+  } else {
+    asm volatile (
+      "mov "RCHR"0, %[operation]\n\t"
+      "mov "RCHR"1, %[parameters]\n\t"
+      "svc %[semihost]\n\t"
+      "mov %[ret], "RCHR"0\n\t"
+      :[ret]"=r"(ret)
+      :[parameters]"r"(parameters),
+       [operation]"r"(operation),
+       [semihost]"i"(svc_semihosting)
+      :RCHR"0", RCHR"1"
+    );
   }
-  // Otherwise use the svc sequence below...
-#endif // ifdef __thumb__
-  asm volatile (
-    "mov "RCHR"0, %[operation]\n\t"
-    "mov "RCHR"1, %[parameters]\n\t"
-    "svc %[semihost]\n\t"
-    "mov %[ret], "RCHR"0\n\t"
-    :[ret]"=r"(ret)
-    :[parameters]"r"(parameters),
-     [operation]"r"(operation),
-     [semihost]"i"(svc_semihosting)
-    :RCHR"0", RCHR"1"
-  );
-#endif
+#endif /* ifdef linux */
   // clang-format on
 
   return ret;

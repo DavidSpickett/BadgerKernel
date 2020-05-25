@@ -70,6 +70,10 @@ void delete_new(void) {
 void setup(void) {
   config.log_scheduler = false;
 
+  /* Check that kernel can return from semihosting,
+     as opposed to exit() which never returns. */
+  fail_open();
+
   add_named_thread(read_file, "reader");
   add_named_thread(fail_open, "fail_open");
   add_named_thread(write_new, "write_new");
