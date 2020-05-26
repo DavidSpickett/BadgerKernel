@@ -188,10 +188,11 @@ void format_thread_name(char* out) {
   }
 
   const char* name = current_thread()->name;
-  
+
   if (name == NULL) {
     int tid = get_thread_id();
-  
+
+    // If the thread had a stack issue
     if (tid == -1) {
       const char* hidden = "<HIDDEN>";
       size_t h_len = strlen(hidden);
@@ -390,16 +391,6 @@ bool thread_join(int tid, ThreadState* state) {
 }
 
 #ifdef linux
-
-void thread_switch_alrm() {
-  if (!current_thread()) {
-    // Something other than a user thread caught the signal
-    printf("Rejecting alrm\n");
-    return;
-  }  
-  next_thread = NULL;
-  thread_switch();
-}
 
 Thread* current_thread(void) {
   pthread_t self = pthread_self();
