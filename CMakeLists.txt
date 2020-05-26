@@ -1,5 +1,6 @@
 project(MultiTaskingDemo C)
 cmake_minimum_required( VERSION 3.7 )
+set( CMAKE_EXPORT_COMPILE_COMMANDS ON )
 
 set( BUILD_PLATFORM "arm" CACHE STRING "Architecture to build for." )
 set( OPT_LEVEL "3" CACHE STRING "Compiler optmisation level." )
