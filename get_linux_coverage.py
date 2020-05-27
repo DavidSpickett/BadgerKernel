@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 import os
 import subprocess
 import shutil
@@ -11,9 +12,10 @@ excludes = ["stackcheck", "selfyield", "alloc", "timer", "filesystem"]
 
 # Find all demos
 for f in os.listdir(demo_folder):
-  if os.path.isfile(os.path.join(demo_folder, f)) and \
-      f.endswith(".c"):
-    demos.append(os.path.splitext(f)[0])
+  # Skip __pycache__ etc
+  if os.path.isdir(os.path.join(demo_folder, f)) and \
+      not f.startswith("__"):
+    demos.append(f)
 demos = [d for d in demos if d not in excludes]
 
 # Folder to store all coverage data
@@ -22,7 +24,7 @@ if os.path.isdir("cov"):
 os.mkdir("cov")
 
 # Sub folders for each demo's coverage
-map(os.mkdir, ["cov/{}_cov".format(d) for d in demos])
+list(map(os.mkdir, ["cov/{}".format(d) for d in demos]))
 
 # Configure for Linux
 subprocess.check_call(["cmake", ".",
@@ -35,7 +37,7 @@ for demo in demos:
   subprocess.check_call(["make", "clean"])
   subprocess.check_call(["make", "run_{}".format(demo)])
 
-  cov_folder = "cov/{}_cov/".format(demo)
+  cov_folder = "cov/{}/".format(demo)
   cov_dirs.append(cov_folder)
 
   # Copy all coverage files to the demo's folder
