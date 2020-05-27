@@ -45,5 +45,6 @@ if 'linux' in platform.lower():
   config.excludes.add('selfyield')
   config.excludes.add('alloc')
   config.excludes.add('timer')
+  config.excludes.add('loadbinary')
 if platform.lower() == 'aarch64':
   config.excludes.add('threadlocalstorage')

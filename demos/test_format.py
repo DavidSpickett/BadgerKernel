@@ -23,10 +23,14 @@ class MakeTest(lit.formats.base.TestFormat):
   def getTestsInDirectory(self, testSuite, path_in_suite,
                           litConfig, localConfig):
     source_path = testSuite.getSourcePath(path_in_suite)
-    for _, directories, _ in os.walk(source_path):
-      for directory in sorted(directories):
+    # Lit will recurse folders but we only care about the top level
+    if os.path.basename(source_path) != 'demos':
+      return
+
+    for directory in sorted(os.listdir(source_path)):
         # __ to ignore __pycache__ etc.
-        if not directory in localConfig.excludes and \
+        if os.path.isdir(os.path.join(source_path, directory)) and \
+            not directory in localConfig.excludes and \
             not directory.startswith("__"):
           yield lit.Test.Test(
                   testSuite,

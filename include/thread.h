@@ -23,7 +23,9 @@ typedef struct {
   { (void*)a, (void*)b, (void*)c, (void*)d }
 
 int add_thread(void (*worker)(void));
+#if CODE_PAGE_SIZE
 int add_thread_from_file(const char* filename);
+#endif
 int add_named_thread(void (*worker)(void), const char* name);
 int add_named_thread_with_args(void (*worker)(), const char* name,
                                ThreadArgs args);

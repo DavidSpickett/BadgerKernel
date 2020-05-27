@@ -1,0 +1,14 @@
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: next thread chosen
+Thread loadable.bin: Hello
+Thread loadable.bin: yielding
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: next thread chosen
+Thread        other: Using a global!
+Thread        other: exiting
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: next thread chosen
+Thread loadable.bin: resuming
+Thread loadable.bin: Goodbye
+Thread loadable.bin: exiting
+Thread  <scheduler>: all threads finished

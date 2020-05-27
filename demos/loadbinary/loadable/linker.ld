@@ -1,7 +1,7 @@
 ENTRY(worker)
 SECTIONS
 {
-  . = loaded_code;
+  . = code_page;
   .text : {
     /* If we actually loaded ELF this wouldn't be needed
        We'd just read the entry point from the ELF */
@@ -10,5 +10,5 @@ SECTIONS
   }
   .rodata : { *(.rodata) }
   .bss : { *(.bss) }
-  /* TODO: assert total size here */
+  ASSERT((. - code_page) <= code_page_size, "Loadable too big for code page!")
 }

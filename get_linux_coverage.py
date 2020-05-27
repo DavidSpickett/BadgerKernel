@@ -8,7 +8,8 @@ from itertools import chain
 demos = []
 demo_folder = "demos"
 # Usual Linux excludes
-excludes = ["stackcheck", "selfyield", "alloc", "timer", "filesystem"]
+excludes = ["stackcheck", "selfyield", "alloc",
+        "timer", "filesystem", "loadbinary"]
 
 # Find all demos
 for f in os.listdir(demo_folder):

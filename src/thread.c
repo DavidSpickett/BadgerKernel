@@ -5,7 +5,9 @@
 #include "print.h"
 #include "thread.h"
 #include "util.h"
+#if CODE_PAGE_SIZE
 #include "file_system.h"
+#endif
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -61,12 +63,9 @@ __attribute__((section(".thread_vars")))
 MonitorConfig config = {.destroy_on_stack_err = false,
                         .log_scheduler = true};
 
-// TODO: own section?
-// TODO: some way to track how many of these we've loaded and such
-//#define MAX_LOADED_SIZE 256
-// Because I can't get ld to stop padding the sections to be 4K page size *shrug*
-#define MAX_LOADED_SIZE 5120
-__attribute__((section(".loaded_code"))) uint8_t loaded_code[MAX_LOADED_SIZE];
+#if CODE_PAGE_SIZE
+__attribute__((section(".code_page"))) uint8_t code_page[CODE_PAGE_SIZE];
+#endif
 
 bool is_valid_thread(int tid) {
   return (tid >= 0) && (tid < MAX_THREADS) && all_threads[tid].id != -1;
@@ -319,26 +318,29 @@ bool yield_next(void) {
   return false;
 }
 
+#if CODE_PAGE_SIZE
 int add_thread_from_file(const char* filename) {
   int file = open(filename, O_RDONLY);
   if (file < 0) {
-    printf("Couldn't load %s", filename);
+    printf("Couldn't load %s\n", filename);
     exit(1);
   }
 
-  size_t got = read(file, loaded_code, MAX_LOADED_SIZE);
+  size_t got = read(file, code_page, CODE_PAGE_SIZE);
   if (!got) {
-    printf("Didn't get any data from %s", filename);
+    printf("Didn't get any data from %s\n", filename);
     exit(1);
   }
 
-  printf("Loaded %u bytes of code from %s\n", got, filename);
-  // TODO HACK HACK HACK
-  // Need to call this function using thumb mode hence the or 1
-  //void (*worker)(void) = (void (*) (void))((size_t)loaded_code| 1);
-  void (*worker)(void) = (void (*) (void))(loaded_code);
+  // TODO: read proper entry address?
+#ifdef __thumb__
+  void (*worker)(void) = (void (*) (void))((size_t)code_page| 1);
+#else
+  void (*worker)(void) = (void (*) (void))(code_page);
+#endif
   return add_named_thread(worker, filename);
 }
+#endif
 
 int add_thread(void (*worker)(void)) {
   return add_named_thread(worker, NULL);

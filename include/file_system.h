@@ -28,7 +28,7 @@ int close(int filedes);
 void exit(int status);
 #endif /* ifdef linux */
 
-#ifdef USE_FS
+#ifdef HAS_FILESYSTEM
 void init_file_system(void);
 void destroy_file_system(void);
 void walk(const char* path, char** out);
@@ -40,6 +40,6 @@ typedef struct FileInfo {
 } FileInfo;
 FileInfo* ls_path(const char* path);
 void free_ls_result(FileInfo* head);
-#endif /* ifdef USE_FS */
+#endif /* ifdef HAS_FILESYSTEM */
 
 #endif /* ifdef FILE_SYSTEM_H */

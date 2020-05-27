@@ -106,7 +106,6 @@ set( KERNEL_SOURCES
   src/mutex.c
   src/condition_variable.c
 )
-
 if(LINUX)
   set( KERNEL_SOURCES ${KERNEL_SOURCES}
     src/hw/linux/main.c
@@ -147,8 +146,6 @@ else()
   endif()
 endif()
 
-add_library(kernel OBJECT ${KERNEL_SOURCES})
-
 # Convenient build target for CI
 add_custom_target(make_demos)
 
@@ -172,3 +169,4 @@ include(demos/stackcheck/CMakeLists.txt)
 include(demos/selfyield/CMakeLists.txt)
 include(demos/alloc/CMakeLists.txt)
 include(demos/timer/CMakeLists.txt)
+include(demos/loadbinary/CMakeLists.txt)

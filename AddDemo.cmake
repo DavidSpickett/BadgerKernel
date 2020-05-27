@@ -1,5 +1,5 @@
 function(add_demo NAME)
-  add_executable ( ${NAME} demos/${NAME}/${NAME}.c $<TARGET_OBJECTS:kernel> )
+  add_executable ( ${NAME} demos/${NAME}/${NAME}.c ${KERNEL_SOURCES} )
 
   if(NOT LINUX)
     target_link_libraries(${NAME} PRIVATE "-Wl,-T,linker.ld,-defsym=ram_start=${RAM_START},-defsym=ram_size=${RAM_SIZE},-lgcc,-lc,-N,--build-id=none")

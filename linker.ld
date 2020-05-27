@@ -15,11 +15,11 @@ SECTIONS
     *(.thread_structs)
     /* then the important globals */
     *(.thread_vars)
-    /* Thumb fns will be aligned to a 4 byte start address */
-    . = ALIGN(4);
     *(.bss COMMON)
+    /* 8 byte fn alignment seems ok for everyone */
+    . = ALIGN(8);
     /* on the end in case of weird stuff writing beyond */
-    *(.loaded_code)
+    *(.code_page)
   }
   ram_end = .;
   ASSERT((ram_end <= (ram_start + ram_size)), "Too much data for RAM!")
