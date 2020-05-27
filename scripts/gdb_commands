@@ -1,0 +1,17 @@
+# Install the GDB-Walkers plugin first
+# https://github.com/hardenedapple/gdb-walkers
+# Then copy these to your .gdbinit
+
+define list_threads
+  pipe array Thread; all_threads+0; sizeof(all_threads)/sizeof(Thread) | if {}->id != -1 | show printf "ID: %02d Name: %-12s State: ", {}->id, $_python("gdb.parse_and_eval('{}->name').string() if int(gdb.parse_and_eval('{}->name')) else '<N/A>'") | show output (ThreadState){}->state | show printf "\n"
+end
+
+define list_allocations
+  pipe array size_t; block_tags+0; sizeof(block_tags)/sizeof(size_t) | if *{} | show printf "%d block(s) from 0x%08x to 0x%08x\n", *{}, heap+(({}-block_tags)*32), heap+(({}-block_tags+*{})*32)
+end
+
+define heap_usage
+  set variable $blocks_used = 0
+  pipe array size_t; block_tags+0; sizeof(block_tags)/sizeof(size_t) | eval $blocks_used += *{} | show printf ""
+  printf "%d bytes used of %d total, %d bytes remain\n", $blocks_used*32, sizeof(heap), sizeof(heap)-($blocks_used*32)
+end
