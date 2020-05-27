@@ -149,7 +149,7 @@ endif()
 
 add_library(kernel OBJECT ${KERNEL_SOURCES})
 
-# Convenent build target for CI
+# Convenient build target for CI
 add_custom_target(make_demos)
 
 include(AddDemo.cmake)

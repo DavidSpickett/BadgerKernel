@@ -5,17 +5,6 @@ function(add_demo NAME)
     target_link_libraries(${NAME} PRIVATE "-Wl,-T,linker.ld,-defsym=ram_start=${RAM_START},-defsym=ram_size=${RAM_SIZE},-lgcc,-lc,-N,--build-id=none")
   endif()
 
-  if (NAME STREQUAL "filesystem")
-    # Use in memory file system
-    target_sources(${NAME} PRIVATE src/file_system.c)
-    target_compile_definitions(${NAME} PRIVATE USE_FS=1)
-  else()
-    # Otherwise use semihosting or standard Posix
-    if(NOT LINUX)
-      target_sources(${NAME} PRIVATE src/hw/arm_file.c)
-    endif()
-  endif()
-
   add_custom_command(TARGET ${NAME} PRE_BUILD
     COMMAND eval "${CMAKE_C_COMPILER} --version | head -n 1"
     VERBATIM)
