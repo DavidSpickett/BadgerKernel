@@ -19,4 +19,4 @@ target_compile_definitions(loadbinary PRIVATE CODE_PAGE_SIZE=${CODE_PAGE_SIZE})
 # Use semihosting to load binary
 target_sources(loadbinary PRIVATE src/hw/arm_file.c)
 
-add_loadable(loadbinary thebinary)
+add_loadable(loadbinary binary)

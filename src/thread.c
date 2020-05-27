@@ -46,6 +46,9 @@ typedef struct {
   Message* next_msg;
   Message* end_msgs;
   bool msgs_full;
+#if CODE_PAGE_SIZE
+  bool in_code_page;
+#endif
 #ifndef linux
   uint64_t bottom_canary;
   uint8_t stack[THREAD_STACK_SIZE];
@@ -319,7 +322,20 @@ bool yield_next(void) {
 }
 
 #if CODE_PAGE_SIZE
+static int code_page_in_use_by() {
+  for (size_t idx=0; idx<MAX_THREADS; ++idx) {
+    if (all_threads[idx].in_code_page) {
+      return all_threads[idx].id;
+    }
+  }
+  return -1;
+}
+
 int add_thread_from_file(const char* filename) {
+  if (code_page_in_use_by() != -1) {
+    return -1;
+  }
+
   int file = open(filename, O_RDONLY);
   if (file < 0) {
     printf("Couldn't load %s\n", filename);
@@ -338,7 +354,10 @@ int add_thread_from_file(const char* filename) {
 #else
   void (*worker)(void) = (void (*) (void))(code_page);
 #endif
-  return add_named_thread(worker, filename);
+
+  int tid = add_named_thread(worker, filename);
+  all_threads[tid].in_code_page = true;
+  return tid;
 }
 #endif
 
@@ -366,6 +385,10 @@ void init_thread(Thread* thread, int tid, const char* name,
   thread->end_msgs = thread->next_msg;
   thread->msgs_full = false;
 
+#ifdef CODE_PAGE_SIZE
+  thread->in_code_page = false;
+#endif
+
 #ifndef linux
   thread->bottom_canary = STACK_CANARY;
   thread->top_canary = STACK_CANARY;
@@ -387,6 +410,15 @@ int add_named_thread_with_args(void (*worker)(), const char* name,
 
 #ifdef linux
       pthread_create(&all_threads[idx].self, NULL, thread_entry, NULL);
+#endif
+
+#ifdef CODE_PAGE_SIZE
+      Thread* curr = current_thread();
+      // Check null because we might be in setup() which runs as kernel
+      if (curr && curr->in_code_page) {
+        // Code page must live as long as all threads created by code in it
+        all_threads[idx].in_code_page = true;
+      }
 #endif
 
       return idx;
@@ -545,6 +577,12 @@ __attribute__((noreturn)) void thread_start(void) {
 
   // Free any lingering heap allocations
   free_all(get_thread_id());
+
+#ifdef CODE_PAGE_SIZE
+  // Free the code page. If there are other threads
+  // running from it they will still have true to keep it alive.
+  current_thread()->in_code_page = false;
+#endif
 
   // Calling thread_switch directly so we don't print 'yielding'
   // TODO: we save state here that we don't need to
