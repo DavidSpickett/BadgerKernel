@@ -48,7 +48,7 @@ typedef struct {
   bool msgs_full;
 #if CODE_PAGE_SIZE
   bool in_code_page;
-#ifdef CODE_BACKING_PAGES
+#if CODE_BACKING_PAGES
   size_t code_backing_page;
 #endif
 #endif /* CODE_PAGE_SIZE */
@@ -71,7 +71,7 @@ MonitorConfig config = {.destroy_on_stack_err = false,
 
 #if CODE_PAGE_SIZE
 __attribute__((section(".code_page"))) uint8_t code_page[CODE_PAGE_SIZE];
-#ifdef CODE_BACKING_PAGES
+#if CODE_BACKING_PAGES
 #define INVALID_PAGE 123456
 __attribute__((section(".code_page_backing")))
 uint8_t code_page_backing[CODE_BACKING_PAGES][CODE_PAGE_SIZE];
@@ -112,7 +112,7 @@ void init_thread(Thread* thread, int tid, const char* name,
   thread->end_msgs = thread->next_msg;
   thread->msgs_full = false;
 
-#ifdef CODE_PAGE_SIZE
+#if CODE_PAGE_SIZE
   thread->in_code_page = false;
 #if CODE_BACKING_PAGES
   thread->code_backing_page = INVALID_PAGE;
@@ -282,7 +282,7 @@ void log_scheduler_event(const char* event) {
   }
 }
 
-#ifdef CODE_BACKING_PAGES
+#if CODE_BACKING_PAGES
 static void swap_paged_threads(const Thread* current, const Thread* next) {
     // See if we need to swap out current thread
     if (current && (current->code_backing_page != INVALID_PAGE)) {
@@ -302,7 +302,7 @@ void do_scheduler(void) {
   // NULL next_thread means choose one for us
   // otherwise just do required housekeeping to switch
   if (next_thread != NULL) {
-#ifdef CODE_BACKING_PAGES
+#if CODE_BACKING_PAGES
     swap_paged_threads(current_thread(), next_thread);
 #endif
     return;
@@ -337,7 +337,7 @@ void do_scheduler(void) {
     log_scheduler_event("next thread chosen");
     next_thread = &all_threads[_idx];
 
-#ifdef CODE_BACKING_PAGES
+#if CODE_BACKING_PAGES
     swap_paged_threads(curr, next_thread);
 #endif
 
@@ -671,11 +671,11 @@ __attribute__((noreturn)) void thread_start(void) {
   // Free any lingering heap allocations
   free_all(get_thread_id());
 
-#ifdef CODE_PAGE_SIZE
+#if CODE_PAGE_SIZE
   // Free the code page. If there are other threads
   // running from it they will still have true to keep it alive.
   current_thread()->in_code_page = false;
-#ifdef CODE_BACKING_PAGES
+#if CODE_BACKING_PAGES
   current_thread()->code_backing_page = INVALID_PAGE;
 #endif
 #endif
