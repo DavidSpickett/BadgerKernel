@@ -578,6 +578,7 @@ void* thread_entry() {
   current_thread()->state = finished;
 
   // Must call this so we check if there are threads left
+  next_thread = NULL;
   do_scheduler();
 
   return NULL; //!OCLINT
