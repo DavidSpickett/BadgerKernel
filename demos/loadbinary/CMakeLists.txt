@@ -1,4 +1,4 @@
-if(LINUX)
+if(LINUX OR LTO)
   return()
 endif()
 
