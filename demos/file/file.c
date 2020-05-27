@@ -6,13 +6,13 @@
 #include <string.h>
 
 void fail_open(void) {
-  int badfile = open("demos/not_a_demo.xyz", O_RDONLY);
+  int badfile = open("demos/not_a/demo.xyz", O_RDONLY);
   assert(badfile == -1);
 }
 
 void read_file(void) {
   log_event("Reading demo src");
-  const char* path = "demos/file.c";
+  const char* path = "demos/file/file.c";
   int file = open(path, O_RDONLY);
   assert(file != -1);
 
@@ -32,7 +32,7 @@ void read_file(void) {
   assert(!closed);
 }
 
-const char* temp_file = "demos/file_demo_temp_file";
+const char* temp_file = "demos/file/file_demo_temp_file";
 const char* temp_contents = "new file for file demo!\n";
 void write_new(void) {
   log_event("Writing temp file");

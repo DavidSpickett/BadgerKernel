@@ -56,7 +56,7 @@ make
 | alloc (Arm/Thumb/AArch64)      | Use of malloc/free.                                                               |
 | filesystem                     | A minimal in memory file system.                                                  |
 
-Each demo has 'run_<demo>', 'debug_<demo>' and 'test_<demo>' make targets. To test all demos, use 'make test_demos' or use lit. (best done in a virtualenv)
+Each demo has 'run_<demo>', 'debug_<demo>' and 'test_<demo>' make targets. To test all demos use lit. (best done in a virtualenv)
 
 ```
 pip install lit

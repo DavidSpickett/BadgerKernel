@@ -1,5 +1,5 @@
 function(add_demo NAME)
-  add_executable ( ${NAME} demos/${NAME}.c $<TARGET_OBJECTS:kernel> )
+  add_executable ( ${NAME} demos/${NAME}/${NAME}.c $<TARGET_OBJECTS:kernel> )
 
   if(NOT LINUX)
     target_link_libraries(${NAME} PRIVATE "-Wl,-T,linker.ld,-defsym=ram_start=${RAM_START},-defsym=ram_size=${RAM_SIZE},-lgcc,-lc,-N,--build-id=none")
@@ -54,7 +54,7 @@ function(add_demo NAME)
   if(LINUX)
     add_custom_command(TARGET test_${NAME} POST_BUILD
       COMMAND eval "./${NAME} > ${NAME}_got.log"
-      COMMAND diff demos/${NAME}_expected.log ${NAME}_got.log
+      COMMAND diff demos/${NAME}/expected.log ${NAME}_got.log
       VERBATIM)
   else()
     add_custom_command(TARGET test_${NAME} POST_BUILD
@@ -64,7 +64,7 @@ function(add_demo NAME)
       # (e.g. we get a UBSAN failure)
       # If Qemu runs successfully then diff the serial output and expected output
       COMMAND eval "${QEMU} ${NAME} -serial file:${NAME}_got.log > /dev/null 2>&1 || (cat ${NAME}_got.log && exit 1)"
-      COMMAND diff demos/${NAME}_expected.log ${NAME}_got.log
+      COMMAND diff demos/${NAME}/expected.log ${NAME}_got.log
       VERBATIM)
   endif()
 endfunction(add_demo)
