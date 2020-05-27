@@ -5,9 +5,9 @@ endif()
 add_demo(loadbinary)
 
 if( BP_LOWER STREQUAL "arm" )
-  set( CODE_PAGE_SIZE 256 )
+  set( CODE_PAGE_SIZE 512 )
 elseif( BP_LOWER STREQUAL "thumb" )
-  set( CODE_PAGE_SIZE 256 )
+  set( CODE_PAGE_SIZE 512 )
 elseif( BP_LOWER STREQUAL "aarch64" )
   # Due to ardp alignment etc., we need more room
   set( CODE_PAGE_SIZE 5120 ) # 5k
