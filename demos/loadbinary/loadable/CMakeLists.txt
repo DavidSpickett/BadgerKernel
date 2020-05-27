@@ -1,5 +1,3 @@
-message(STATUS "Loadable!")
-
 add_executable(loadable demos/loadbinary/loadable/loadable.c)
 add_dependencies(loadable loadbinary)
 target_compile_definitions(loadbinary PRIVATE CODE_PAGE_SIZE=${CODE_PAGE_SIZE})
