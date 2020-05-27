@@ -1,4 +1,20 @@
 function(add_loadable PARENT NAME)
+  # Enable loading in the parent kernel
+  if( BP_LOWER STREQUAL "arm" )
+    set( CODE_PAGE_SIZE 512 )
+  elseif( BP_LOWER STREQUAL "thumb" )
+    set( CODE_PAGE_SIZE 512 )
+  elseif( BP_LOWER STREQUAL "aarch64" )
+    # Due to ardp alignment etc., we need more room
+    set( CODE_PAGE_SIZE 5120 ) # 5k
+  else()
+    message(FATAL_ERROR "Can't set CODE_PAGE_SIZE for \"${BP_LOWER}\".")
+  endif()
+
+  target_compile_definitions(${PARENT} PRIVATE CODE_PAGE_SIZE=${CODE_PAGE_SIZE})
+  # Use semihosting to load binary
+  target_sources(${PARENT} PRIVATE src/hw/arm_file.c)
+
   add_executable(${NAME} demos/${PARENT}/${NAME}.c)
   add_dependencies(${NAME} ${PARENT})
   target_link_libraries(${NAME} PRIVATE "-Wl,--defsym=code_page_size=${CODE_PAGE_SIZE},--just-symbols=loadbinary,-T,linker/loadable.ld,--build-id=none")
