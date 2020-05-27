@@ -149,7 +149,8 @@ endif()
 # Convenient build target for CI
 add_custom_target(make_demos)
 
-include(AddDemo.cmake)
+include(cmake/AddDemo.cmake)
+include(cmake/AddLoadable.cmake)
 
 include(demos/yielding/CMakeLists.txt)
 include(demos/exyielding/CMakeLists.txt)

@@ -16,11 +16,7 @@ else()
 endif()
 
 target_compile_definitions(loadbinary PRIVATE CODE_PAGE_SIZE=${CODE_PAGE_SIZE})
-
 # Use semihosting to load binary
 target_sources(loadbinary PRIVATE src/hw/arm_file.c)
 
-include(demos/loadbinary/loadable/CMakeLists.txt)
-# TODO: must be a cleaner way to do this
-add_dependencies(run_loadbinary loadable)
-add_dependencies(test_loadbinary loadable)
+add_loadable(loadbinary thebinary)
