@@ -41,10 +41,9 @@ config.test_exec_root = os.path.join(config.test_source_root, '..')
 
 # lower() because Azure config is case sensitive but local use may not be
 if 'linux' in platform.lower():
-  config.excludes.extend([
-    'stackcheck.c',
-    'selfyield.c',
-    'alloc.c',
-    'timer.c'])
+  config.excludes.add('stackcheck.c')
+  config.excludes.add('selfyield.c')
+  config.excludes.add('alloc.c')
+  config.excludes.add('timer.c')
 if platform.lower() == 'aarch64':
-  config.excludes.append('threadlocalstorage.c')
+  config.excludes.add('threadlocalstorage.c')
