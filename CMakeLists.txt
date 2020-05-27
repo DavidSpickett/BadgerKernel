@@ -51,6 +51,9 @@ elseif( BP_LOWER STREQUAL "thumb" )
   set( RAM_SIZE     0x10000)
   set( UART_BASE    "0x4000C000" )
   set( QEMU_CMD     "qemu-system-arm -M lm3s6965evb -cpu cortex-m4" )
+else()
+  message(FATAL_ERROR "Invalid platform \"${BP_LOWER}\". \
+  Expected one of \"linux\", \"arm\", \"thumb\", \"aarch64\".")
 endif()
 
 if (NOT LINUX)
