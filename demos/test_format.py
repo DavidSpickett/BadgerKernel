@@ -23,11 +23,12 @@ class MakeTest(lit.formats.base.TestFormat):
   def getTestsInDirectory(self, testSuite, path_in_suite,
                           litConfig, localConfig):
     source_path = testSuite.getSourcePath(path_in_suite)
-    for _, _, filenames in os.walk(source_path):
-      for filename in sorted(filenames):
-        if not filename in localConfig.excludes and \
-           os.path.splitext(filename)[1] == '.c':
+    for _, directories, _ in os.walk(source_path):
+      for directory in sorted(directories):
+        # __ to ignore __pycache__ etc.
+        if not directory in localConfig.excludes and \
+            not directory.startswith("__"):
           yield lit.Test.Test(
                   testSuite,
-                  path_in_suite + (filename,),
+                  path_in_suite + (directory,),
                   localConfig)
