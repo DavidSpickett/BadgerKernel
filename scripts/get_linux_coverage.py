@@ -9,7 +9,7 @@ demos = []
 demo_folder = "demos"
 # Usual Linux excludes
 excludes = ["stackcheck", "selfyield", "alloc",
-        "timer", "filesystem", "loadbinary"]
+        "timer", "filesystem", "loadbinary", "loadbinaries"]
 
 # Find all demos
 for f in os.listdir(demo_folder):

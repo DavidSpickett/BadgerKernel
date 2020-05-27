@@ -48,7 +48,10 @@ typedef struct {
   bool msgs_full;
 #if CODE_PAGE_SIZE
   bool in_code_page;
+#ifdef CODE_BACKING_PAGES
+  size_t code_backing_page;
 #endif
+#endif /* CODE_PAGE_SIZE */
 #ifndef linux
   uint64_t bottom_canary;
   uint8_t stack[THREAD_STACK_SIZE];
@@ -68,7 +71,12 @@ MonitorConfig config = {.destroy_on_stack_err = false,
 
 #if CODE_PAGE_SIZE
 __attribute__((section(".code_page"))) uint8_t code_page[CODE_PAGE_SIZE];
+#ifdef CODE_BACKING_PAGES
+#define INVALID_PAGE 123456
+__attribute__((section(".code_page_backing")))
+uint8_t code_page_backing[CODE_BACKING_PAGES][CODE_PAGE_SIZE];
 #endif
+#endif /* CODE_PAGE_SIZE */
 
 bool is_valid_thread(int tid) {
   return (tid >= 0) && (tid < MAX_THREADS) && all_threads[tid].id != -1;
@@ -89,13 +97,46 @@ int get_thread_id(void) {
   return current_thread()->id;
 }
 
+void init_thread(Thread* thread, int tid, const char* name,
+                 void (*do_work)(void), ThreadArgs args) {
+  // thread_start will jump to this
+  thread->work = do_work;
+  thread->state = init;
+
+  thread->id = tid;
+  thread->name = name;
+  thread->args = args;
+
+  // Start message buffer empty
+  thread->next_msg = &(thread->messages[0]);
+  thread->end_msgs = thread->next_msg;
+  thread->msgs_full = false;
+
+#ifdef CODE_PAGE_SIZE
+  thread->in_code_page = false;
+#if CODE_BACKING_PAGES
+  thread->code_backing_page = INVALID_PAGE;
+#endif
+#endif
+
+#ifndef linux
+  thread->bottom_canary = STACK_CANARY;
+  thread->top_canary = STACK_CANARY;
+  // Top of stack
+  size_t stack_ptr = (size_t)(&(thread->stack[THREAD_STACK_SIZE]));
+  // Mask to align to 16 bytes for AArch64
+  thread->stack_ptr = (uint8_t*)(stack_ptr & ~0xF);
+#endif
+}
+
 extern void setup(void);
 void do_scheduler(void);
 extern void start_thread_switch(void);
 __attribute__((noreturn)) void entry(void) {
-  // Invalidate all threads in the pool
+  // Init all threads to invalid
   for (size_t idx = 0; idx < MAX_THREADS; ++idx) {
-    all_threads[idx].id = -1;
+    ThreadArgs noargs = {0, 0, 0, 0};
+    init_thread(&all_threads[idx], -1, NULL, NULL, noargs);
   }
 
   // Call user setup
@@ -241,7 +282,32 @@ void log_scheduler_event(const char* event) {
   }
 }
 
+#ifdef CODE_BACKING_PAGES
+static void swap_paged_threads(const Thread* current, const Thread* next) {
+    // See if we need to swap out current thread
+    if (current && (current->code_backing_page != INVALID_PAGE)) {
+      memcpy(code_page_backing[current->code_backing_page],
+             code_page, CODE_PAGE_SIZE);
+    }
+    // If the next thread's code is in a backing page
+    if (next_thread->code_backing_page != INVALID_PAGE) {
+      memcpy(code_page,
+             code_page_backing[next_thread->code_backing_page],
+             CODE_PAGE_SIZE);
+    }
+}
+#endif
+
 void do_scheduler(void) {
+  // NULL next_thread means choose one for us
+  // otherwise just do required housekeeping to switch
+  if (next_thread != NULL) {
+#ifdef CODE_BACKING_PAGES
+    swap_paged_threads(current_thread(), next_thread);
+#endif
+    return;
+  }
+
   size_t start_thread_idx;
   Thread* curr = current_thread();
   if (curr) {
@@ -251,7 +317,7 @@ void do_scheduler(void) {
     // On startup current_thread will be NULL
     start_thread_idx = 0;
   }
-  
+
   size_t max_thread_idx = start_thread_idx + MAX_THREADS;
   for (size_t idx = start_thread_idx; idx < max_thread_idx; ++idx) {
     // Wrap into range of array
@@ -270,6 +336,11 @@ void do_scheduler(void) {
 
     log_scheduler_event("next thread chosen");
     next_thread = &all_threads[_idx];
+
+#ifdef CODE_BACKING_PAGES
+    swap_paged_threads(curr, next_thread);
+#endif
+
     return; //!OCLINT
   }
 
@@ -321,7 +392,8 @@ bool yield_next(void) {
   return false;
 }
 
-#if CODE_PAGE_SIZE
+// TODO: these ifdefs are a bit much
+#if CODE_PAGE_SIZE && ! CODE_BACKING_PAGES
 static int code_page_in_use_by() {
   for (size_t idx=0; idx<MAX_THREADS; ++idx) {
     if (all_threads[idx].in_code_page) {
@@ -330,9 +402,40 @@ static int code_page_in_use_by() {
   }
   return -1;
 }
+#endif
 
+#if CODE_BACKING_PAGES
+static size_t find_free_backing_page() {
+  //TODO: not very efficient
+  bool possible[CODE_BACKING_PAGES];
+  for (size_t i=0; i<CODE_BACKING_PAGES; ++i) {
+    possible[i] = true;
+  }
+  for (size_t i=0; i<MAX_THREADS; ++i) {
+    size_t page = all_threads[i].code_backing_page;
+    if (page != INVALID_PAGE) {
+      possible[page] = false;
+    }
+  }
+  for (size_t i=0; i<CODE_BACKING_PAGES; ++i) {
+    if (possible[i]) {
+      return i;
+    }
+  }
+  return INVALID_PAGE;
+}
+#endif
+
+#if CODE_PAGE_SIZE
 int add_thread_from_file(const char* filename) {
+#if CODE_BACKING_PAGES
+  size_t free_page = find_free_backing_page();
+  // If we have backing, don't count the active
+  // page as useable for loading.
+  if (free_page == INVALID_PAGE) {
+#else
   if (code_page_in_use_by() != -1) {
+#endif
     return -1;
   }
 
@@ -342,7 +445,12 @@ int add_thread_from_file(const char* filename) {
     exit(1);
   }
 
-  size_t got = read(file, code_page, CODE_PAGE_SIZE);
+  uint8_t* dest = code_page;
+#if CODE_BACKING_PAGES
+  dest = &code_page_backing[free_page][0];
+#endif
+
+  size_t got = read(file, dest, CODE_PAGE_SIZE);
   if (!got) {
     printf("Didn't get any data from %s\n", filename);
     exit(1);
@@ -356,7 +464,12 @@ int add_thread_from_file(const char* filename) {
 #endif
 
   int tid = add_named_thread(worker, filename);
+
+#if CODE_BACKING_PAGES
+  all_threads[tid].code_backing_page = free_page;
+#else
   all_threads[tid].in_code_page = true;
+#endif
   return tid;
 }
 #endif
@@ -368,35 +481,6 @@ int add_thread(void (*worker)(void)) {
 int add_named_thread(void (*worker)(), const char* name) {
   ThreadArgs args = {0, 0, 0, 0};
   return add_named_thread_with_args(worker, name, args);
-}
-
-void init_thread(Thread* thread, int tid, const char* name,
-                 void (*do_work)(void), ThreadArgs args) {
-  // thread_start will jump to this
-  thread->work = do_work;
-  thread->state = init;
-
-  thread->id = tid;
-  thread->name = name;
-  thread->args = args;
-
-  // Start message buffer empty
-  thread->next_msg = &(thread->messages[0]);
-  thread->end_msgs = thread->next_msg;
-  thread->msgs_full = false;
-
-#ifdef CODE_PAGE_SIZE
-  thread->in_code_page = false;
-#endif
-
-#ifndef linux
-  thread->bottom_canary = STACK_CANARY;
-  thread->top_canary = STACK_CANARY;
-  // Top of stack
-  size_t stack_ptr = (size_t)(&(thread->stack[THREAD_STACK_SIZE]));
-  // Mask to align to 16 bytes for AArch64
-  thread->stack_ptr = (uint8_t*)(stack_ptr & ~0xF);
-#endif
 }
 
 #ifdef linux
@@ -412,14 +496,23 @@ int add_named_thread_with_args(void (*worker)(), const char* name,
       pthread_create(&all_threads[idx].self, NULL, thread_entry, NULL);
 #endif
 
-#ifdef CODE_PAGE_SIZE
+#if CODE_PAGE_SIZE
       Thread* curr = current_thread();
+#if CODE_BACKING_PAGES
+      if (curr) {
+        size_t page = curr->code_backing_page;
+        if (page != INVALID_PAGE) {
+          all_threads[idx].code_backing_page = page;
+        }
+      }
+#else
       // Check null because we might be in setup() which runs as kernel
       if (curr && curr->in_code_page) {
         // Code page must live as long as all threads created by code in it
         all_threads[idx].in_code_page = true;
       }
-#endif
+#endif /* CODE_BACKING_PAGES */
+#endif /* CODE_PAGE_SIZE */
 
       return idx;
     }
@@ -493,7 +586,7 @@ void* thread_entry() {
 void thread_switch(void) {
   if (!next_thread) {
     do_scheduler();
-  } 
+  }
   while (next_thread != current_thread()) {
     pthread_yield();
   }
@@ -582,6 +675,9 @@ __attribute__((noreturn)) void thread_start(void) {
   // Free the code page. If there are other threads
   // running from it they will still have true to keep it alive.
   current_thread()->in_code_page = false;
+#ifdef CODE_BACKING_PAGES
+  current_thread()->code_backing_page = INVALID_PAGE;
+#endif
 #endif
 
   // Calling thread_switch directly so we don't print 'yielding'

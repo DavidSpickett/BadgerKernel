@@ -20,6 +20,7 @@ SECTIONS
     . = ALIGN(8);
     /* on the end in case of weird stuff writing beyond */
     *(.code_page)
+    *(.code_page_backing)
   }
   ram_end = .;
   ASSERT((ram_end <= (ram_start + ram_size)), "Too much data for RAM!")

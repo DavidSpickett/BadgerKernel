@@ -129,11 +129,6 @@ save_current_thread:
   str r3, [r1]         // _current_thread->state = suspended
 
 load_next_thread:
-  /* null next_thread means ask the scheduler for next */
-  ldr r4, [r11]            // r4 = next_thread
-  mov r5, #0               // next_thread == 0 ?
-  cmp r4, r5
-  bne actually_load_thread // next already set, just load it
   cps #SUPERVISOR_MODE     // Use kernel's stack
   bl do_scheduler          // This will set next_thread
   cps #SYSTEM_MODE         // Back to user stack

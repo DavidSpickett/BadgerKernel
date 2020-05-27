@@ -180,16 +180,11 @@ save_current_thread:
   str x2, [x1]         // _current_thread->state = suspended
 
 load_next_thread:
-  /* null next_thread means ask the scheduler for next */
-  ldr x6, [x21]              // x6 = next_thread
-  mov x7, #0                 // next_thread = 0?
-  cmp x6, x7
-  bne actually_load_thread   // next already set, just load it
   msr SPSel, #1              // Use kernel's stack
   bl do_scheduler            // This will set next_thread
   msr SPSel, #0              // Back to user stack
   ldr x6, [x21]              // Get new next_thread
-  
+
 actually_load_thread:
   str x6, [x20]            // _current_thread = next_thread
   mov x12, #0              // Set next to null for next switch to call scheduler

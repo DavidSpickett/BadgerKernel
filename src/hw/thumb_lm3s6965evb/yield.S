@@ -164,12 +164,6 @@ save_current_thread:
   str r3, [r1]          // _current_thread->state = suspended
 
 load_next_thread:
-  /* NULL next thread means ask the scheduler for next */
-  ldr r4, [r7]             // r4 = next_thread
-  mov r5, #0               // next_thread == 0 ?
-  cmp r4, r5
-  bne actually_load_thread // next already set, just load it
-
   ldr r0, =stack_top       // Back to kernel stack
   mov sp, r0
   push {lr}

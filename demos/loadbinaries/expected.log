@@ -1,0 +1,73 @@
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: next thread chosen
+Thread     task.bin: Hello
+Thread     task.bin: from thread 0
+Thread     task.bin: yielding
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: next thread chosen
+Thread   load_again: yielding
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: next thread chosen
+Thread     task.bin: Hello
+Thread     task.bin: from thread 2
+Thread     task.bin: yielding
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: next thread chosen
+Thread     task.bin: Hello
+Thread     task.bin: from thread 3
+Thread     task.bin: yielding
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: next thread chosen
+Thread     task.bin: resuming
+Thread     task.bin: Goodbye
+Thread     task.bin: from thread 0
+Thread     task.bin: Adding keepalive thread
+Thread     task.bin: exiting
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: next thread chosen
+Thread   load_again: resuming
+Thread   load_again: yielding
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: next thread chosen
+Thread     task.bin: resuming
+Thread     task.bin: Goodbye
+Thread     task.bin: from thread 2
+Thread     task.bin: Adding keepalive thread
+Thread     task.bin: exiting
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: next thread chosen
+Thread     task.bin: resuming
+Thread     task.bin: Goodbye
+Thread     task.bin: from thread 3
+Thread     task.bin: Adding keepalive thread
+Thread     task.bin: exiting
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: next thread chosen
+Thread            4: yielding
+Thread   load_again: resuming
+Thread   load_again: yielding
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: next thread chosen
+Thread            4: resuming
+Thread            4: exiting
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: next thread chosen
+Thread            5: yielding
+Thread   load_again: resuming
+Thread   load_again: loaded again
+Thread   load_again: yielding
+Thread    task2.bin: Greetings!
+Thread    task2.bin: from thread 7
+Thread    task2.bin: exiting
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: next thread chosen
+Thread   load_again: resuming
+Thread   load_again: exiting
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: next thread chosen
+Thread            5: resuming
+Thread            5: exiting
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: next thread chosen
+Thread            6: exiting
+Thread  <scheduler>: all threads finished
