@@ -18,13 +18,11 @@ void worker() {
     // Some static to prove we copy code *and* data correctly
     static bool hello = true;
     if (hello) {
-      log_event("Hello");
-      log_event(buf);
+      log_event("Hello %s", buf);
       hello = false;
       yield();
     } else {
-      log_event("Goodbye");
-      log_event(buf);
+      log_event("Goodbye %s", buf);
       break;
     }
   }

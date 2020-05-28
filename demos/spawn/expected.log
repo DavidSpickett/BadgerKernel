@@ -1,23 +1,20 @@
 Thread      spawner: spawned demons
 Thread      spawner: yielding
-Thread      Morgoth: Hello my name is
-Thread      Morgoth: Morgoth
+Thread      Morgoth: Hello my name is Morgoth
 Thread      Morgoth: exiting
 Thread       Sauron: yielding
 Thread       Khamul: yielding
 Thread      spawner: resuming
 Thread      spawner: yielding
 Thread       Sauron: resuming
-Thread       Sauron: Hello my name is
-Thread       Sauron: Sauron
+Thread       Sauron: Hello my name is Sauron
 Thread       Sauron: exiting
 Thread       Khamul: resuming
 Thread       Khamul: yielding
 Thread      spawner: resuming
 Thread      spawner: yielding
 Thread       Khamul: resuming
-Thread       Khamul: Hello my name is
-Thread       Khamul: Khamul
+Thread       Khamul: Hello my name is Khamul
 Thread       Khamul: exiting
 Thread      spawner: resuming
 Thread      spawner: demons perished

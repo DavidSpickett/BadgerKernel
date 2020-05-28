@@ -12,6 +12,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
+#include <stdarg.h>
 
 #ifndef linux
 #include "alloc.h"
@@ -270,10 +271,17 @@ void format_thread_name(char* out) {
   out[THREAD_NAME_SIZE] = '\0';
 }
 
-void log_event(const char* event) {
+void log_event(const char* event, ...) {
   char thread_name[THREAD_NAME_SIZE + 1];
   format_thread_name(thread_name);
-  printf("Thread %s: %s\n", thread_name, event);
+  printf("Thread %s: ", thread_name);
+
+  va_list args;
+  va_start(args, event);
+  vprintf(event, args);
+  va_end(args);
+
+  printf("\n");
 }
 
 void log_scheduler_event(const char* event) {

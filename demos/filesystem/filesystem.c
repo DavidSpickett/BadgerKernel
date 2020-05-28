@@ -81,6 +81,7 @@ void list_files(void) {
   char* out = walk_res;
   walk("/", &out);
 
+  // Blank line for spacing purposes
   log_event("");
   printf("%s", walk_res);
 }

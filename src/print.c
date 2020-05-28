@@ -1,5 +1,4 @@
 #include "print.h"
-#include <stdarg.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -51,10 +50,17 @@ size_t uint_to_str(uint64_t num, char* out, unsigned base) {
   return len;
 }
 
+
 int printf(const char* fmt, ...) {
-  int len = 0;
   va_list args;
   va_start(args, fmt);
+  int printed = vprintf(fmt, args);
+  va_end(args);
+  return printed;
+}
+
+int vprintf(const char* fmt, va_list args) {
+  int len = 0;
 
   while (*fmt) {
     // Check for formatting arg
@@ -92,7 +98,6 @@ int printf(const char* fmt, ...) {
     }
   }
 
-  va_end(args);
   return len;
 }
 

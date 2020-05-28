@@ -12,7 +12,7 @@ Thread            0: exiting
 Thread            1: resuming
 Thread            1: yielding
 Thread            2: resuming
-Thread            2: a thread exited
+Thread            2: thread 0 exited
 Thread            2: yielding
 Thread            1: resuming
 Thread            1: yielding
@@ -21,5 +21,5 @@ Thread            2: yielding
 Thread            1: resuming
 Thread            1: exiting
 Thread            2: resuming
-Thread            2: a thread exited
+Thread            2: thread 1 exited
 Thread            2: exiting

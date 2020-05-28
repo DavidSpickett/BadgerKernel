@@ -10,8 +10,7 @@ void work() {
     yield();
   }
 
-  log_event("Hello my name is");
-  log_event(get_thread_name());
+  log_event("Hello my name is %s", get_thread_name());
 }
 
 void spawner() {
