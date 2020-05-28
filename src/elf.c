@@ -129,6 +129,7 @@ static bool load_section(int elf, uint16_t idx,
       (section_hdr.sh_addr < start_code_page) ||
       (section_hdr.sh_addr >= end_code_page)) {
     printf("Section %u's start address not within code page\n", idx);
+    exit(1);
   }
 
   void* section_end = (void*)((size_t)(section_hdr.sh_addr) + section_hdr.sh_size);
