@@ -7,7 +7,6 @@ void keep_page() {
   yield_to(1);
 }
 
-__attribute__((section(".worker")))
 void worker() {
   int tid = get_thread_id();
 

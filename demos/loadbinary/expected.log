@@ -1,9 +1,9 @@
 Thread  <scheduler>: scheduling new thread
 Thread  <scheduler>: next thread chosen
-Thread   binary.bin: Hello
-Thread   binary.bin: Adding a new thread!
-Thread   binary.bin: Goodbye
-Thread   binary.bin: exiting
+Thread       binary: Hello
+Thread       binary: Adding a new thread!
+Thread       binary: Goodbye
+Thread       binary: exiting
 Thread  <scheduler>: scheduling new thread
 Thread  <scheduler>: next thread chosen
 Thread   load_again: yielding
@@ -18,10 +18,10 @@ Thread   load_again: loading binary again
 Thread   load_again: exiting
 Thread  <scheduler>: scheduling new thread
 Thread  <scheduler>: next thread chosen
-Thread   binary.bin: Hello
-Thread   binary.bin: Adding a new thread!
-Thread   binary.bin: Goodbye
-Thread   binary.bin: exiting
+Thread       binary: Hello
+Thread       binary: Adding a new thread!
+Thread       binary: Goodbye
+Thread       binary: exiting
 Thread  <scheduler>: scheduling new thread
 Thread  <scheduler>: next thread chosen
 Thread        other: Using a global!

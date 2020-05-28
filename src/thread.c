@@ -6,7 +6,7 @@
 #include "thread.h"
 #include "util.h"
 #if CODE_PAGE_SIZE
-#include "file_system.h"
+#include "elf.h"
 #endif
 #include <stdbool.h>
 #include <stddef.h>
@@ -458,20 +458,7 @@ int add_thread_from_file(const char* filename) {
   dest = &code_page_backing[free_page][0];
 #endif
 
-  size_t got = read(file, dest, CODE_PAGE_SIZE);
-  if (!got) {
-    printf("Didn't get any data from %s\n", filename);
-    exit(1);
-  }
-
-  // TODO: read proper entry address?
-#ifdef __thumb__
-  void (*worker)(void) = (void (*) (void))((size_t)code_page| 1);
-#else
-  void (*worker)(void) = (void (*) (void))(code_page);
-#endif
-
-  int tid = add_named_thread(worker, filename);
+  int tid = add_named_thread(load_elf(filename, dest), filename);
 
 #if CODE_BACKING_PAGES
   all_threads[tid].code_backing_page = free_page;

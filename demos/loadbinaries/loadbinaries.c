@@ -7,7 +7,7 @@ void load_again() {
   int tid = -1;
   while (tid == -1) {
     yield();
-    tid = add_thread_from_file("task2.bin");
+    tid = add_thread_from_file("task2");
   }
   log_event("loaded again");
   // Check that skipping the scheduler still copies
@@ -17,7 +17,7 @@ void load_again() {
 }
 
 void setup(void) {
-  const char* filename = "task.bin";
+  const char* filename = "task";
 
   add_thread_from_file(filename);
   // This will be able to load it again because page 0 was freed

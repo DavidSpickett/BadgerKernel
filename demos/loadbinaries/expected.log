@@ -1,40 +1,40 @@
 Thread  <scheduler>: scheduling new thread
 Thread  <scheduler>: next thread chosen
-Thread     task.bin: Hello from thread 0
-Thread     task.bin: yielding
+Thread         task: Hello from thread 0
+Thread         task: yielding
 Thread  <scheduler>: scheduling new thread
 Thread  <scheduler>: next thread chosen
 Thread   load_again: yielding
 Thread  <scheduler>: scheduling new thread
 Thread  <scheduler>: next thread chosen
-Thread     task.bin: Hello from thread 2
-Thread     task.bin: yielding
+Thread         task: Hello from thread 2
+Thread         task: yielding
 Thread  <scheduler>: scheduling new thread
 Thread  <scheduler>: next thread chosen
-Thread     task.bin: Hello from thread 3
-Thread     task.bin: yielding
+Thread         task: Hello from thread 3
+Thread         task: yielding
 Thread  <scheduler>: scheduling new thread
 Thread  <scheduler>: next thread chosen
-Thread     task.bin: resuming
-Thread     task.bin: Goodbye from thread 0
-Thread     task.bin: Adding keepalive thread
-Thread     task.bin: exiting
+Thread         task: resuming
+Thread         task: Goodbye from thread 0
+Thread         task: Adding keepalive thread
+Thread         task: exiting
 Thread  <scheduler>: scheduling new thread
 Thread  <scheduler>: next thread chosen
 Thread   load_again: resuming
 Thread   load_again: yielding
 Thread  <scheduler>: scheduling new thread
 Thread  <scheduler>: next thread chosen
-Thread     task.bin: resuming
-Thread     task.bin: Goodbye from thread 2
-Thread     task.bin: Adding keepalive thread
-Thread     task.bin: exiting
+Thread         task: resuming
+Thread         task: Goodbye from thread 2
+Thread         task: Adding keepalive thread
+Thread         task: exiting
 Thread  <scheduler>: scheduling new thread
 Thread  <scheduler>: next thread chosen
-Thread     task.bin: resuming
-Thread     task.bin: Goodbye from thread 3
-Thread     task.bin: Adding keepalive thread
-Thread     task.bin: exiting
+Thread         task: resuming
+Thread         task: Goodbye from thread 3
+Thread         task: Adding keepalive thread
+Thread         task: exiting
 Thread  <scheduler>: scheduling new thread
 Thread  <scheduler>: next thread chosen
 Thread            4: yielding
@@ -50,8 +50,8 @@ Thread            5: yielding
 Thread   load_again: resuming
 Thread   load_again: loaded again
 Thread   load_again: yielding
-Thread    task2.bin: Greetings from thread 7!
-Thread    task2.bin: exiting
+Thread        task2: Greetings from thread 7!
+Thread        task2: exiting
 Thread  <scheduler>: scheduling new thread
 Thread  <scheduler>: next thread chosen
 Thread   load_again: resuming

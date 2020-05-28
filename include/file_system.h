@@ -19,10 +19,13 @@
 #define O_CREAT  0
 // For Linux to make new file readable
 #define S_IRUSR  0
+// Seek to offset from beginning
+#define SEEK_CUR 0
 
 int open(const char* path, int oflag, ...);
 ssize_t read(int fildes, void* buf, size_t nbyte);
 ssize_t write(int fildes, const void* buf, size_t nbyte);
+off_t lseek(int fd, off_t offset, int whence);
 int remove(const char* path);
 int close(int filedes);
 void exit(int status);

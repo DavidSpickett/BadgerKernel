@@ -1,7 +1,7 @@
 #include "thread.h"
 #include "util.h"
 
-const char* filename = "binary.bin";
+const char* filename = "binary";
 void load_again() {
   // Fails because other_worker from binary is still active
   // (worker has finished though)

@@ -7,7 +7,6 @@ void other_worker() {
 }
 
 // The entry point
-__attribute__((section(".worker")))
 void worker() {
   /* Note that this *will* get reloaded when loadbinary
      loads the file again. So each time we'll add a new thread. */

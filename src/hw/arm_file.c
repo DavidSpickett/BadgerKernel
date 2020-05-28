@@ -1,4 +1,5 @@
 #include "util.h"
+#include "file_system.h"
 #include <stddef.h>
 #include <string.h>
 
@@ -23,10 +24,11 @@ ssize_t write(int fildes, const void* buf, size_t nbyte) {
   return nbyte - ret;
 }
 
-// Following the arm semihosting spec here not posix lseek
-int seek(int filedes, size_t offset) {
-  volatile size_t parameters[] = {filedes, offset};
-  return generic_semihosting_call(SYS_SEEK, parameters);
+off_t lseek(int fd, off_t offset, int whence) {
+  assert(whence == SEEK_CUR);
+  volatile size_t parameters[] = {fd, offset};
+  int got = generic_semihosting_call(SYS_SEEK, parameters);
+  return got == 0 ? offset : (off_t)-1;
 }
 
 int remove(const char* path) {
