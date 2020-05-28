@@ -94,10 +94,15 @@ static void check_elf_hdr(const ElfHeader* header) {
   }
 }
 
-static bool load_section (int elf, uint16_t idx,
-                          size_t section_table_offs,
-                          size_t section_hdr_size,
-                          void* dest) {
+__attribute__((
+  annotate("oclint:suppress[high cyclomatic complexity]"),
+  annotate("oclint:suppress[high ncss method]"),
+  annotate("oclint:suppress[high npath complexity]"),
+  annotate("oclint:suppress[long method]")))
+static bool load_section(int elf, uint16_t idx,
+                         size_t section_table_offs,
+                         size_t section_hdr_size,
+                         void* dest) {
   off_t expected_hdr_pos = section_table_offs + (section_hdr_size*idx);
   off_t hdr_pos = lseek(elf, expected_hdr_pos, SEEK_CUR);
   if (hdr_pos != expected_hdr_pos) {
@@ -112,8 +117,8 @@ static bool load_section (int elf, uint16_t idx,
     exit(1);
   }
 
-  if (!(section_hdr.sh_flags & SHF_ALLOC)) {
-    DEBUG_MSG_ELF("Skipping section %u, not ALLOC\n", idx);
+  if (!(section_hdr.sh_flags & SHF_ALLOC)) { //!OCLINT
+    DEBUG_MSG_ELF("Skipping section %u, not ALLOC\n", idx); //!OCLINT
     return false;
   }
 
@@ -132,10 +137,9 @@ static bool load_section (int elf, uint16_t idx,
     exit(1);
   }
 
-  off_t expected_section_content_pos = section_hdr.sh_offset;
-  off_t section_content_pos = lseek(elf,
-    expected_section_content_pos, SEEK_CUR);
-  if (section_content_pos != expected_section_content_pos) {
+  off_t expected_content_pos = section_hdr.sh_offset;
+  off_t content_pos = lseek(elf, expected_content_pos, SEEK_CUR);
+  if (content_pos != expected_content_pos) {
     printf("Couldn't seek to content for section %u\n", idx);
     exit(1);
   }
@@ -151,17 +155,21 @@ static bool load_section (int elf, uint16_t idx,
     printf("Couldn't read content for section %u\n", idx);
     exit(1);
   }
-  DEBUG_MSG_ELF("Loaded %u bytes from section %u\n",
+  DEBUG_MSG_ELF("Loaded %u bytes from section %u\n", //!OCLINT
     section_got, idx);
 
   return true;
 }
 
+__attribute__((
+  annotate("oclint:suppress[high cyclomatic complexity]"),
+  annotate("oclint:suppress[high ncss method]"),
+  annotate("oclint:suppress[high npath complexity]")))
 void (*load_elf(const char* filename, void* dest))(void) {
   /* Validate elf and load all ALLOC sections into location
      dest. Returns a function pointer to the ELF entry point.
   */
-  DEBUG_MSG_ELF("Loading \"%s\"\n", filename);
+  DEBUG_MSG_ELF("Loading \"%s\"\n", filename); //!OCLINT
   int elf = open(filename, O_RDONLY);
   if (elf < 0) {
     printf("Couldn't open file %s\n", filename);
@@ -201,7 +209,7 @@ void (*load_elf(const char* filename, void* dest))(void) {
     exit(1);
   }
 
-  DEBUG_MSG_ELF("Loaded \"%s\"\n", filename);
+  DEBUG_MSG_ELF("Loaded \"%s\"\n", filename); //!OCLINT
   // Note that Thumb addresses already have the bit set
   return elf_hdr.e_entry;
 }

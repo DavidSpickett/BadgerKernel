@@ -478,6 +478,26 @@ int add_named_thread(void (*worker)(), const char* name) {
   return add_named_thread_with_args(worker, name, args);
 }
 
+#if CODE_PAGE_SIZE
+static void setup_code_page(size_t idx) {
+  Thread* curr = current_thread();
+#if CODE_BACKING_PAGES
+  if (curr) {
+    size_t page = curr->code_backing_page;
+    if (page != INVALID_PAGE) {
+      all_threads[idx].code_backing_page = page;
+    }
+  }
+#else
+  // Check null because we might be in setup() which runs as kernel
+  if (curr && curr->in_code_page) {
+    // Code page must live as long as all threads created by code in it
+    all_threads[idx].in_code_page = true;
+  }
+#endif /* CODE_BACKING_PAGES */
+}
+#endif /* CODE_PAGE_SIZE */
+
 #ifdef linux
 void* thread_entry();
 #endif
@@ -486,29 +506,12 @@ int add_named_thread_with_args(void (*worker)(), const char* name,
   for (size_t idx = 0; idx < MAX_THREADS; ++idx) {
     if (all_threads[idx].id == -1) {
       init_thread(&all_threads[idx], idx, name, worker, args);
-
 #ifdef linux
       pthread_create(&all_threads[idx].self, NULL, thread_entry, NULL);
 #endif
-
 #if CODE_PAGE_SIZE
-      Thread* curr = current_thread();
-#if CODE_BACKING_PAGES
-      if (curr) {
-        size_t page = curr->code_backing_page;
-        if (page != INVALID_PAGE) {
-          all_threads[idx].code_backing_page = page;
-        }
-      }
-#else
-      // Check null because we might be in setup() which runs as kernel
-      if (curr && curr->in_code_page) {
-        // Code page must live as long as all threads created by code in it
-        all_threads[idx].in_code_page = true;
-      }
-#endif /* CODE_BACKING_PAGES */
-#endif /* CODE_PAGE_SIZE */
-
+      setup_code_page(idx);
+#endif
       return idx;
     }
   }
