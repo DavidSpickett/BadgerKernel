@@ -298,9 +298,9 @@ static void swap_paged_threads(const Thread* current, const Thread* next) {
              code_page, CODE_PAGE_SIZE);
     }
     // If the next thread's code is in a backing page
-    if (next_thread->code_backing_page != INVALID_PAGE) {
+    if (next->code_backing_page != INVALID_PAGE) {
       memcpy(code_page,
-             code_page_backing[next_thread->code_backing_page],
+             code_page_backing[next->code_backing_page],
              CODE_PAGE_SIZE);
     }
 }

@@ -27,18 +27,14 @@ size_t get_semihosting_event(int status) {
 
 size_t generic_semihosting_call(size_t operation, volatile size_t* parameters) {
   size_t ret;
-
   // clang-format off
-  /* I never intend to run this function on Linux,
-     but OCLint checks as if it were Linux and rejects
-     this assembly. */
+  /* I never intend to run this function on Linux, but OCLint checks
+     as if it were Linux and rejects this assembly. */
 #ifdef linux
   ret = 0; (void)operation; (void)parameters;
 #else
-  /* Haven't figured out how to allow another exception
-     if you're already handling the first one. So just
-     see if we're already in the kernel first.
-  */
+  /* Easier to check if we're in kernel already than
+     handle re-entry to kernel mode. */
 #ifdef __thumb__
   size_t control;
   asm volatile ("mrs %0, control":"=r"(control));

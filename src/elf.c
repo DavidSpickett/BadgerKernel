@@ -2,6 +2,7 @@
 #include "file_system.h"
 #include "print.h"
 #include <stddef.h>
+#include <stdint.h>
 
 #ifndef CODE_PAGE_SIZE
 #error "Loading ELFs requires CODE_PAGE_SIZE"

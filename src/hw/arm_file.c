@@ -24,7 +24,7 @@ ssize_t write(int fildes, const void* buf, size_t nbyte) {
   return nbyte - ret;
 }
 
-off_t lseek(int fd, off_t offset, int whence) {
+off_t lseek(int fd, off_t offset, int whence) { //!OCLINT
   assert(whence == SEEK_CUR);
   volatile size_t parameters[] = {fd, offset};
   int got = generic_semihosting_call(SYS_SEEK, parameters);

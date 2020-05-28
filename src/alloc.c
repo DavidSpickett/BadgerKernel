@@ -81,7 +81,7 @@ void* malloc(size_t size) {
     return to_heap_ptr(alloc_idx);
   }
 
-  return NULL;
+  return NULL; //!OCLINT
 }
 
 bool can_realloc_free(void* ptr) {
@@ -137,7 +137,7 @@ void* realloc(void* ptr, size_t size) {
   // Restore original allocation
   block_tags[tag_idx].tag = old_tag;
   // Return nullptr on failure
-  return NULL;
+  return NULL; //!OCLINT
 }
 
 void free_all(int tid) {
