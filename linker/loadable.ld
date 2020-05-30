@@ -1,8 +1,7 @@
 ENTRY(worker)
 SECTIONS
 {
-  /*. = code_page; TODO: put this back for non PIE */
-  code_page = .; /* to pass the check below */
+  . = code_page;
   .text : { *(.text) }
   .rodata : { *(.rodata) }
   .bss : { *(.bss) }

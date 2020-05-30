@@ -1,0 +1,11 @@
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: next thread chosen
+Thread    piebinary: Disabling scheduler logging
+Thread    piebinary: Hello
+Thread    piebinary: Adding a new thread
+Thread    piebinary: yielding
+Thread          foo: I am a new thead!
+Thread          foo: exiting
+Thread    piebinary: resuming
+Thread    piebinary: Goodbye
+Thread    piebinary: exiting

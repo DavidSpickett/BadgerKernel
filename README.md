@@ -38,25 +38,26 @@ make
 
 ## Demos
 
-| Name                             | Description                                                                       |
-|----------------------------------|-----------------------------------------------------------------------------------|
-| yielding                         | Threads yielding back to the scheduler.                                           |
-| exyielding                       | Threads yielding directly to another thread or the next available thread.         |
-| message                          | Passing messages between threads.                                                 |
-| exit                             | Threads exiting normally like any other C function.                               |
-| spawn                            | One thread creating other threads.                                                |
-| stackcheck (Arm/Thumb/AArch64)   | Detection of thread stack underflow or overflow when they try to yield.           |
-| args                             | Passing arguments to a thread.                                                    |
-| mutexes                          | Locking a buffer using a mutex.                                                   |
-| timer (Arm/Thumb/AArch64)        | Thread switching using a timer interrupt.                                         |
-| threadlocalstorage               | Using thread local storage (TLS) to give each thread it's own 'global' variables. |
-| conditionvariables               | Waiting on, signalling and broadcasting to condition variables.                   |
-| cancel                           | Cancelling threads.                                                               |
-| file                             | Read from a file. (via semihosting on bare metal)                                 |
-| alloc (Arm/Thumb/AArch64)        | Use of malloc/free.                                                               |
-| filesystem                       | A minimal in memory file system.                                                  |
-| loadbinary (Arm/Thumb/AArch64)   | Loading a thread from a seperate binary (over semihosting).                       |
-| loadbinaries (Arm/Thumb/AArch64) | Loading multiple binaries, swapping them as they become active.                   |
+| Name                              | Description                                                                        |
+|-----------------------------------|------------------------------------------------------------------------------------|
+| yielding                          | Threads yielding back to the scheduler.                                            |
+| exyielding                        | Threads yielding directly to another thread or the next available thread.          |
+| message                           | Passing messages between threads.                                                  |
+| exit                              | Threads exiting normally like any other C function.                                |
+| spawn                             | One thread creating other threads.                                                 |
+| stackcheck (Arm/Thumb/AArch64)    | Detection of thread stack underflow or overflow when they try to yield.            |
+| args                              | Passing arguments to a thread.                                                     |
+| mutexes                           | Locking a buffer using a mutex.                                                    |
+| timer (Arm/Thumb/AArch64)         | Thread switching using a timer interrupt.                                          |
+| threadlocalstorage                | Using thread local storage (TLS) to give each thread it's own 'global' variables.  |
+| conditionvariables                | Waiting on, signalling and broadcasting to condition variables.                    |
+| cancel                            | Cancelling threads.                                                                |
+| file                              | Read from a file. (via semihosting on bare metal)                                  |
+| alloc (Arm/Thumb/AArch64)         | Use of malloc/free.                                                                |
+| filesystem                        | A minimal in memory file system.                                                   |
+| loadbinary (Arm/Thumb/AArch64)    | Loading a thread from a seperate binary (over semihosting).                        |
+| loadbinaries (Arm/Thumb/AArch64)  | Loading a position independent binary (over semihosting).                          |
+| loadpiebinary (Arm/Thumb/AArch64) | Loading multiple binaries, swapping them as they become active (over semihosting). |
 
 Each demo has 'run_<demo>', 'debug_<demo>' and 'test_<demo>' make targets. To test all demos use lit. (best done in a virtualenv)
 

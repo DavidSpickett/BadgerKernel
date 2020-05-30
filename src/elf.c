@@ -11,7 +11,7 @@
 #error "Loading ELFs requires CODE_PAGE_SIZE"
 #endif
 
-#define DEBUG_ELF_LOAD 1
+#define DEBUG_ELF_LOAD 0
 // ## will remove the preceeding comma if there are zero args
 #define DEBUG_MSG_ELF(fmt, ...) \
   do { if(DEBUG_ELF_LOAD) { printf(fmt, ## __VA_ARGS__); } } while(0)

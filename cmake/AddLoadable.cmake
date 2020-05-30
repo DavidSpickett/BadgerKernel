@@ -30,7 +30,7 @@ function(__add_loadable PARENT NAME PIE)
 
   if(PIE)
     target_compile_options(${NAME} PRIVATE -fpie -shared -L. -l:${NAME})
-    target_link_libraries(${NAME} PRIVATE "-Wl,--defsym=code_page_size=${CODE_PAGE_SIZE},-T,linker/loadable.ld,--build-id=none,-pie,-shared")
+    target_link_libraries(${NAME} PRIVATE "-Wl,--defsym=code_page_size=${CODE_PAGE_SIZE},-T,linker/pie_loadable.ld,--build-id=none,-pie,-shared")
   else()
     # TODO: dedupe
     target_link_libraries(${NAME} PRIVATE "-Wl,--defsym=code_page_size=${CODE_PAGE_SIZE},--just-symbols=${PARENT},-T,linker/loadable.ld,--build-id=none")
