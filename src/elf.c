@@ -1,6 +1,8 @@
 #include "elf.h"
 #include "file_system.h"
 #include "print.h"
+#include "thread.h"
+#include <string.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -12,6 +14,7 @@
 // ## will remove the preceeding comma if there are zero args
 #define DEBUG_MSG_ELF(fmt, ...) \
   do { if(DEBUG_ELF_LOAD) { printf(fmt, ## __VA_ARGS__); } } while(0)
+#define DEBUG_MSG_ELF_SECTION(msg) DEBUG_MSG_ELF("------ "msg" ------\n")
 
 #define MAX_SECTION_NAME_LEN 80
 // TODO: this assumption is more risky than the section names
@@ -90,6 +93,15 @@ typedef struct {
 #endif
 } ELFSymbol;
 
+// Used after we've looked up name
+typedef struct {
+  uint16_t idx;
+  ELFSymbol symbol;
+  char name[MAX_SYMBOL_NAME_LEN];
+  unsigned char type;
+  unsigned char bind;
+} SymbolInfo;
+
 #define SYM_BIND(x) ((x) >> 4)
 #define SYM_TYPE(x) (x & 0xf)
 
@@ -129,7 +141,18 @@ typedef struct {
 #define SHT_RELA 4
 #define SHT_REL  9
 
-const char* reloc_type_tostr(size_t reloc_type) {
+static const char* elf_type_tostr(uint16_t type) {
+  switch (type) {
+    case ET_EXEC:
+      return "ET_EXEC";
+    case ET_DYN:
+      return "ET_DYN";
+    default:
+      return "(unknown)";
+  }
+}
+
+static const char* reloc_type_tostr(size_t reloc_type) {
   switch(reloc_type) {
     case R_ARM_GLOB_DAT:
       return "R_ARM_GLOB_DAT";
@@ -142,7 +165,7 @@ const char* reloc_type_tostr(size_t reloc_type) {
   }
 }
 
-const char* sym_bind_tostr(unsigned char bind) {
+static const char* sym_bind_tostr(unsigned char bind) {
   switch(bind) {
     case SYM_BIND_LOCAL:
       return "LOCAL";
@@ -155,7 +178,7 @@ const char* sym_bind_tostr(unsigned char bind) {
   }
 }
 
-const char* sym_type_tostr(unsigned char type) {
+static const char* sym_type_tostr(unsigned char type) {
   switch (type) {
     case SYM_TYPE_NOTYPE:
       return "NOTYPE";
@@ -226,12 +249,12 @@ static void check_elf_hdr(const ElfHeader* header) {
     exit(1);
   }
 
+  DEBUG_MSG_ELF("ELF type is %s (%u)\n",
+    elf_type_tostr(header->e_type), header->e_type);
+
   switch (header->e_type) {
     case ET_EXEC:
-      DEBUG_MSG_ELF("ELF type is ET_EXEC\n"); //!OCLINT
-      break;
     case ET_DYN:
-      DEBUG_MSG_ELF("ELF type is ET_DYN\n"); //!OCLINT
       break;
     default:
       printf("Unexpected ELF type %u\n", header->e_type);
@@ -242,6 +265,31 @@ static void check_elf_hdr(const ElfHeader* header) {
     printf("No section name string table\n");
     exit(1);
   }
+}
+
+// TODO: how to do this more generally?
+typedef struct {
+  const char* name;
+  void* address;
+} KernelSymbolInfo;
+static const KernelSymbolInfo kernel_symbols[] = {
+  {"config", &config},
+  {"log_event", log_event},
+};
+
+static void* get_kernel_symbol_address(const char* name) {
+  size_t num_symbols = sizeof(kernel_symbols)/sizeof(KernelSymbolInfo);
+  for (size_t idx=0; idx < num_symbols; ++idx) {
+    // TODO: are you supposed to use the names here?
+    if (!strcmp(kernel_symbols[idx].name, name)) {
+      DEBUG_MSG_ELF("Resolved symbol \"%s\" to address 0x%x\n",
+        name, kernel_symbols[idx].address);
+      return kernel_symbols[idx].address;
+    }
+  }
+  printf("Couldn't find address for symbol \"%s\"\n", name);
+  exit(1);
+  __builtin_unreachable();
 }
 
 static SectionHeader get_section_header(
@@ -259,7 +307,7 @@ static SectionHeader get_section_header(
   return section_hdr;
 }
 
-static void get_symbol_info(int elf,
+static SymbolInfo get_symbol_info(int elf,
                             uint16_t table_idx, size_t sym_idx,
                             size_t section_table_offs,
                             size_t section_hdr_size,
@@ -296,9 +344,10 @@ static void get_symbol_info(int elf,
     exit(1);
   }
 
-  char symbol_name[MAX_SYMBOL_NAME_LEN];
+  SymbolInfo sym_info;
+
   checked_lseek(elf, sym_name_table_hdr.sh_offset+symbol.st_name, SEEK_CUR);
-  got = read(elf, symbol_name, MAX_SYMBOL_NAME_LEN);
+  got = read(elf, sym_info.name, MAX_SYMBOL_NAME_LEN);
   if (got < MAX_SYMBOL_NAME_LEN) {
     // TODO: read until null terminator function?
     // TODO: or just give in and us the heap
@@ -306,16 +355,22 @@ static void get_symbol_info(int elf,
     exit(1);
   }
 
-  unsigned char sym_type = SYM_TYPE(symbol.st_info);
-  unsigned char sym_bind = SYM_BIND(symbol.st_info);
+  sym_info.idx = sym_idx;
+  sym_info.bind = SYM_BIND(symbol.st_info);
+  sym_info.type = SYM_TYPE(symbol.st_info);
+  sym_info.symbol = symbol;
 
-  DEBUG_MSG_ELF("      Index: %u\n", sym_idx);
-  DEBUG_MSG_ELF("       Name: \"%s\"\n", symbol_name);
-  DEBUG_MSG_ELF("Name offset: %u\n", symbol.st_name);
-  DEBUG_MSG_ELF("      Value: 0x%x\n", symbol.st_value);
-  DEBUG_MSG_ELF("       Size: %u\n", symbol.st_size);
-  DEBUG_MSG_ELF("       Type: %s (%u)\n", sym_type_tostr(sym_type), sym_type);
-  DEBUG_MSG_ELF("       Bind: %s (%u)\n", sym_bind_tostr(sym_type), sym_bind);
+  DEBUG_MSG_ELF("|Symbol info\n");
+  DEBUG_MSG_ELF("|------------|\n");
+  DEBUG_MSG_ELF("|      Index |  %u\n",      sym_info.idx);
+  DEBUG_MSG_ELF("|       Name |  \"%s\"\n",  sym_info.name);
+  DEBUG_MSG_ELF("|Name offset |  %u\n",      sym_info.symbol.st_name);
+  DEBUG_MSG_ELF("|      Value |  0x%x\n",    sym_info.symbol.st_value);
+  DEBUG_MSG_ELF("|       Size |  %u\n",      sym_info.symbol.st_size);
+  DEBUG_MSG_ELF("|       Type |  %s (%u)\n", sym_type_tostr(sym_info.type), sym_info.type);
+  DEBUG_MSG_ELF("|       Bind |  %s (%u)\n", sym_bind_tostr(sym_info.type), sym_info.bind);
+
+  return sym_info;
 }
 
 __attribute__((
@@ -337,16 +392,17 @@ static void resolve_relocs(int elf, uint16_t idx,
 
   if (section_hdr.sh_type == SHT_REL) {
     // So far Arm uses SHT_REL
-    printf("Section %s has relocations SHT_REL\n", name);
+    DEBUG_MSG_ELF(">>>>>>>> Section \"%s\" (%u) has relocations of type SHT_REL (%u)\n",
+      name, idx, SHT_REL);
   } else if(section_hdr.sh_type == SHT_RELA) {
-    printf("Section %s has unsupported relocation type SHT_RELA!\n", name);
+    printf("Section %s has unsupported relocation type SHT_RELA! (%u)\n", name, SHT_RELA);
     exit(1);
   } else {
-    DEBUG_MSG_ELF("No relocations in section \"%s\"\n", name); //!OCLINT
+    DEBUG_MSG_ELF("No relocations in section \"%s\" (%u)\n", name, idx); //!OCLINT
     return;
   }
 
-  DEBUG_MSG_ELF("Section %s is linked to symbol table section index %u\n", //!OCLINT
+  DEBUG_MSG_ELF("\"%s\" is linked to symbol table at section index %u\n", //!OCLINT
     name, section_hdr.sh_link);
 
   size_t section_end = section_hdr.sh_offset + section_hdr.sh_size;
@@ -364,26 +420,52 @@ static void resolve_relocs(int elf, uint16_t idx,
 
     size_t reloc_type = RELOC_TYPE(reloc.r_info);
     size_t reloc_sym = RELOC_SYM(reloc.r_info);
-    DEBUG_MSG_ELF( //!OCLINT
-     "Relocation %u has type %s (%u) and refers to symbol at index %u\n",
-     reloc_idx, reloc_type_tostr(reloc_type), reloc_type, reloc_sym);
-    DEBUG_MSG_ELF("Its offset is 0x%x within its section\n", reloc.r_offset); //!OCLINT
+    DEBUG_MSG_ELF(">>>> Processing relocation %u\n", reloc_idx);
+    DEBUG_MSG_ELF("| Relocation Info\n");
+    DEBUG_MSG_ELF("|--------------|\n");
+    DEBUG_MSG_ELF("| Type         | %s (%u)\n", reloc_type_tostr(reloc_type), reloc_type);
+    DEBUG_MSG_ELF("| Symbol Index | %u\n", reloc_sym);
+    DEBUG_MSG_ELF("| Offset       | 0x%x\n", reloc.r_offset);
 
-    get_symbol_info(elf, section_hdr.sh_link, reloc_sym,
+    SymbolInfo sym_info = get_symbol_info(elf, section_hdr.sh_link, reloc_sym,
                     section_table_offs,
                     section_hdr_size,
                     name_table_offset);
 
+    if (!strcmp(sym_info.name, "")) {
+      // Relocations start with one to empty symbol, ignore it
+      // TODO: is this the dynamic linker callback address?
+      DEBUG_MSG_ELF("Note: Skipping relocation\n", sym_info.name);
+      continue;
+    }
+
+    void* symbol_address = get_kernel_symbol_address(sym_info.name);
+#ifdef __thumb__
+    // Going to ignore Thumb on Arm, assume matching kernel and program
+    if (sym_info.type == SYM_TYPE_FUNC) {
+      symbol_address = (void*)((size_t)symbol_address | 1);
+    }
+#endif
+
+    // This is where we put the answer to the relocation's question
+    void** reloc_result_location = (void**)(code_page + reloc.r_offset);
+
     switch(reloc_type) {
       case R_ARM_RELATIVE:
-      case R_ARM_GLOB_DAT:
+        //TODO: handle this
+        break;
       case R_ARM_JUMP_SLOT:
+      case R_ARM_GLOB_DAT:
+        *reloc_result_location = symbol_address;
         break;
       default:
         printf("Unhandled relocation type %u\n", reloc_type);
         exit(1);
     }
   }
+
+  DEBUG_MSG_ELF(">>>>>>>> Finished processing relocations for section \"%s\" (%u)\n",
+    name, idx);
 }
 
 __attribute__((
@@ -410,16 +492,8 @@ static bool load_section(int elf, uint16_t idx,
     exit(1);
   }
 
-  if (section_hdr.sh_type == SHT_REL) {
-    // So far Arm uses SHT_REL
-    printf("Section %s has relocations SHT_REL\n", name);
-  } else if(section_hdr.sh_type == SHT_RELA) {
-    printf("Section %s has unsupported relocation type SHT_RELA!\n", name);
-    exit(1);
-  }
-
   if (!(section_hdr.sh_flags & SHF_ALLOC)) { //!OCLINT
-    DEBUG_MSG_ELF("Skipping section \"%s\" (%u), not ALLOC\n", name, idx); //!OCLINT
+    DEBUG_MSG_ELF("Skipping non ALLOC section \"%s\" (%u)\n", name, idx); //!OCLINT
     return false;
   }
 
@@ -474,7 +548,8 @@ void (*load_elf(const char* filename, void* dest))(void) {
   /* Validate elf and load all ALLOC sections into location
      dest. Returns a function pointer to the ELF entry point.
   */
-  DEBUG_MSG_ELF("Loading \"%s\"\n", filename); //!OCLINT
+  DEBUG_MSG_ELF_SECTION("Opening and validating file");
+  DEBUG_MSG_ELF("Processing \"%s\"\n", filename); //!OCLINT
   int elf = open(filename, O_RDONLY);
   if (elf < 0) {
     printf("Couldn't open file %s\n", filename);
@@ -501,6 +576,7 @@ void (*load_elf(const char* filename, void* dest))(void) {
     elf, elf_hdr.e_shstrndx, elf_hdr.e_shoff,
     elf_hdr.e_shentsize);
 
+  DEBUG_MSG_ELF_SECTION("Loading sections into memory");
   bool loaded_something = false;
   bool is_shared = elf_hdr.e_type == ET_DYN;
   for (uint16_t idx=0; idx < elf_hdr.e_shnum; ++idx) {
@@ -512,19 +588,25 @@ void (*load_elf(const char* filename, void* dest))(void) {
             dest,
             is_shared);
   }
-
-  for (uint16_t idx=0; idx < elf_hdr.e_shnum; ++idx) {
-    resolve_relocs(elf, idx, elf_hdr.e_shoff,
-      elf_hdr.e_shentsize, name_table_hdr.sh_offset,
-      is_shared);
-  }
-
   if (!loaded_something) {
     printf("Loaded no sections from \"%s\"\n", filename);
     exit(1);
   }
 
-  DEBUG_MSG_ELF("Loaded \"%s\"\n", filename); //!OCLINT
+  DEBUG_MSG_ELF_SECTION("Resolving relocations");
+  for (uint16_t idx=0; idx < elf_hdr.e_shnum; ++idx) {
+    resolve_relocs(elf, idx, elf_hdr.e_shoff,
+      elf_hdr.e_shentsize, name_table_hdr.sh_offset,
+      is_shared);
+  }
+  DEBUG_MSG_ELF_SECTION("Finished resolving relocations");
+
+  DEBUG_MSG_ELF("\"%s\" was loaded into ", filename);
+  if (dest == code_page) {
+    DEBUG_MSG_ELF("code_page (0x%x)\n", code_page);
+  } else {
+    DEBUG_MSG_ELF("0x%x\n", dest);
+  }
 
   void (*entry_point)(void) = elf_hdr.e_entry;
   if (is_shared) {
@@ -532,5 +614,9 @@ void (*load_elf(const char* filename, void* dest))(void) {
     entry_point = (void (*)(void))((size_t)entry_point + (size_t)code_page);
   }
   // Note that Thumb addresses already have the bit set
+
+  DEBUG_MSG_ELF("Entry point will be set to 0x%x\n", entry_point);
+
+  DEBUG_MSG_ELF_SECTION("Finished loading ELF");
   return entry_point;
 }
