@@ -66,9 +66,14 @@ typedef struct {
 #endif /* ifdef __aarch64__ */
 } SectionHeader;
 
+// TODO: handle relocA properly
 typedef struct {
   size_t r_offset;
   size_t r_info;
+#ifdef __aarch64__
+  // AArch64 uses RelA, this is a signed amount to add
+  ssize_t r_addend;
+#endif
 } ELFRelocation;
 #ifdef __aarch64__
 #define RELOC_SYM(info)  ((info) >> 32)
@@ -121,10 +126,13 @@ typedef struct {
 #define SYM_TYPE_TLS     6
 
 // Relocation types
-#define R_ARM_REL32     3
-#define R_ARM_GLOB_DAT  21
-#define R_ARM_JUMP_SLOT 22
-#define R_ARM_RELATIVE  23
+#define R_ARM_REL32         3
+#define R_ARM_GLOB_DAT      21
+#define R_ARM_JUMP_SLOT     22
+#define R_ARM_RELATIVE      23
+#define R_AARCH64_GLOB_DAT  1025
+#define R_AARCH64_JUMP_SLOT 1026
+#define R_AARCH64_RELATIVE  1027
 
 #ifdef __aarch64__
 #define EXPECTED_MACHINE 183
@@ -144,6 +152,17 @@ typedef struct {
 
 #define SHT_RELA 4
 #define SHT_REL  9
+
+static const char* section_type_tostr(uint32_t kind) {
+  switch (kind) {
+    case SHT_RELA:
+      return "SHT_RELA";
+    case SHT_REL:
+      return "SHT_REL";
+    default:
+      return "(unknown)";
+  }
+}
 
 static const char* elf_type_tostr(uint16_t type) {
   switch (type) {
@@ -166,6 +185,12 @@ static const char* reloc_type_tostr(size_t reloc_type) {
       return "R_ARM_JUMP_SLOT";
     case R_ARM_RELATIVE:
       return "R_ARM_RELATIVE";
+    case R_AARCH64_GLOB_DAT:
+      return "R_AARCH64_GLOB_DAT";
+    case R_AARCH64_JUMP_SLOT:
+      return "R_AARCH64_JUMP_SLOT";
+    case R_AARCH64_RELATIVE:
+      return "R_AARCH64_RELATIVE";
     default:
       return "(unknown)";
   }
@@ -386,15 +411,24 @@ static void resolve_relocs(int elf, uint16_t idx,
   get_section_name(elf, name_table_offset, section_hdr.sh_name,
                    idx, name);
 
-  if (section_hdr.sh_type == SHT_REL) {
-    // So far Arm uses SHT_REL
-    DEBUG_MSG_ELF(">>>>>>>> Section \"%s\" (%u) has relocations of type SHT_REL (%u)\n",
-      name, idx, SHT_REL);
-  } else if(section_hdr.sh_type == SHT_RELA) {
-    PRINT_EXIT("Section %s has unsupported relocation type SHT_RELA! (%u)\n", name, SHT_RELA);
+  if (section_hdr.sh_type == SHT_REL ||
+      section_hdr.sh_type == SHT_RELA) {
+    // Usually SHT_REL for Arm, SHT_RELA for AArch64
+    DEBUG_MSG_ELF(">>>>>>>> Section \"%s\" (%u) has relocations of type %s (%u)\n",
+      name, idx, section_type_tostr(section_hdr.sh_type), section_hdr.sh_type);
   } else {
     DEBUG_MSG_ELF("No relocations in section \"%s\" (%u)\n", name, idx); //!OCLINT
     return;
+  }
+
+  // Our rel vs relA handling is a bit of a hack so sanity check
+#ifdef __aarch64__
+  if (section_hdr.sh_type == SHT_REL) {
+#else
+  if (section_hdr.sh_type == SHT_RELA) {
+#endif
+    PRINT_EXIT("Unexpected reloc type %s (%u)\n",
+      section_type_tostr(section_hdr.sh_type), section_hdr.sh_type);
   }
 
   DEBUG_MSG_ELF("\"%s\" is linked to symbol table at section index %u\n", //!OCLINT
@@ -457,17 +491,30 @@ static void resolve_relocs(int elf, uint16_t idx,
     // This is where we put the answer to the relocation's question
     size_t* reloc_result_location = (size_t*)(code_page + reloc.r_offset);
 
+#ifdef __aarch64__
+    // Using RelA here
+    ssize_t addend = reloc.r_addend;
+#else
+    // Plain rel otherwise
+    ssize_t addend = 0;
+#endif
+
     // See Arm ELF spec for more inf
     switch(reloc_type) {
       case R_ARM_JUMP_SLOT:
       case R_ARM_GLOB_DAT:
         // (S + A) | T
-        *reloc_result_location = symbol_value;
+        *reloc_result_location = symbol_value + addend;
         break;
       case R_ARM_REL32:
         // ((S + A) | T) - P
         // Where P is where we are going to write the relocation result
-        *reloc_result_location = symbol_value - (size_t)reloc_result_location;
+        *reloc_result_location = symbol_value + addend - (size_t)reloc_result_location;
+        break;
+      case R_AARCH64_JUMP_SLOT:
+      case R_AARCH64_GLOB_DAT:
+        // S + A
+        *reloc_result_location = symbol_value + addend;
         break;
       default:
         PRINT_EXIT("Unhandled relocation type %u (%s)\n",
