@@ -31,15 +31,12 @@ static void add_foo_thread(void) {
 void worker() {
   disable_logging();
 
-  static bool add_new_thread = true;
   const char* msg = "Hello";
-
   // Creates a .plt section (and .plt.got I think)
   log_event(msg);
-  if (add_new_thread) {
-    add_foo_thread();
-    yield_next();
-    add_new_thread = false;
-  }
+
+  add_foo_thread();
+  yield_next();
+
   log_event("Goodbye");
 }
