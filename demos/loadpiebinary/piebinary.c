@@ -35,8 +35,8 @@ void worker() {
 
   // Bit of undefined behaviour to generate a UBSAN handler.
   // This demo is disabled with sanitisers as we don't support it yet.
-  volatile int i = INT_MAX;
-  ++i;
+  volatile int trigger_ubsan = INT_MAX;
+  ++trigger_ubsan;
 
   add_foo_thread();
   yield_next();

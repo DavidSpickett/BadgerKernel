@@ -282,7 +282,9 @@ static void check_elf_hdr(const ElfHeader* header) {
     case ET_DYN:
       break;
     default:
-      PRINT_EXIT("Unexpected ELF type %u\n", header->e_type);
+      PRINT_EXIT("Unexpected ELF type %u (%s)\n",
+        header->e_type, elf_type_tostr(header->e_type));
+      __builtin_unreachable();
   }
 
   if (header->e_shstrndx == SHN_UNDEF) {
@@ -343,7 +345,7 @@ static SymbolInfo get_symbol_info(int elf,
   get_section_name(elf, section_name_table_offset,
                    sym_table_hdr.sh_name,
                    table_idx, sym_table_name);
-  DEBUG_MSG_ELF("Reading symbol info from \"%s\"\n", sym_table_name); //!OCLINT
+  DEBUG_MSG_ELF("Reading symbol info from \"%s\"\n", sym_table_name);
 
   SectionHeader sym_name_table_hdr = get_section_header(
     elf, sym_table_hdr.sh_link, section_table_offs, section_hdr_size);
@@ -351,7 +353,7 @@ static SymbolInfo get_symbol_info(int elf,
   get_section_name(elf, section_name_table_offset,
                    sym_name_table_hdr.sh_name,
                    sym_table_hdr.sh_link, sym_name_table_name);
-  DEBUG_MSG_ELF("Symbol names are in section \"%s\"\n", sym_name_table_name); //!OCLINT
+  DEBUG_MSG_ELF("Symbol names are in section \"%s\"\n", sym_name_table_name);
 
   if (sym_table_hdr.sh_entsize != sizeof(ELFSymbol)) {
     PRINT_EXIT("Symbol table entsize doesn't match struct size (%u vs %u)\n",
@@ -394,16 +396,10 @@ static SymbolInfo get_symbol_info(int elf,
   return sym_info;
 }
 
-__attribute__((
-  annotate("oclint:suppress[high cyclomatic complexity]"),
-  annotate("oclint:suppress[high ncss method]"),
-  annotate("oclint:suppress[high npath complexity]"),
-  annotate("oclint:suppress[long method]")))
 static void resolve_relocs(int elf, uint16_t idx,
                          size_t section_table_offs,
                          size_t section_hdr_size,
-                         size_t name_table_offset,
-                         bool is_shared) {
+                         size_t name_table_offset) {
   SectionHeader section_hdr = get_section_header(
       elf, idx, section_table_offs, section_hdr_size);
 
@@ -417,7 +413,7 @@ static void resolve_relocs(int elf, uint16_t idx,
     DEBUG_MSG_ELF(">>>>>>>> Section \"%s\" (%u) has relocations of type %s (%u)\n",
       name, idx, section_type_tostr(section_hdr.sh_type), section_hdr.sh_type);
   } else {
-    DEBUG_MSG_ELF("No relocations in section \"%s\" (%u)\n", name, idx); //!OCLINT
+    DEBUG_MSG_ELF("No relocations in section \"%s\" (%u)\n", name, idx);
     return;
   }
 
@@ -431,7 +427,7 @@ static void resolve_relocs(int elf, uint16_t idx,
       section_type_tostr(section_hdr.sh_type), section_hdr.sh_type);
   }
 
-  DEBUG_MSG_ELF("\"%s\" is linked to symbol table at section index %u\n", //!OCLINT
+  DEBUG_MSG_ELF("\"%s\" is linked to symbol table at section index %u\n",
     name, section_hdr.sh_link);
 
   size_t section_end = section_hdr.sh_offset + section_hdr.sh_size;
@@ -469,16 +465,16 @@ static void resolve_relocs(int elf, uint16_t idx,
 
     size_t symbol_value;
 
-    // Relocations can be against symbols in the kernel, or the binary itself
-    if (sym_info.symbol.st_shndx != SHN_UNDEF) {
+    // If a symbol has no associated section then it should be in the kernel
+    if (sym_info.symbol.st_shndx == SHN_UNDEF) {
+      // Should be in the kernel (hard error if we don't find it)
+      symbol_value = get_kernel_symbol_value(sym_info.name);
+    } else {
       // Must be something in some section of this file
       // Which needs to be offset by code_page to get the final value
       symbol_value = sym_info.symbol.st_value + (size_t)code_page;
       DEBUG_MSG_ELF("Resolved symbol \"%s\" to value 0x%x\n",
         sym_info.name, symbol_value);
-    } else {
-      // Should be in the kernel (hard error if we don't find it)
-      symbol_value = get_kernel_symbol_value(sym_info.name);
     }
 
 #ifdef __thumb__
@@ -528,11 +524,6 @@ static void resolve_relocs(int elf, uint16_t idx,
     name, idx);
 }
 
-__attribute__((
-  annotate("oclint:suppress[high cyclomatic complexity]"),
-  annotate("oclint:suppress[high ncss method]"),
-  annotate("oclint:suppress[high npath complexity]"),
-  annotate("oclint:suppress[long method]")))
 static bool load_section(int elf, uint16_t idx,
                          size_t section_table_offs,
                          size_t section_hdr_size,
@@ -551,8 +542,8 @@ static bool load_section(int elf, uint16_t idx,
     PRINT_EXIT("Failed to read name for section %u\n", idx);
   }
 
-  if (!(section_hdr.sh_flags & SHF_ALLOC)) { //!OCLINT
-    DEBUG_MSG_ELF("Skipping non ALLOC section \"%s\" (%u)\n", name, idx); //!OCLINT
+  if (!(section_hdr.sh_flags & SHF_ALLOC)) {
+    DEBUG_MSG_ELF("Skipping non ALLOC section \"%s\" (%u)\n", name, idx);
     return false;
   }
 
@@ -590,22 +581,18 @@ static bool load_section(int elf, uint16_t idx,
   if (section_got != section_hdr.sh_size) {
     PRINT_EXIT("Couldn't read content for section \"%s\" (%u)\n", name, idx);
   }
-  DEBUG_MSG_ELF("Loaded %u bytes from section \"%s\" (%u)\n", //!OCLINT
+  DEBUG_MSG_ELF("Loaded %u bytes from section \"%s\" (%u)\n",
     section_got, name, idx);
 
   return true;
 }
 
-__attribute__((
-  annotate("oclint:suppress[high cyclomatic complexity]"),
-  annotate("oclint:suppress[high ncss method]"),
-  annotate("oclint:suppress[high npath complexity]")))
 void (*load_elf(const char* filename, void* dest))(void) {
   /* Validate elf and load all ALLOC sections into location
      dest. Returns a function pointer to the ELF entry point.
   */
   DEBUG_MSG_ELF_SECTION("Opening and validating file");
-  DEBUG_MSG_ELF("Processing \"%s\"\n", filename); //!OCLINT
+  DEBUG_MSG_ELF("Processing \"%s\"\n", filename);
   int elf = open(filename, O_RDONLY);
   if (elf < 0) {
     PRINT_EXIT("Couldn't open file %s\n", filename);
@@ -648,8 +635,7 @@ void (*load_elf(const char* filename, void* dest))(void) {
   DEBUG_MSG_ELF_SECTION("Resolving relocations");
   for (uint16_t idx=0; idx < elf_hdr.e_shnum; ++idx) {
     resolve_relocs(elf, idx, elf_hdr.e_shoff,
-      elf_hdr.e_shentsize, name_table_hdr.sh_offset,
-      is_shared);
+      elf_hdr.e_shentsize, name_table_hdr.sh_offset);
   }
   DEBUG_MSG_ELF_SECTION("Finished resolving relocations");
 
