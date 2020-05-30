@@ -1,4 +1,5 @@
 #include "thread.h"
+#include <limits.h>
 
 const char* globalmsg = "Using a global!";
 
@@ -34,6 +35,11 @@ void worker() {
   const char* msg = "Hello";
   // Creates a .plt section (and .plt.got I think)
   log_event(msg);
+
+  // Bit of undefined behaviour to generate a UBSAN handler.
+  // This demo is disabled with sanitisers as we don't support it yet.
+  volatile int i = INT_MAX;
+  ++i;
 
   add_foo_thread();
   yield_next();

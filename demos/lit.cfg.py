@@ -54,3 +54,5 @@ if lto == 'ON':
   config.excludes.add('loadbinary')
   config.excludes.add('loadbinaries')
   config.excludes.add('loadpiebinary')
+if sanitizers == 'ON':
+  config.excludes.add('loadpiebinary')
