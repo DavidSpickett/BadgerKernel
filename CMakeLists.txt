@@ -8,7 +8,7 @@ set( COMPILER "gcc" CACHE STRING "Name of compiler to use." )
 option( SANITIZERS "Enable UBSAN/ASAN (ASAN Linux only)." OFF )
 option( COVERAGE "Generate coverage data. (Linux only)" OFF )
 option( LTO "Enable link time optimisation." OFF )
-set( STACK_SIZE   1 ) # In KB
+set( STACK_SIZE 2 ) # In KB
 set( RAM_SIZE 0x100000 ) # 1MB in bytes
 
 string( TOLOWER "${BUILD_PLATFORM}" BP_LOWER )
@@ -32,7 +32,6 @@ elseif( BP_LOWER STREQUAL "aarch64" )
   # Don't generate NEON
   set( PLATFORM     "-mcpu=cortex-a57 -mgeneral-regs-only" )
   set( PLATFORM_SRC "aarch64_virt" )
-  set( STACK_SIZE 2 )
   set( RAM_START    "0x40000000" )
   set( UART_BASE    "0x09000000" )
   set( QEMU_CMD     "qemu-system-aarch64 -M virt -cpu cortex-a57" )
