@@ -47,8 +47,10 @@ if 'linux' in platform.lower():
   config.excludes.add('timer')
   config.excludes.add('loadbinary')
   config.excludes.add('loadbinaries')
+  config.excludes.add('loadpiebinary')
 if platform.lower() == 'aarch64':
   config.excludes.add('threadlocalstorage')
 if lto == 'ON':
   config.excludes.add('loadbinary')
   config.excludes.add('loadbinaries')
+  config.excludes.add('loadpiebinary')
