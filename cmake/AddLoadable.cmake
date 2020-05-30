@@ -11,7 +11,7 @@ function(__add_loadable PARENT NAME PIE)
   if( BP_LOWER STREQUAL "arm" )
     set( CODE_PAGE_SIZE 4096 )
   elseif( BP_LOWER STREQUAL "thumb" )
-    set( CODE_PAGE_SIZE 512 )
+    set( CODE_PAGE_SIZE 2048 )
   elseif( BP_LOWER STREQUAL "aarch64" )
     # Due to ardp alignment etc., we need more room
     set( CODE_PAGE_SIZE 5120 ) # 5k
