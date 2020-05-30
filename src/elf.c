@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <assert.h>
 
 #ifndef CODE_PAGE_SIZE
 #error "Loading ELFs requires CODE_PAGE_SIZE"
@@ -15,6 +16,8 @@
 #define DEBUG_MSG_ELF(fmt, ...) \
   do { if(DEBUG_ELF_LOAD) { printf(fmt, ## __VA_ARGS__); } } while(0)
 #define DEBUG_MSG_ELF_SECTION(msg) DEBUG_MSG_ELF("------ "msg" ------\n")
+
+#define PRINT_EXIT(fmt, ...) printf("Error: "fmt, ## __VA_ARGS__); exit(1);
 
 #define MAX_SECTION_NAME_LEN 80
 // TODO: this assumption is more risky than the section names
@@ -204,8 +207,7 @@ extern uint8_t code_page[CODE_PAGE_SIZE];
 static void checked_lseek(int filedes, off_t offset, int whence) {
   off_t new_pos = lseek(filedes, offset, whence);
   if (new_pos != offset) {
-    printf("Couldn't seek to offset %u\n", offset);
-    exit(1);
+    PRINT_EXIT("Couldn't seek to offset %u\n", offset);
   }
 }
 
@@ -219,8 +221,7 @@ static void get_section_name(int elf,
   // This check is a bit weird, assuming that the name table
   // isn't at the end of the file here.
   if (got != MAX_SECTION_NAME_LEN) {
-    printf("Failed to read name for section %u\n", idx);
-    exit(1);
+    PRINT_EXIT("Failed to read name for section %u\n", idx);
   }
 }
 
@@ -229,24 +230,20 @@ static void check_elf_hdr(const ElfHeader* header) {
       (header->e_ident[1] != 'E')  ||
       (header->e_ident[2] != 'L')  ||
       (header->e_ident[3] != 'F')) {
-    printf("Magic bytes don't match an ELF file\n");
-    exit(1);
+    PRINT_EXIT("Magic bytes don't match an ELF file\n");
   }
 
   // Check endian before we check anything endian dependent
   if (header->e_ident[6] != ELFDATA2LSB) {
-    printf("ELF must be little endian\n");
-    exit(1);
+    PRINT_EXIT("ELF must be little endian\n");
   }
 
   if (header->e_machine != EXPECTED_MACHINE) {
-    printf("e_machine does not match expected value");
-    exit(1);
+    PRINT_EXIT("e_machine does not match expected value");
   }
 
   if (!header->e_shoff) {
-    printf("ELF has no section table\n");
-    exit(1);
+    PRINT_EXIT("ELF has no section table\n");
   }
 
   DEBUG_MSG_ELF("ELF type is %s (%u)\n",
@@ -257,13 +254,11 @@ static void check_elf_hdr(const ElfHeader* header) {
     case ET_DYN:
       break;
     default:
-      printf("Unexpected ELF type %u\n", header->e_type);
-      exit(1);
+      PRINT_EXIT("Unexpected ELF type %u\n", header->e_type);
   }
 
   if (header->e_shstrndx == SHN_UNDEF) {
-    printf("No section name string table\n");
-    exit(1);
+    PRINT_EXIT("No section name string table\n");
   }
 }
 
@@ -287,8 +282,7 @@ static void* get_kernel_symbol_address(const char* name) {
       return kernel_symbols[idx].address;
     }
   }
-  printf("Couldn't find address for symbol \"%s\"\n", name);
-  exit(1);
+  PRINT_EXIT("Couldn't find address for symbol \"%s\"\n", name);
   __builtin_unreachable();
 }
 
@@ -301,8 +295,7 @@ static SectionHeader get_section_header(
   SectionHeader section_hdr;
   ssize_t got = read(elf, &section_hdr, section_hdr_size);
   if (got < section_hdr_size) {
-    printf("Couldn't read header for section %u\n", idx);
-    exit(1);
+    PRINT_EXIT("Couldn't read header for section %u\n", idx);
   }
   return section_hdr;
 }
@@ -330,9 +323,8 @@ static SymbolInfo get_symbol_info(int elf,
   DEBUG_MSG_ELF("Symbol names are in section \"%s\"\n", sym_name_table_name); //!OCLINT
 
   if (sym_table_hdr.sh_entsize != sizeof(ELFSymbol)) {
-    printf("Symbol table entsize doesn't match struct size (%u vs %u)\n",
+    PRINT_EXIT("Symbol table entsize doesn't match struct size (%u vs %u)\n",
       sym_table_hdr.sh_entsize, sizeof(ELFSymbol));
-    exit(1);
   }
 
   ELFSymbol symbol;
@@ -340,8 +332,7 @@ static SymbolInfo get_symbol_info(int elf,
   checked_lseek(elf, symbol_offset, SEEK_CUR);
   ssize_t got = read(elf, &symbol, sym_table_hdr.sh_entsize);
   if (got < sym_table_hdr.sh_entsize) {
-    printf("Couldn't read symbol at index %u\n", sym_idx);
-    exit(1);
+    PRINT_EXIT("Couldn't read symbol at index %u\n", sym_idx);
   }
 
   SymbolInfo sym_info;
@@ -351,8 +342,7 @@ static SymbolInfo get_symbol_info(int elf,
   if (got < MAX_SYMBOL_NAME_LEN) {
     // TODO: read until null terminator function?
     // TODO: or just give in and us the heap
-    printf("Failed to read symbol name for index %u\n", sym_idx);
-    exit(1);
+    PRINT_EXIT("Failed to read symbol name for index %u\n", sym_idx);
   }
 
   sym_info.idx = sym_idx;
@@ -395,8 +385,7 @@ static void resolve_relocs(int elf, uint16_t idx,
     DEBUG_MSG_ELF(">>>>>>>> Section \"%s\" (%u) has relocations of type SHT_REL (%u)\n",
       name, idx, SHT_REL);
   } else if(section_hdr.sh_type == SHT_RELA) {
-    printf("Section %s has unsupported relocation type SHT_RELA! (%u)\n", name, SHT_RELA);
-    exit(1);
+    PRINT_EXIT("Section %s has unsupported relocation type SHT_RELA! (%u)\n", name, SHT_RELA);
   } else {
     DEBUG_MSG_ELF("No relocations in section \"%s\" (%u)\n", name, idx); //!OCLINT
     return;
@@ -414,8 +403,7 @@ static void resolve_relocs(int elf, uint16_t idx,
     ELFRelocation reloc;
     ssize_t got = read(elf, &reloc, reloc_size);
     if (got != reloc_size) {
-      printf("Failed to read reloc %u in section %s\n", reloc_idx, name);
-      exit(1);
+      PRINT_EXIT("Failed to read reloc %u in section %s\n", reloc_idx, name);
     }
 
     size_t reloc_type = RELOC_TYPE(reloc.r_info);
@@ -459,8 +447,7 @@ static void resolve_relocs(int elf, uint16_t idx,
         *reloc_result_location = symbol_address;
         break;
       default:
-        printf("Unhandled relocation type %u\n", reloc_type);
-        exit(1);
+        PRINT_EXIT("Unhandled relocation type %u\n", reloc_type);
     }
   }
 
@@ -488,8 +475,7 @@ static bool load_section(int elf, uint16_t idx,
   char name[max_section_name_len];
   ssize_t got = read(elf, name, max_section_name_len);
   if (got != max_section_name_len) {
-    printf("Failed to read name for section %u\n", idx);
-    exit(1);
+    PRINT_EXIT("Failed to read name for section %u\n", idx);
   }
 
   if (!(section_hdr.sh_flags & SHF_ALLOC)) { //!OCLINT
@@ -510,14 +496,12 @@ static bool load_section(int elf, uint16_t idx,
   if (
       (section_start < start_code_page) ||
       (section_start >= end_code_page)) {
-    printf("Section \"%s\" (%u) start address not within code page\n", name, idx);
-    exit(1);
+    PRINT_EXIT("Section \"%s\" (%u) start address not within code page\n", name, idx);
   }
 
   void* section_end = (void*)((size_t)(section_start) + section_hdr.sh_size);
   if (section_end >= end_code_page) {
-    printf("Section \"%s\" (%u) extends off of the end of the code page\n", name, idx);
-    exit(1);
+    PRINT_EXIT("Section \"%s\" (%u) extends off of the end of the code page\n", name, idx);
   }
 
   checked_lseek(elf, section_hdr.sh_offset, SEEK_CUR);
@@ -531,8 +515,7 @@ static bool load_section(int elf, uint16_t idx,
   // (which can be different from code_page)
   ssize_t section_got = read(elf, dest_addr, section_hdr.sh_size);
   if (section_got != section_hdr.sh_size) {
-    printf("Couldn't read content for section \"%s\" (%u)\n", name, idx);
-    exit(1);
+    PRINT_EXIT("Couldn't read content for section \"%s\" (%u)\n", name, idx);
   }
   DEBUG_MSG_ELF("Loaded %u bytes from section \"%s\" (%u)\n", //!OCLINT
     section_got, name, idx);
@@ -552,24 +535,21 @@ void (*load_elf(const char* filename, void* dest))(void) {
   DEBUG_MSG_ELF("Processing \"%s\"\n", filename); //!OCLINT
   int elf = open(filename, O_RDONLY);
   if (elf < 0) {
-    printf("Couldn't open file %s\n", filename);
-    exit(1);
+    PRINT_EXIT("Couldn't open file %s\n", filename);
   }
 
   size_t header_size = sizeof(ElfHeader);
   ElfHeader elf_hdr;
   ssize_t got = read(elf, &elf_hdr, header_size);
   if (got < header_size) {
-    printf("Couldn't read complete header from %s\n",
+    PRINT_EXIT("Couldn't read complete header from %s\n",
       filename);
-    exit(1);
   }
 
   check_elf_hdr(&elf_hdr);
 
   if (sizeof(SectionHeader) != elf_hdr.e_shentsize) {
-    printf("Section header size didn't match struct size\n");
-    exit(1);
+    PRINT_EXIT("Section header size didn't match struct size\n");
   }
 
   SectionHeader name_table_hdr = get_section_header(
@@ -589,8 +569,7 @@ void (*load_elf(const char* filename, void* dest))(void) {
             is_shared);
   }
   if (!loaded_something) {
-    printf("Loaded no sections from \"%s\"\n", filename);
-    exit(1);
+    PRINT_EXIT("Loaded no sections from \"%s\"\n", filename);
   }
 
   DEBUG_MSG_ELF_SECTION("Resolving relocations");
