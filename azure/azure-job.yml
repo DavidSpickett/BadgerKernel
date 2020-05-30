@@ -54,7 +54,8 @@ jobs:
         displayName: install-lit
 
       - script: |
-          set -ex
+          # pipefail so the OCLint tee can propogate return code
+          set -ex -o pipefail
           mkdir oclint
           wget -qO- https://github.com/oclint/oclint/releases/download/v0.13.1/oclint-0.13.1-x86_64-linux-4.4.0-112-generic.tar.gz | tar xzf - -C oclint --strip-components=1
           export PATH=$(pwd)/toolchain/bin/:$(pwd)/oclint/bin/:$PATH
