@@ -265,21 +265,24 @@ static void check_elf_hdr(const ElfHeader* header) {
 // TODO: how to do this more generally?
 typedef struct {
   const char* name;
-  void* address;
+  size_t value;
 } KernelSymbolInfo;
 static const KernelSymbolInfo kernel_symbols[] = {
-  {"config", &config},
-  {"log_event", log_event},
+  {"config", (size_t)&config},
+  {"log_event", (size_t)log_event},
+  {"yield_next", (size_t)yield_next},
+  {"add_named_thread", (size_t)add_named_thread},
 };
 
-static void* get_kernel_symbol_address(const char* name) {
+static size_t get_kernel_symbol_value(const char* name) {
   size_t num_symbols = sizeof(kernel_symbols)/sizeof(KernelSymbolInfo);
   for (size_t idx=0; idx < num_symbols; ++idx) {
     // TODO: are you supposed to use the names here?
+    // Maybe you can just compare indexes and name table index
     if (!strcmp(kernel_symbols[idx].name, name)) {
-      DEBUG_MSG_ELF("Resolved symbol \"%s\" to address 0x%x\n",
-        name, kernel_symbols[idx].address);
-      return kernel_symbols[idx].address;
+      DEBUG_MSG_ELF("Resolved kernel symbol \"%s\" to value 0x%x\n",
+        name, kernel_symbols[idx].value);
+      return kernel_symbols[idx].value;
     }
   }
   PRINT_EXIT("Couldn't find address for symbol \"%s\"\n", name);
@@ -358,7 +361,7 @@ static SymbolInfo get_symbol_info(int elf,
   DEBUG_MSG_ELF("|      Value |  0x%x\n",    sym_info.symbol.st_value);
   DEBUG_MSG_ELF("|       Size |  %u\n",      sym_info.symbol.st_size);
   DEBUG_MSG_ELF("|       Type |  %s (%u)\n", sym_type_tostr(sym_info.type), sym_info.type);
-  DEBUG_MSG_ELF("|       Bind |  %s (%u)\n", sym_bind_tostr(sym_info.type), sym_info.bind);
+  DEBUG_MSG_ELF("|       Bind |  %s (%u)\n", sym_bind_tostr(sym_info.bind), sym_info.bind);
 
   return sym_info;
 }
@@ -427,16 +430,29 @@ static void resolve_relocs(int elf, uint16_t idx,
       continue;
     }
 
-    void* symbol_address = get_kernel_symbol_address(sym_info.name);
+    size_t symbol_value;
+
+    // Relocations can be against symbols in the kernel, or the binary itself
+    if (sym_info.symbol.st_shndx != SHN_UNDEF) {
+      // Must be something in some section of this file
+      // Which needs to be offset by code_page to get the final value
+      symbol_value = sym_info.symbol.st_value + (size_t)code_page;
+      DEBUG_MSG_ELF("Resolved symbol \"%s\" to value 0x%x\n",
+        sym_info.name, symbol_value);
+    } else {
+      // Should be in the kernel (hard error if we don't find it)
+      symbol_value = get_kernel_symbol_value(sym_info.name);
+    }
+
 #ifdef __thumb__
     // Going to ignore Thumb on Arm, assume matching kernel and program
     if (sym_info.type == SYM_TYPE_FUNC) {
-      symbol_address = (void*)((size_t)symbol_address | 1);
+      symbol_value |= 1;
     }
 #endif
 
     // This is where we put the answer to the relocation's question
-    void** reloc_result_location = (void**)(code_page + reloc.r_offset);
+    size_t* reloc_result_location = (size_t*)(code_page + reloc.r_offset);
 
     switch(reloc_type) {
       case R_ARM_RELATIVE:
@@ -444,7 +460,7 @@ static void resolve_relocs(int elf, uint16_t idx,
         break;
       case R_ARM_JUMP_SLOT:
       case R_ARM_GLOB_DAT:
-        *reloc_result_location = symbol_address;
+        *reloc_result_location = symbol_value;
         break;
       default:
         PRINT_EXIT("Unhandled relocation type %u\n", reloc_type);
