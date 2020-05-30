@@ -121,6 +121,7 @@ typedef struct {
 #define SYM_TYPE_TLS     6
 
 // Relocation types
+#define R_ARM_REL32     3
 #define R_ARM_GLOB_DAT  21
 #define R_ARM_JUMP_SLOT 22
 #define R_ARM_RELATIVE  23
@@ -157,6 +158,8 @@ static const char* elf_type_tostr(uint16_t type) {
 
 static const char* reloc_type_tostr(size_t reloc_type) {
   switch(reloc_type) {
+    case R_ARM_REL32:
+      return "R_ARM_REL32";
     case R_ARM_GLOB_DAT:
       return "R_ARM_GLOB_DAT";
     case R_ARM_JUMP_SLOT:
@@ -454,17 +457,24 @@ static void resolve_relocs(int elf, uint16_t idx,
     // This is where we put the answer to the relocation's question
     size_t* reloc_result_location = (size_t*)(code_page + reloc.r_offset);
 
+    // See Arm ELF spec for more inf
     switch(reloc_type) {
-      case R_ARM_RELATIVE:
-        //TODO: handle this
-        break;
       case R_ARM_JUMP_SLOT:
       case R_ARM_GLOB_DAT:
+        // (S + A) | T
         *reloc_result_location = symbol_value;
         break;
+      case R_ARM_REL32:
+        // ((S + A) | T) - P
+        // Where P is where we are going to write the relocation result
+        *reloc_result_location = symbol_value - (size_t)reloc_result_location;
+        break;
       default:
-        PRINT_EXIT("Unhandled relocation type %u\n", reloc_type);
+        PRINT_EXIT("Unhandled relocation type %u (%s)\n",
+          reloc_type, reloc_type_tostr(reloc_type));
     }
+
+    DEBUG_MSG_ELF("Set final relocation value to 0x%x\n", *reloc_result_location);
   }
 
   DEBUG_MSG_ELF(">>>>>>>> Finished processing relocations for section \"%s\" (%u)\n",

@@ -3,11 +3,8 @@
 
 const char* globalmsg = "Using a global!";
 
-// This does not create a relocation because
-// its location can de determined relative
-// to the current pc.
-// If we called it directly in this file it
-// would have a relocation.
+// This has a relocation on Thumb but not on
+// Arm. As we only use its value rather than call it.
 void foo() {
   log_event("I am a new thead!");
 }
