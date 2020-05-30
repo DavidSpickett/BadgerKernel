@@ -56,8 +56,8 @@ make
 | alloc (Arm/Thumb/AArch64)         | Use of malloc/free.                                                                |
 | filesystem                        | A minimal in memory file system.                                                   |
 | loadbinary (Arm/Thumb/AArch64)    | Loading a thread from a seperate binary (over semihosting).                        |
-| loadbinaries (Arm/Thumb/AArch64)  | Loading a position independent binary (over semihosting).                          |
-| loadpiebinary (Arm/Thumb/AArch64) | Loading multiple binaries, swapping them as they become active (over semihosting). |
+| loadbinaries (Arm/Thumb/AArch64)  | Loading multiple binaries, swapping them as they become active (over semihosting). |
+| loadpiebinary (Arm/Thumb/AArch64) | Loading a position independent binary (over semihosting).                          |
 
 Each demo has 'run_<demo>', 'debug_<demo>' and 'test_<demo>' make targets. To test all demos use lit. (best done in a virtualenv)
 
