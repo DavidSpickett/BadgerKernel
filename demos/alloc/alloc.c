@@ -246,19 +246,6 @@ void realloc_fail() {
 }
 
 uint32_t* the_protected_alloc;
-void protect_alloc() {
-  the_protected_alloc = malloc(sizeof(uint32_t));
-  uint32_t* old_alloc_addr = the_protected_alloc;
-  yield_next();
-
-  // If the other thread managed to free/reallloc it
-  // then this addr will be the same as the original alloc
-  uint32_t* new_alloc = malloc(sizeof(uint32_t));
-  assert(new_alloc != old_alloc_addr);
-  free(new_alloc);
-  free(the_protected_alloc);
-}
-
 void check_protect() {
   uint32_t* old_alloc_addr = the_protected_alloc;
 
@@ -282,28 +269,68 @@ void check_protect() {
   free(new_alloc);
 }
 
+void protect_alloc() {
+  the_protected_alloc = malloc(sizeof(uint32_t));
+  uint32_t* old_alloc_addr = the_protected_alloc;
+  int tid = add_named_thread(check_protect, "check_protect");
+  yield_to(tid);
+
+  // If the other thread managed to free/reallloc it
+  // then this addr will be the same as the original alloc
+  uint32_t* new_alloc = malloc(sizeof(uint32_t));
+  assert(new_alloc != old_alloc_addr);
+  free(new_alloc);
+  free(the_protected_alloc);
+}
+
 uint32_t* freed_on_exit;
-void free_on_exit() {
+void free_exit() {
   freed_on_exit = malloc(sizeof(uint32_t));
+  // exit_freed will run next
 }
 
 void exit_freed() {
   assert(malloc(sizeof(uint32_t)) == freed_on_exit);
 }
 
+uint32_t* freed_on_cancel;
+void cancelee() {
+  freed_on_cancel = malloc(sizeof(uint32_t));
+  // back to free_on_cancel
+  yield();
+  // cancelled so never gets here
+}
+
+void free_cancel() {
+  int tid = add_named_thread(cancelee, "cancelee");
+  yield_to(tid); // to cancelee
+  thread_cancel(tid);
+  assert(malloc(sizeof(uint32_t)) == freed_on_cancel);
+}
+
+#define RUN_TEST_THREAD(fn, name)   \
+  tid = add_named_thread(fn, name); \
+  thread_join(tid, &state);
+
+void dispatcher() {
+  // Single thread to send and wait on threads
+  // so that we don't have to have MAX_THREADS = number of tests
+  int tid; ThreadState state;
+  RUN_TEST_THREAD(basic_types, "basic_types");
+  RUN_TEST_THREAD(large_alloc, "large_alloc");
+  RUN_TEST_THREAD(fragmented, "fragmented");
+  RUN_TEST_THREAD(errors, "errors");
+  RUN_TEST_THREAD(realloc_more, "realloc_more");
+  RUN_TEST_THREAD(realloc_less, "realloc_less");
+  RUN_TEST_THREAD(realloc_free, "realloc_free");
+  RUN_TEST_THREAD(realloc_fail, "realloc_fail");
+  RUN_TEST_THREAD(protect_alloc, "protect_alloc");
+  RUN_TEST_THREAD(free_exit, "free_exit");
+  RUN_TEST_THREAD(free_exit, "freed_exit");
+  RUN_TEST_THREAD(free_cancel, "free_cancel");
+}
+
 void setup(void) {
   config.log_scheduler = false;
-
-  add_named_thread(basic_types, "basic_types");
-  add_named_thread(large_alloc, "large_alloc");
-  add_named_thread(fragmented, "fragmented");
-  add_named_thread(errors, "errors");
-  add_named_thread(realloc_more, "realloc_more");
-  add_named_thread(realloc_less, "realloc_less");
-  add_named_thread(realloc_free, "realloc_free");
-  add_named_thread(realloc_fail, "realloc_fail");
-  add_named_thread(protect_alloc, "protect_alloc");
-  add_named_thread(check_protect, "check_protect");
-  add_named_thread(free_on_exit, "free_on_exit");
-  add_named_thread(exit_freed, "exit_freed");
+  add_named_thread(dispatcher, "dispatcher");
 }
