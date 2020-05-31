@@ -10,7 +10,12 @@ void load_again() {
   log_event("loading binary again");
   // Now that all threads from binary have finished
   // we can load it into the code page again
-  assert(add_thread_from_file(filename) != -1);
+  int added = add_thread_from_file(filename);
+  assert(added != -1);
+  // Cancelling it should release the page and let us load again
+  assert(thread_cancel(added));
+  added = add_thread_from_file(filename);
+  assert(added != -1);
 }
 
 void setup(void) {

@@ -50,7 +50,7 @@ Thread            5: yielding
 Thread   load_again: resuming
 Thread   load_again: loaded again
 Thread   load_again: yielding
-Thread        task2: Greetings from thread 7!
+Thread        task2: Greetings from thread 8!
 Thread        task2: exiting
 Thread  <scheduler>: scheduling new thread
 Thread  <scheduler>: next thread chosen

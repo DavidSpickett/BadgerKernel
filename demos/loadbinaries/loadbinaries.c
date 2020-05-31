@@ -10,10 +10,16 @@ void load_again() {
     tid = add_thread_from_file("task2");
   }
   log_event("loaded again");
+
+  // Cancelling this new thread should release its backing page
+  assert(thread_cancel(tid));
+  tid = add_thread_from_file("task2");
+  assert(tid != -1);
+
   // Check that skipping the scheduler still copies
   // in the new program. If not we'll see "Hello" instead
   // (also covers yield_next)
-  yield_to(7);
+  yield_to(tid);
 }
 
 void setup(void) {

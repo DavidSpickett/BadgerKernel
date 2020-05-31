@@ -368,8 +368,28 @@ bool thread_wake(int tid) {
   return set_thread_state(tid, suspended);
 }
 
+static void cleanup_thread(Thread* thread) {
+#ifndef linux
+  // Free any lingering heap allocations
+  free_all(thread->id);
+#endif
+
+#if CODE_PAGE_SIZE
+  // Free the code page. If there are other threads
+  // running from it they will still have true to keep it alive.
+  thread->in_code_page = false;
+#if CODE_BACKING_PAGES
+  thread->code_backing_page = INVALID_PAGE;
+#endif
+#endif
+}
+
 bool thread_cancel(int tid) {
-  return set_thread_state(tid, cancelled);
+  bool set = set_thread_state(tid, cancelled);
+  if (set) {
+    cleanup_thread(&all_threads[tid]);
+  }
+  return set;
 }
 
 bool yield_to(int tid) {
@@ -667,17 +687,7 @@ __attribute__((noreturn)) void thread_start(void) {
      away anyway.
   */
 
-  // Free any lingering heap allocations
-  free_all(get_thread_id());
-
-#if CODE_PAGE_SIZE
-  // Free the code page. If there are other threads
-  // running from it they will still have true to keep it alive.
-  current_thread()->in_code_page = false;
-#if CODE_BACKING_PAGES
-  current_thread()->code_backing_page = INVALID_PAGE;
-#endif
-#endif
+  cleanup_thread(current_thread());
 
   // Calling thread_switch directly so we don't print 'yielding'
   // TODO: we save state here that we don't need to
