@@ -9,6 +9,7 @@
 typedef struct {
   bool destroy_on_stack_err;
   bool log_scheduler;
+  bool log_threads;
 } KernelConfig;
 
 typedef struct {

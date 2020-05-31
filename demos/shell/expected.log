@@ -1,0 +1,78 @@
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: next thread chosen
+Thread         task: Hello from thread 0
+Thread         task: yielding
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: next thread chosen
+Thread   load_again: yielding
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: next thread chosen
+Thread         task: Hello from thread 2
+Thread         task: yielding
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: next thread chosen
+Thread         task: Hello from thread 3
+Thread         task: yielding
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: next thread chosen
+Thread         task: resuming
+Thread         task: Goodbye from thread 0
+Thread         task: Adding keepalive thread
+Thread         task: exiting
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: next thread chosen
+Thread   load_again: resuming
+Thread   load_again: yielding
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: next thread chosen
+Thread         task: resuming
+Thread         task: Goodbye from thread 2
+Thread         task: Adding keepalive thread
+Thread         task: exiting
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: next thread chosen
+Thread         task: resuming
+Thread         task: Goodbye from thread 3
+Thread         task: Adding keepalive thread
+Thread         task: exiting
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: next thread chosen
+Thread    keep_page: keeping thread 0's page alive
+Thread    keep_page: yielding
+Thread   load_again: resuming
+Thread   load_again: yielding
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: next thread chosen
+Thread    keep_page: keeping thread 3's page alive
+Thread    keep_page: yielding
+Thread   load_again: resuming
+Thread   load_again: yielding
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: next thread chosen
+Thread    keep_page: resuming
+Thread    keep_page: releasing page for thread 3
+Thread    keep_page: exiting
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: next thread chosen
+Thread    keep_page: resuming
+Thread    keep_page: releasing page for thread 0
+Thread    keep_page: exiting
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: next thread chosen
+Thread    keep_page: keeping thread 2's page alive
+Thread    keep_page: yielding
+Thread   load_again: resuming
+Thread   load_again: loaded again
+Thread   load_again: yielding
+Thread        task2: Greetings from thread 2!
+Thread        task2: exiting
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: next thread chosen
+Thread    keep_page: resuming
+Thread    keep_page: releasing page for thread 2
+Thread    keep_page: exiting
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: next thread chosen
+Thread   load_again: resuming
+Thread   load_again: exiting
+Thread  <scheduler>: all threads finished

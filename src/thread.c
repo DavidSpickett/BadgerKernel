@@ -17,6 +17,7 @@ __attribute__((section(".thread_vars"))) Thread* volatile next_thread;
 
 __attribute__((section(".thread_vars")))
 KernelConfig kernel_config = {.destroy_on_stack_err = false,
+                        .log_threads = true,
                         .log_scheduler = true};
 
 #if CODE_PAGE_SIZE
@@ -226,6 +227,10 @@ void k_format_thread_name(char* out) {
 }
 
 void k_log_event(const char* event, ...) {
+  if (!kernel_config.log_threads) {
+    return;
+  }
+
   char thread_name[THREAD_NAME_SIZE + 1];
   k_format_thread_name(thread_name);
   printf("Thread %s: ", thread_name);
