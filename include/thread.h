@@ -5,7 +5,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#define MAX_THREADS 12
+#define MAX_THREADS 6
 
 typedef struct {
   bool destroy_on_stack_err;

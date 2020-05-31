@@ -1,7 +1,7 @@
 % Print Demo %
 Sprintf hex: 0xABAB
-Added 8 threads which are now sleeping.
+Added 2 threads which are now sleeping.
 Thread name_that_ge: exiting
-Thread            9: exiting
-Thread           10: exiting
-Thread           11: exiting
+Thread            3: exiting
+Thread            4: exiting
+Thread            5: exiting

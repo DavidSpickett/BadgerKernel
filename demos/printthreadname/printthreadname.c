@@ -21,13 +21,11 @@ void setup(void) {
   printf("%s", buf);
 
   // Use up some IDs
-  unsigned padding = 8;
-  for (int i = 0; i < padding; ++i) {
-    assert(add_thread(go_to_sleep) != -1);
-  }
-  printf("Added %u threads which are now sleeping.\n", padding);
+  assert(add_thread(go_to_sleep) != -1);
+  assert(add_thread(go_to_sleep) != -1);
+  printf("Added 2 threads which are now sleeping.\n");
 
-  // ID 7
+  // ID 2
   add_named_thread(work, "name_that_gets_cut_off");
   // The rest
   int tid = -1;
