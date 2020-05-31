@@ -132,37 +132,33 @@ void init_thread(Thread* thread, int tid, const char* name,
 }
 
 #ifdef linux
-pthread_mutex_t first_scheduler_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t first_schedule_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t scheduler_mutex = PTHREAD_MUTEX_INITIALIZER;
 #endif
 extern void setup(void);
 void do_scheduler(void);
 extern void start_thread_switch(void);
 __attribute__((noreturn)) void entry(void) {
-  // Init all threads to invalid
   for (size_t idx = 0; idx < MAX_THREADS; ++idx) {
     ThreadArgs noargs = {0, 0, 0, 0};
     init_thread(&all_threads[idx], -1, NULL, NULL, noargs);
   }
 
 #ifdef linux
-  // Prevent added threads from running yet
-  pthread_mutex_lock(&first_scheduler_mutex);
+  // Stop initial threads running yet
+  pthread_mutex_lock(&first_schedule_mutex);
 #endif
 
-  // Call user setup
-  setup();
+  setup(); // Adds initial threads
 
 #ifdef linux
   do_scheduler();
-  pthread_mutex_unlock(&first_scheduler_mutex);
+  pthread_mutex_unlock(&first_schedule_mutex);
   while (1) { //!OCLINT
   }
 #else
-  // Already in kernel mode here
-  start_thread_switch();
+  start_thread_switch(); // Not thread_switch as we're in kernel mode
 #endif
-
   __builtin_unreachable();
 }
 
@@ -312,6 +308,16 @@ static void swap_paged_threads(const Thread* current, const Thread* next) {
 }
 #endif
 
+static size_t next_possible_thread_idx(const Thread* curr) {
+  if (curr) {
+    // +1 to skip the current thread
+    return curr - &all_threads[0] + 1;
+  }
+
+  // On startup current_thread will be NULL
+  return 0;
+}
+
 void do_scheduler(void) {
 #ifdef linux
   pthread_mutex_lock(&scheduler_mutex);
@@ -326,15 +332,8 @@ void do_scheduler(void) {
     return;
   }
 
-  size_t start_thread_idx;
   Thread* curr = current_thread();
-  if (curr) {
-    // +1 to skip the current thread
-    start_thread_idx = curr - &all_threads[0] + 1;
-  } else {
-    // On startup current_thread will be NULL
-    start_thread_idx = 0;
-  }
+  size_t start_thread_idx = next_possible_thread_idx(curr);
 
   size_t max_thread_idx = start_thread_idx + MAX_THREADS;
   for (size_t idx = start_thread_idx; idx < max_thread_idx; ++idx) {
@@ -600,8 +599,8 @@ Thread* current_thread(void) {
 
 void* thread_entry() {
   // Hold back threads until first run of scheduler is done
-  pthread_mutex_lock(&first_scheduler_mutex);
-  pthread_mutex_unlock(&first_scheduler_mutex);
+  pthread_mutex_lock(&first_schedule_mutex);
+  pthread_mutex_unlock(&first_schedule_mutex);
 
   // Then wait until we're chosen by scheduler to run
   while (next_thread != current_thread()) {
