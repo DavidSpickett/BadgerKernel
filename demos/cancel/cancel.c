@@ -16,7 +16,12 @@ void canceller() {
 
   // So thread 2 is never run
   log_event("cancelling thread 2");
-  thread_cancel(2);
+  assert(thread_cancel(2));
+
+  // Cancelled threads should be re-used
+  int tid = add_thread(work);
+  assert(tid == 2);
+  assert(thread_cancel(tid));
 
   yield();
 
@@ -30,7 +35,7 @@ void canceller() {
   bool finished = thread_join(99, &state);
   assert(!finished);
 
-  thread_join(0, &state);
+  assert(thread_join(0, &state));
   assert(state == cancelled);
 }
 

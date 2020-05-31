@@ -1,10 +1,12 @@
 #include "thread.h"
 #include "print.h"
 
-void keep_page() {
+void keep_page(int tid) {
   // Keep going back to load_again and trying find a free page
   // Which won't succeed until all of these have exited
+  log_event("keeping thread %u's page alive", tid);
   yield_to(1);
+  log_event("releasing page for thread %u", tid);
 }
 
 void worker() {
@@ -30,5 +32,6 @@ void worker() {
   // of the backing page is correct. As in, it can't
   // be re-used while these are live.
   log_event("Adding keepalive thread");
-  add_thread(keep_page);
+  ThreadArgs args = make_args(get_thread_id(), 0, 0, 0);
+  add_named_thread_with_args(keep_page, "keep_page", args);
 }

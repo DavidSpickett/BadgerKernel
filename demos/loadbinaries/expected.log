@@ -37,30 +37,42 @@ Thread         task: Adding keepalive thread
 Thread         task: exiting
 Thread  <scheduler>: scheduling new thread
 Thread  <scheduler>: next thread chosen
-Thread            4: yielding
+Thread    keep_page: keeping thread 0's page alive
+Thread    keep_page: yielding
 Thread   load_again: resuming
 Thread   load_again: yielding
 Thread  <scheduler>: scheduling new thread
 Thread  <scheduler>: next thread chosen
-Thread            4: resuming
-Thread            4: exiting
+Thread    keep_page: keeping thread 3's page alive
+Thread    keep_page: yielding
+Thread   load_again: resuming
+Thread   load_again: yielding
 Thread  <scheduler>: scheduling new thread
 Thread  <scheduler>: next thread chosen
-Thread            5: yielding
+Thread    keep_page: resuming
+Thread    keep_page: releasing page for thread 3
+Thread    keep_page: exiting
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: next thread chosen
+Thread    keep_page: resuming
+Thread    keep_page: releasing page for thread 0
+Thread    keep_page: exiting
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: next thread chosen
+Thread    keep_page: keeping thread 2's page alive
+Thread    keep_page: yielding
 Thread   load_again: resuming
 Thread   load_again: loaded again
 Thread   load_again: yielding
-Thread        task2: Greetings from thread 8!
+Thread        task2: Greetings from thread 2!
 Thread        task2: exiting
+Thread  <scheduler>: scheduling new thread
+Thread  <scheduler>: next thread chosen
+Thread    keep_page: resuming
+Thread    keep_page: releasing page for thread 2
+Thread    keep_page: exiting
 Thread  <scheduler>: scheduling new thread
 Thread  <scheduler>: next thread chosen
 Thread   load_again: resuming
 Thread   load_again: exiting
-Thread  <scheduler>: scheduling new thread
-Thread  <scheduler>: next thread chosen
-Thread            5: resuming
-Thread            5: exiting
-Thread  <scheduler>: scheduling new thread
-Thread  <scheduler>: next thread chosen
-Thread            6: exiting
 Thread  <scheduler>: all threads finished

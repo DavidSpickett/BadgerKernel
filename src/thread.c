@@ -95,7 +95,8 @@ const char* get_thread_name(void) {
 }
 
 int get_thread_id(void) {
-  return current_thread()->id;
+  Thread* curr = current_thread();
+  return curr ? curr->id : -1;
 }
 
 void init_thread(Thread* thread, int tid, const char* name,
@@ -130,6 +131,10 @@ void init_thread(Thread* thread, int tid, const char* name,
 #endif
 }
 
+#ifdef linux
+pthread_mutex_t first_scheduler_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t scheduler_mutex = PTHREAD_MUTEX_INITIALIZER;
+#endif
 extern void setup(void);
 void do_scheduler(void);
 extern void start_thread_switch(void);
@@ -140,16 +145,17 @@ __attribute__((noreturn)) void entry(void) {
     init_thread(&all_threads[idx], -1, NULL, NULL, noargs);
   }
 
+#ifdef linux
+  // Prevent added threads from running yet
+  pthread_mutex_lock(&first_scheduler_mutex);
+#endif
+
   // Call user setup
   setup();
 
 #ifdef linux
-  /* I don't think this is a race condition because
-     next_thread is NULL until this sets it.
-     The other threads will just yield back here
-     until next_thread is set. */
   do_scheduler();
-  // Let pthreads run
+  pthread_mutex_unlock(&first_scheduler_mutex);
   while (1) { //!OCLINT
   }
 #else
@@ -307,6 +313,10 @@ static void swap_paged_threads(const Thread* current, const Thread* next) {
 #endif
 
 void do_scheduler(void) {
+#ifdef linux
+  pthread_mutex_lock(&scheduler_mutex);
+#endif
+
   // NULL next_thread means choose one for us
   // otherwise just do required housekeeping to switch
   if (next_thread != NULL) {
@@ -349,6 +359,10 @@ void do_scheduler(void) {
     swap_paged_threads(curr, next_thread);
 #endif
 
+#ifdef linux
+    pthread_mutex_unlock(&scheduler_mutex);
+#endif
+
     return; //!OCLINT
   }
 
@@ -369,10 +383,15 @@ bool thread_wake(int tid) {
 }
 
 static void cleanup_thread(Thread* thread) {
-#ifndef linux
+#ifdef linux
+  // If this is called when a thread exits, we don't
+  // want to cancel ourselves, just exit normally.
+  if (thread != current_thread()) {
+    pthread_cancel(thread->self);
+  }
+#else
   // Free any lingering heap allocations
   free_all(thread->id);
-#endif
 
 #if CODE_PAGE_SIZE
   // Free the code page. If there are other threads
@@ -382,6 +401,7 @@ static void cleanup_thread(Thread* thread) {
   thread->code_backing_page = INVALID_PAGE;
 #endif
 #endif
+#endif /* ifdef linux */
 }
 
 bool thread_cancel(int tid) {
@@ -524,7 +544,9 @@ void* thread_entry();
 int add_named_thread_with_args(void (*worker)(), const char* name,
                                ThreadArgs args) {
   for (size_t idx = 0; idx < MAX_THREADS; ++idx) {
-    if (all_threads[idx].id == -1) {
+    if (all_threads[idx].id == -1 ||
+        all_threads[idx].state == cancelled ||
+        all_threads[idx].state == finished) {
       init_thread(&all_threads[idx], idx, name, worker, args);
 #ifdef linux
       pthread_create(&all_threads[idx].self, NULL, thread_entry, NULL);
@@ -573,18 +595,22 @@ Thread* current_thread(void) {
       return &all_threads[i];
     }
   }
-  // Main thread should only hit this once when it
-  // calls do_scheduler for the first time.
-  static bool called_on_main = false;
-  if (called_on_main) __builtin_unreachable();
-  called_on_main = true;
   return NULL;
 }
 
 void* thread_entry() {
+  // Hold back threads until first run of scheduler is done
+  pthread_mutex_lock(&first_scheduler_mutex);
+  pthread_mutex_unlock(&first_scheduler_mutex);
+
+  // Then wait until we're chosen by scheduler to run
   while (next_thread != current_thread()) {
     pthread_yield();
   }
+
+  // This is here to force a check for pending cancels
+  // (best I could come up with)
+  usleep(1);
 
   current_thread()->work(current_thread()->args.a1, current_thread()->args.a2,
                          current_thread()->args.a3, current_thread()->args.a4);
@@ -594,6 +620,8 @@ void* thread_entry() {
 
   // Make sure we're not scheduled again
   current_thread()->state = finished;
+
+  cleanup_thread(current_thread());
 
   // Must call this so we check if there are threads left
   next_thread = NULL;

@@ -1,7 +1,12 @@
 #include "print.h"
 #include "thread.h"
+#include "util.h"
 
 void work(void) {
+}
+
+void go_to_sleep(void) {
+  thread_wait();
 }
 
 void setup(void) {
@@ -18,10 +23,9 @@ void setup(void) {
   // Use up some IDs
   unsigned padding = 8;
   for (int i = 0; i < padding; ++i) {
-    add_thread(work);
-    thread_cancel(i);
+    assert(add_thread(go_to_sleep) != -1);
   }
-  printf("Added then cancelled %u threads.\n", padding);
+  printf("Added %u threads which are now sleeping.\n", padding);
 
   // ID 7
   add_named_thread(work, "name_that_gets_cut_off");
