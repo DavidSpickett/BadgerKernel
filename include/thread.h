@@ -3,6 +3,7 @@
 
 #include "thread_state.h"
 #include <stdbool.h>
+#include <stddef.h>
 
 #define MAX_THREADS 12
 
@@ -13,14 +14,14 @@ typedef struct {
 extern MonitorConfig config;
 
 typedef struct {
-  void* a1;
-  void* a2;
-  void* a3;
-  void* a4;
+  size_t a1;
+  size_t a2;
+  size_t a3;
+  size_t a4;
 } ThreadArgs;
 
-#define make_args(a, b, c, d)                                                  \
-  { (void*)a, (void*)b, (void*)c, (void*)d }
+#define make_args(a, b, c, d)                   \
+  { (size_t)a, (size_t)b, (size_t)c, (size_t)d }
 
 int add_thread(void (*worker)(void));
 #if CODE_PAGE_SIZE
