@@ -1,5 +1,7 @@
 #include "thread.h"
-#include "file_system.h"
+#include "user/thread.h"
+#include "user/file.h"
+#include "user/util.h"
 #include "print.h"
 #include <string.h>
 
@@ -57,6 +59,7 @@ static void help(int argc, char* argv[]);
 static void quit(int argc, char* argv[]);
 static void  run(int argc, char* argv[]);
 static void echo(int argc, char* argv[]);
+static void   ps(int argc, char* argv[]);
 
 typedef struct {
   const char* name;
@@ -65,10 +68,69 @@ typedef struct {
 } BuiltinCommand;
 BuiltinCommand builtins[] = {
   {"help", help, "help <command name>"},
-  {"quit", quit, "quit the shell"},
+  {"quit", quit, "Quit the shell"},
   {"run",  run,  "run <program name>"},
   {"echo", echo, "echo <thing> <thing2> <...>"},
+  {"ps",   ps,   "Shows system threads"},
 };
+
+
+static void ps(int argc, char* argv[]) {
+  if (argc > 1) {
+    printf("ps expects no arguments");
+    return;
+  }
+
+  for (int tid=0; ; ++tid) {
+    const char* name;
+    bool valid = thread_name(tid, &name);
+
+    // TODO: this is wrong if we have gaps in thread
+    // allocation. Like valid invaid valid, we'll miss
+    // the third one. Works for now with how the shell
+    // starts processes
+    if (!valid) {
+      break;
+    }
+
+    ThreadState state;
+    get_thread_state(tid, &state);
+
+    const char* state_name;
+    // TODO: move somewhere general?
+    switch (state) {
+      case(init):
+        state_name = "init";
+        break;
+      case(running):
+        state_name = "running";
+        break;
+      case(suspended):
+        state_name = "suspended";
+        break;
+      case(waiting):
+        state_name = "waiting";
+        break;
+      case(finished):
+        state_name = "finished";
+        break;
+      case(cancelled):
+        state_name = "cancelled";
+        break;
+      default:
+        state_name = "unknown";
+        break;
+    }
+
+    printf("|-----------|\n");
+    printf("| Thread %u\n", tid);
+    printf("|-----------|\n");
+    printf("| Name      | %s\n", name);
+    printf("| State     | %s (%u)\n", state_name, state);
+    printf("|-----------|\n");
+  }
+
+}
 
 static void echo(int argc, char* argv[]) {
   if (!argc) {
@@ -129,13 +191,17 @@ static void quit(int argc, char* argv[]) {
 
 static void do_command(char* cmd) {
   ProcessedCmdLine parts = split_cmd_line(cmd);
+  // Don't run blank/all whitespace lines
+  if (!parts.num_parts) {
+    return;
+  }
 
   size_t num_commands = sizeof(builtins)/sizeof(BuiltinCommand);
   int tid = -1;
   ThreadArgs args = make_args(parts.num_parts, &parts.parts, 0, 0);
   for (size_t i=0; i<num_commands; ++i) {
     if (!strcmp(parts.parts[0], builtins[i].name)) {
-      tid = add_named_thread_with_args(builtins[i].fn, "", args);
+      tid = add_named_thread_with_args(builtins[i].fn, builtins[i].name, &args);
     }
   }
 
@@ -222,7 +288,7 @@ static void command_loop(int input) {
   }
 }
 
-static void run_shell() {
+void run_shell() {
   printf("---------------------\n");
   printf("----- AMT Shell -----\n");
   printf("---------------------");
@@ -235,7 +301,9 @@ static void run_shell() {
 }
 
 void setup(void) {
-  config.log_scheduler = false;
-  config.log_threads = false;
-  add_named_thread(run_shell, "shell");
+  KernelConfig cfg = { .log_scheduler=false,
+                       .log_threads=false,
+                       .destroy_on_stack_err=false};
+  k_set_kernel_config(&cfg);
+  k_add_named_thread(run_shell, "shell");
 }

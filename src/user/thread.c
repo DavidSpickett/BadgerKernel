@@ -86,6 +86,10 @@ const char* get_thread_name(void) {
   return (const char*)DO_SYSCALL_0(get_thread_name);
 }
 
+bool thread_name(int tid, const char** name) {
+  return DO_SYSCALL_2(thread_name, tid, name);
+}
+
 void set_kernel_config(const KernelConfig* config) {
   DO_SYSCALL_1(set_kernel_config, config);
 }

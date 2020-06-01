@@ -56,12 +56,14 @@ int k_add_named_thread_with_args(void (*worker)(), const char* name,
 bool is_valid_thread(int tid);
 int k_get_thread_id(void);
 const char* k_get_thread_name(void);
+bool k_thread_name(int tid, const char** name);
 
 bool k_yield_next(void);
 bool k_yield_to(int tid);
 void thread_wait(void);
 bool thread_wake(int tid);
 bool thread_cancel(int tid);
+
 // TODO: dedupe?
 void k_log_event(const char* event, ...);
 bool k_get_msg(int* sender, int* message);

@@ -18,6 +18,7 @@
   FNADDR k_add_named_thread_with_args
   FNADDR k_get_thread_id
   FNADDR k_get_thread_name
+  FNADDR k_thread_name
   FNADDR k_set_kernel_config
   FNADDR k_get_thread_state
   FNADDR k_set_child
@@ -52,6 +53,7 @@ typedef enum {
   syscall_add_named_thread_with_args,
   syscall_get_thread_id,
   syscall_get_thread_name,
+  syscall_thread_name,
   syscall_set_kernel_config,
   // TODO: sane ordering for these?
   syscall_get_thread_state,

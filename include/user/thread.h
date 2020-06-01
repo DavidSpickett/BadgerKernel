@@ -16,6 +16,7 @@ int add_named_thread_with_args(void (*worker)(), const char* name,
 // As in, the current ID
 int get_thread_id(void);
 const char* get_thread_name(void);
+bool thread_name(int tid, const char** name);
 
 void yield(void);
 bool thread_join(int tid, ThreadState* state);
