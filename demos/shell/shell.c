@@ -33,6 +33,14 @@ static void echo(const char* args) {
 }
 
 static void run(const char* args) {
+  // TODO: bodge since load_elf hard errors
+  int test = open(args, O_RDONLY);
+  if (test < 0) {
+    printf("Couldn't find application \"%s\"", args);
+    return;
+  }
+  close(test);
+
   int tid = add_thread_from_file(args);
   yield_to(tid);
 }
@@ -52,7 +60,6 @@ static void quit(const char* cmd) {
 }
 
 static void do_command(char* cmd) {
-  printf("Do command: %s\n", cmd);
   char* rest = first_whitespace(cmd);
   // Split cmd and arguments
   *rest = '\0';
