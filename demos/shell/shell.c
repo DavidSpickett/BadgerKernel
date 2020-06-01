@@ -61,12 +61,13 @@ static void echo(int argc, char* argv[]);
 typedef struct {
   const char* name;
   void (*fn)(int, char*[]);
+  const char* help_text;
 } BuiltinCommand;
 BuiltinCommand builtins[] = {
-  {"help", help},
-  {"quit", quit},
-  {"run", run},
-  {"echo", echo},
+  {"help", help, "help <command name>"},
+  {"quit", quit, "quit the shell"},
+  {"run",  run,  "run <program name>"},
+  {"echo", echo, "echo <thing> <thing2> <...>"},
 };
 
 static void echo(int argc, char* argv[]) {
@@ -98,11 +99,26 @@ static void run(int argc, char* argv[]) {
 }
 
 static void help(int argc, char* argv[]) {
-  (void)argc; (void)argv;
+  if (argc > 2) {
+    printf("help expects at most 1 command name");
+    return;
+  }
+
   size_t num_commands = sizeof(builtins)/sizeof(BuiltinCommand);
-  printf("Available commands are:\n");
-  for (size_t i=0; i<num_commands; ++i) {
-    printf("%s ", builtins[i].name);
+  if (argc == 2) {
+    // Specific command help
+    for (size_t i=0; i<num_commands; ++i) {
+      if (!strcmp(argv[1], builtins[i].name)) {
+        printf("%s", builtins[i].help_text);
+        return;
+      }
+    }
+    printf("Unknown command \"%s\"", argv[1]);
+  } else {
+    printf("Available commands are:\n");
+    for (size_t i=0; i<num_commands; ++i) {
+      printf("%s ", builtins[i].name);
+    }
   }
 }
 
