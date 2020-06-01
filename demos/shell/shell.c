@@ -141,22 +141,29 @@ static void echo(int argc, char* argv[]) {
   printf("\n");
 }
 
+//TODO: thread names are pointers so some time after
+// run() finishes the pointer to the name on the stack is invalid
+// So after you run a few more commands you'll see that the name
+// of the program's thread has gone. (which is lucky because it
+// could point to some non string)
+// Again, this workaround breaks if we have background processes
+char run_progname[256];
 static void run(int argc, char* argv[]) {
   if (argc != 2) {
     printf("run expects 1 argument, the program name");
     return;
   }
-  const char* progname = argv[1];
+  strcpy(run_progname, argv[1]);
 
   // TODO: bodge since load_elf hard errors
-  int test = open(progname, O_RDONLY);
+  int test = open(run_progname, O_RDONLY);
   if (test < 0) {
-    printf("Couldn't find application \"%s\"", progname);
+    printf("Couldn't find application \"%s\"", run_progname);
     return;
   }
   close(test);
 
-  add_thread_from_file(progname);
+  add_thread_from_file(run_progname);
   // TODO: this is a bit of a bodge
   // Since we know the shell is ID 0, then run is ID N
   // The added thread must be N+something (in this single tasking
