@@ -171,6 +171,10 @@ static void command_loop(int input) {
             do_command(cmd_line);
             PRINT_PROMPT
             break;
+          case 0x03: // End of text ( Ctrl-C )
+            cmd_line_pos = 0;
+            PRINT_PROMPT
+            break;
           case 0x1B: // Escape char
             if (*(curr+1) == '[') {
               switch (*(curr+2)) {
