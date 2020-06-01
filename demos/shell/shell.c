@@ -129,7 +129,6 @@ static void ps(int argc, char* argv[]) {
     printf("| State     | %s (%u)\n", state_name, state);
     printf("|-----------|\n");
   }
-
 }
 
 static void echo(int argc, char* argv[]) {
@@ -139,6 +138,7 @@ static void echo(int argc, char* argv[]) {
   for (int i=1; i<argc; ++i) {
     printf("%s ", argv[i]);
   }
+  printf("\n");
 }
 
 static void run(int argc, char* argv[]) {
@@ -156,13 +156,17 @@ static void run(int argc, char* argv[]) {
   }
   close(test);
 
-  int tid = add_thread_from_file(progname);
-  yield_to(tid);
+  add_thread_from_file(progname);
+  // TODO: this is a bit of a bodge
+  // Since we know the shell is ID 0, then run is ID N
+  // The added thread must be N+something (in this single tasking
+  // state at least). So just exit and assume it will run.
+  // This *will* break once we have background processes
 }
 
 static void help(int argc, char* argv[]) {
   if (argc > 2) {
-    printf("help expects at most 1 command name");
+    printf("help expects at most 1 command name\n");
     return;
   }
 
@@ -171,16 +175,17 @@ static void help(int argc, char* argv[]) {
     // Specific command help
     for (size_t i=0; i<num_commands; ++i) {
       if (!strcmp(argv[1], builtins[i].name)) {
-        printf("%s", builtins[i].help_text);
+        printf("%s\n", builtins[i].help_text);
         return;
       }
     }
-    printf("Unknown command \"%s\"", argv[1]);
+    printf("Unknown command \"%s\"\n", argv[1]);
   } else {
     printf("Available commands are:\n");
     for (size_t i=0; i<num_commands; ++i) {
       printf("%s ", builtins[i].name);
     }
+    printf("\n");
   }
 }
 
@@ -208,11 +213,11 @@ static void do_command(char* cmd) {
   if (tid != -1) {
     yield_to(tid);
   } else {
-    printf("Unknown command \"%s\"", cmd);
+    printf("Unknown command \"%s\"\n", cmd);
   }
 }
 
-#define PRINT_PROMPT printf("\n$ ");
+#define PRINT_PROMPT printf("$ ");
 
 #define MAX_CMD_LINE 256 // Bold assumptions
 #define INPUT_BUFFER_SIZE 16
@@ -239,6 +244,7 @@ static void command_loop(int input) {
             break;
           case 0x03: // End of text ( Ctrl-C )
             cmd_line_pos = 0;
+            printf("\n");
             PRINT_PROMPT
             break;
           case 0x1B: // Escape char
@@ -291,7 +297,7 @@ static void command_loop(int input) {
 void run_shell() {
   printf("---------------------\n");
   printf("----- AMT Shell -----\n");
-  printf("---------------------");
+  printf("---------------------\n");
 
   int input = open(":tt", O_RDONLY);
   if (input < 0) {

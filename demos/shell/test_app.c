@@ -2,5 +2,5 @@
 #include "print.h"
 
 void worker() {
-  printf("Another file!");
+  printf("Another file!\n");
 }
