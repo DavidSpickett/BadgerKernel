@@ -63,7 +63,6 @@ static void do_command(char* cmd) {
     }
   }
 
-  //tid = add_thread_from_file(cmd);
   if (tid != -1) {
     yield_to(tid);
   } else {
@@ -71,29 +70,41 @@ static void do_command(char* cmd) {
   }
 }
 
+#define PRINT_PROMPT printf("\n$ ");
+
+#define MAX_CMD_LINE 256 // Bold assumptions
 static void command_loop(int input) {
-  size_t max_cmd_line = 256;
-  char cmd_line[max_cmd_line]; // Bold assumptions
+  char cmd_line[MAX_CMD_LINE];
   size_t cmd_line_pos = 0;
-  printf("\n$ ");
+  PRINT_PROMPT
+
+  char in[2];
+  in[1] = '\0';
   while(1) {
-    char in[2];
-    in[1] = '\0';
     ssize_t got = read(input, &in, 1);
+
     // Will read nullptr if no data
     if (got && in[0]) {
       switch (in[0]) {
-        case '\r':
+        case '\r': // Enter
           cmd_line[cmd_line_pos] = '\0';
           cmd_line_pos = 0;
           printf("\n");
           do_command(cmd_line);
-          printf("\n$ ");
+          PRINT_PROMPT
+          break;
+        case 0x7F: // Backspace
+          if (cmd_line_pos) {
+            cmd_line_pos--;
+            printf("\b \b");
+          }
           break;
         default:
-          cmd_line[cmd_line_pos] = in[0];
-          ++cmd_line_pos;
-          printf("%s", in);
+          if (cmd_line_pos < MAX_CMD_LINE) {
+            cmd_line[cmd_line_pos] = in[0];
+            ++cmd_line_pos;
+            printf("%s", in);
+          }
           break;
       }
     }
