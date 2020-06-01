@@ -3,23 +3,64 @@
 #include "print.h"
 #include <string.h>
 
-static char* first_whitespace(char* str) {
-  char* rest = str;
-  // Return nullptr if no space to find
-  while((*rest != ' ') && (*rest != '\0')) {
-    ++rest;
+#define MAX_CMD_LINE_PARTS 20
+typedef struct {
+  int num_parts;
+  const char* parts[MAX_CMD_LINE_PARTS];
+} ProcessedCmdLine;
+static ProcessedCmdLine split_cmd_line(char* cmd_line) {
+  /* Take a long string with whitespace in and make it into
+     effectivley a list of strings by null terminating where
+     spaces are. */
+  ProcessedCmdLine parts;
+  parts.num_parts = 0;
+
+  // If there is data and there is at least one character
+  if (cmd_line && (*cmd_line != '\0')) {
+    char* curr = cmd_line;
+    const char* start_part = cmd_line;
+    for ( ; *curr; ++curr) {
+      if (*curr == ' ') {
+        // If there is non space chars to actually save
+        if (curr != start_part) {
+          // Save current part
+          parts.parts[parts.num_parts] = start_part;
+          parts.num_parts++;
+
+          if (parts.num_parts >= MAX_CMD_LINE_PARTS) {
+            printf("Too many parts to command line!\n");
+            exit(1);
+          }
+        }
+        // Which means we'll fill all spaces with null terminators
+        *curr = '\0';
+        // Start new part
+        start_part = curr+1;
+      }
+    }
+    // Catch leftover part
+    if (start_part < curr) {
+      // TODO: dedupe
+      parts.parts[parts.num_parts] = start_part;
+      parts.num_parts++;
+
+      if (parts.num_parts >= MAX_CMD_LINE_PARTS) {
+        printf("Too many parts to command line!\n");
+        exit(1);
+      }
+    }
   }
-  return rest;
+  return parts;
 }
 
-static void help(const char* args);
-static void quit(const char* args);
-static void  run(const char* args);
-static void echo(const char* args);
+static void help(int argc, char* argv[]);
+static void quit(int argc, char* argv[]);
+static void  run(int argc, char* argv[]);
+static void echo(int argc, char* argv[]);
 
 typedef struct {
   const char* name;
-  void (*fn)();
+  void (*fn)(int, char*[]);
 } BuiltinCommand;
 BuiltinCommand builtins[] = {
   {"help", help},
@@ -28,25 +69,36 @@ BuiltinCommand builtins[] = {
   {"echo", echo},
 };
 
-static void echo(const char* args) {
-  printf("%s", args);
+static void echo(int argc, char* argv[]) {
+  if (!argc) {
+    return;
+  }
+  for (int i=1; i<argc; ++i) {
+    printf("%s ", argv[i]);
+  }
 }
 
-static void run(const char* args) {
+static void run(int argc, char* argv[]) {
+  if (argc != 2) {
+    printf("run expects 1 argument, the program name");
+    return;
+  }
+  const char* progname = argv[1];
+
   // TODO: bodge since load_elf hard errors
-  int test = open(args, O_RDONLY);
+  int test = open(progname, O_RDONLY);
   if (test < 0) {
-    printf("Couldn't find application \"%s\"", args);
+    printf("Couldn't find application \"%s\"", progname);
     return;
   }
   close(test);
 
-  int tid = add_thread_from_file(args);
+  int tid = add_thread_from_file(progname);
   yield_to(tid);
 }
 
-static void help(const char* args) {
-  (void)args;
+static void help(int argc, char* argv[]) {
+  (void)argc; (void)argv;
   size_t num_commands = sizeof(builtins)/sizeof(BuiltinCommand);
   printf("Available commands are:\n");
   for (size_t i=0; i<num_commands; ++i) {
@@ -54,20 +106,19 @@ static void help(const char* args) {
   }
 }
 
-static void quit(const char* cmd) {
-  (void)cmd;
+static void quit(int argc, char* argv[]) {
+  (void)argc; (void)argv;
   exit(0);
 }
 
 static void do_command(char* cmd) {
-  char* rest = first_whitespace(cmd);
-  // Split cmd and arguments
-  *rest = '\0';
+  ProcessedCmdLine parts = split_cmd_line(cmd);
+
   size_t num_commands = sizeof(builtins)/sizeof(BuiltinCommand);
   int tid = -1;
-  ThreadArgs args = make_args(rest+1, 0, 0, 0);
+  ThreadArgs args = make_args(parts.num_parts, &parts.parts, 0, 0);
   for (size_t i=0; i<num_commands; ++i) {
-    if (!strcmp(cmd, builtins[i].name)) {
+    if (!strcmp(parts.parts[0], builtins[i].name)) {
       tid = add_named_thread_with_args(builtins[i].fn, "", args);
     }
   }
@@ -131,7 +182,7 @@ static void command_loop(int input) {
             }
             break;
           case 0x04: // End of transmission (Ctrl-D)
-            quit(NULL);
+            quit(0, NULL);
             break;
           default:
             if (cmd_line_pos < MAX_CMD_LINE) {
