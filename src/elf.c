@@ -302,6 +302,8 @@ static const KernelSymbolInfo kernel_symbols[] = {
   {"log_event", (size_t)log_event},
   {"yield_next", (size_t)yield_next},
   {"add_named_thread", (size_t)add_named_thread},
+  {"printf", (size_t)printf},
+  {"exit", (size_t)exit},
 };
 
 static size_t get_kernel_symbol_value(const char* name) {
@@ -451,70 +453,71 @@ static void resolve_relocs(int elf, uint16_t idx,
     DEBUG_MSG_ELF("| Symbol Index | %u\n", reloc_sym);
     DEBUG_MSG_ELF("| Offset       | 0x%x\n", reloc.r_offset);
 
-    SymbolInfo sym_info = get_symbol_info(elf, section_hdr.sh_link, reloc_sym,
-                    section_table_offs,
-                    section_hdr_size,
-                    name_table_offset);
-
-    if (!strcmp(sym_info.name, "")) {
-      // Relocations start with one to empty symbol, ignore it
-      // TODO: is this the dynamic linker callback address?
-      DEBUG_MSG_ELF("Note: Skipping relocation\n", sym_info.name);
-      continue;
-    }
-
-    size_t symbol_value;
-
-    // If a symbol has no associated section then it should be in the kernel
-    if (sym_info.symbol.st_shndx == SHN_UNDEF) {
-      // Should be in the kernel (hard error if we don't find it)
-      symbol_value = get_kernel_symbol_value(sym_info.name);
-    } else {
-      // Must be something in some section of this file
-      // Which needs to be offset by code_page to get the final value
-      symbol_value = sym_info.symbol.st_value + (size_t)code_page;
-      DEBUG_MSG_ELF("Resolved symbol \"%s\" to value 0x%x\n",
-        sym_info.name, symbol_value);
-    }
-
-#ifdef __thumb__
-    // Going to ignore Thumb on Arm, assume matching kernel and program
-    if (sym_info.type == SYM_TYPE_FUNC) {
-      symbol_value |= 1;
-    }
-#endif
-
     // This is where we put the answer to the relocation's question
     size_t* reloc_result_location = (size_t*)(code_page + reloc.r_offset);
 
-#ifdef __aarch64__
-    // Using RelA here
-    ssize_t addend = reloc.r_addend;
-#else
-    // Plain rel otherwise
-    ssize_t addend = 0;
+    if ((reloc_type == R_ARM_RELATIVE) ||
+        (reloc_type == R_AARCH64_RELATIVE)) {
+      if (reloc_sym != 0) {
+        PRINT_EXIT("Expected no symbol with R_ARM_RELATIVE!\n");
+      }
+      *reloc_result_location += (size_t)code_page;
+    } else {
+      SymbolInfo sym_info = get_symbol_info(elf, section_hdr.sh_link, reloc_sym,
+                      section_table_offs,
+                      section_hdr_size,
+                      name_table_offset);
+
+      size_t symbol_value;
+
+      // If a symbol has no associated section then it should be in the kernel
+      if (sym_info.symbol.st_shndx == SHN_UNDEF) {
+        // Should be in the kernel (hard error if we don't find it)
+        symbol_value = get_kernel_symbol_value(sym_info.name);
+      } else {
+        // Must be something in some section of this file
+        // Which needs to be offset by code_page to get the final value
+        symbol_value = sym_info.symbol.st_value + (size_t)code_page;
+        DEBUG_MSG_ELF("Resolved symbol \"%s\" to value 0x%x\n",
+          sym_info.name, symbol_value);
+      }
+
+#ifdef __thumb__
+      // Going to ignore Thumb on Arm, assume matching kernel and program
+      if (sym_info.type == SYM_TYPE_FUNC) {
+        symbol_value |= 1;
+      }
 #endif
 
-    // See Arm ELF spec for more inf
-    switch(reloc_type) {
-      case R_ARM_JUMP_SLOT:
-      case R_ARM_GLOB_DAT:
-        // (S + A) | T
-        *reloc_result_location = symbol_value + addend;
-        break;
-      case R_ARM_REL32:
-        // ((S + A) | T) - P
-        // Where P is where we are going to write the relocation result
-        *reloc_result_location = symbol_value + addend - (size_t)reloc_result_location;
-        break;
-      case R_AARCH64_JUMP_SLOT:
-      case R_AARCH64_GLOB_DAT:
-        // S + A
-        *reloc_result_location = symbol_value + addend;
-        break;
-      default:
-        PRINT_EXIT("Unhandled relocation type %u (%s)\n",
-          reloc_type, reloc_type_tostr(reloc_type));
+#ifdef __aarch64__
+      // Using RelA here
+      ssize_t addend = reloc.r_addend;
+#else
+      // Plain rel otherwise
+      ssize_t addend = 0;
+#endif
+
+      // See Arm ELF spec for more inf
+      switch(reloc_type) {
+        case R_ARM_JUMP_SLOT:
+        case R_ARM_GLOB_DAT:
+          // (S + A) | T
+          *reloc_result_location = symbol_value + addend;
+          break;
+        case R_ARM_REL32:
+          // ((S + A) | T) - P
+          // Where P is where we are going to write the relocation result
+          *reloc_result_location = symbol_value + addend - (size_t)reloc_result_location;
+          break;
+        case R_AARCH64_JUMP_SLOT:
+        case R_AARCH64_GLOB_DAT:
+          // S + A
+          *reloc_result_location = symbol_value + addend;
+          break;
+        default:
+          PRINT_EXIT("Unhandled relocation type %u (%s)\n",
+            reloc_type, reloc_type_tostr(reloc_type));
+      }
     }
 
     DEBUG_MSG_ELF("Set final relocation value to 0x%x\n", *reloc_result_location);
