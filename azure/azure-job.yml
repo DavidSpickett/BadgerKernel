@@ -18,8 +18,8 @@ jobs:
 
       - script: |
           sudo apt-get update
-          sudo apt-get install -y python3-pip
-        displayName: apt-get-py3pip
+          sudo apt-get install -y python3-pip ccache
+        displayName: apt-get-py3pip-ccache
 
       - ${{ if in(build_platform, 'ARM', 'THUMB', 'AARCH64') }}:
         - script: |
@@ -79,9 +79,12 @@ jobs:
                 export PATH=$(pwd)/toolchain/bin/:$PATH
                 cd ARMMultiTasking
                 rm CMakeCache.txt
+                export CCACHE_DIR=$(pwd)/.ccache
+                ccache -z
                 cmake . -DBUILD_PLATFORM=${{build_platform}} -DOPT_LEVEL=${{opt_level}} -DSANITIZERS=${{sanitizers}} -DLTO=${{lto}} -DCOMPILER=${{parameters.compiler}}
                 make clean
                 make make_demos
+                ccache -s
               workingDirectory: $(Agent.BuildDirectory)
               displayName: build-O${{opt_level}}_SANITIZERS_${{sanitizers}}_LTO_${{lto}}
 
