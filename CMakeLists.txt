@@ -8,6 +8,7 @@ set( COMPILER "gcc" CACHE STRING "Name of compiler to use." )
 option( SANITIZERS "Enable UBSAN/ASAN (ASAN Linux only)." OFF )
 option( COVERAGE "Generate coverage data. (Linux only)" OFF )
 option( LTO "Enable link time optimisation." OFF )
+option( CCACHE "Enable ccache." ON )
 set( STACK_SIZE 2 ) # In KB
 set( RAM_SIZE 0x100000 ) # 1MB in bytes
 
@@ -57,6 +58,15 @@ message(STATUS "COVERAGE is ${COVERAGE}")
 message(STATUS "COMPILER is ${COMPILER}")
 if (NOT LINUX)
   message(STATUS "STACK_SIZE is ${STACK_SIZE}KB")
+endif()
+
+if(CCACHE)
+  find_program(CCACHE_FOUND ccache)
+  if(NOT CCACHE_FOUND)
+    message(FATAL_ERROR "ccache not found!")
+  endif()
+  message(STATUS "ccache is enabled")
+  set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
 endif()
 
 # Note that anything but GCC isn't going to work for bare metal
