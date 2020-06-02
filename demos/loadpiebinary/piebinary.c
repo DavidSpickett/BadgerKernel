@@ -33,11 +33,6 @@ void worker() {
   // Creates a .plt section (and .plt.got I think)
   log_event(msg);
 
-  // Bit of undefined behaviour to generate a UBSAN handler.
-  // This demo is disabled with sanitisers as we don't support it yet.
-  volatile int trigger_ubsan = INT_MAX;
-  ++trigger_ubsan;
-
   add_foo_thread();
   yield_next();
 
