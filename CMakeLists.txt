@@ -130,6 +130,7 @@ else()
     src/hw/arm_util.c
     src/print.c
     src/alloc.c
+    src/syscall.c
   )
 
   if(NOT BP_LOWER STREQUAL "aarch64")

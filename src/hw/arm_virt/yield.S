@@ -22,11 +22,11 @@
 .endm
 
 .macro SAVE_KERNEL_TEMPS
-  push {r0-r1}
+  push {r0-r4, r12, lr}
 .endm
 
 .macro POP_KERNEL_TEMPS
-  pop {r0-r1}
+  pop {r0-r4, r12, lr}
 .endm
 
 .macro POP_TEMPS_GOTO_SYSTEM_MODE
@@ -77,11 +77,26 @@ handle_exception:
   ldr r0, [lr, #-4]        // load svc instruction used
   ldr r1, =0xFFFFFF        // mask to get code
   and r0, r0, r1
+
   CHECK_SVC svc_thread_switch, start_thread_switch
   CHECK_SVC svc_semihosting, semihosting
-  CHECK_SVC svc_enable_timer, enable_timer
   CHECK_SVC svc_disable_timer, disable_timer
+  //CHECK_SVC svc_enable_timer, enable_timer
+
+  lsl r2, r0, #2 // * 4 bytes per instr
+  ldr r1, =syscall_handlers
+  add r1, r1, r2
+  blx r1
+
+  POP_TEMPS_GOTO_SYSTEM_MODE
+  b exception_return
+
   b . //unknown svc
+
+syscall_handlers:
+  b handle_syscall
+  b handle_syscall
+  b sys_enable_timer
 
 .global start_thread_switch
 start_thread_switch:
