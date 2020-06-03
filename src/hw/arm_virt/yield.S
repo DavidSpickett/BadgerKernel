@@ -81,22 +81,35 @@ handle_exception:
   CHECK_SVC svc_thread_switch, start_thread_switch
   CHECK_SVC svc_semihosting, semihosting
   CHECK_SVC svc_disable_timer, disable_timer
-  //CHECK_SVC svc_enable_timer, enable_timer
-
-  lsl r2, r0, #2 // * 4 bytes per instr
-  ldr r1, =syscall_handlers
-  add r1, r1, r2
-  blx r1
-
-  POP_TEMPS_GOTO_SYSTEM_MODE
-  b exception_return
+  CHECK_SVC svc_enable_timer, enable_timer
+  CHECK_SVC 21, generic_syscall
 
   b . //unknown svc
 
+generic_syscall:
+  // TODO: error check range of number (special end of enum value?)
+  // r7 = operation number
+  ldr r1, =syscall_handlers
+  ldr r7, [r1, r7, LSL#2] // Shift 2 = *4, 4 bytes per address
+
+  // Get back argument registers
+  POP_KERNEL_TEMPS
+  SAVE_KERNEL_TEMPS
+
+  blx r7      // Call handler
+  mov r7, r0  // Temporarily save result
+
+  POP_TEMPS_GOTO_SYSTEM_MODE
+
+  mov r0, r7 // Put result in the right place
+
+  b exception_return
+
 syscall_handlers:
-  b handle_syscall
-  b handle_syscall
-  b sys_enable_timer
+  // TODO: using addresses might be a way to make this a generic include file
+  .word handle_syscall
+  .word handle_syscall
+  .word handle_syscall
 
 .global start_thread_switch
 start_thread_switch:
