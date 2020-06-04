@@ -20,9 +20,7 @@ void thread_work() {
   log_event(*curr_msg);
   curr_msg++;
   add_thread(thread_work);
-  log_event("enabling timer?");
   enable_timer();
-  log_event("Timer enabled?");
   while (1) { //!OCLINT
   }
 }

@@ -82,7 +82,7 @@ handle_exception:
   CHECK_SVC svc_semihosting, semihosting
   CHECK_SVC svc_disable_timer, disable_timer
   CHECK_SVC svc_enable_timer, enable_timer
-  CHECK_SVC 21, generic_syscall
+  CHECK_SVC svc_syscall, generic_syscall
 
   b . //unknown svc
 

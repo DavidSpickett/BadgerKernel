@@ -1,16 +1,8 @@
 #include "print.h"
 #include "thread_state.h"
 #include "util.h"
+#include "syscall.h"
 #include <stddef.h>
-
-typedef enum {
-syscall_foo = 0,
-syscall_bar = 1,
-syscall_cat = 2,
-syscall_zzz = 3,
-syscall_abc = 4,
-syscall_eol,
-} Syscall;
 
 size_t k_zzz() {
   return 6666;
@@ -42,38 +34,12 @@ size_t generic_syscall(Syscall num, size_t arg1, size_t arg2, size_t arg3, size_
   assert(num < syscall_eol);
 
   asm volatile(
-    "svc 21\n\t"
+    "svc %[svc_syscall]\n\t"
     :"+r"(r0)
-    :"r"(r0), "r"(r1), "r"(r2), "r"(r3), "r"(r7));
+    :"r"(r0), "r"(r1), "r"(r2), "r"(r3), "r"(r7),
+     [svc_syscall]"i"(svc_syscall));
   return r0;
 }
-
-#define SYSCALL_ABI
-
-// TODO: can we check size of __VA_ARG__ and pad somehow?
-#ifdef SYSCALL_ABI
-#define DO_SYSCALL_0(NAME) \
-  generic_syscall(syscall_##NAME, 0, 0, 0, 0)
-#define DO_SYSCALL_1(NAME, ARG1) \
-  generic_syscall(syscall_##NAME, ARG1, 0, 0, 0)
-#define DO_SYSCALL_2(NAME, ARG1, ARG2) \
-  generic_syscall(syscall_##NAME, ARG1, ARG2, 0, 0)
-#define DO_SYSCALL_3(NAME, ARG1, ARG2, ARG3) \
-  generic_syscall(syscall_##NAME, ARG1, ARG2, ARG3, 0)
-#define DO_SYSCALL_4(NAME, ARG1, ARG2, ARG3, ARG4) \
-  generic_syscall(syscall_##NAME, ARG1, ARG2, ARG3, ARG4)
-#else
-#define DO_SYSCALL_0(NAME) \
-  k_##NAME(ARG1)
-#define DO_SYSCALL_1(NAME, ARG1) \
-  k_##NAME(ARG1)
-#define DO_SYSCALL_2(NAME, ARG1, ARG2) \
-  k_##NAME(ARG1, ARG2)
-#define DO_SYSCALL_3(NAME, ARG1, ARG2, ARG3) \
-  k_##NAME(ARG1, ARG2, ARG3)
-#define DO_SYSCALL_4(NAME, ARG1, ARG2, ARG3, ARG4) \
-  k_##NAME(ARG1, ARG2, ARG3, ARG4)
-#endif
 
 int zzz() {
   return DO_SYSCALL_0(zzz);
