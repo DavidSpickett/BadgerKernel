@@ -474,7 +474,7 @@ static size_t find_free_backing_page() {
 #endif
 
 #if CODE_PAGE_SIZE
-int add_thread_from_file(const char* filename) {
+int k_add_thread_from_file(const char* filename) {
 #if CODE_BACKING_PAGES
   size_t free_page = find_free_backing_page();
   // If we have backing, don't count the active
@@ -497,7 +497,7 @@ int add_thread_from_file(const char* filename) {
   dest = &code_page_backing[free_page][0];
 #endif
 
-  int tid = add_named_thread(load_elf(filename, dest), filename);
+  int tid = k_add_named_thread(load_elf(filename, dest), filename);
 
 #if CODE_BACKING_PAGES
   all_threads[tid].code_backing_page = free_page;
@@ -508,13 +508,13 @@ int add_thread_from_file(const char* filename) {
 }
 #endif
 
-int add_thread(void (*worker)(void)) {
-  return add_named_thread(worker, NULL);
+int k_add_thread(void (*worker)(void)) {
+  return k_add_named_thread(worker, NULL);
 }
 
-int add_named_thread(void (*worker)(), const char* name) {
+int k_add_named_thread(void (*worker)(), const char* name) {
   ThreadArgs args = {0, 0, 0, 0};
-  return add_named_thread_with_args(worker, name, args);
+  return k_add_named_thread_with_args(worker, name, args);
 }
 
 #if CODE_PAGE_SIZE
@@ -540,7 +540,7 @@ static void setup_code_page(size_t idx) {
 #ifdef linux
 void* thread_entry();
 #endif
-int add_named_thread_with_args(void (*worker)(), const char* name,
+int k_add_named_thread_with_args(void (*worker)(), const char* name,
                                ThreadArgs args) {
   for (size_t idx = 0; idx < MAX_THREADS; ++idx) {
     if (all_threads[idx].id == -1 ||

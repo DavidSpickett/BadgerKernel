@@ -23,12 +23,12 @@ typedef struct {
 #define make_args(a, b, c, d)                   \
   { (size_t)a, (size_t)b, (size_t)c, (size_t)d }
 
-int add_thread(void (*worker)(void));
+int k_add_thread(void (*worker)(void));
 #if CODE_PAGE_SIZE
-int add_thread_from_file(const char* filename);
+int k_add_thread_from_file(const char* filename);
 #endif
-int add_named_thread(void (*worker)(void), const char* name);
-int add_named_thread_with_args(void (*worker)(), const char* name,
+int k_add_named_thread(void (*worker)(void), const char* name);
+int k_add_named_thread_with_args(void (*worker)(), const char* name,
                                ThreadArgs args);
 
 bool is_valid_thread(int tid);

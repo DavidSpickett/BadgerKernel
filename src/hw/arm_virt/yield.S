@@ -106,11 +106,8 @@ generic_syscall:
 
 syscall_handlers:
   // TODO: using addresses might be a way to make this a generic include file
-  .word k_foo
-  .word k_bar
-  .word k_cat
-  .word k_zzz
-  .word k_abc
+  .word k_add_named_thread
+  .word k_add_thread
   b . // TODO: pad a few error handlers here?
 
 .global start_thread_switch

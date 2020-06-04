@@ -114,6 +114,8 @@ set( KERNEL_SOURCES
   src/thread.c
   src/mutex.c
   src/condition_variable.c
+  src/user/thread.c
+  src/syscall.c
 )
 if(LINUX)
   set( KERNEL_SOURCES ${KERNEL_SOURCES}

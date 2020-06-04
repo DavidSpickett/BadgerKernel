@@ -1,4 +1,5 @@
 #include "thread.h"
+#include "user/thread.h"
 #include "util.h"
 
 void thread1() {
@@ -18,6 +19,6 @@ void thread2() {
 }
 
 void setup(void) {
-  add_named_thread(thread1, "first");
-  add_named_thread(thread2, "second");
+  k_add_named_thread(thread1, "first");
+  k_add_named_thread(thread2, "second");
 }
