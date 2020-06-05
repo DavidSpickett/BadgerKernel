@@ -361,27 +361,15 @@ bool thread_cancel(int tid) {
 }
 
 void k_thread_yield(Thread* next) {
-  // TODO: thread ID shouldn't be -1 here
-  //bool log = get_thread_id() != -1 || kernel_config.log_scheduler;
-  // TODO: fix how we decide how to log these, since it's not kernel doing it
-
-// TODO: fix linux port, ergh
+  // TODO: fix linux port, ergh
 #ifndef linux
   check_stack();
 #endif
 
-  bool log=true;
-
-  if (log) {
-    k_log_event("yielding");
-  }
-  // TODO: this seems dangerous in a pre-emptive world
-  // we should probably syscall with next as the argument
   next_thread = next;
-  thread_switch();
-  if (log) {
-    k_log_event("resuming");
-  }
+  do_scheduler();
+  // Assembly handler will see next set and
+  // do a switch
 }
 
 bool k_yield_to(int tid) {
@@ -643,6 +631,11 @@ void check_stack(void) {
   }
 }
 
+// TODO: it's kinda weird that this is in kernel
+// Maybe threads should just enter directly to their
+// worker?
+// Mind you, only the kernel *references* this
+// so that mitigates it some
 __attribute__((noreturn)) void thread_start(void) {
   // Every thread starts by entering this function
 

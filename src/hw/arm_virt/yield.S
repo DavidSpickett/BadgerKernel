@@ -98,12 +98,22 @@ generic_syscall:
   blx r7      // Call handler
   mov r7, r0  // Temporarily save result
 
+  // If next_thread is NULL by now, just return normally to same thread
+  mov r0, #0
+  ldr r1, =next_thread
+  ldr r1, [r1]
+  cmp r0, r1
+  beq syscall_ret
+
+  // Otherwise the syscall requires a thread switch
+  POP_KERNEL_TEMPS
+  mov r0, r7 // Patch in result for eventual resume
+  SAVE_KERNEL_TEMPS // So that start_thread_switch can unstack them, again.... TODO?
+  b start_thread_switch
+
+syscall_ret:
   POP_TEMPS_GOTO_SYSTEM_MODE
-
-  mov r0, r7 // Put result in the right place
-
-  // TODO: detect if we need to switch threads here?
-  // Perhaps switch if next_thread is non NULL?
+  mov r0, r7 // Put result in the right place so that thread will find it when it resumes
 
   b exception_return
 

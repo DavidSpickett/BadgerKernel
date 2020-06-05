@@ -95,7 +95,10 @@ bool get_thread_state(int tid, ThreadState* state) {
 }
 
 void yield(void) {
+  // TODO: sort out log scheduler settings
+  log_event("yielding");
   DO_SYSCALL_1(thread_yield, NULL);
+  log_event("resuming");
 }
 
 bool yield_to(int tid) {
