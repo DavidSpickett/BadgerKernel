@@ -1,3 +1,4 @@
+#include "user/thread.h"
 #include "thread.h"
 #include "util.h"
 
@@ -49,9 +50,11 @@ __attribute__((noreturn)) void receiver() {
 }
 
 void setup(void) {
-  config.log_scheduler = false;
+  KernelConfig cfg = { .log_scheduler=false,
+                       .destroy_on_stack_err=false};
+  k_set_kernel_config(&cfg);
 
-  add_named_thread(spammer, "spammer");
-  add_named_thread(sender, "spammer");
-  add_named_thread(receiver, "receiver");
+  k_add_named_thread(spammer, "spammer");
+  k_add_named_thread(sender, "spammer");
+  k_add_named_thread(receiver, "receiver");
 }
