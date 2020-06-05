@@ -10,9 +10,16 @@
 typedef enum {
   syscall_add_named_thread = 0,
   syscall_add_thread,
-  // Going to always include this to keep order intact
-  syscall_add_thread_from_file,
+  // syscall_add_thread_from_file, // TODO: How to handle optional syscalls?
   syscall_add_named_thread_with_args,
+  syscall_get_thread_id,
+  syscall_get_thread_name,
+  syscall_set_kernel_config,
+  // TODO: sane ordering for these?
+  syscall_get_thread_state,
+  syscall_thread_yield,
+  syscall_yield_to,
+  syscall_yield_next,
   syscall_eol,
 } Syscall;
 

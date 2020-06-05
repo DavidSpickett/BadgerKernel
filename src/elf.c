@@ -2,6 +2,7 @@
 #include "file_system.h"
 #include "print.h"
 #include "thread.h"
+#include "user/thread.h"
 #include <string.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -298,7 +299,6 @@ typedef struct {
   size_t value;
 } KernelSymbolInfo;
 static const KernelSymbolInfo kernel_symbols[] = {
-  {"config", (size_t)&config},
   {"log_event", (size_t)log_event},
   {"yield_next", (size_t)yield_next},
   {"add_named_thread", (size_t)add_named_thread},

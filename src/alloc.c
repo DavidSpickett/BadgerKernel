@@ -77,7 +77,7 @@ void* malloc(size_t size) {
   if (alloc_idx != SIZE_MAX) {
     // Actually claim the space
     block_tags[alloc_idx].tag = num_blocks;
-    block_tags[alloc_idx].tid = get_thread_id();
+    block_tags[alloc_idx].tid = k_get_thread_id();
     return to_heap_ptr(alloc_idx);
   }
 
@@ -92,7 +92,7 @@ bool can_realloc_free(void* ptr) {
       // Can't free something outside the heap
       (ptr >= (void*)heap_end) ||
       // Can't free another thread's memory
-      (block_tags[tag_idx].tid != get_thread_id())
+      (block_tags[tag_idx].tid != k_get_thread_id())
      ) {
     return false;
   }
@@ -128,7 +128,7 @@ void* realloc(void* ptr, size_t size) {
     memcpy(new_ptr, ptr, copy_size);
     // Set new allocation tag
     block_tags[alloc_idx].tag = num_blocks;
-    block_tags[alloc_idx].tid = get_thread_id();
+    block_tags[alloc_idx].tid = k_get_thread_id();
 
     // Return the new address
     return new_ptr;

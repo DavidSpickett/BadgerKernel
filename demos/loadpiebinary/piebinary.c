@@ -1,4 +1,4 @@
-#include "thread.h"
+#include "user/thread.h"
 #include <limits.h>
 
 const char* globalmsg = "Using a global!";
@@ -16,7 +16,11 @@ void foo() {
 void disable_logging(void) {
   // Creates a .got section
   log_event("Disabling scheduler logging");
-  config.log_scheduler = false;
+  KernelConfig cfg = {
+    .destroy_on_stack_err=false,
+    .log_scheduler=false,
+  };
+  set_kernel_config(&cfg);
 }
 
 // This does *not* need a relocation because

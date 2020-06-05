@@ -1,4 +1,5 @@
-#include "thread.h"
+#include "user/thread.h"
+#include "thread.h" // For setup's add thread
 #include "util.h"
 
 __attribute__((noreturn)) void thread_worker_1() {
@@ -22,6 +23,6 @@ __attribute__((noreturn)) void thread_worker_0() {
 }
 
 void setup(void) {
-  add_thread(thread_worker_0);
-  add_thread(thread_worker_1);
+  k_add_thread(thread_worker_0);
+  k_add_thread(thread_worker_1);
 }

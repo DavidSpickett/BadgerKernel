@@ -8,57 +8,12 @@
 #if CODE_PAGE_SIZE
 #include "elf.h"
 #endif
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
 #include <string.h>
 #include <stdarg.h>
 
 #ifndef linux
 #include "alloc.h"
-#define THREAD_STACK_SIZE 1024 * STACK_SIZE
-// 2 registers on AArch64
-#define MONITOR_STACK_SIZE 2 * 8
-#define STACK_CANARY       0xcafebeefdeadf00d
 #endif
-
-#define THREAD_NAME_SIZE      12
-#define THREAD_MSG_QUEUE_SIZE 5
-
-typedef struct {
-  int src;
-  int content;
-} Message;
-
-typedef struct {
-#ifdef linux
-  pthread_t self;
-#else
-  uint8_t* stack_ptr;
-#endif
-  // Not an enum directly because we need to know its size
-  size_t state;
-  int id;
-  const char* name;
-  // Deliberately not (void)
-  void (*work)();
-  ThreadArgs args;
-  Message messages[THREAD_MSG_QUEUE_SIZE];
-  Message* next_msg;
-  Message* end_msgs;
-  bool msgs_full;
-#if CODE_PAGE_SIZE
-  bool in_code_page;
-#if CODE_BACKING_PAGES
-  size_t code_backing_page;
-#endif
-#endif /* CODE_PAGE_SIZE */
-#ifndef linux
-  uint64_t bottom_canary;
-  uint8_t stack[THREAD_STACK_SIZE];
-  uint64_t top_canary;
-#endif
-} Thread;
 
 __attribute__((section(".thread_vars"))) Thread* _current_thread;
 
@@ -67,7 +22,7 @@ __attribute__((section(".thread_structs"))) Thread all_threads[MAX_THREADS];
 __attribute__((section(".thread_vars"))) Thread* volatile next_thread;
 
 __attribute__((section(".thread_vars")))
-MonitorConfig config = {.destroy_on_stack_err = false,
+KernelConfig kernel_config = {.destroy_on_stack_err = false,
                         .log_scheduler = true};
 
 #if CODE_PAGE_SIZE
@@ -79,6 +34,10 @@ uint8_t code_page_backing[CODE_BACKING_PAGES][CODE_PAGE_SIZE];
 #endif
 #endif /* CODE_PAGE_SIZE */
 
+void k_set_kernel_config(const KernelConfig* config) {
+  kernel_config = *config;
+}
+
 bool is_valid_thread(int tid) {
   return (tid >= 0) && (tid < MAX_THREADS) && all_threads[tid].id != -1;
 }
@@ -88,26 +47,38 @@ static bool can_schedule_thread(int tid) {
                                   all_threads[tid].state == init);
 }
 
+bool k_get_thread_state(int tid, ThreadState* state) {
+  if (is_valid_thread(tid)) {
+    *state = all_threads[tid].state;
+    return true;
+  }
+  return false;
+}
+
 Thread* current_thread(void);
 
-const char* get_thread_name(void) {
+const char* k_get_thread_name(void) {
   return current_thread()->name;
 }
 
-int get_thread_id(void) {
+int k_get_thread_id(void) {
   Thread* curr = current_thread();
+  // TODO: audit uses of this in kernel
+  // it should now only be used to get the ID of the current
+  // *user* thread
+  assert(curr);
   return curr ? curr->id : -1;
 }
 
 void init_thread(Thread* thread, int tid, const char* name,
-                 void (*do_work)(void), ThreadArgs args) {
+                 void (*do_work)(void), const ThreadArgs* args) {
   // thread_start will jump to this
   thread->work = do_work;
   thread->state = init;
 
   thread->id = tid;
   thread->name = name;
-  thread->args = args;
+  thread->args = *args;
 
   // Start message buffer empty
   thread->next_msg = &(thread->messages[0]);
@@ -141,7 +112,7 @@ extern void start_thread_switch(void);
 __attribute__((noreturn)) void entry(void) {
   for (size_t idx = 0; idx < MAX_THREADS; ++idx) {
     ThreadArgs noargs = {0, 0, 0, 0};
-    init_thread(&all_threads[idx], -1, NULL, NULL, noargs);
+    init_thread(&all_threads[idx], -1, NULL, NULL, &noargs);
   }
 
 #ifdef linux
@@ -198,7 +169,7 @@ bool send_msg(int destination, int message) {
 
   Thread* dest = &all_threads[destination];
   Message* our_msg = dest->end_msgs;
-  our_msg->src = get_thread_id();
+  our_msg->src = k_get_thread_id();
   our_msg->content = message;
   inc_msg_pointer(dest, &(dest->end_msgs));
   dest->msgs_full = dest->next_msg == dest->end_msgs;
@@ -213,29 +184,7 @@ extern void thread_switch(void);
 void check_stack(void);
 #endif
 
-void thread_yield(Thread* next) {
-  bool log = get_thread_id() != -1 || config.log_scheduler;
-
-#ifndef linux
-  check_stack();
-#endif
-
-  if (log) {
-    log_event("yielding");
-  }
-  next_thread = next;
-  thread_switch();
-  if (log) {
-    log_event("resuming");
-  }
-}
-
-void yield(void) {
-  // To be called in user threads
-  thread_yield(NULL);
-}
-
-void format_thread_name(char* out) {
+void k_format_thread_name(char* out) {
   // fill with spaces (no +1 as we'll terminate it later)
   for (size_t idx = 0; idx < THREAD_NAME_SIZE; ++idx) {
     out[idx] = ' ';
@@ -244,7 +193,7 @@ void format_thread_name(char* out) {
   const char* name = current_thread()->name;
 
   if (name == NULL) {
-    int tid = get_thread_id();
+    int tid = k_get_thread_id();
 
     // If the thread had a stack issue
     if (tid == -1) {
@@ -273,9 +222,9 @@ void format_thread_name(char* out) {
   out[THREAD_NAME_SIZE] = '\0';
 }
 
-void log_event(const char* event, ...) {
+void k_log_event(const char* event, ...) {
   char thread_name[THREAD_NAME_SIZE + 1];
-  format_thread_name(thread_name);
+  k_format_thread_name(thread_name);
   printf("Thread %s: ", thread_name);
 
   va_list args;
@@ -287,7 +236,7 @@ void log_event(const char* event, ...) {
 }
 
 void log_scheduler_event(const char* event) {
-  if (config.log_scheduler) {
+  if (kernel_config.log_scheduler) {
     printf("Thread  <scheduler>: %s\n", event);
   }
 }
@@ -411,26 +360,50 @@ bool thread_cancel(int tid) {
   return set;
 }
 
-bool yield_to(int tid) {
+void k_thread_yield(Thread* next) {
+  // TODO: thread ID shouldn't be -1 here
+  //bool log = get_thread_id() != -1 || kernel_config.log_scheduler;
+  // TODO: fix how we decide how to log these, since it's not kernel doing it
+
+// TODO: fix linux port, ergh
+#ifndef linux
+  check_stack();
+#endif
+
+  bool log=true;
+
+  if (log) {
+    k_log_event("yielding");
+  }
+  // TODO: this seems dangerous in a pre-emptive world
+  // we should probably syscall with next as the argument
+  next_thread = next;
+  thread_switch();
+  if (log) {
+    k_log_event("resuming");
+  }
+}
+
+bool k_yield_to(int tid) {
   if (!can_schedule_thread(tid)) {
     return false;
   }
 
   Thread* candidate = &all_threads[tid];
-  thread_yield(candidate);
+  k_thread_yield(candidate);
   return true;
 }
 
-bool yield_next(void) {
+bool k_yield_next(void) {
   // Yield to next valid thread, wrapping around the list
-  int id = get_thread_id();
+  int id = k_get_thread_id();
 
   // Check every other thread than this one
   size_t limit = id + MAX_THREADS;
   for (size_t idx = id + 1; idx < limit; ++idx) {
     size_t idx_in_range = idx % MAX_THREADS;
     if (can_schedule_thread(idx_in_range)) {
-      thread_yield(&all_threads[idx_in_range]);
+      k_thread_yield(&all_threads[idx_in_range]);
       return true;
     }
   }
@@ -514,7 +487,7 @@ int k_add_thread(void (*worker)(void)) {
 
 int k_add_named_thread(void (*worker)(), const char* name) {
   ThreadArgs args = {0, 0, 0, 0};
-  return k_add_named_thread_with_args(worker, name, args);
+  return k_add_named_thread_with_args(worker, name, &args);
 }
 
 #if CODE_PAGE_SIZE
@@ -541,7 +514,7 @@ static void setup_code_page(size_t idx) {
 void* thread_entry();
 #endif
 int k_add_named_thread_with_args(void (*worker)(), const char* name,
-                               ThreadArgs args) {
+                               const ThreadArgs* args) {
   for (size_t idx = 0; idx < MAX_THREADS; ++idx) {
     if (all_threads[idx].id == -1 ||
         all_threads[idx].state == cancelled ||
@@ -564,25 +537,6 @@ void thread_wait(void) {
   // Skip the yielding print
   next_thread = NULL;
   thread_switch();
-}
-
-bool thread_join(int tid, ThreadState* state) {
-  while (1) {
-    // Initial ID is invalid, or it was destroyed due to stack err
-    if (!is_valid_thread(tid)) {
-      return false;
-    }
-
-    ThreadState ts = all_threads[tid].state;
-    if (ts == finished || ts == cancelled) {
-      if (state) {
-        *state = ts;
-      }
-      return true;
-    } else {
-      yield();
-    }
-  }
 }
 
 #ifdef linux
@@ -615,7 +569,7 @@ void* thread_entry() {
                          current_thread()->args.a3, current_thread()->args.a4);
 
   // Yield back to the scheduler
-  log_event("exiting");
+  k_log_event("exiting");
 
   // Make sure we're not scheduled again
   current_thread()->state = finished;
@@ -652,7 +606,7 @@ Thread* current_thread(void) {
 
 void stack_extent_failed(void) {
   // current_thread is likely still valid here
-  log_event("Not enough stack to save context!");
+  k_log_event("Not enough stack to save context!");
   exit(1);
 }
 
@@ -666,13 +620,13 @@ void check_stack(void) {
     current_thread()->name = NULL;
 
     if (underflow) {
-      log_event("Stack underflow!");
+      k_log_event("Stack underflow!");
     }
     if (overflow) {
-      log_event("Stack overflow!");
+      k_log_event("Stack overflow!");
     }
 
-    if (config.destroy_on_stack_err) {
+    if (kernel_config.destroy_on_stack_err) {
      /* Setting -1 here, instead of state=finished is fine,
          because A: the thread didn't actually finish
                  B: the thread struct is actually invalid */
@@ -697,7 +651,7 @@ __attribute__((noreturn)) void thread_start(void) {
                          current_thread()->args.a3, current_thread()->args.a4);
 
   // Yield back to the scheduler
-  log_event("exiting");
+  k_log_event("exiting");
 
   // Make sure we're not scheduled again
   current_thread()->state = finished;

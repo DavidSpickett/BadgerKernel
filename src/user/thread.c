@@ -1,5 +1,63 @@
 #include "user/thread.h"
 #include "syscall.h"
+#include "print.h"
+#include <stdarg.h>
+#include <string.h>
+
+#define THREAD_NAME_SIZE 12
+
+void format_thread_name(char* out) {
+  // fill with spaces (no +1 as we'll terminate it later)
+  for (size_t idx = 0; idx < THREAD_NAME_SIZE; ++idx) {
+    out[idx] = ' ';
+  }
+
+  const char* name = get_thread_name();
+
+  if (name == NULL) {
+    int tid = get_thread_id();
+
+    // If the thread had a stack issue
+    if (tid == -1) {
+      const char* hidden = "<HIDDEN>";
+      size_t h_len = strlen(hidden);
+      size_t padding = THREAD_NAME_SIZE - h_len;
+      strncpy(&out[padding], hidden, h_len);
+    } else {
+      // Just show the ID number (assume max 999 threads)
+      char idstr[4];
+      int len = sprintf(idstr, "%u", tid);
+      strcpy(&out[THREAD_NAME_SIZE - len], idstr);
+    }
+  } else {
+    size_t name_len = strlen(name);
+
+    // cut off long names
+    if (name_len > THREAD_NAME_SIZE) {
+      name_len = THREAD_NAME_SIZE;
+    }
+
+    size_t padding = THREAD_NAME_SIZE - name_len;
+    strncpy(&out[padding], name, name_len);
+  }
+
+  out[THREAD_NAME_SIZE] = '\0';
+}
+
+// TODO: maybe logging should go via syscall
+// to prevent splitting messages?
+void log_event(const char* event, ...) {
+  char thread_name[THREAD_NAME_SIZE + 1];
+  format_thread_name(thread_name);
+  printf("Thread %s: ", thread_name);
+
+  va_list args;
+  va_start(args, event);
+  vprintf(event, args);
+  va_end(args);
+
+  printf("\n");
+}
 
 int add_named_thread(void (*worker)(void), const char* name) {
   return DO_SYSCALL_2(add_named_thread, worker, name);
@@ -15,9 +73,51 @@ int add_thread_from_file(const char* filename) {
 }
 #endif
 
-// TODO: this will be broken as thread args is a copy !!!!!
 int add_named_thread_with_args(
-      void (*worker)(), const char* name, ThreadArgs args) {
+      void (*worker)(), const char* name, const ThreadArgs *args) {
   return DO_SYSCALL_3(add_named_thread_with_args, worker, name, args);
 }
 
+int get_thread_id(void) {
+  return DO_SYSCALL_0(get_thread_id);
+}
+
+const char* get_thread_name(void) {
+  return (const char*)DO_SYSCALL_0(get_thread_name);
+}
+
+void set_kernel_config(const KernelConfig* config) {
+  DO_SYSCALL_1(set_kernel_config, config);
+}
+
+bool get_thread_state(int tid, ThreadState* state) {
+  return DO_SYSCALL_2(get_thread_state, tid, state);
+}
+
+void yield(void) {
+  DO_SYSCALL_1(thread_yield, NULL);
+}
+
+bool yield_to(int tid) {
+  return DO_SYSCALL_1(yield_to, tid);
+}
+
+bool yield_next(void) {
+  return DO_SYSCALL_0(yield_next);
+}
+
+bool thread_join(int tid, ThreadState* state) {
+  // Assuming state is valid, nonnull attr used in hdr
+  while (1) {
+    bool valid = get_thread_state(tid, state);
+    if (!valid) {
+      return false;
+    }
+
+    if (*state == finished || *state == cancelled) {
+      return true;
+    } else {
+      yield();
+    }
+  }
+}

@@ -24,7 +24,8 @@ void broadcast(ConditionVariable* cond_var) {
 }
 
 void wait(ConditionVariable* cond_var) {
-  cond_var->waiting[cond_var->last] = get_thread_id();
+  // TODO: kernel or user?
+  cond_var->waiting[cond_var->last] = k_get_thread_id();
   cond_var->last = (cond_var->last + 1) % MAX_THREADS;
   cond_var->full = cond_var->first == cond_var->last;
   thread_wait();

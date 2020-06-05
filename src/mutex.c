@@ -11,7 +11,8 @@ void init_mutex(Mutex* mut) {
 }
 
 bool unlock_mutex(Mutex* m) {
-  int id = get_thread_id();
+  // TODO: does this take place in kernel or not?
+  int id = k_get_thread_id();
 
   if (id == ID(m->data)) {
     m->data = DATA(-1);
@@ -22,7 +23,8 @@ bool unlock_mutex(Mutex* m) {
 }
 
 bool lock_mutex(Mutex* m) {
-  int id = get_thread_id();
+  // TODO: kernel or user?
+  int id = k_get_thread_id();
 
   if (m->data == DATA(-1)) {
     m->data = DATA(id);
