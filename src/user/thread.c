@@ -102,11 +102,20 @@ void yield(void) {
 }
 
 bool yield_to(int tid) {
-  return DO_SYSCALL_1(yield_to, tid);
+  // TODO: printing like this isn't ideal
+  // given that it prints even if it doesn't yield
+  log_event("yielding");
+  bool got = DO_SYSCALL_1(yield_to, tid);
+  // And this is printed even if you didn't yield before
+  log_event("resuming");
+  return got;
 }
 
 bool yield_next(void) {
-  return DO_SYSCALL_0(yield_next);
+  log_event("yielding");
+  bool got = DO_SYSCALL_0(yield_next);
+  log_event("resuming");
+  return got;
 }
 
 bool thread_join(int tid, ThreadState* state) {

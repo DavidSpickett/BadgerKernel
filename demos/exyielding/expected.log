@@ -16,5 +16,9 @@ Thread         last: exiting
 Thread  <scheduler>: scheduling new thread
 Thread  <scheduler>: next thread chosen
 Thread       second: resuming
+Thread       second: yielding
+Thread       second: resuming
+Thread       second: yielding
+Thread       second: resuming
 Thread       second: exiting
 Thread  <scheduler>: all threads finished

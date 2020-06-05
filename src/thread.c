@@ -373,31 +373,41 @@ void k_thread_yield(Thread* next) {
 }
 
 bool k_yield_to(int tid) {
+  //printf("Try to yield_to %u\n", tid);
   if (!can_schedule_thread(tid)) {
     return false;
   }
 
-  Thread* candidate = &all_threads[tid];
-  k_thread_yield(candidate);
+  //printf("actually yielding to %u\n", tid);
+
+  // Will be picked up and switched to
+  next_thread = &all_threads[tid];
+
+  // TODO: probably missing log output because we aren't calling thread_yield anymore
   return true;
 }
 
 bool k_yield_next(void) {
   // Yield to next valid thread, wrapping around the list
+  // Pretty much what the scheduler does, but you will return
+  // to current thread if there isn't another one to go to
   int id = k_get_thread_id();
+  bool found = false;
 
   // Check every other thread than this one
   size_t limit = id + MAX_THREADS;
   for (size_t idx = id + 1; idx < limit; ++idx) {
     size_t idx_in_range = idx % MAX_THREADS;
     if (can_schedule_thread(idx_in_range)) {
-      k_thread_yield(&all_threads[idx_in_range]);
-      return true;
+      next_thread = &all_threads[idx_in_range];
+      found = true;
+      break;
     }
   }
 
-  // Don't switch just continue to run current thread
-  return false;
+  // If we set next_thread then we'll switch after this return
+  // If not, back to the same thread
+  return found;
 }
 
 // TODO: these ifdefs are a bit much
