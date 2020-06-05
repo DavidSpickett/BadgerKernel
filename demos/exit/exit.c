@@ -1,3 +1,4 @@
+#include "user/thread.h"
 #include "thread.h"
 #include "util.h"
 #include <stddef.h>
@@ -21,13 +22,15 @@ void counter() {
 }
 
 void setup(void) {
-  config.log_scheduler = false;
+  KernelConfig cfg = { .log_scheduler=false,
+                       .destroy_on_stack_err=false};
+  k_set_kernel_config(&cfg);
 
   ThreadArgs ta1 = make_args(2, 0, 0, 0);
-  add_named_thread_with_args(work, NULL, ta1);
+  k_add_named_thread_with_args(work, NULL, &ta1);
 
   ThreadArgs ta2 = make_args(4, 0, 0, 0);
-  add_named_thread_with_args(work, NULL, ta2);
+  k_add_named_thread_with_args(work, NULL, &ta2);
 
-  add_thread(counter);
+  k_add_thread(counter);
 }
