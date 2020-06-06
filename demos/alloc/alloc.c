@@ -1,5 +1,6 @@
-#include "alloc.h"
+#include "user/thread.h"
 #include "thread.h"
+#include "alloc.h"
 #include "util.h"
 #include <stdint.h>
 
@@ -331,6 +332,8 @@ void dispatcher() {
 }
 
 void setup(void) {
-  config.log_scheduler = false;
-  add_named_thread(dispatcher, "dispatcher");
+  KernelConfig cfg = { .log_scheduler=false,
+                       .destroy_on_stack_err=false};
+  k_set_kernel_config(&cfg);
+  k_add_named_thread(dispatcher, "dispatcher");
 }
