@@ -1,7 +1,8 @@
 // This demo is for the in memory file system
 #include "alloc.h"
-#include "file_system.h"
+#include "user/thread.h"
 #include "thread.h"
+#include "file_system.h"
 #include "util.h"
 #include <string.h>
 
@@ -130,9 +131,11 @@ FS_TEST(nested_files)
 FS_TEST(list_files)
 
 void setup() {
-  config.log_scheduler = false;
+  KernelConfig cfg = { .log_scheduler=false,
+                       .destroy_on_stack_err=false};
+  k_set_kernel_config(&cfg);
 
-#define ADD_TEST(test) add_named_thread(test_##test, #test)
+#define ADD_TEST(test) k_add_named_thread(test_##test, #test)
   ADD_TEST(errors);
   ADD_TEST(basics);
   ADD_TEST(nested_files);
