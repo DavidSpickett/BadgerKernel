@@ -299,11 +299,13 @@ typedef struct {
   size_t value;
 } KernelSymbolInfo;
 static const KernelSymbolInfo kernel_symbols[] = {
+  // TODO: Binaries could just link user/thread.c directly
   {"log_event", (size_t)log_event},
   {"yield_next", (size_t)yield_next},
   {"add_named_thread", (size_t)add_named_thread},
   {"printf", (size_t)printf},
   {"exit", (size_t)exit},
+  {"set_kernel_config", (size_t)set_kernel_config},
 };
 
 static size_t get_kernel_symbol_value(const char* name) {

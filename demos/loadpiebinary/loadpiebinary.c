@@ -1,5 +1,5 @@
-#include "user/thread.h"
+#include "thread.h"
 
 void setup(void) {
-  add_thread_from_file("piebinary");
+  k_add_thread_from_file("piebinary");
 }
