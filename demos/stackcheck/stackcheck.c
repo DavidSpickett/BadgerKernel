@@ -1,3 +1,4 @@
+#include "user/thread.h"
 #include "thread.h"
 #include "util.h"
 #include <stddef.h>
@@ -57,10 +58,11 @@ void watcher() {
 }
 
 void setup(void) {
-  config.log_scheduler = false;
-  config.destroy_on_stack_err = true;
+  KernelConfig cfg = { .log_scheduler=false,
+                       .destroy_on_stack_err=true};
+  k_set_kernel_config(&cfg);
 
-  add_named_thread(underflow, "underflow");
-  add_named_thread(watcher, "watcher");
-  add_named_thread(overflow, "overflow");
+  k_add_named_thread(underflow, "underflow");
+  k_add_named_thread(watcher, "watcher");
+  k_add_named_thread(overflow, "overflow");
 }

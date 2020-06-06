@@ -1,7 +1,9 @@
 Thread    underflow: recursing
+Thread            0: yielding
 Thread     <HIDDEN>: Stack underflow!
 Thread      watcher: yielding
 Thread     overflow: overflowing
+Thread     overflow: yielding
 Thread     <HIDDEN>: Stack overflow!
 Thread      watcher: resuming
 Thread      watcher: All threads errored
