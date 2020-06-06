@@ -1,3 +1,4 @@
+#include "user/thread.h"
 #include "thread.h"
 #include "util.h"
 
@@ -40,9 +41,11 @@ void canceller() {
 }
 
 void setup(void) {
-  config.log_scheduler = false;
+  KernelConfig cfg = { .log_scheduler=false,
+                       .destroy_on_stack_err=false};
+  k_set_kernel_config(&cfg);
 
-  add_thread(work);
-  add_thread(canceller);
-  add_thread(work);
+  k_add_thread(work);
+  k_add_thread(canceller);
+  k_add_thread(work);
 }
