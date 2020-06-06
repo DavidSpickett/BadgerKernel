@@ -1,5 +1,6 @@
-#include "mutex.h"
+#include "user/thread.h"
 #include "thread.h"
+#include "mutex.h"
 #include "util.h"
 #include <string.h>
 
@@ -28,15 +29,17 @@ void thread_work(const char* word) {
 }
 
 void setup(void) {
-  config.log_scheduler = false;
+  KernelConfig cfg = { .log_scheduler=false,
+                       .destroy_on_stack_err=false};
+  k_set_kernel_config(&cfg);
 
   init_mutex(&buffer_mutex);
 
   const char* word1 = "dog";
   ThreadArgs args1 = make_args(word1, 0, 0, 0);
-  add_named_thread_with_args(thread_work, NULL, args1);
+  k_add_named_thread_with_args(thread_work, NULL, &args1);
 
   const char* word2 = "cat";
   ThreadArgs args2 = make_args(word2, 0, 0, 0);
-  add_named_thread_with_args(thread_work, NULL, args2);
+  k_add_named_thread_with_args(thread_work, NULL, &args2);
 }
