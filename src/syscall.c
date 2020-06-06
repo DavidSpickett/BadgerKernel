@@ -9,7 +9,7 @@ size_t generic_syscall(Syscall num, size_t arg1, size_t arg2, size_t arg3, size_
   register size_t r2 __asm("r2") = arg3;
   register size_t r3 __asm("r3") = arg4;
 
-  /* r7 is loaded seperatley to allow us to inline this
+  /* r7 is loaded separatley to allow us to inline this
      function safely. It is not a caller saved register
      and can be corrupted by function calls placed between
      setting r7 and using it in the svc, particularly
@@ -18,9 +18,13 @@ size_t generic_syscall(Syscall num, size_t arg1, size_t arg2, size_t arg3, size_
   asm volatile(
     "mov r7, %[num]\n\t"
     "svc %[svc_syscall]\n\t"
-    :"+r"(r0)
+    :"=r"(r0)
     :"r"(r0), "r"(r1), "r"(r2), "r"(r3),
      [svc_syscall]"i"(svc_syscall), [num]"r"(num)
+    /* Also clobbers other registers but lets assume this
+       function isn't using them after this point
+       (caller saved handled by kernel) */
+    :"r7"
   );
   return r0;
 }
