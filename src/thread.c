@@ -59,6 +59,11 @@ bool k_get_thread_state(int tid, ThreadState* state) {
 
 Thread* current_thread(void);
 
+void k_invalid_syscall(void) {
+  printf("Unknown syscall invoked!\n");
+  exit(1);
+}
+
 const char* k_get_thread_name(void) {
   return current_thread()->name;
 }
@@ -139,7 +144,7 @@ static void inc_msg_pointer(Thread* thr, Message** ptr) {
   }
 }
 
-bool get_msg(int* sender, int* message) {
+bool k_get_msg(int* sender, int* message) {
   // If message box is not empty, or it is full
   if (current_thread()->next_msg != current_thread()->end_msgs ||
       current_thread()->msgs_full) {
@@ -155,7 +160,7 @@ bool get_msg(int* sender, int* message) {
   return false;
 }
 
-bool send_msg(int destination, int message) {
+bool k_send_msg(int destination, int message) {
   if (
       // Invalid destination
       destination >= MAX_THREADS || destination < 0 ||

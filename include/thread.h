@@ -69,14 +69,17 @@ bool k_yield_to(int tid);
 void thread_wait(void);
 bool thread_wake(int tid);
 bool thread_cancel(int tid);
+// TODO: dedupe?
 void k_log_event(const char* event, ...);
-bool get_msg(int* sender, int* message);
-bool send_msg(int destination, int message);
+bool k_get_msg(int* sender, int* message);
+bool k_send_msg(int destination, int message);
 
 void k_set_kernel_config(const KernelConfig* config);
 bool k_get_thread_state(int tid, ThreadState* state);
 
 void k_thread_yield(Thread* next);
 bool k_yield_to(int tid);
+
+void k_invalid_syscall(void);
 
 #endif /* ifdef THREAD_H */

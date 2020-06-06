@@ -36,4 +36,7 @@ bool yield_to(int tid);
 // any more threads left, that's the only unique thing it does
 bool yield_next(void);
 
+bool get_msg(int* sender, int* message);
+bool send_msg(int destination, int message);
+
 #endif /* ifdef USER_THREAD_H */

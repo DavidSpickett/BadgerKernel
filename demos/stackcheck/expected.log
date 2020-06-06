@@ -1,5 +1,5 @@
 Thread    underflow: recursing
-Thread            0: yielding
+Thread  underflowed: yielding
 Thread     <HIDDEN>: Stack underflow!
 Thread      watcher: yielding
 Thread     overflow: overflowing

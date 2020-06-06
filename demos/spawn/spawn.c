@@ -5,7 +5,7 @@
 
 void work() {
   int sender, message;
-  get_msg(&sender, &message);
+  assert(get_msg(&sender, &message));
 
   while (message--) {
     yield();

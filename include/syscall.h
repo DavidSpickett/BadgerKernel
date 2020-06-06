@@ -7,8 +7,7 @@
 #ifdef CODE_PAGE_SIZE
   .word k_add_thread_from_file
 #else
-  // TODO: some syscall_err_func?
-  b .
+  .word k_invalid_syscall
 #endif
   .word k_add_named_thread_with_args
   .word k_get_thread_id
@@ -18,10 +17,12 @@
   .word k_thread_yield
   .word k_yield_to
   .word k_yield_next
-  b . // TODO: pad a few error handlers here?
-  b .
-  b .
-  b .
+  .word k_get_msg
+  .word k_send_msg
+  .word k_invalid_syscall
+  .word k_invalid_syscall
+  .word k_invalid_syscall
+  .word k_invalid_syscall
 #else
 
 #include <stddef.h>
@@ -44,6 +45,8 @@ typedef enum {
   syscall_thread_yield,
   syscall_yield_to,
   syscall_yield_next,
+  syscall_get_msg,
+  syscall_send_msg,
   syscall_eol,
 } Syscall;
 

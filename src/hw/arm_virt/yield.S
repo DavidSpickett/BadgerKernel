@@ -180,6 +180,7 @@ load_next_thread:
   // On the very first switch we get here from kernel mode,
   // and it's stack is not released. Not sure exactly why that breaks things.
   // TODO: should the same init be done for syscall handlers too?
+  // TODO: apparnetly not, I'm not sure this is needed either
   ldr r0, =stack_top
   mov sp, r0
   bl do_scheduler          // This will set next_thread

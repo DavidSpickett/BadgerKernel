@@ -3,6 +3,8 @@
 #include "util.h"
 #include "syscall.h"
 
+// TODO: this breaks on LTO beyond O0
+__attribute__((optimize("-O0")))
 size_t generic_syscall(Syscall num, size_t arg1, size_t arg2, size_t arg3, size_t arg4) {
   register unsigned r0 __asm("r0") = arg1;
   register unsigned r1 __asm("r1") = arg2;
