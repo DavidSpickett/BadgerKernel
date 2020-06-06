@@ -119,14 +119,18 @@ bool yield_next(void) {
 }
 
 bool thread_join(int tid, ThreadState* state) {
-  // Assuming state is valid, nonnull attr used in hdr
+  // state may be NULL so use a local
+  ThreadState got;
   while (1) {
-    bool valid = get_thread_state(tid, state);
+    bool valid = get_thread_state(tid, &got);
     if (!valid) {
       return false;
     }
 
-    if (*state == finished || *state == cancelled) {
+    if (got == finished || got == cancelled) {
+      if (state) {
+        *state = got;
+      }
       return true;
     } else {
       yield();

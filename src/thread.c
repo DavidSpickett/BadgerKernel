@@ -367,7 +367,7 @@ void k_thread_yield(Thread* next) {
 #endif
 
   next_thread = next;
-  do_scheduler();
+  do_scheduler(); // TODO: ensure scheduler is called whenever next is set
   // Assembly handler will see next set and
   // do a switch
 }
@@ -382,6 +382,9 @@ bool k_yield_to(int tid) {
 
   // Will be picked up and switched to
   next_thread = &all_threads[tid];
+
+  // Just to do housekeeping
+  do_scheduler();
 
   // TODO: probably missing log output because we aren't calling thread_yield anymore
   return true;
@@ -400,6 +403,7 @@ bool k_yield_next(void) {
     size_t idx_in_range = idx % MAX_THREADS;
     if (can_schedule_thread(idx_in_range)) {
       next_thread = &all_threads[idx_in_range];
+      do_scheduler(); // for housekeeping
       found = true;
       break;
     }

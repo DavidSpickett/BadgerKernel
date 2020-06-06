@@ -18,8 +18,7 @@ int get_thread_id(void);
 const char* get_thread_name(void);
 
 void yield(void);
-bool thread_join(int tid, ThreadState* state)
-  __attribute__((nonnull));
+bool thread_join(int tid, ThreadState* state);
 bool get_thread_state(int tid, ThreadState* state)
   __attribute__((nonnull));
 
