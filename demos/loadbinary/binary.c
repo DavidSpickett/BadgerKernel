@@ -1,4 +1,4 @@
-#include "thread.h"
+#include "user/thread.h"
 
 const char* globalmsg = "Using a global!";
 

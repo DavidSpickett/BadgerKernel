@@ -118,22 +118,7 @@ syscall_ret:
   b exception_return
 
 syscall_handlers:
-  // TODO: using addresses might be a way to make this a generic include file
-  .word k_add_named_thread
-  .word k_add_thread
-  // .word k_add_thread_from_file //TODO: how do you deal with optional stuff?
-  .word k_add_named_thread_with_args
-  .word k_get_thread_id
-  .word k_get_thread_name
-  .word k_set_kernel_config
-  .word k_get_thread_state
-  .word k_thread_yield
-  .word k_yield_to
-  .word k_yield_next
-  b . // TODO: pad a few error handlers here?
-  b . // TODO: pad a few error handlers here?
-  b . // TODO: pad a few error handlers here?
-  b . // TODO: pad a few error handlers here?
+#include "syscall.h"
 
 .global start_thread_switch
 start_thread_switch:

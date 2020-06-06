@@ -1,6 +1,29 @@
 #ifndef SYSCALL_H
 #define SYSCALL_H
 
+#ifdef __ASSEMBLER__
+  .word k_add_named_thread
+  .word k_add_thread
+#ifdef CODE_PAGE_SIZE
+  .word k_add_thread_from_file
+#else
+  // TODO: some syscall_err_func?
+  b .
+#endif
+  .word k_add_named_thread_with_args
+  .word k_get_thread_id
+  .word k_get_thread_name
+  .word k_set_kernel_config
+  .word k_get_thread_state
+  .word k_thread_yield
+  .word k_yield_to
+  .word k_yield_next
+  b . // TODO: pad a few error handlers here?
+  b .
+  b .
+  b .
+#else
+
 #include <stddef.h>
 
 /* Define SYSCALL_ABI to enable the use of syscalls
@@ -10,7 +33,8 @@
 typedef enum {
   syscall_add_named_thread = 0,
   syscall_add_thread,
-  // syscall_add_thread_from_file, // TODO: How to handle optional syscalls?
+  // Functionality optional but included always to keep order
+  syscall_add_thread_from_file,
   syscall_add_named_thread_with_args,
   syscall_get_thread_id,
   syscall_get_thread_name,
@@ -49,5 +73,7 @@ size_t generic_syscall(Syscall num, size_t arg1, size_t arg2, size_t arg3, size_
 #define DO_SYSCALL_4(NAME, ARG1, ARG2, ARG3, ARG4) \
   k_##NAME(ARG1, ARG2, ARG3, ARG4)
 #endif
+
+#endif /* ifdef __ASSEMBLER__ */
 
 #endif /* ifdef SYSCALL_H */

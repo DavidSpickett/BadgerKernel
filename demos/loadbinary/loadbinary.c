@@ -1,3 +1,4 @@
+#include "user/thread.h"
 #include "thread.h"
 #include "util.h"
 
@@ -19,8 +20,8 @@ void load_again() {
 }
 
 void setup(void) {
-  add_thread_from_file(filename);
-  add_named_thread(load_again, "load_again");
+  k_add_thread_from_file(filename);
+  k_add_named_thread(load_again, "load_again");
   // Fails because single code page is in use
-  assert(add_thread_from_file(filename) == -1);
+  assert(k_add_thread_from_file(filename) == -1);
 }
