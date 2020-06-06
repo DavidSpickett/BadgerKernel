@@ -175,13 +175,6 @@ load_next_thread:
   ldr r4, [r11]            // Value of next_thread for actually_load_thread to use if we don't branch
   bne actually_load_thread
   cps #SUPERVISOR_MODE     // Use kernel's stack
-  // TODO: check this logic again
-  // On the very first switch we get here from kernel mode,
-  // and it's stack is not released. Not sure exactly why that breaks things.
-  // TODO: should the same init be done for syscall handlers too?
-  // TODO: apparnetly not, I'm not sure this is needed either
-  ldr r0, =stack_top
-  mov sp, r0
   bl do_scheduler          // This will set next_thread
   cps #SYSTEM_MODE         // Back to user stack
   ldr r4, [r11]            // Get new next_thread
