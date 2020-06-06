@@ -1,5 +1,6 @@
-#include "condition_variable.h"
+#include "user/thread.h"
 #include "thread.h"
+#include "condition_variable.h"
 #include "util.h"
 
 ConditionVariable cond_var;
@@ -42,13 +43,15 @@ void signaller(void) {
 }
 
 void setup(void) {
-  config.log_scheduler = false;
+  KernelConfig cfg = { .log_scheduler=false,
+                       .destroy_on_stack_err=false};
+  k_set_kernel_config(&cfg);
 
   init_condition_variable(&cond_var);
 
   const unsigned num_waiting = 5;
   for (unsigned i = 0; i < num_waiting; ++i) {
-    add_thread(waiter);
+    k_add_thread(waiter);
   }
-  add_named_thread(signaller, "signaller");
+  k_add_named_thread(signaller, "signaller");
 }
