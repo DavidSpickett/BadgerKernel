@@ -108,7 +108,7 @@ generic_syscall:
   // Otherwise the syscall requires a thread switch
   POP_KERNEL_TEMPS
   mov r0, r7 // Patch in result for eventual resume
-  SAVE_KERNEL_TEMPS // So that start_thread_switch can unstack them, again.... TODO?
+  SAVE_KERNEL_TEMPS // So that start_thread_switch can unstack them again
   b start_thread_switch
 
 syscall_ret:
@@ -172,8 +172,7 @@ load_next_thread:
   ldr r0, [r11]
   mov r1, #0
   cmp r0, r1
-  ldr r4, [r11]            // Value of next_thread for actually_load to use if we don't branch
-                           // TODO: clean this up
+  ldr r4, [r11]            // Value of next_thread for actually_load_thread to use if we don't branch
   bne actually_load_thread
   cps #SUPERVISOR_MODE     // Use kernel's stack
   // TODO: check this logic again
