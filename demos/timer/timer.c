@@ -1,5 +1,6 @@
-#include "timer.h"
+#include "user/thread.h"
 #include "thread.h"
+#include "timer.h"
 #include "util.h"
 #include <string.h>
 
@@ -26,5 +27,5 @@ void thread_work() {
 }
 
 void setup(void) {
-  add_thread(thread_work);
+  k_add_thread(thread_work);
 }
