@@ -73,7 +73,9 @@ endif()
 set( CMAKE_C_COMPILER "${PREFIX}${COMPILER}" )
 
 # Ignore attr error so we can use oclint annotations
-set( CFLAGS "-DSTACK_SIZE=${STACK_SIZE} -g3 -O${OPT_LEVEL} -Wall -Werror -Wno-error=attributes -std=gnu11")
+# Ignore lto type mismatch error which triggers at O0 for UBSAN handlersa
+# I *think*, due to https://gcc.gnu.org/bugzilla/show_bug.cgi?id=78562#c6
+set( CFLAGS "-DSTACK_SIZE=${STACK_SIZE} -g3 -O${OPT_LEVEL} -Wall -Werror -Wno-error=attributes -Wno-error=lto-type-mismatch -std=gnu11")
 
 if (LINUX)
   set( CFLAGS "${CFLAGS} -pthread" )
