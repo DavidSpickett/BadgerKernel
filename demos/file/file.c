@@ -1,6 +1,7 @@
 /* Hello file demo! */
 // This demo is for semihosting file access
 #include "print.h"
+#include "user/thread.h"
 #include "thread.h"
 #include "util.h"
 #include <string.h>
@@ -68,15 +69,17 @@ void delete_new(void) {
 }
 
 void setup(void) {
-  config.log_scheduler = false;
+  KernelConfig cfg = { .log_scheduler=false,
+                       .destroy_on_stack_err=false};
+  k_set_kernel_config(&cfg);
 
   /* Check that kernel can return from semihosting,
      as opposed to exit() which never returns. */
   fail_open();
 
-  add_named_thread(read_file, "reader");
-  add_named_thread(fail_open, "fail_open");
-  add_named_thread(write_new, "write_new");
-  add_named_thread(read_new, "read_new");
-  add_named_thread(delete_new, "delete_new");
+  k_add_named_thread(read_file, "reader");
+  k_add_named_thread(fail_open, "fail_open");
+  k_add_named_thread(write_new, "write_new");
+  k_add_named_thread(read_new, "read_new");
+  k_add_named_thread(delete_new, "delete_new");
 }
