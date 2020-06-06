@@ -80,6 +80,7 @@ bool k_get_thread_state(int tid, ThreadState* state);
 void k_thread_yield(Thread* next);
 bool k_yield_to(int tid);
 
-void k_invalid_syscall(void);
+void k_invalid_syscall(size_t arg1, size_t arg2,
+                       size_t arg3, size_t arg4);
 
 #endif /* ifdef THREAD_H */

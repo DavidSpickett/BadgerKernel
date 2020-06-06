@@ -59,8 +59,10 @@ bool k_get_thread_state(int tid, ThreadState* state) {
 
 Thread* current_thread(void);
 
-void k_invalid_syscall(void) {
+void k_invalid_syscall(size_t arg1, size_t arg2, size_t arg3, size_t arg4) {
   printf("Unknown syscall invoked!\n");
+  printf("arg1: %u, arg2: %u, arg3: %u, arg4: %u\n",
+    arg1, arg2, arg3, arg4);
   exit(1);
 }
 

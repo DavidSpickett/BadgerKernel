@@ -3,21 +3,24 @@
 #include "util.h"
 #include "syscall.h"
 
-// TODO: this breaks on LTO beyond O0
-__attribute__((optimize("-O0")))
 size_t generic_syscall(Syscall num, size_t arg1, size_t arg2, size_t arg3, size_t arg4) {
-  register unsigned r0 __asm("r0") = arg1;
-  register unsigned r1 __asm("r1") = arg2;
-  register unsigned r2 __asm("r2") = arg3;
-  register unsigned r3 __asm("r3") = arg4;
-  register unsigned r7 __asm("r7") = num;
+  register size_t r0 __asm("r0") = arg1;
+  register size_t r1 __asm("r1") = arg2;
+  register size_t r2 __asm("r2") = arg3;
+  register size_t r3 __asm("r3") = arg4;
 
-  assert(num < syscall_eol);
-
+  /* r7 is loaded seperatley to allow us to inline this
+     function safely. It is not a caller saved register
+     and can be corrupted by function calls placed between
+     setting r7 and using it in the svc, particularly
+     when LTO is enabled.
+  */
   asm volatile(
+    "mov r7, %[num]\n\t"
     "svc %[svc_syscall]\n\t"
     :"+r"(r0)
-    :"r"(r0), "r"(r1), "r"(r2), "r"(r3), "r"(r7),
-     [svc_syscall]"i"(svc_syscall));
+    :"r"(r0), "r"(r1), "r"(r2), "r"(r3),
+     [svc_syscall]"i"(svc_syscall), [num]"r"(num)
+  );
   return r0;
 }
