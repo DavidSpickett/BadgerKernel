@@ -8,7 +8,7 @@ SECTIONS
  .data : { *(.data) }
  /* align 16 for AArch64 */
  . = ALIGN(16);
- . = . + 0x800; /* 1kB of stack for kernel */
+ . = . + 0x800; /* 2kB of stack for kernel */
  stack_top = .;
  .bss : {
     /* Thread structs go first! */

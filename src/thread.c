@@ -380,20 +380,11 @@ void k_thread_yield(Thread* next) {
 }
 
 bool k_yield_to(int tid) {
-  //printf("Try to yield_to %u\n", tid);
   if (!can_schedule_thread(tid)) {
     return false;
   }
 
-  //printf("actually yielding to %u\n", tid);
-
-  // Will be picked up and switched to
-  next_thread = &all_threads[tid];
-
-  // Just to do housekeeping
-  do_scheduler();
-
-  // TODO: probably missing log output because we aren't calling thread_yield anymore
+  k_thread_yield(&all_threads[tid]);
   return true;
 }
 
@@ -409,8 +400,7 @@ bool k_yield_next(void) {
   for (size_t idx = id + 1; idx < limit; ++idx) {
     size_t idx_in_range = idx % MAX_THREADS;
     if (can_schedule_thread(idx_in_range)) {
-      next_thread = &all_threads[idx_in_range];
-      do_scheduler(); // for housekeeping
+      k_thread_yield(&all_threads[idx_in_range]);
       found = true;
       break;
     }

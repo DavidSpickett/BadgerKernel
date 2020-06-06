@@ -1,4 +1,4 @@
-#include "thread.h"
+#include "user/thread.h"
 #include "print.h"
 
 void keep_page(int tid) {
@@ -33,5 +33,5 @@ void worker() {
   // be re-used while these are live.
   log_event("Adding keepalive thread");
   ThreadArgs args = make_args(get_thread_id(), 0, 0, 0);
-  add_named_thread_with_args(keep_page, "keep_page", args);
+  add_named_thread_with_args(keep_page, "keep_page", &args);
 }

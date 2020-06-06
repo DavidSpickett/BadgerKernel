@@ -166,6 +166,15 @@ save_current_thread:
   str r3, [r1]         // _current_thread->state = suspended
 
 load_next_thread:
+  // TODO: do_scheduler would ideally not be called here at all
+  // For now, check if we're null. If it's not then a syscall must have set it
+  // So don't run the scheduler again. (which causes double swaps of loaded programs)
+  ldr r0, [r11]
+  mov r1, #0
+  cmp r0, r1
+  ldr r4, [r11]            // Value of next_thread for actually_load to use if we don't branch
+                           // TODO: clean this up
+  bne actually_load_thread
   cps #SUPERVISOR_MODE     // Use kernel's stack
   bl do_scheduler          // This will set next_thread
   cps #SYSTEM_MODE         // Back to user stack

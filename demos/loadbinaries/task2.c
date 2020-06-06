@@ -1,4 +1,4 @@
-#include "thread.h"
+#include "user/thread.h"
 #include "print.h"
 
 char buf[64];

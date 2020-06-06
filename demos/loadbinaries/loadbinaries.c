@@ -1,3 +1,4 @@
+#include "user/thread.h"
 #include "thread.h"
 #include "util.h"
 
@@ -25,13 +26,13 @@ void load_again() {
 void setup(void) {
   const char* filename = "task";
 
-  add_thread_from_file(filename);
+  k_add_thread_from_file(filename);
   // This will be able to load it again because page 0 was freed
   // when the first thread's keepalive exited
-  add_named_thread(load_again, "load_again");
+  k_add_named_thread(load_again, "load_again");
 
-  add_thread_from_file(filename);
-  add_thread_from_file(filename);
+  k_add_thread_from_file(filename);
+  k_add_thread_from_file(filename);
   // This fails because we've used up all the backing pages
-  assert(add_thread_from_file(filename) == -1);
+  assert(k_add_thread_from_file(filename) == -1);
 }
