@@ -65,10 +65,6 @@ const char* k_get_thread_name(void) {
 
 int k_get_thread_id(void) {
   Thread* curr = current_thread();
-  // TODO: audit uses of this in kernel
-  // it should now only be used to get the ID of the current
-  // *user* thread
-  assert(curr);
   return curr ? curr->id : -1;
 }
 

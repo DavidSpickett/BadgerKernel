@@ -1,3 +1,4 @@
+#include "user/thread.h"
 #include "thread.h"
 
 /*
@@ -21,5 +22,5 @@ void thread(void) {
 }
 
 void setup(void) {
-  add_thread(thread);
+  k_add_thread(thread);
 }

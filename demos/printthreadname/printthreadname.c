@@ -1,4 +1,6 @@
 #include "print.h"
+#include "user/thread.h"
+#include "thread.h"
 #include "thread.h"
 #include "util.h"
 
@@ -10,7 +12,9 @@ void go_to_sleep(void) {
 }
 
 void setup(void) {
-  config.log_scheduler = false;
+  KernelConfig cfg = { .log_scheduler=false,
+                       .destroy_on_stack_err=false};
+  k_set_kernel_config(&cfg);
 
   // Check we can escape %
   printf("%% Print Demo %%\n");
@@ -21,15 +25,15 @@ void setup(void) {
   printf("%s", buf);
 
   // Use up some IDs
-  assert(add_thread(go_to_sleep) != -1);
-  assert(add_thread(go_to_sleep) != -1);
+  assert(k_add_thread(go_to_sleep) != -1);
+  assert(k_add_thread(go_to_sleep) != -1);
   printf("Added 2 threads which are now sleeping.\n");
 
   // ID 2
-  add_named_thread(work, "name_that_gets_cut_off");
+  k_add_named_thread(work, "name_that_gets_cut_off");
   // The rest
   int tid = -1;
   do {
-    tid = add_thread(work);
+    tid = k_add_thread(work);
   } while (tid != -1);
 }
