@@ -1,3 +1,4 @@
+#include "user/thread.h"
 #include "thread.h"
 #include "util.h"
 
@@ -15,8 +16,10 @@ void thread_worker() {
 }
 
 void setup(void) {
-  config.log_scheduler = false;
+  KernelConfig cfg = { .log_scheduler=false,
+                       .destroy_on_stack_err=false};
+  k_set_kernel_config(&cfg);
 
-  add_thread(thread_worker);
-  add_thread(thread_worker);
+  k_add_thread(thread_worker);
+  k_add_thread(thread_worker);
 }

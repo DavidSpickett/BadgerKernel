@@ -43,8 +43,10 @@ bool is_valid_thread(int tid) {
 }
 
 static bool can_schedule_thread(int tid) {
-  return is_valid_thread(tid) && (all_threads[tid].state == suspended ||
-                                  all_threads[tid].state == init);
+  return is_valid_thread(tid) && \
+    (all_threads[tid].state == suspended ||
+     all_threads[tid].state == init ||
+     all_threads[tid].state == running);
 }
 
 bool k_get_thread_state(int tid, ThreadState* state) {
@@ -314,8 +316,13 @@ void do_scheduler(void) {
     return; //!OCLINT
   }
 
-  log_scheduler_event("all threads finished");
-  exit(0);
+  // If the current thread is the last one, just return to it
+  if (can_schedule_thread(k_get_thread_id())) {
+    next_thread = _current_thread;
+  } else {
+    log_scheduler_event("all threads finished");
+    exit(0);
+  }
 }
 
 static bool set_thread_state(int tid, ThreadState state) {
