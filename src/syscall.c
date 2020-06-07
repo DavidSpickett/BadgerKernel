@@ -3,10 +3,13 @@
 #include "util.h"
 #include "syscall.h"
 
+// NUMREGs chosen to be callee saved
 #ifdef __aarch64__
 #define RCHR "x"
+#define NUMREG "20"
 #else
 #define RCHR "r"
+#define NUMREG "8"
 #endif
 
 size_t generic_syscall(Syscall num, size_t arg1, size_t arg2, size_t arg3, size_t arg4) {
@@ -23,15 +26,14 @@ size_t generic_syscall(Syscall num, size_t arg1, size_t arg2, size_t arg3, size_
      r8 is used as r7 is the frame pointer on Thumb.
   */
   asm volatile(
-    "mov "RCHR"8, %[num]\n\t"
+    "mov " RCHR "" NUMREG  ", %[num]\n\t"
     "svc %[svc_syscall]\n\t"
     :"=r"(reg0)
     :"r"(reg0), "r"(reg1), "r"(reg2), "r"(reg3),
      [svc_syscall]"i"(svc_syscall), [num]"r"((size_t)num)
-    /* Also clobbers other registers but lets assume this
-       function isn't using them after this point
-       (caller saved handled by kernel) */
-    :RCHR"8"
+    /* Clobbers the callee saved reg for num.
+       Kernel saves the rest for us. */
+    :RCHR""NUMREG
   );
   return reg0;
 }

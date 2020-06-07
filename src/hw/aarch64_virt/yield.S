@@ -99,10 +99,7 @@ check_svc:
   b .                // unknown SVC
 
 generic_syscall:
-  // x8 = operation number
-  // Except that x8 is caller saved here, so it's in kernel temps
-  // Use x20 instead
-  mov x20, x8
+  // x20 = operation number
   ldr x1, =syscall_handlers
   lsl x20, x20, #3 // Shift 3 = *8, 8 bytes per address
   add x20, x20, x1
