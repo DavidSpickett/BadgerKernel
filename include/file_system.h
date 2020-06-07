@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #else
+
 #include <stddef.h>
 #include <sys/types.h>
 
@@ -22,13 +23,13 @@
 // Seek to offset from beginning
 #define SEEK_CUR 0
 
-int open(const char* path, int oflag, ...);
-ssize_t read(int fildes, void* buf, size_t nbyte);
-ssize_t write(int fildes, const void* buf, size_t nbyte);
-off_t lseek(int fd, off_t offset, int whence);
-int remove(const char* path);
-int close(int filedes);
-void exit(int status);
+int k_open(const char* path, int oflag, ...);
+ssize_t k_read(int filedes, void* buf, size_t nbyte);
+ssize_t k_write(int filedes, const void* buf, size_t nbyte);
+off_t k_lseek(int fd, off_t offset, int whence);
+int k_remove(const char* path);
+int k_close(int filedes);
+void k_exit(int status);
 #endif /* ifdef linux */
 
 #ifdef HAS_FILESYSTEM

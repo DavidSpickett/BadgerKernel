@@ -54,7 +54,6 @@ make
 | cancel                            | Cancelling threads.                                                                |
 | file                              | Read from a file. (via semihosting on bare metal)                                  |
 | alloc (Arm/Thumb/AArch64)         | Use of malloc/free.                                                                |
-| filesystem                        | A minimal in memory file system.                                                   |
 | loadbinary (Arm/Thumb/AArch64)    | Loading a thread from a seperate binary (over semihosting).                        |
 | loadbinaries (Arm/Thumb/AArch64)  | Loading multiple binaries, swapping them as they become active (over semihosting). |
 | loadpiebinary (Arm/Thumb/AArch64) | Loading a position independent binary (over semihosting).                          |

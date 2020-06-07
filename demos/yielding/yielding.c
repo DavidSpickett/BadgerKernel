@@ -1,6 +1,6 @@
 #include "user/thread.h"
 #include "thread.h" // For setup's add thread
-#include "util.h"
+#include "user/util.h"
 
 __attribute__((noreturn)) void thread_worker_1() {
   while (1) {

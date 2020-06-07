@@ -7,6 +7,7 @@
 #else
 #define FNADDR .word
 #endif
+  // Note: NO COMMAS ON THE ENDS!!
   FNADDR k_add_named_thread
   FNADDR k_add_thread
 #ifdef CODE_PAGE_SIZE
@@ -24,6 +25,13 @@
   FNADDR k_yield_next
   FNADDR k_get_msg
   FNADDR k_send_msg
+  FNADDR k_open
+  FNADDR k_read
+  FNADDR k_write
+  FNADDR k_lseek
+  FNADDR k_remove
+  FNADDR k_close
+  FNADDR k_exit
   FNADDR k_invalid_syscall
   FNADDR k_invalid_syscall
   FNADDR k_invalid_syscall
@@ -52,6 +60,13 @@ typedef enum {
   syscall_yield_next,
   syscall_get_msg,
   syscall_send_msg,
+  syscall_open,
+  syscall_read,
+  syscall_write,
+  syscall_lseek,
+  syscall_remove,
+  syscall_close,
+  syscall_exit,
   syscall_eol,
 } Syscall;
 

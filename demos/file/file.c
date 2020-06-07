@@ -4,6 +4,7 @@
 #include "user/thread.h"
 #include "thread.h"
 #include "util.h"
+#include "user/file.h"
 #include <string.h>
 
 void fail_open(void) {

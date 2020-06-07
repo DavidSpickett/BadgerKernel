@@ -1,4 +1,5 @@
 #include "user/thread.h"
+#include "user/util.h"
 #include "thread.h"
 #include "timer.h"
 #include "util.h"

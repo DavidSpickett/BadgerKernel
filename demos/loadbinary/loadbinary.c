@@ -1,6 +1,7 @@
 #include "user/thread.h"
 #include "thread.h"
 #include "util.h"
+#include <limits.h>
 
 const char* filename = "binary";
 void load_again() {

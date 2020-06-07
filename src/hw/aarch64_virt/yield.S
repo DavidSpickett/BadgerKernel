@@ -93,7 +93,6 @@ check_svc:
   mov x1, #0xFFFF    // mask to get code
   and x0, x0, x1
   CHECK_SVC svc_thread_switch, start_thread_switch
-  CHECK_SVC svc_semihosting, semihosting
   CHECK_SVC svc_enable_timer, enable_timer
   CHECK_SVC svc_disable_timer, disable_timer
   CHECK_SVC svc_syscall, generic_syscall
@@ -152,22 +151,6 @@ disable_timer:
   DISABLE_TIMER
 finalise_timer:
   POP_KERNEL_TEMPS
-  eret
-
-semihosting:
-  /* Do semihosting call
-     We don't let threads hlt directly because
-     a halt's exception link register is the halt,
-     not the next instr. Which makes things complicated
-     for the handler.
-
-     This code is also called from kernel mode. This is
-     fine because on entry to the handler we save x0/x1
-     to kernel stack. Then here we restore them. So
-     semihosting args are intact.
-  */
-  POP_KERNEL_TEMPS // Thread's registers point to arguments
-  hlt 0xf000
   eret
 
 .global start_thread_switch

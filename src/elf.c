@@ -3,6 +3,8 @@
 #include "print.h"
 #include "thread.h"
 #include "user/thread.h"
+// Only for symbols, only use k_<...> functions in this file
+#include "user/file.h"
 #include <string.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -18,7 +20,7 @@
   do { if(DEBUG_ELF_LOAD) { printf(fmt, ## __VA_ARGS__); } } while(0)
 #define DEBUG_MSG_ELF_SECTION(msg) DEBUG_MSG_ELF("------ "msg" ------\n")
 
-#define PRINT_EXIT(fmt, ...) printf("Error: "fmt, ## __VA_ARGS__); exit(1);
+#define PRINT_EXIT(fmt, ...) printf("Error: "fmt, ## __VA_ARGS__); k_exit(1);
 
 #define MAX_SECTION_NAME_LEN 80
 // TODO: this assumption is more risky than the section names
@@ -234,7 +236,7 @@ static const char* sym_type_tostr(unsigned char type) {
 extern uint8_t code_page[CODE_PAGE_SIZE];
 
 static void checked_lseek(int filedes, off_t offset, int whence) {
-  off_t new_pos = lseek(filedes, offset, whence);
+  off_t new_pos = k_lseek(filedes, offset, whence);
   if (new_pos != offset) {
     PRINT_EXIT("Couldn't seek to offset %u\n", offset);
   }
@@ -246,7 +248,7 @@ static void get_section_name(int elf,
                              uint16_t idx,
                              char* name) {
   checked_lseek(elf, name_table_offset+name_offset, SEEK_CUR);
-  ssize_t got = read(elf, name, MAX_SECTION_NAME_LEN);
+  ssize_t got = k_read(elf, name, MAX_SECTION_NAME_LEN);
   // This check is a bit weird, assuming that the name table
   // isn't at the end of the file here.
   if (got != MAX_SECTION_NAME_LEN) {
@@ -330,7 +332,7 @@ static SectionHeader get_section_header(
   checked_lseek(elf, hdr_pos, SEEK_CUR);
 
   SectionHeader section_hdr;
-  ssize_t got = read(elf, &section_hdr, section_hdr_size);
+  ssize_t got = k_read(elf, &section_hdr, section_hdr_size);
   if (got < section_hdr_size) {
     PRINT_EXIT("Couldn't read header for section %u\n", idx);
   }
@@ -367,7 +369,7 @@ static SymbolInfo get_symbol_info(int elf,
   ELFSymbol symbol;
   size_t symbol_offset = sym_table_hdr.sh_offset + (sym_idx*sym_table_hdr.sh_entsize);
   checked_lseek(elf, symbol_offset, SEEK_CUR);
-  ssize_t got = read(elf, &symbol, sym_table_hdr.sh_entsize);
+  ssize_t got = k_read(elf, &symbol, sym_table_hdr.sh_entsize);
   if (got < sym_table_hdr.sh_entsize) {
     PRINT_EXIT("Couldn't read symbol at index %u\n", sym_idx);
   }
@@ -375,7 +377,7 @@ static SymbolInfo get_symbol_info(int elf,
   SymbolInfo sym_info;
 
   checked_lseek(elf, sym_name_table_hdr.sh_offset+symbol.st_name, SEEK_CUR);
-  got = read(elf, sym_info.name, MAX_SYMBOL_NAME_LEN);
+  got = k_read(elf, sym_info.name, MAX_SYMBOL_NAME_LEN);
   if (got < MAX_SYMBOL_NAME_LEN) {
     // TODO: read until null terminator function?
     // TODO: or just give in and us the heap
@@ -441,7 +443,7 @@ static void resolve_relocs(int elf, uint16_t idx,
        offs+=reloc_size,++reloc_idx) {
     checked_lseek(elf, offs, SEEK_CUR);
     ELFRelocation reloc;
-    ssize_t got = read(elf, &reloc, reloc_size);
+    ssize_t got = k_read(elf, &reloc, reloc_size);
     if (got != reloc_size) {
       PRINT_EXIT("Failed to read reloc %u in section %s\n", reloc_idx, name);
     }
@@ -542,7 +544,7 @@ static bool load_section(int elf, uint16_t idx,
     SEEK_CUR);
   ssize_t max_section_name_len = 80;
   char name[max_section_name_len];
-  ssize_t got = read(elf, name, max_section_name_len);
+  ssize_t got = k_read(elf, name, max_section_name_len);
   if (got != max_section_name_len) {
     PRINT_EXIT("Failed to read name for section %u\n", idx);
   }
@@ -582,7 +584,7 @@ static bool load_section(int elf, uint16_t idx,
 
   // Copy from ELF file to destination page
   // (which can be different from code_page)
-  ssize_t section_got = read(elf, dest_addr, section_hdr.sh_size);
+  ssize_t section_got = k_read(elf, dest_addr, section_hdr.sh_size);
   if (section_got != section_hdr.sh_size) {
     PRINT_EXIT("Couldn't read content for section \"%s\" (%u)\n", name, idx);
   }
@@ -598,14 +600,14 @@ void (*load_elf(const char* filename, void* dest))(void) {
   */
   DEBUG_MSG_ELF_SECTION("Opening and validating file");
   DEBUG_MSG_ELF("Processing \"%s\"\n", filename);
-  int elf = open(filename, O_RDONLY);
+  int elf = k_open(filename, O_RDONLY);
   if (elf < 0) {
     PRINT_EXIT("Couldn't open file %s\n", filename);
   }
 
   size_t header_size = sizeof(ElfHeader);
   ElfHeader elf_hdr;
-  ssize_t got = read(elf, &elf_hdr, header_size);
+  ssize_t got = k_read(elf, &elf_hdr, header_size);
   if (got < header_size) {
     PRINT_EXIT("Couldn't read complete header from %s\n",
       filename);

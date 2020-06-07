@@ -7,18 +7,30 @@ class MakeTest(lit.formats.base.TestFormat):
   def execute(self, test, litConfig):
     filename = os.path.basename(test.getSourcePath())
     cmd = ["make", "test_" + os.path.splitext(filename)[0]]
-    out, err, exitCode = lit.util.executeCommand(cmd)
+    try:
+        timed_out = False
+        out, err, exitCode = lit.util.executeCommand(
+            cmd, timeout=30)
+    except lit.util.ExecuteCommandTimeoutException as e:
+        exitCode = 1
+        timed_out = True
+        out = e.out
+        err = e.err
+    finally:
+        if not exitCode and not err.strip():
+          return lit.Test.PASS,''
 
-    if not exitCode and not err.strip():
-      return lit.Test.PASS,''
+        extra = ""
+        if timed_out:
+            extra = " timed out (UBSAN error?)"
 
-    report = dedent('''\
-      Command: {}
-      stdout:
-      {}
-      stderr:
-      {}''').format(cmd, out, err)
-    return lit.Test.FAIL, report
+        report = dedent('''\
+          Command{}: {}
+          stdout:
+          {}
+          stderr:
+          {}''').format(extra, cmd, out, err)
+        return lit.Test.FAIL, report
 
   def getTestsInDirectory(self, testSuite, path_in_suite,
                           litConfig, localConfig):

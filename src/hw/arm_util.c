@@ -1,12 +1,15 @@
 #include "thread_state.h"
 #include "util.h"
+// For assert's exit
+#include "user/util.h"
+#include "semihosting.h"
 #include <stddef.h>
 #include <string.h>
 
 // Arm semihosting routines
 // platform specific asm in generic_semihosting_call
 
-size_t get_semihosting_event(int status) {
+static size_t get_semihosting_event(int status) {
   if (status == 0) {
     return 0x20026; // ADP_Stopped_ApplicationExit
   }
@@ -16,13 +19,13 @@ size_t get_semihosting_event(int status) {
 
 #ifdef __aarch64__
 #define RCHR "x"
-#define DIRECT_CALL "b .\n\t" // Unused
+#define SEMIHOSTING_CALL "hlt 0xf000"
 #elif defined __thumb__
 #define RCHR "r"
-#define DIRECT_CALL "bkpt 0xab\n\t"
+#define SEMIHOSTING_CALL "bkpt 0xab"
 #else /* Arm */
 #define RCHR "r"
-#define DIRECT_CALL "svc 0x123456\n\t"
+#define SEMIHOSTING_CALL "svc 0x123456"
 #endif
 
 size_t generic_semihosting_call(size_t operation, volatile size_t* parameters) {
@@ -33,43 +36,17 @@ size_t generic_semihosting_call(size_t operation, volatile size_t* parameters) {
 #ifdef linux
   ret = 0; (void)operation; (void)parameters;
 #else
-  /* Easier to check if we're in kernel already than
-     handle re-entry to kernel mode. */
-#ifdef __thumb__
-  size_t control;
-  asm volatile ("mrs %0, control":"=r"(control));
-  bool in_kernel = !(control & 0x2);
-#elif defined __aarch64__
-  bool in_kernel = false;
-#else /* Arm */
-  size_t cpsr;
-  asm volatile ("mrs %0, cpsr":"=r"(cpsr));
-  bool in_kernel = (cpsr & 0xF) == 3;
-#endif /* defined __thumb__ */
-  if (in_kernel) {
-    asm volatile (
-      "mov "RCHR"0, %[operation]\n\t"
-      "mov "RCHR"1, %[parameters]\n\t"
-      DIRECT_CALL
-      "mov %[ret], "RCHR"0\n\t"
-      :[ret]"=r"(ret)
-      :[parameters]"r"(parameters),
-       [operation]"r"(operation)
-      :RCHR"0", RCHR"1"
-    );
-  } else {
-    asm volatile (
-      "mov "RCHR"0, %[operation]\n\t"
-      "mov "RCHR"1, %[parameters]\n\t"
-      "svc %[semihost]\n\t"
-      "mov %[ret], "RCHR"0\n\t"
-      :[ret]"=r"(ret)
-      :[parameters]"r"(parameters),
-       [operation]"r"(operation),
-       [semihost]"i"(svc_semihosting)
-      :RCHR"0", RCHR"1"
-    );
-  }
+  // We assume that we're already in kernel mode by this point
+  asm volatile (
+    "mov "RCHR"0, %[operation]\n\t"
+    "mov "RCHR"1, %[parameters]\n\t"
+    SEMIHOSTING_CALL"\n\t"
+    "mov %[ret], "RCHR"0\n\t"
+    :[ret]"=r"(ret)
+    :[parameters]"r"(parameters),
+     [operation]"r"(operation)
+    :RCHR"0", RCHR"1"
+  );
 #endif /* ifdef linux */
   // clang-format on
 
@@ -83,7 +60,7 @@ size_t generic_semihosting_call(size_t operation, volatile size_t* parameters) {
    contents.
 */
 
-void exit(int status) {
+void k_exit(int status) {
   size_t event = get_semihosting_event(status);
 #ifdef __aarch64__
   // Parameter pack on 64 bit

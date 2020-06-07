@@ -8,7 +8,7 @@ static void* checked_malloc(size_t size) {
   void* ptr = malloc(size);
   if (!ptr) {
     printf("malloc failed!\n");
-    exit(1);
+    k_exit(1);
   }
   return ptr;
 }
@@ -17,7 +17,7 @@ static void* checked_realloc(void* ptr, size_t size) {
   void* new_ptr = realloc(ptr, size);
   if (!new_ptr) {
     printf("realloc failed!\n");
-    exit(1);
+    k_exit(1);
   }
   return new_ptr;
 }
@@ -263,7 +263,7 @@ FileNode* get_node(const char* path, int oflag) {
   return got;
 }
 
-int open(const char* path, int oflag, ...) {
+int k_open(const char* path, int oflag, ...) {
   FileNode* file = get_node(path, oflag);
   if (!file) {
     return -1;
@@ -288,7 +288,7 @@ bool check_fd(int fd) {
   return true;
 }
 
-int close(int fildes) {
+int k_close(int fildes) {
   if (!check_fd(fildes)) {
     return -1;
   }
@@ -297,7 +297,7 @@ int close(int fildes) {
   return 0;
 }
 
-ssize_t write(int filedes, const void* buf, size_t count) {
+ssize_t k_write(int filedes, const void* buf, size_t count) {
   if (!check_fd(filedes)) {
     return 0;
   }
@@ -309,7 +309,7 @@ ssize_t write(int filedes, const void* buf, size_t count) {
   return count;
 }
 
-ssize_t read(int filedes, void* buf, size_t count) {
+ssize_t k_read(int filedes, void* buf, size_t count) {
   if (!check_fd(filedes)) {
     return 0;
   }
@@ -320,7 +320,7 @@ ssize_t read(int filedes, void* buf, size_t count) {
   return count;
 }
 
-int remove(const char* path) {
+int k_remove(const char* path) {
   FileNode* file = get_node(path, O_RDONLY);
   if (!file) {
     return -1;
@@ -426,4 +426,9 @@ void walk(const char* path, char** out) {
   }
 
   free_ls_result(list);
+}
+
+off_t k_lseek(int fd, off_t offset, int whence) {
+  k_exit(1);
+  __builtin_unreachable();
 }

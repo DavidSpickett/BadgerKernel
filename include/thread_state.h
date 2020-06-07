@@ -24,9 +24,8 @@ ENUM_END(ThreadState)
 
 ENUM_START
 ENUM_VALUE(svc_thread_switch, 0)
-ENUM_VALUE(svc_semihosting, 1)
-ENUM_VALUE(svc_enable_timer, 2)
-ENUM_VALUE(svc_disable_timer, 3)
+ENUM_VALUE(svc_enable_timer, 1)
+ENUM_VALUE(svc_disable_timer, 2)
 // TODO: convert timer at least, to syscall number instead
 ENUM_VALUE(svc_syscall, 21)
 ENUM_END(SVCCodes)

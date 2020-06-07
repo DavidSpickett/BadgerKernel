@@ -5,6 +5,7 @@
 #include "print.h"
 #include "thread.h"
 #include "util.h"
+#include "file_system.h"
 #if CODE_PAGE_SIZE
 #include "elf.h"
 #endif
@@ -63,7 +64,7 @@ void k_invalid_syscall(size_t arg1, size_t arg2, size_t arg3, size_t arg4) {
   printf("Unknown syscall invoked!\n");
   printf("arg1: %u, arg2: %u, arg3: %u, arg4: %u\n",
     arg1, arg2, arg3, arg4);
-  exit(1);
+  k_exit(1);
 }
 
 const char* k_get_thread_name(void) {
@@ -300,7 +301,7 @@ void do_scheduler(void) {
 
     if (all_threads[_idx].id != _idx) {
       printf("thread ID %u and position %u inconsistent!\n", (unsigned)_idx, all_threads[_idx].id);
-      exit(1);
+      k_exit(1);
     }
 
     log_scheduler_event("scheduling new thread");
@@ -324,7 +325,7 @@ void do_scheduler(void) {
     next_thread = _current_thread;
   } else {
     log_scheduler_event("all threads finished");
-    exit(0);
+    k_exit(0);
   }
 }
 
@@ -461,10 +462,10 @@ int k_add_thread_from_file(const char* filename) {
     return -1;
   }
 
-  int file = open(filename, O_RDONLY);
+  int file = k_open(filename, O_RDONLY);
   if (file < 0) {
     printf("Couldn't load %s\n", filename);
-    exit(1);
+    k_exit(1);
   }
 
   uint8_t* dest = code_page;
@@ -609,7 +610,7 @@ Thread* current_thread(void) {
 void stack_extent_failed(void) {
   // current_thread is likely still valid here
   k_log_event("Not enough stack to save context!");
-  exit(1);
+  k_exit(1);
 }
 
 #ifdef __thumb__
@@ -649,7 +650,7 @@ void check_stack(void) {
       thread_switch();
 #endif
     } else {
-      exit(1);
+      k_exit(1);
     }
   }
 }

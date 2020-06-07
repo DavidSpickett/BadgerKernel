@@ -116,8 +116,11 @@ set( KERNEL_SOURCES
   src/thread.c
   src/mutex.c
   src/condition_variable.c
-  src/user/thread.c
   src/syscall.c
+  src/hw/arm_file.c
+  src/user/thread.c
+  src/user/file.c
+  src/user/util.c
 )
 if(LINUX)
   set( KERNEL_SOURCES ${KERNEL_SOURCES}
@@ -177,7 +180,6 @@ include(demos/conditionvariables/CMakeLists.txt)
 include(demos/cancel/CMakeLists.txt)
 include(demos/printthreadname/CMakeLists.txt)
 include(demos/file/CMakeLists.txt)
-include(demos/filesystem/CMakeLists.txt)
 include(demos/generated/CMakeLists.txt)
 include(demos/threadlocalstorage/CMakeLists.txt)
 include(demos/stackcheck/CMakeLists.txt)
