@@ -1,5 +1,5 @@
 # To support LTO we need to attribute used a lot of stuff
-if(LINUX OR LTO)
+if(LTO)
   return()
 endif()
 

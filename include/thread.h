@@ -8,11 +8,8 @@
 #include <stdint.h>
 
 #define MAX_THREADS 6
-
-#ifndef linux // TODO: linux mess
 #define THREAD_STACK_SIZE 1024 * STACK_SIZE
 #define STACK_CANARY      0xcafebeefdeadf00d
-#endif
 
 #define THREAD_NAME_SIZE      12
 #define THREAD_MSG_QUEUE_SIZE 5
@@ -23,11 +20,7 @@ typedef struct {
 } Message;
 
 typedef struct {
-#ifdef linux
-  pthread_t self;
-#else
   uint8_t* stack_ptr;
-#endif
   // Not an enum directly because we need to know its size
   size_t state;
   int id;
@@ -45,11 +38,9 @@ typedef struct {
   size_t code_backing_page;
 #endif
 #endif /* CODE_PAGE_SIZE */
-#ifndef linux
   uint64_t bottom_canary;
   uint8_t stack[THREAD_STACK_SIZE];
   uint64_t top_canary;
-#endif
 } Thread;
 
 int k_add_thread(void (*worker)(void));

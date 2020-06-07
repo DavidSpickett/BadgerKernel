@@ -1,8 +1,8 @@
 [![Build Status](https://dev.azure.com/spickettdavid/spickettdavid/_apis/build/status/DavidSpickett.ARMMultiTasking?branchName=master)](https://dev.azure.com/spickettdavid/spickettdavid/_build/latest?definitionId=1&branchName=master) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A simple set of demos showing threads sharing time on Arm platforms.
+A kernel of sorts, showing threads sharing time on Arm platforms.
 
-Current build targets are Arm (Armv7A, Cortex A-15), Thumb (Armv7E-M Cortex-M4), AArch64 (Armv8A, Cortex A-57) and any Linux via a pthread layer. Each platform has its own folder in '/src/hw' for its specific code.
+Current build targets are Arm (Armv7A, Cortex A-15), Thumb (Armv7E-M Cortex-M4), AArch64 (Armv8A, Cortex A-57). Each platform has its own folder in '/src/hw' for its specific code.
 
 All bare metal platforms use exceptions for switching threads. Either by yielding (which uses a software exception) or enabling a timer interrupt for preemptive switching.
 
@@ -29,13 +29,6 @@ cmake . -DBUILD_PLATFORM=thumb
 make
 ```
 
-### Linux
-
-```
-cmake . -DBUILD_PLATFORM=linux
-make
-```
-
 ## Demos
 
 | Name                              | Description                                                                        |
@@ -45,18 +38,18 @@ make
 | message                           | Passing messages between threads.                                                  |
 | exit                              | Threads exiting normally like any other C function.                                |
 | spawn                             | One thread creating other threads.                                                 |
-| stackcheck (Arm/Thumb/AArch64)    | Detection of thread stack underflow or overflow when they try to yield.            |
+| stackcheck                        | Detection of thread stack underflow or overflow when they try to yield.            |
 | args                              | Passing arguments to a thread.                                                     |
 | mutexes                           | Locking a buffer using a mutex.                                                    |
-| timer (Arm/Thumb/AArch64)         | Thread switching using a timer interrupt.                                          |
+| timer                             | Thread switching using a timer interrupt.                                          |
 | threadlocalstorage                | Using thread local storage (TLS) to give each thread it's own 'global' variables.  |
 | conditionvariables                | Waiting on, signalling and broadcasting to condition variables.                    |
 | cancel                            | Cancelling threads.                                                                |
 | file                              | Read from a file. (via semihosting on bare metal)                                  |
-| alloc (Arm/Thumb/AArch64)         | Use of malloc/free.                                                                |
-| loadbinary (Arm/Thumb/AArch64)    | Loading a thread from a seperate binary (over semihosting).                        |
-| loadbinaries (Arm/Thumb/AArch64)  | Loading multiple binaries, swapping them as they become active (over semihosting). |
-| loadpiebinary (Arm/Thumb/AArch64) | Loading a position independent binary (over semihosting).                          |
+| alloc                             | Use of malloc/free.                                                                |
+| loadbinary                        | Loading a thread from a seperate binary (over semihosting).                        |
+| loadbinaries                      | Loading multiple binaries, swapping them as they become active (over semihosting). |
+| loadpiebinary                     | Loading a position independent binary (over semihosting).                          |
 
 Each demo has 'run_<demo>', 'debug_<demo>' and 'test_<demo>' make targets. To test all demos use lit. (best done in a virtualenv)
 

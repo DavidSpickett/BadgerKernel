@@ -2,13 +2,6 @@
 #define FILE_SYSTEM_H
 
 #include <stdbool.h>
-
-#ifdef linux
-#include <fcntl.h>
-#include <stdlib.h>
-#include <unistd.h>
-#else
-
 #include <stddef.h>
 #include <sys/types.h>
 
@@ -30,20 +23,5 @@ off_t k_lseek(int fd, off_t offset, int whence);
 int k_remove(const char* path);
 int k_close(int filedes);
 void k_exit(int status);
-#endif /* ifdef linux */
-
-#ifdef HAS_FILESYSTEM
-void init_file_system(void);
-void destroy_file_system(void);
-void walk(const char* path, char** out);
-
-typedef struct FileInfo {
-  const char* name;
-  bool is_file;
-  struct FileInfo* next;
-} FileInfo;
-FileInfo* ls_path(const char* path);
-void free_ls_result(FileInfo* head);
-#endif /* ifdef HAS_FILESYSTEM */
 
 #endif /* ifdef FILE_SYSTEM_H */

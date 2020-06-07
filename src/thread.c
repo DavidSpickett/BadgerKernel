@@ -1,7 +1,3 @@
-#ifdef linux
-#define _GNU_SOURCE
-#include <pthread.h>
-#endif
 #include "print.h"
 #include "thread.h"
 #include "util.h"
@@ -11,10 +7,7 @@
 #endif
 #include <string.h>
 #include <stdarg.h>
-
-#ifndef linux
 #include "alloc.h"
-#endif
 
 __attribute__((section(".thread_vars"))) Thread* _current_thread;
 
@@ -98,20 +91,14 @@ void init_thread(Thread* thread, int tid, const char* name,
 #endif
 #endif
 
-#ifndef linux
   thread->bottom_canary = STACK_CANARY;
   thread->top_canary = STACK_CANARY;
   // Top of stack
   size_t stack_ptr = (size_t)(&(thread->stack[THREAD_STACK_SIZE]));
   // Mask to align to 16 bytes for AArch64
   thread->stack_ptr = (uint8_t*)(stack_ptr & ~0xF);
-#endif
 }
 
-#ifdef linux
-pthread_mutex_t first_schedule_mutex = PTHREAD_MUTEX_INITIALIZER;
-pthread_mutex_t scheduler_mutex = PTHREAD_MUTEX_INITIALIZER;
-#endif
 extern void setup(void);
 void do_scheduler(void);
 extern void start_thread_switch(void);
@@ -121,21 +108,9 @@ __attribute__((noreturn)) void entry(void) {
     init_thread(&all_threads[idx], -1, NULL, NULL, &noargs);
   }
 
-#ifdef linux
-  // Stop initial threads running yet
-  pthread_mutex_lock(&first_schedule_mutex);
-#endif
-
   setup(); // Adds initial threads
-
-#ifdef linux
-  do_scheduler();
-  pthread_mutex_unlock(&first_schedule_mutex);
-  while (1) { //!OCLINT
-  }
-#else
   start_thread_switch(); // Not thread_switch as we're in kernel mode
-#endif
+
   __builtin_unreachable();
 }
 
@@ -183,13 +158,8 @@ bool k_send_msg(int destination, int message) {
   return true;
 }
 
-#ifdef linux
-void thread_switch(void);
-#else
 extern void thread_switch(void);
 void check_stack(void);
-#endif
-
 void k_format_thread_name(char* out) {
   // fill with spaces (no +1 as we'll terminate it later)
   for (size_t idx = 0; idx < THREAD_NAME_SIZE; ++idx) {
@@ -274,10 +244,6 @@ static size_t next_possible_thread_idx(const Thread* curr) {
 }
 
 void do_scheduler(void) {
-#ifdef linux
-  pthread_mutex_lock(&scheduler_mutex);
-#endif
-
   // NULL next_thread means choose one for us
   // otherwise just do required housekeeping to switch
   if (next_thread != NULL) {
@@ -313,10 +279,6 @@ void do_scheduler(void) {
     swap_paged_threads(curr, next_thread);
 #endif
 
-#ifdef linux
-    pthread_mutex_unlock(&scheduler_mutex);
-#endif
-
     return; //!OCLINT
   }
 
@@ -342,13 +304,6 @@ bool thread_wake(int tid) {
 }
 
 static void cleanup_thread(Thread* thread) {
-#ifdef linux
-  // If this is called when a thread exits, we don't
-  // want to cancel ourselves, just exit normally.
-  if (thread != current_thread()) {
-    pthread_cancel(thread->self);
-  }
-#else
   // Free any lingering heap allocations
   free_all(thread->id);
 
@@ -360,7 +315,6 @@ static void cleanup_thread(Thread* thread) {
   thread->code_backing_page = INVALID_PAGE;
 #endif
 #endif
-#endif /* ifdef linux */
 }
 
 bool thread_cancel(int tid) {
@@ -372,10 +326,7 @@ bool thread_cancel(int tid) {
 }
 
 void k_thread_yield(Thread* next) {
-  // TODO: fix linux port, ergh
-#ifndef linux
   check_stack();
-#endif
 
   next_thread = next;
   do_scheduler(); // TODO: ensure scheduler is called whenever next is set
@@ -513,9 +464,6 @@ static void setup_code_page(size_t idx) {
 }
 #endif /* CODE_PAGE_SIZE */
 
-#ifdef linux
-void* thread_entry();
-#endif
 int k_add_named_thread_with_args(void (*worker)(), const char* name,
                                const ThreadArgs* args) {
   for (size_t idx = 0; idx < MAX_THREADS; ++idx) {
@@ -523,9 +471,6 @@ int k_add_named_thread_with_args(void (*worker)(), const char* name,
         all_threads[idx].state == cancelled ||
         all_threads[idx].state == finished) {
       init_thread(&all_threads[idx], idx, name, worker, args);
-#ifdef linux
-      pthread_create(&all_threads[idx].self, NULL, thread_entry, NULL);
-#endif
 #if CODE_PAGE_SIZE
       setup_code_page(idx);
 #endif
@@ -541,61 +486,6 @@ void thread_wait(void) {
   next_thread = NULL;
   thread_switch();
 }
-
-#ifdef linux
-
-Thread* current_thread(void) {
-  pthread_t self = pthread_self();
-  for (int i = 0; i < MAX_THREADS; ++i) {
-    if (all_threads[i].self == self) {
-      return &all_threads[i];
-    }
-  }
-  return NULL;
-}
-
-void* thread_entry() {
-  // Hold back threads until first run of scheduler is done
-  pthread_mutex_lock(&first_schedule_mutex);
-  pthread_mutex_unlock(&first_schedule_mutex);
-
-  // Then wait until we're chosen by scheduler to run
-  while (next_thread != current_thread()) {
-    pthread_yield();
-  }
-
-  // This is here to force a check for pending cancels
-  // (best I could come up with)
-  usleep(1);
-
-  current_thread()->work(current_thread()->args.a1, current_thread()->args.a2,
-                         current_thread()->args.a3, current_thread()->args.a4);
-
-  // Yield back to the scheduler
-  k_log_event("exiting");
-
-  // Make sure we're not scheduled again
-  current_thread()->state = finished;
-
-  cleanup_thread(current_thread());
-
-  // Must call this so we check if there are threads left
-  next_thread = NULL;
-  do_scheduler();
-
-  return NULL; //!OCLINT
-}
-
-void thread_switch(void) {
-  if (!next_thread) {
-    do_scheduler();
-  }
-  while (next_thread != current_thread()) {
-    pthread_yield();
-  }
-}
-
-#else
 
 // Use these struct names to ensure that these are
 // placed *after* the thread structs to prevent
@@ -693,5 +583,3 @@ __attribute__((noreturn)) void thread_start(void) {
 
   __builtin_unreachable();
 }
-
-#endif // ifndef linux
