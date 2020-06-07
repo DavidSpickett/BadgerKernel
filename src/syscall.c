@@ -27,7 +27,7 @@ size_t generic_syscall(Syscall num, size_t arg1, size_t arg2, size_t arg3, size_
     "svc %[svc_syscall]\n\t"
     :"=r"(reg0)
     :"r"(reg0), "r"(reg1), "r"(reg2), "r"(reg3),
-     [svc_syscall]"i"(svc_syscall), [num]"r"(num)
+     [svc_syscall]"i"(svc_syscall), [num]"r"((size_t)num)
     /* Also clobbers other registers but lets assume this
        function isn't using them after this point
        (caller saved handled by kernel) */

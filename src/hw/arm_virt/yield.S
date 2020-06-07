@@ -79,7 +79,6 @@ handle_exception:
   and r0, r0, r1
 
   CHECK_SVC svc_thread_switch, start_thread_switch
-  CHECK_SVC svc_semihosting, semihosting
   CHECK_SVC svc_disable_timer, disable_timer
   CHECK_SVC svc_enable_timer, enable_timer
   CHECK_SVC svc_syscall, generic_syscall
@@ -208,11 +207,6 @@ actually_load_thread:
 
 restore_regs:
   pop {r0-r12, r14}     // restore our own regs (no sp/pc)
-  b exception_return
-
-semihosting:
-  POP_TEMPS_GOTO_SYSTEM_MODE // go to user and set up for return to user mode
-  svc 0x123456     // picked up by Qemu
   b exception_return
 
 enable_timer:

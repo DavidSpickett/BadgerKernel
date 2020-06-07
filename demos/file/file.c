@@ -74,10 +74,6 @@ void setup(void) {
                        .destroy_on_stack_err=false};
   k_set_kernel_config(&cfg);
 
-  /* Check that kernel can return from semihosting,
-     as opposed to exit() which never returns. */
-  fail_open();
-
   k_add_named_thread(read_file, "reader");
   k_add_named_thread(fail_open, "fail_open");
   k_add_named_thread(write_new, "write_new");

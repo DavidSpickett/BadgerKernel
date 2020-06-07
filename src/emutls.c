@@ -1,5 +1,7 @@
 #include "print.h"
 #include "thread.h"
+#include "user/util.h"
+#include "user/thread.h"
 #include "util.h"
 #include <stddef.h>
 #include <stdint.h>
@@ -33,7 +35,7 @@ static void emutls_init_var(__emutls_control* control) {
     memcpy(alloc_ptr, control->value, control->size);
 
     // Put its address in this thread's address array
-    address_arrays[k_get_thread_id()][control->object.index - 1] = alloc_ptr;
+    address_arrays[get_thread_id()][control->object.index - 1] = alloc_ptr;
 
     // update for next allocation
     alloc_ptr = new_ptr;
@@ -57,13 +59,13 @@ static uintptr_t emutls_get_index(__emutls_control* control) {
 static void* emutls_get_var_addr(__emutls_control* control) {
   uintptr_t index = emutls_get_index(control);
 
-  void* var_ptr = address_arrays[k_get_thread_id()][index - 1];
+  void* var_ptr = address_arrays[get_thread_id()][index - 1];
   // First time accessing the var on this thread
   if (var_ptr == NULL) {
     emutls_init_var(control);
   }
 
-  return address_arrays[k_get_thread_id()][index - 1];
+  return address_arrays[get_thread_id()][index - 1];
 }
 
 __attribute__((used)) // For LTO builds
