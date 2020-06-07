@@ -75,7 +75,7 @@ handle_exception:
      on the PSP stack.
   */
 
-  /* See if this is a thread switch or a semihosting call */
+  /* See if this is a thread switch */
 
   /* check the exception/interrupt number first so we
      don't misdiagnose an instruction ending in FF or AB
@@ -120,7 +120,6 @@ check_svc:
   and r2, r1, r2
 
   CHECK_SVC svc_thread_switch, check_stack_extent
-  CHECK_SVC svc_semihosting,   semihosting
   CHECK_SVC svc_syscall,       generic_syscall
   /* timer control is done from user mode */
   /* unknown svc */
@@ -230,17 +229,6 @@ exception_return:
      correct for automatic exception return. */
   mov r0, sp // r0 ok to trash because it's in the exception frame
   msr psp, r0
-  bx lr
-
-semihosting:
-  CORRECT_SP_IN_R2
-  // use original r0/r1 to get arguments
-  ldr r0, [r2]       // pop r0
-  add r2, #4         // no direct post increment in thumb
-  ldr r1, [r2]       // pop r1
-  bkpt 0xab          // actual semihosting call, handled by Qemu
-  sub r2, #4         // save the return value from r0
-  str r0, [r2]       // will get restored to thread automatically
   bx lr
 
 generic_syscall:
