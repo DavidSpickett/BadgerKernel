@@ -11,20 +11,4 @@ int remove(const char* path);
 int close(int filedes);
 void exit(int status);
 
-#ifdef HAS_FILESYSTEM
-// TODO?
-
-void init_file_system(void);
-void destroy_file_system(void);
-void walk(const char* path, char** out);
-
-typedef struct FileInfo {
-  const char* name;
-  bool is_file;
-  struct FileInfo* next;
-} FileInfo;
-FileInfo* ls_path(const char* path);
-void free_ls_result(FileInfo* head);
-#endif /* ifdef HAS_FILESYSTEM */
-
 #endif /* ifdef USER_FILM_H */
