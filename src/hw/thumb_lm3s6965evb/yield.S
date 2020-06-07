@@ -18,6 +18,7 @@
   beq \handler
 .endm
 
+// TODO: not sure this is needed anymore
 .macro CORRECT_SP_IN_R2
   ands r2, lr, #4
   bne 1f          // 0 means we were using the PSP
@@ -62,12 +63,16 @@ thread_switch:
   svc svc_thread_switch
   bx lr
 
+.global thread_switch_from_kernel_mode
+thread_switch_from_kernel_mode:
+  mov lr, #0xFFFFFFFD  // Special return to user lr value
+  b check_stack_extent
+
 .global handle_exception
 .thumb_func
 handle_exception:
   /* r0-3, r12, lr, pc xPSR have already been saved
-     on the PSP stack. So we won't be using the monitor
-     stack at all and don't need to validate it here.
+     on the PSP stack.
   */
 
   /* See if this is a thread switch or a semihosting call */
@@ -116,10 +121,12 @@ check_svc:
 
   CHECK_SVC svc_thread_switch, check_stack_extent
   CHECK_SVC svc_semihosting,   semihosting
+  CHECK_SVC svc_syscall,       generic_syscall
   /* timer control is done from user mode */
   /* unknown svc */
   b .
 
+.global check_stack_extent
 check_stack_extent:
   /* Set MSP = PSP
      We need to do this ourselves because writes to CONTROL.SPSEL
@@ -166,6 +173,17 @@ save_current_thread:
 load_next_thread:
   ldr r0, =stack_top       // Back to kernel stack
   mov sp, r0
+
+  // TODO: ideally we wouldn't call the scheduler again here
+  // Next best thing only call it if next is null, meaning
+  // it wasn't set by a syscall. (it needs to swap code pages and such)
+  ldr r4, [r7] // r7 = &next_thread
+  mov r1, #0
+  cmp r4, r1
+  bne actually_load_thread
+
+  // Otherwise choose a new next_thread and do housekeping
+  // Note that r6/r7 are callee saved so we can still use them after this
   push {lr}
   bl do_scheduler          // This will set next_thread
   pop {lr}
@@ -224,3 +242,35 @@ semihosting:
   sub r2, #4         // save the return value from r0
   str r0, [r2]       // will get restored to thread automatically
   bx lr
+
+generic_syscall:
+  ldr r0, =stack_top // Reset kernel stack ptr
+  mov sp, r0
+
+  // r8 = operation number
+  ldr r1, =syscall_handlers
+  ldr r8, [r1, r8, LSL#2] // Shift 2 = *4, 4 bytes per address
+
+  // Using r12 as it's part of the return stack frame already
+  mrs r12, psp       // psp since kernel never uses this routine
+  ldr r0, [r12, #0]  // Restore argument registers
+  ldr r1, [r12, #4]
+  ldr r2, [r12, #8]
+  ldr r3, [r12, #12]
+
+  push {lr}
+  blx r8             // call handler
+  pop {lr}
+  mrs r12, psp       // Store result in return stack
+  str r0, [r12]
+
+  // If next_thread is not null then we need to thread switch to it
+  mov r0, #0
+  ldr r1, =next_thread
+  ldr r1, [r1]
+  cmp r0, r1
+  bne check_stack_extent
+  bx lr
+
+syscall_handlers:
+#include "syscall.h"

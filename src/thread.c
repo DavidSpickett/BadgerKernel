@@ -612,6 +612,9 @@ void stack_extent_failed(void) {
   exit(1);
 }
 
+#ifdef __thumb__
+extern void thread_switch_from_kernel_mode(void);
+#endif
 void check_stack(void) {
   bool underflow = current_thread()->bottom_canary != STACK_CANARY;
   bool overflow = current_thread()->top_canary != STACK_CANARY;
@@ -637,8 +640,14 @@ void check_stack(void) {
       // Would clear heap allocs here but we can't trust the thread ID
 
       // Aka don't save any state, just load the scheduler
+      // TODO: this isn't actually checked by the assembly
       current_thread()->state = init;
+#ifdef __thumb__
+      // TODO: thumb doesn't like SVC in kernel mode
+      thread_switch_from_kernel_mode();
+#else
       thread_switch();
+#endif
     } else {
       exit(1);
     }

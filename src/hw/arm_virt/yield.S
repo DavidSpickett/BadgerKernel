@@ -87,16 +87,16 @@ handle_exception:
   b . //unknown svc
 
 generic_syscall:
-  // r7 = operation number
+  // r8 = operation number
   ldr r1, =syscall_handlers
-  ldr r7, [r1, r7, LSL#2] // Shift 2 = *4, 4 bytes per address
+  ldr r8, [r1, r8, LSL#2] // Shift 2 = *4, 4 bytes per address
 
   // Get back argument registers
   POP_KERNEL_TEMPS
   SAVE_KERNEL_TEMPS
 
-  blx r7      // Call handler
-  mov r7, r0  // Temporarily save result
+  blx r8      // Call handler
+  mov r8, r0  // Temporarily save result
 
   // If next_thread is NULL by now, just return normally to same thread
   mov r0, #0
@@ -107,13 +107,13 @@ generic_syscall:
 
   // Otherwise the syscall requires a thread switch
   POP_KERNEL_TEMPS
-  mov r0, r7 // Patch in result for eventual resume
+  mov r0, r8 // Patch in result for eventual resume
   SAVE_KERNEL_TEMPS // So that start_thread_switch can unstack them again
   b start_thread_switch
 
 syscall_ret:
   POP_TEMPS_GOTO_SYSTEM_MODE
-  mov r0, r7 // Put result in the right place so that thread will find it when it resumes
+  mov r0, r8 // Put result in the right place so that thread will find it when it resumes
 
   b exception_return
 
@@ -133,6 +133,7 @@ start_thread_switch:
   b load_next_thread             // Otherwise skip to loading the next thread
 
 check_stack_extent:
+  // TODO: this is only checking *overflow*
   ldr r0, =thread_stack_offset // r0 = &thread_stack_offset
   ldr r1, =_current_thread     // r0 = &_current_thread
   ldr r0, [r0]                 // r0 = thread_stack_offset
@@ -175,6 +176,7 @@ load_next_thread:
   ldr r4, [r11]            // Value of next_thread for actually_load_thread to use if we don't branch
   bne actually_load_thread
   cps #SUPERVISOR_MODE     // Use kernel's stack
+  // Note that r10/r11 are callee saved so we can still use them after this
   bl do_scheduler          // This will set next_thread
   cps #SYSTEM_MODE         // Back to user stack
   ldr r4, [r11]            // Get new next_thread
