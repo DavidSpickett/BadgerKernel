@@ -8,8 +8,33 @@
 .endm
 
 .macro SAVE_KERNEL_TEMPS
-  msr SPSel, #1           // Use kernel stack
-  stp x0, x1, [sp, #-16]!
+  msr SPSel, #1             // Use kernel stack
+  // All caller saved registers
+  stp x0,  x1,  [sp, #-16]!
+  stp x2,  x3,  [sp, #-16]!
+  stp x4,  x5,  [sp, #-16]!
+  stp x6,  x7,  [sp, #-16]!
+  stp x8,  x9,  [sp, #-16]!
+  stp x10, x11, [sp, #-16]!
+  stp x12, x13, [sp, #-16]!
+  stp x14, x15, [sp, #-16]!
+  stp x16, x17, [sp, #-16]!
+  stp x18, x29, [sp, #-16]!
+  stp x30, xzr, [sp, #-16]!
+.endm
+
+.macro POP_KERNEL_TEMPS
+  ldp x30, xzr, [sp], #16
+  ldp x18, x29, [sp], #16
+  ldp x16, x17, [sp], #16
+  ldp x14, x15, [sp], #16
+  ldp x12, x13, [sp], #16
+  ldp x10, x11, [sp], #16
+  ldp x8,  x9,  [sp], #16
+  ldp x6,  x7,  [sp], #16
+  ldp x4,  x5,  [sp], #16
+  ldp x2,  x3,  [sp], #16
+  ldp x0,  x1,  [sp], #16
 .endm
 
 .macro CURRENT_IN_X20_NEXT_IN_X21
@@ -47,13 +72,9 @@ handle_timer:
   beq \handler
 .endm
 
-.macro POP_MONITOR_TEMPS_USE_EL0_SP
-  ldp x0, x1, [sp], #16
+.macro POP_KERNEL_TEMPS_USE_EL0_SP
+  POP_KERNEL_TEMPS
   msr SPSel, #0
-.endm
-
-.macro POP_MONITOR_TEMPS
-  ldp x0, x1, [sp], #16
 .endm
 
 .global handle_svc
@@ -75,7 +96,46 @@ check_svc:
   CHECK_SVC svc_semihosting, semihosting
   CHECK_SVC svc_enable_timer, enable_timer
   CHECK_SVC svc_disable_timer, disable_timer
+  CHECK_SVC svc_syscall, generic_syscall
   b .                // unknown SVC
+
+generic_syscall:
+  // x8 = operation number
+  // Except that x8 is caller saved here, so it's in kernel temps
+  // Use x20 instead
+  mov x20, x8
+  ldr x1, =syscall_handlers
+  lsl x20, x20, #3 // Shift 3 = *8, 8 bytes per address
+  add x20, x20, x1
+  ldr x20, [x20]
+
+  // Get back argument registers
+  POP_KERNEL_TEMPS
+  SAVE_KERNEL_TEMPS
+
+  blr x20     // Call handler
+  mov x20, x0 // Temporarily save result
+
+  // If next_thread is NULL by now, then just return normally
+  mov x0, #0
+  ldr x1, =next_thread
+  ldr x1, [x1]
+  cmp x0, x1
+  beq syscall_ret
+
+  // Otherwise we need to do a thread switch
+  POP_KERNEL_TEMPS
+  mov x0, x20 // Patch in result for eventual resume
+  SAVE_KERNEL_TEMPS // Will get unstacked again later
+  b start_thread_switch
+
+syscall_ret:
+  POP_KERNEL_TEMPS
+  mov x0, x20 // Patch back in result
+  eret
+
+syscall_handlers:
+#include "syscall.h"
 
 enable_timer:
   mrs x0, CNTVCT_EL0     // Get current count
@@ -91,7 +151,7 @@ enable_timer:
 disable_timer:
   DISABLE_TIMER
 finalise_timer:
-  POP_MONITOR_TEMPS
+  POP_KERNEL_TEMPS
   eret
 
 semihosting:
@@ -106,7 +166,7 @@ semihosting:
      to kernel stack. Then here we restore them. So
      semihosting args are intact.
   */
-  POP_MONITOR_TEMPS // Thread's registers point to arguments
+  POP_KERNEL_TEMPS // Thread's registers point to arguments
   hlt 0xf000
   eret
 
@@ -118,7 +178,7 @@ start_thread_switch:
   mov x1, #0               // NULL means we just started up
   cmp x0, x1
   bne check_stack_extent   // If current is valid, save its context
-  POP_MONITOR_TEMPS_USE_EL0_SP
+  // Otherwise we have come from/are in kernel mode loading the very first thread
   CURRENT_IN_X20_NEXT_IN_X21
   b load_next_thread       // Otherwise skip to loading the next thread
 
@@ -136,7 +196,7 @@ check_stack_extent:
   bhs stack_extent_failed      // call C function to error and exit
 
 save_current_thread:
-  POP_MONITOR_TEMPS_USE_EL0_SP
+  POP_KERNEL_TEMPS_USE_EL0_SP
 
   /* Save all registers to user stack */
   stp x0,  x1,  [sp, #-16]!
@@ -180,6 +240,13 @@ save_current_thread:
   str x2, [x1]         // _current_thread->state = suspended
 
 load_next_thread:
+  // If next_thread is null then we need to run the scheduler
+  ldr x6, [x21]        // x0 = next_thread
+  mov x1, #0
+  cmp x6, x1
+  bne actually_load_thread
+
+  // Otherwise pick a new thread and do housekeeping
   msr SPSel, #1              // Use kernel's stack
   bl do_scheduler            // This will set next_thread
   msr SPSel, #0              // Back to user stack

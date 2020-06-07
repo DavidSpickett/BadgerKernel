@@ -3,11 +3,17 @@
 #include "util.h"
 #include "syscall.h"
 
+#ifdef __aarch64__
+#define RCHR "x"
+#else
+#define RCHR "r"
+#endif
+
 size_t generic_syscall(Syscall num, size_t arg1, size_t arg2, size_t arg3, size_t arg4) {
-  register size_t r0 __asm("r0") = arg1;
-  register size_t r1 __asm("r1") = arg2;
-  register size_t r2 __asm("r2") = arg3;
-  register size_t r3 __asm("r3") = arg4;
+  register size_t reg0 __asm(RCHR"0") = arg1;
+  register size_t reg1 __asm(RCHR"1") = arg2;
+  register size_t reg2 __asm(RCHR"2") = arg3;
+  register size_t reg3 __asm(RCHR"3") = arg4;
 
   /* r8 is loaded separatley to allow us to inline this
      function safely. It is not a caller saved register
@@ -17,15 +23,15 @@ size_t generic_syscall(Syscall num, size_t arg1, size_t arg2, size_t arg3, size_
      r8 is used as r7 is the frame pointer on Thumb.
   */
   asm volatile(
-    "mov r8, %[num]\n\t"
+    "mov "RCHR"8, %[num]\n\t"
     "svc %[svc_syscall]\n\t"
-    :"=r"(r0)
-    :"r"(r0), "r"(r1), "r"(r2), "r"(r3),
+    :"=r"(reg0)
+    :"r"(reg0), "r"(reg1), "r"(reg2), "r"(reg3),
      [svc_syscall]"i"(svc_syscall), [num]"r"(num)
     /* Also clobbers other registers but lets assume this
        function isn't using them after this point
        (caller saved handled by kernel) */
-    :"r8"
+    :RCHR"8"
   );
-  return r0;
+  return reg0;
 }

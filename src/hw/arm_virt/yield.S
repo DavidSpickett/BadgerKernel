@@ -128,6 +128,7 @@ start_thread_switch:
   mov r1, #0                     // NULL means we just started up
   cmp r0, r1
   bne check_stack_extent         // If current is valid, save its context
+  // TODO: I don't think this is right, we'd be coming direct from kernel mode and have no saved regs yet????
   POP_KERNEL_TEMPS_USE_SYSTEM_SP // Just switch sp, no lr/pc to save to return stack
   CURRENT_IN_R10_NEXT_IN_R11
   b load_next_thread             // Otherwise skip to loading the next thread

@@ -2,27 +2,32 @@
 #define SYSCALL_H
 
 #ifdef __ASSEMBLER__
-  .word k_add_named_thread
-  .word k_add_thread
-#ifdef CODE_PAGE_SIZE
-  .word k_add_thread_from_file
+#ifdef __aarch64__
+#define FNADDR .quad
 #else
-  .word k_invalid_syscall
+#define FNADDR .word
 #endif
-  .word k_add_named_thread_with_args
-  .word k_get_thread_id
-  .word k_get_thread_name
-  .word k_set_kernel_config
-  .word k_get_thread_state
-  .word k_thread_yield
-  .word k_yield_to
-  .word k_yield_next
-  .word k_get_msg
-  .word k_send_msg
-  .word k_invalid_syscall
-  .word k_invalid_syscall
-  .word k_invalid_syscall
-  .word k_invalid_syscall
+  FNADDR k_add_named_thread
+  FNADDR k_add_thread
+#ifdef CODE_PAGE_SIZE
+  FNADDR k_add_thread_from_file
+#else
+  FNADDR k_invalid_syscall
+#endif
+  FNADDR k_add_named_thread_with_args
+  FNADDR k_get_thread_id
+  FNADDR k_get_thread_name
+  FNADDR k_set_kernel_config
+  FNADDR k_get_thread_state
+  FNADDR k_thread_yield
+  FNADDR k_yield_to
+  FNADDR k_yield_next
+  FNADDR k_get_msg
+  FNADDR k_send_msg
+  FNADDR k_invalid_syscall
+  FNADDR k_invalid_syscall
+  FNADDR k_invalid_syscall
+  FNADDR k_invalid_syscall
 #else
 
 #include <stddef.h>
