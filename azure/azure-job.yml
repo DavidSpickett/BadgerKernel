@@ -60,7 +60,9 @@ jobs:
           wget -qO- https://github.com/oclint/oclint/releases/download/v0.13.1/oclint-0.13.1-x86_64-linux-4.4.0-112-generic.tar.gz | tar xzf - -C oclint --strip-components=1
           export PATH=$(pwd)/toolchain/bin/:$(pwd)/oclint/bin/:$PATH
           cd ARMMultiTasking
-          cmake . -DBUILD_PLATFORM=${{build_platform}} -DOPT_LEVEL=0 -DSANITIZERS=ON -DCOMPILER=${{parameters.compiler}}
+          # If we enable UBSAN we get weird LTO warnings at O0 for Arm
+          # Disabling those warnings uses a flag that Clang/OCLint doesn't understand
+          cmake . -DBUILD_PLATFORM=${{build_platform}} -DOPT_LEVEL=0 -DSANITIZERS=OFF -DCOMPILER=${{parameters.compiler}}
           tmpfile=$(mktemp)
           # Violations will fail with non zero exit code
           oclint `find -not \( -path ./CMakeFiles -prune \) -not \( -name elf.c \) -regex ".*\.c"` -max-priority-1 0 -max-priority-2 0 -max-priority-3 0 | tee $tmpfile
