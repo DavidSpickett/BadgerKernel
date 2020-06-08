@@ -85,7 +85,7 @@ jobs:
                 ccache -z
                 cmake . -DBUILD_PLATFORM=${{build_platform}} -DOPT_LEVEL=${{opt_level}} -DSANITIZERS=${{sanitizers}} -DLTO=${{lto}} -DCOMPILER=${{parameters.compiler}}
                 make clean
-                make make_demos
+                make -j2 make_demos
                 ccache -s
               workingDirectory: $(Agent.BuildDirectory)
               displayName: build-O${{opt_level}}_SANITIZERS_${{sanitizers}}_LTO_${{lto}}
