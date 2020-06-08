@@ -9,7 +9,7 @@ parameters:
 
 jobs:
 - ${{ each build_platform in parameters.build_platform }}:
-  - job: ${{build_platform}}_${{parameters.compiler}}
+  - job: ${{build_platform}}
     pool:
       vmImage: 'ubuntu-18.04'
     steps:
