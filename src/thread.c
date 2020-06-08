@@ -365,7 +365,6 @@ bool k_yield_next(void) {
   return found;
 }
 
-// TODO: these ifdefs are a bit much
 #if CODE_PAGE_SIZE && ! CODE_BACKING_PAGES
 static int code_page_in_use_by() {
   for (size_t idx=0; idx<MAX_THREADS; ++idx) {
@@ -533,7 +532,7 @@ void check_stack(void) {
       // TODO: this isn't actually checked by the assembly
       current_thread()->state = init;
 #ifdef __thumb__
-      // TODO: thumb doesn't like SVC in kernel mode
+      // thumb doesn't like SVC in kernel mode
       thread_switch_from_kernel_mode();
 #else
       thread_switch();
@@ -544,11 +543,6 @@ void check_stack(void) {
   }
 }
 
-// TODO: it's kinda weird that this is in kernel
-// Maybe threads should just enter directly to their
-// worker?
-// Mind you, only the kernel *references* this
-// so that mitigates it some
 __attribute__((noreturn)) void thread_start(void) {
   // Every thread starts by entering this function
 
