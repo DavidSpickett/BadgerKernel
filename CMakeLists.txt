@@ -61,9 +61,13 @@ endif()
 set( CMAKE_C_COMPILER "${PREFIX}gcc" )
 
 # Ignore attr error so we can use oclint annotations
-# Ignore lto type mismatch error which triggers at O0 for UBSAN handlersa
+set( CFLAGS "-DSTACK_SIZE=${STACK_SIZE} -g3 -O${OPT_LEVEL} -Wall -Werror -Wno-error=attribute -std=gnu11")
+
+# Ignore lto type mismatch error which triggers at O0 for UBSAN handlers
 # I *think*, due to https://gcc.gnu.org/bugzilla/show_bug.cgi?id=78562#c6
-set( CFLAGS "-DSTACK_SIZE=${STACK_SIZE} -g3 -O${OPT_LEVEL} -Wall -Werror -Wno-error=attributes -Wno-error=lto-type-mismatch -std=gnu11")
+if(SANITIZERS AND LTO)
+  set( CFLAGS "${CFLAGS} -Wno-error=lto-type-mismatch")
+endif()
 
 # Note that the thumb board ignores -M
 set( QEMU "${QEMU_CMD} -m 1M -nographic -semihosting -kernel" )
