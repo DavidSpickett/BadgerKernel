@@ -47,6 +47,8 @@ void format_thread_name(char* out) {
 // TODO: maybe logging should go via syscall
 // to prevent splitting messages?
 void log_event(const char* event, ...) {
+  //TODO: Big hack here so these don't print in shell demo
+  return;
   char thread_name[THREAD_NAME_SIZE + 1];
   format_thread_name(thread_name);
   printf("Thread %s: ", thread_name);

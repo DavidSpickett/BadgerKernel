@@ -88,7 +88,7 @@ bool k_thread_name(int tid, const char** name) {
   return true;
 }
 
-bool thread_state(int tid, ThreadState* state) {
+bool k_thread_state(int tid, ThreadState* state) {
   if (!is_valid_thread(tid)) {
     return false;
   }

@@ -1,5 +1,5 @@
-#include "thread.h"
 #include "user/thread.h"
+#include "thread.h"
 #include "user/file.h"
 #include "user/util.h"
 #include "print.h"
@@ -158,7 +158,7 @@ static void run(int argc, char* argv[]) {
   // TODO: bodge since load_elf hard errors
   int test = open(run_progname, O_RDONLY);
   if (test < 0) {
-    printf("Couldn't find application \"%s\"", run_progname);
+    printf("Couldn't find application \"%s\"\n", run_progname);
     return;
   }
   close(test);
@@ -314,9 +314,20 @@ void run_shell() {
 }
 
 void setup(void) {
+<<<<<<< HEAD
   KernelConfig cfg = { .log_scheduler=false,
                        .log_threads=false,
                        .destroy_on_stack_err=false};
   k_set_kernel_config(&cfg);
+=======
+  KernelConfig cfg = {
+    .log_scheduler = false,
+    .log_threads = false,
+    .destroy_on_stack_err = false,
+  };
+  k_set_kernel_config(&cfg);
+
+  // This fn runs as kernel
+>>>>>>> 30d4c4e... Get shell running again after syscall merge
   k_add_named_thread(run_shell, "shell");
 }

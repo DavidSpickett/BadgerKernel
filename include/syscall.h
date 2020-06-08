@@ -18,7 +18,6 @@
   FNADDR k_add_named_thread_with_args
   FNADDR k_get_thread_id
   FNADDR k_get_thread_name
-  FNADDR k_thread_name
   FNADDR k_set_kernel_config
   FNADDR k_get_thread_state
   FNADDR k_set_child
@@ -37,6 +36,7 @@
   FNADDR k_malloc
   FNADDR k_realloc
   FNADDR k_free
+  FNADDR k_thread_name
   FNADDR k_invalid_syscall
   FNADDR k_invalid_syscall
   FNADDR k_invalid_syscall
@@ -53,7 +53,6 @@ typedef enum {
   syscall_add_named_thread_with_args,
   syscall_get_thread_id,
   syscall_get_thread_name,
-  syscall_thread_name,
   syscall_set_kernel_config,
   // TODO: sane ordering for these?
   syscall_get_thread_state,
@@ -73,6 +72,7 @@ typedef enum {
   syscall_malloc,
   syscall_realloc,
   syscall_free,
+  syscall_thread_name,
   syscall_eol,
 } Syscall;
 
