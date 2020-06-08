@@ -167,9 +167,8 @@ save_current_thread:
   str r3, [r1]         // _current_thread->state = suspended
 
 load_next_thread:
-  // TODO: do_scheduler would ideally not be called here at all
-  // For now, check if we're null. If it's not then a syscall must have set it
-  // So don't run the scheduler again. (which causes double swaps of loaded programs)
+  // If next_thread is null then it wasn't set by a syscall
+  // If so, run the scheduler to choose the next
   ldr r0, [r11]
   mov r1, #0
   cmp r0, r1

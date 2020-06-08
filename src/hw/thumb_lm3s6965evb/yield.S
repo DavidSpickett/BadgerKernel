@@ -167,9 +167,8 @@ load_next_thread:
   ldr r0, =stack_top       // Back to kernel stack
   mov sp, r0
 
-  // TODO: ideally we wouldn't call the scheduler again here
-  // Next best thing only call it if next is null, meaning
-  // it wasn't set by a syscall. (it needs to swap code pages and such)
+  // If next thread is null then it wasn't set by a syscall
+  // Run the scheduler to choose the next thread
   ldr r4, [r7] // r7 = &next_thread
   mov r1, #0
   cmp r4, r1
