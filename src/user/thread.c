@@ -132,6 +132,10 @@ bool send_msg(int destination, int message) {
   return DO_SYSCALL_2(send_msg, destination, message);
 }
 
+bool thread_name(int tid, const char** name) {
+  return DO_SYSCALL_2(thread_name, tid, name);
+}
+
 bool thread_join(int tid, ThreadState* state) {
   // state may be NULL so use a local
   ThreadState got;
