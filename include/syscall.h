@@ -32,6 +32,9 @@
   FNADDR k_remove
   FNADDR k_close
   FNADDR k_exit
+  FNADDR k_malloc
+  FNADDR k_realloc
+  FNADDR k_free
   FNADDR k_invalid_syscall
   FNADDR k_invalid_syscall
   FNADDR k_invalid_syscall
@@ -63,6 +66,9 @@ typedef enum {
   syscall_remove,
   syscall_close,
   syscall_exit,
+  syscall_malloc,
+  syscall_realloc,
+  syscall_free,
   syscall_eol,
 } Syscall;
 

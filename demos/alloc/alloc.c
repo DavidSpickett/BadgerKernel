@@ -1,6 +1,6 @@
 #include "user/thread.h"
 #include "thread.h"
-#include "alloc.h"
+#include "user/alloc.h"
 #include "util.h"
 #include <stdint.h>
 

@@ -305,7 +305,7 @@ bool thread_wake(int tid) {
 
 static void cleanup_thread(Thread* thread) {
   // Free any lingering heap allocations
-  free_all(thread->id);
+  k_free_all(thread->id);
 
 #if CODE_PAGE_SIZE
   // Free the code page. If there are other threads

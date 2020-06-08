@@ -87,9 +87,11 @@ set( KERNEL_SOURCES
   src/condition_variable.c
   src/syscall.c
   src/hw/arm_file.c
+  # /user files here for threads within the same binary
   src/user/thread.c
   src/user/file.c
   src/user/util.c
+  src/user/alloc.c
   src/hw/${PLATFORM_SRC}/vectors.s
   src/hw/${PLATFORM_SRC}/startup.s
   src/hw/${PLATFORM_SRC}/yield.S

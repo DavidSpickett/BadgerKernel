@@ -17,7 +17,7 @@ uint8_t heap[HEAP_SIZE] __attribute__((aligned(BLOCK_SIZE)));
 const uint8_t* heap_end = heap + HEAP_SIZE;
 
 // Tag walker
-size_t next_tag(size_t idx) {
+static size_t next_tag(size_t idx) {
   if (block_tags[idx].tag) {
     // Skip runs of allocated blocks
     idx += block_tags[idx].tag;
@@ -29,7 +29,7 @@ size_t next_tag(size_t idx) {
   return idx < NUM_BLOCKS ? idx : SIZE_MAX;
 }
 
-size_t find_free_space(size_t num_blocks) {
+static size_t find_free_space(size_t num_blocks) {
   size_t free_found = 0;
   size_t start_idx = 0;
   size_t current_idx = 0;
@@ -54,22 +54,21 @@ size_t find_free_space(size_t num_blocks) {
   return SIZE_MAX;
 }
 
-size_t pointer_to_tag_idx(void* ptr) {
+static size_t pointer_to_tag_idx(void* ptr) {
   size_t raw_ptr = (size_t)ptr;
   raw_ptr -= (size_t)heap;
   return raw_ptr / BLOCK_SIZE;
 }
 
-size_t to_blocks(size_t size) {
+static size_t to_blocks(size_t size) {
   return (size + BLOCK_SIZE - 1) / BLOCK_SIZE;
 }
 
-void* to_heap_ptr(size_t tag_idx) {
+static void* to_heap_ptr(size_t tag_idx) {
   return heap + (tag_idx * BLOCK_SIZE);
 }
 
-// TODO: mutex!!
-void* malloc(size_t size) {
+void* k_malloc(size_t size) {
   // Divide rounding up
   size_t num_blocks = to_blocks(size);
   size_t alloc_idx = find_free_space(num_blocks);
@@ -84,7 +83,7 @@ void* malloc(size_t size) {
   return NULL; //!OCLINT
 }
 
-bool can_realloc_free(void* ptr) {
+static bool can_realloc_free(void* ptr) {
   size_t tag_idx = pointer_to_tag_idx(ptr);
   if (
       // Can't free a NULL ptr
@@ -99,10 +98,10 @@ bool can_realloc_free(void* ptr) {
   return true;
 }
 
-void* realloc(void* ptr, size_t size) {
+void* k_realloc(void* ptr, size_t size) {
   if (!ptr) {
     // realloc NULL is just malloc
-    return malloc(size);
+    return k_malloc(size);
   }
 
   if (!can_realloc_free(ptr)) {
@@ -140,7 +139,7 @@ void* realloc(void* ptr, size_t size) {
   return NULL; //!OCLINT
 }
 
-void free_all(int tid) {
+void k_free_all(int tid) {
   size_t current_idx = 0;
   do {
     if (block_tags[current_idx].tag &&
@@ -151,7 +150,7 @@ void free_all(int tid) {
   } while (current_idx != SIZE_MAX);
 }
 
-void free(void* ptr) {
+void k_free(void* ptr) {
   if (!can_realloc_free(ptr)) {
     return;
   }

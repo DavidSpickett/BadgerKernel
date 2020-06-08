@@ -3,9 +3,9 @@
 
 #include <stddef.h>
 
-void* malloc(size_t size);
-void* realloc(void* ptr, size_t size);
-void free(void* ptr);
-void free_all(int tid);
+void* k_malloc(size_t size);
+void* k_realloc(void* ptr, size_t size);
+void k_free(void* ptr);
+void k_free_all(int tid);
 
 #endif /* ifdef ALLOC_H */
