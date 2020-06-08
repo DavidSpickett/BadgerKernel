@@ -18,17 +18,6 @@
   beq \handler
 .endm
 
-// TODO: not sure this is needed anymore
-.macro CORRECT_SP_IN_R2
-  ands r2, lr, #4
-  bne 1f          // 0 means we were using the PSP
-  mrs r2, msp
-  b 2f
-1:
-  mrs r2, psp
-2:
-.endm
-
 .global start_thread_switch
 .thumb_func
 start_thread_switch:
@@ -107,7 +96,12 @@ handle_interrupt:
   /* Pending status is cleared by exception return */
 
 handle_svc:
-  CORRECT_SP_IN_R2
+  ands r2, lr, #4
+  bne using_psp   // 0 means we were using the PSP
+  b .             // Getting here means we were using the MSP
+                  // Which is a bad(tm)
+using_psp:
+  mrs r2, psp
 check_svc:
   mov r1, #(6*4)
   add r2, r1      // find the PC we came from
