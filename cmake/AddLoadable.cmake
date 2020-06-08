@@ -28,15 +28,15 @@ function(__add_loadable PARENT NAME PIE)
   add_executable(${NAME} demos/${PARENT}/${NAME}.c)
   add_dependencies(${NAME} ${PARENT})
 
+  set(LINK_CMD "-Wl,--defsym=code_page_size=${CODE_PAGE_SIZE},--build-id=none,")
   if(PIE)
     target_compile_options(${NAME} PRIVATE -fpie -shared -L. -l:${NAME})
-    target_link_libraries(${NAME} PRIVATE "-Wl,--defsym=code_page_size=${CODE_PAGE_SIZE},-T,linker/pie_loadable.ld,--build-id=none,-pie,-shared")
+    target_link_libraries(${NAME} PRIVATE "${LINK_CMD}-T,linker/pie_loadable.ld,-pie,-shared")
     if(SANITIZERS)
       target_sources(${NAME} PRIVATE src/ubsan.c)
     endif()
   else()
-    # TODO: dedupe
-    target_link_libraries(${NAME} PRIVATE "-Wl,--defsym=code_page_size=${CODE_PAGE_SIZE},--just-symbols=${PARENT},-T,linker/loadable.ld,--build-id=none")
+    target_link_libraries(${NAME} PRIVATE "${LINK_CMD}-T,linker/loadable.ld,--just-symbols=${PARENT}")
   endif()
 
   # TODO: not ideal, we end up building them during the lit run
