@@ -329,9 +329,8 @@ void k_thread_yield(Thread* next) {
   check_stack();
 
   next_thread = next;
-  do_scheduler(); // TODO: ensure scheduler is called whenever next is set
-  // Assembly handler will see next set and
-  // do a switch
+  do_scheduler();
+  // Assembly handler will see next_thread set and do the switch
 }
 
 bool k_yield_to(int tid) {
