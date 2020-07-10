@@ -20,6 +20,7 @@
   FNADDR k_get_thread_name
   FNADDR k_set_kernel_config
   FNADDR k_get_thread_state
+  FNADDR k_set_child
   FNADDR k_thread_yield
   FNADDR k_yield_to
   FNADDR k_yield_next
@@ -54,6 +55,7 @@ typedef enum {
   syscall_set_kernel_config,
   // TODO: sane ordering for these?
   syscall_get_thread_state,
+  syscall_set_child,
   syscall_thread_yield,
   syscall_yield_to,
   syscall_yield_next,

@@ -1,0 +1,11 @@
+Thread            0: Zero!
+Thread            0: yielding
+Thread            2: One!
+Thread            2: exiting
+Thread            0: resuming
+Thread            0: Two!
+Thread            0: exiting
+Thread            3: Three!
+Thread            3: exiting
+Thread            1: Four!
+Thread            1: exiting

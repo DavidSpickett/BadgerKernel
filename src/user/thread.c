@@ -90,6 +90,10 @@ void set_kernel_config(const KernelConfig* config) {
   DO_SYSCALL_1(set_kernel_config, config);
 }
 
+bool set_child(int child) {
+  return DO_SYSCALL_1(set_child, child);
+}
+
 bool get_thread_state(int tid, ThreadState* state) {
   return DO_SYSCALL_2(get_thread_state, tid, state);
 }

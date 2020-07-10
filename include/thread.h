@@ -32,6 +32,8 @@ typedef struct {
   Message* next_msg;
   Message* end_msgs;
   bool msgs_full;
+  int parent;
+  int child;
 #if CODE_PAGE_SIZE
   bool in_code_page;
 #if CODE_BACKING_PAGES
@@ -67,6 +69,7 @@ bool k_send_msg(int destination, int message);
 
 void k_set_kernel_config(const KernelConfig* config);
 bool k_get_thread_state(int tid, ThreadState* state);
+bool k_set_child(int child);
 
 void k_thread_yield(Thread* next);
 bool k_yield_to(int tid);

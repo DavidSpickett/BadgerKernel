@@ -32,6 +32,17 @@ void k_set_kernel_config(const KernelConfig* config) {
   kernel_config = *config;
 }
 
+bool k_set_child(int child) {
+  // Assuming that no one wants to clear child
+  // so ID of -1 is not allowed
+  if (is_valid_thread(child)) {
+    _current_thread->child = child;
+    all_threads[child].parent = k_get_thread_id();
+    return true;
+  }
+  return false;
+}
+
 bool is_valid_thread(int tid) {
   return (tid >= 0) && (tid < MAX_THREADS) && all_threads[tid].id != -1;
 }
@@ -77,6 +88,8 @@ void init_thread(Thread* thread, int tid, const char* name,
   thread->id = tid;
   thread->name = name;
   thread->args = *args;
+  thread->parent = -1;
+  thread->child = -1;
 
   // Start message buffer empty
   thread->next_msg = &(thread->messages[0]);
@@ -249,6 +262,16 @@ static void swap_paged_threads(const Thread* current, const Thread* next) {
 
 static size_t next_possible_thread_idx(const Thread* curr) {
   if (curr) {
+    // Parent always yields to child if possible
+    if (is_valid_thread(curr->child)) {
+      return curr->child;
+    }
+
+    // Children always return to parents
+    if (is_valid_thread(curr->parent)) {
+      return curr->parent;
+    }
+
     // +1 to skip the current thread
     return curr - &all_threads[0] + 1;
   }

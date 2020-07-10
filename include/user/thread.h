@@ -21,6 +21,7 @@ void yield(void);
 bool thread_join(int tid, ThreadState* state);
 bool get_thread_state(int tid, ThreadState* state)
   __attribute__((nonnull));
+bool set_child(int child);
 
 void log_event(const char* event, ...);
 
