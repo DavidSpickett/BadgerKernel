@@ -61,12 +61,11 @@ void k_invalid_syscall(size_t arg1, size_t arg2, size_t arg3, size_t arg4) {
 }
 
 const char* k_get_thread_name(void) {
-  return current_thread()->name;
+  return _current_thread->name;
 }
 
 int k_get_thread_id(void) {
-  Thread* curr = current_thread();
-  return curr ? curr->id : -1;
+  return _current_thread ? _current_thread->id : -1;
 }
 
 void init_thread(Thread* thread, int tid, const char* name,
@@ -136,13 +135,13 @@ static void inc_msg_pointer(Thread* thr, Message** ptr) {
 
 bool k_get_msg(int* sender, int* message) {
   // If message box is not empty, or it is full
-  if (current_thread()->next_msg != current_thread()->end_msgs ||
-      current_thread()->msgs_full) {
-    *sender = current_thread()->next_msg->src;
-    *message = current_thread()->next_msg->content;
+  if (_current_thread->next_msg != _current_thread->end_msgs ||
+      _current_thread->msgs_full) {
+    *sender = _current_thread->next_msg->src;
+    *message = _current_thread->next_msg->content;
 
-    inc_msg_pointer(current_thread(), &current_thread()->next_msg);
-    current_thread()->msgs_full = false;
+    inc_msg_pointer(_current_thread, &_current_thread->next_msg);
+    _current_thread->msgs_full = false;
 
     return true;
   }
@@ -179,8 +178,8 @@ void k_format_thread_name(char* out) {
   }
 
   const char* name = NULL;
-  if (current_thread()) {
-    name = current_thread()->name;
+  if (_current_thread) {
+    name = _current_thread->name;
   }
 
   if (name == NULL) {
@@ -263,13 +262,12 @@ void do_scheduler(void) {
   // otherwise just do required housekeeping to switch
   if (next_thread != NULL) {
 #if CODE_BACKING_PAGES
-    swap_paged_threads(current_thread(), next_thread);
+    swap_paged_threads(_current_thread, next_thread);
 #endif
     return;
   }
 
-  Thread* curr = current_thread();
-  size_t start_thread_idx = next_possible_thread_idx(curr);
+  size_t start_thread_idx = next_possible_thread_idx(_current_thread);
 
   size_t max_thread_idx = start_thread_idx + MAX_THREADS;
   for (size_t idx = start_thread_idx; idx < max_thread_idx; ++idx) {
@@ -291,7 +289,7 @@ void do_scheduler(void) {
     next_thread = &all_threads[_idx];
 
 #if CODE_BACKING_PAGES
-    swap_paged_threads(curr, next_thread);
+    swap_paged_threads(_current_thread, next_thread);
 #endif
 
     return; //!OCLINT
@@ -459,7 +457,7 @@ int k_add_named_thread(void (*worker)(), const char* name) {
 
 #if CODE_PAGE_SIZE
 static void setup_code_page(size_t idx) {
-  Thread* curr = current_thread();
+  Thread* curr = _current_thread;
 #if CODE_BACKING_PAGES
   if (curr) {
     size_t page = curr->code_backing_page;
@@ -494,7 +492,7 @@ int k_add_named_thread_with_args(void (*worker)(), const char* name,
 }
 
 void thread_wait(void) {
-  current_thread()->state = waiting;
+  _current_thread->state = waiting;
   // Skip the yielding print
   next_thread = NULL;
   thread_switch();
@@ -506,11 +504,6 @@ void thread_wait(void) {
 __attribute__((section(".thread_vars"))) size_t thread_stack_offset =
     offsetof(Thread, stack);
 
-//TODO: this was only here because of linux
-Thread* current_thread(void) {
-  return _current_thread;
-}
-
 void stack_extent_failed(void) {
   // current_thread is likely still valid here
   k_log_event("Not enough stack to save context!");
@@ -521,13 +514,13 @@ void stack_extent_failed(void) {
 extern void thread_switch_from_kernel_mode(void);
 #endif
 void check_stack(void) {
-  bool underflow = current_thread()->bottom_canary != STACK_CANARY;
-  bool overflow = current_thread()->top_canary != STACK_CANARY;
+  bool underflow = _current_thread->bottom_canary != STACK_CANARY;
+  bool overflow = _current_thread->top_canary != STACK_CANARY;
 
   if (underflow || overflow) {
     // Don't schedule this again, or rely on its ID
-    current_thread()->id = -1;
-    current_thread()->name = NULL;
+    _current_thread->id = -1;
+    _current_thread->name = NULL;
 
     if (underflow) {
       k_log_event("Stack underflow!");
@@ -540,13 +533,13 @@ void check_stack(void) {
      /* Setting -1 here, instead of state=finished is fine,
          because A: the thread didn't actually finish
                  B: the thread struct is actually invalid */
-      current_thread()->id = -1;
+      _current_thread->id = -1;
 
       // Would clear heap allocs here but we can't trust the thread ID
 
       // Aka don't save any state, just load the scheduler
       // TODO: this isn't actually checked by the assembly
-      current_thread()->state = init;
+      _current_thread->state = init;
 #ifdef __thumb__
       // thumb doesn't like SVC in kernel mode
       thread_switch_from_kernel_mode();
@@ -563,14 +556,14 @@ __attribute__((noreturn)) void thread_start(void) {
   // Every thread starts by entering this function
 
   // Call thread's actual function
-  current_thread()->work(current_thread()->args.a1, current_thread()->args.a2,
-                         current_thread()->args.a3, current_thread()->args.a4);
+  _current_thread->work(_current_thread->args.a1, _current_thread->args.a2,
+                         _current_thread->args.a3, _current_thread->args.a4);
 
   // Yield back to the scheduler
   k_log_event("exiting");
 
   // Make sure we're not scheduled again
-  current_thread()->state = finished;
+  _current_thread->state = finished;
 
   /* You might think this is a timing issue.
      What if we're interrupted here?
@@ -584,7 +577,7 @@ __attribute__((noreturn)) void thread_start(void) {
      away anyway.
   */
 
-  cleanup_thread(current_thread());
+  cleanup_thread(_current_thread);
 
   // Calling thread_switch directly so we don't print 'yielding'
   // TODO: we save state here that we don't need to
