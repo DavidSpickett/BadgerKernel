@@ -5,3 +5,5 @@ endif()
 
 add_demo(loadpiebinary)
 add_shared_loadable(loadpiebinary piebinary)
+
+target_compile_definitions(loadpiebinary PRIVATE "STARTUP_PROG=\"piebinary\"")

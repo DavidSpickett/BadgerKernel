@@ -22,6 +22,7 @@ ssize_t k_write(int filedes, const void* buf, size_t nbyte);
 off_t k_lseek(int fd, off_t offset, int whence);
 int k_remove(const char* path);
 int k_close(int filedes);
+// TODO: this is the wrong header for this
 void k_exit(int status);
 
 #endif /* ifdef FILE_SYSTEM_H */

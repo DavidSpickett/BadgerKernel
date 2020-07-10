@@ -108,7 +108,19 @@ __attribute__((noreturn)) void entry(void) {
     init_thread(&all_threads[idx], -1, NULL, NULL, &noargs);
   }
 
-  setup(); // Adds initial threads
+#if defined CODE_PAGE_SIZE && defined STARTUP_PROG
+  const char* startup_prog = STARTUP_PROG;
+  k_log_event("Loading program \"%s\"", startup_prog);
+  // Empty means load builtin threads
+  if (strcmp(startup_prog, "")) {
+    k_add_thread_from_file(startup_prog);
+  } else {
+#else
+  {
+#endif
+    setup(); // Adds initial threads
+  }
+
   start_thread_switch(); // Not thread_switch as we're in kernel mode
 
   __builtin_unreachable();
@@ -166,7 +178,10 @@ void k_format_thread_name(char* out) {
     out[idx] = ' ';
   }
 
-  const char* name = current_thread()->name;
+  const char* name = NULL;
+  if (current_thread()) {
+    name = current_thread()->name;
+  }
 
   if (name == NULL) {
     int tid = k_get_thread_id();
@@ -491,6 +506,7 @@ void thread_wait(void) {
 __attribute__((section(".thread_vars"))) size_t thread_stack_offset =
     offsetof(Thread, stack);
 
+//TODO: this was only here because of linux
 Thread* current_thread(void) {
   return _current_thread;
 }
