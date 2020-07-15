@@ -30,7 +30,7 @@ function(__add_loadable PARENT NAME PIE)
 
   set(LINK_CMD "-Wl,--defsym=code_page_size=${CODE_PAGE_SIZE},--build-id=none,")
   if(PIE)
-    target_compile_options(${NAME} PRIVATE -fpie -shared -L. -l:${NAME})
+    target_compile_options(${NAME} PRIVATE -fpie -shared)
     target_link_libraries(${NAME} PRIVATE "${LINK_CMD}-T,linker/pie_loadable.ld,-pie,-shared")
     if(SANITIZERS)
       target_sources(${NAME} PRIVATE src/ubsan.c)
