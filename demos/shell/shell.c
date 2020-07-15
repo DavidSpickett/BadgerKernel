@@ -163,12 +163,9 @@ static void run(int argc, char* argv[]) {
   }
   close(test);
 
-  add_thread_from_file(run_progname);
-  // TODO: this is a bit of a bodge
-  // Since we know the shell is ID 0, then run is ID N
-  // The added thread must be N+something (in this single tasking
-  // state at least). So just exit and assume it will run.
-  // This *will* break once we have background processes
+  int tid = add_thread_from_file(run_progname);
+  // Set it as our child so we come back here when done
+  set_child(tid);
 }
 
 static void help(int argc, char* argv[]) {
