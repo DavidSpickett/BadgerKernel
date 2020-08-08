@@ -61,7 +61,7 @@ jobs:
                 # Each script has its own environment so we need to do this here
                 export PATH=$(pwd)/toolchain/bin/:$PATH
                 cd ARMMultiTasking
-                rm CMakeCache.txt
+                rm -f CMakeCache.txt
                 export CCACHE_DIR=$(pwd)/.ccache
                 ccache -z
                 cmake . -DBUILD_PLATFORM=${{build_platform}} -DOPT_LEVEL=${{opt_level}} -DSANITIZERS=${{sanitizers}} -DLTO=${{lto}} -DCOMPILER=${{parameters.compiler}}
