@@ -43,6 +43,7 @@
   FNADDR k_realloc
   FNADDR k_free
   FNADDR k_thread_name
+  FNADDR k_list_dir
   FNADDR k_invalid_syscall
   FNADDR k_invalid_syscall
   FNADDR k_invalid_syscall
@@ -82,6 +83,7 @@ typedef enum {
   syscall_realloc,
   syscall_free,
   syscall_thread_name,
+  syscall_list_dir,
   syscall_eol,
 } Syscall;
 

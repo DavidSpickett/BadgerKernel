@@ -3,6 +3,7 @@
 
 #include "file_system.h"
 
+int list_dir(const char* path, char* out, size_t outsz);
 int open(const char* path, int oflag, ...);
 ssize_t read(int filedes, void* buf, size_t nbyte);
 ssize_t write(int filedes, const void* buf, size_t nbyte);

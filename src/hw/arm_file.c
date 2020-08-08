@@ -4,6 +4,36 @@
 #include <stddef.h>
 #include <string.h>
 
+int k_list_dir(const char* path, char* out, size_t outsz) {
+  // Semihosting doesn't provide an 'ls' command
+  // so make our own with a temp file
+  char cmd[128];
+  const char* tmpname = "__ls.out";
+  int len = sprintf(cmd, "ls %s > %s", path, tmpname);
+  assert((len >= 0) && (len < 127));
+
+  // Run the cmd
+  volatile size_t parameters[] = {(size_t)cmd, len};
+  int ret = generic_semihosting_call(SYS_SYSTEM, parameters);
+  if (ret != 0) {
+    return ret;
+  }
+
+  int ls_fd = k_open(tmpname, O_RDONLY);
+  assert(ls_fd != -1);
+  parameters[0] = ls_fd;
+  // Check output would fit in buffer
+  int ls_sz = generic_semihosting_call(SYS_FLEN, parameters);
+  assert(ls_sz < outsz);
+  // Read whole file back
+  k_read(ls_fd, out, ls_sz);
+  k_close(ls_fd);
+
+  return 0;
+}
+
+
+
 int k_open(const char* path, int oflag, ...) {
   volatile size_t parameters[] = {(size_t)path, oflag, strlen(path)};
   return generic_semihosting_call(SYS_OPEN, parameters);

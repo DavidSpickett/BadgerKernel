@@ -16,6 +16,7 @@
 // Seek to offset from beginning
 #define SEEK_CUR 0
 
+int k_list_dir(const char* path, char* out, size_t outsz);
 int k_open(const char* path, int oflag, ...);
 ssize_t k_read(int filedes, void* buf, size_t nbyte);
 ssize_t k_write(int filedes, const void* buf, size_t nbyte);

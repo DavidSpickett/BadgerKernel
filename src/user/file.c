@@ -2,6 +2,10 @@
 #include "syscall.h"
 #include <stddef.h>
 
+int list_dir(const char* path, char* out, size_t outsz) {
+  return DO_SYSCALL_3(list_dir, path, out, outsz);
+}
+
 int open(const char* path, int oflag, ...) {
   // Ignoring the ...
   return DO_SYSCALL_2(open, path, oflag);
