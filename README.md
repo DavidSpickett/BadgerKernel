@@ -63,6 +63,40 @@ lit demos/
 
 There is a interactive shell, do "make run_shell" to see it. There's some basic commands provided and it can run loadable programs as commands. (see demos/shell for examples)
 
+```
+---------------------
+----- AMT Shell -----
+---------------------
+$ help
+Builtins:
+help quit run
+Programs:
+echo ps ls
+$ echo hello AMT
+hello AMT
+$ run ps
+|-----------|
+| Thread 0
+|-----------|
+| Name      | shell
+| State     | suspended (2)
+| Child     | run (1)
+|-----------|
+|-----------|
+| Thread 1
+|-----------|
+| Name      | run
+| State     | suspended (2)
+| Child     | ps (2)
+|-----------|
+|-----------|
+| Thread 2
+|-----------|
+| Name      | ps
+| State     | running (1)
+|-----------|
+```
+
 ## References
 
 ### Qemu
