@@ -74,6 +74,7 @@ void k_set_kernel_config(const KernelConfig* config);
 void k_get_kernel_config(KernelConfig* config);
 bool k_get_thread_state(int tid, ThreadState* state);
 bool k_set_child(int child);
+bool k_get_child(int tid, int* child);
 
 void k_thread_yield(Thread* next);
 bool k_yield_to(int tid);

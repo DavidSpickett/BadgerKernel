@@ -48,6 +48,23 @@ bool k_set_child(int child) {
   return false;
 }
 
+// Return false if parent ID is invalid
+// Set child to -1 if parent ID has no child
+bool k_get_child(int tid, int* child) {
+  if (!is_valid_thread(tid)) {
+    return false;
+  }
+  for (size_t idx=0; idx<MAX_THREADS; ++idx) {
+    if (all_threads[idx].parent == tid) {
+      *child = idx;
+      return true;
+    }
+  }
+
+  *child = -1;
+  return true;
+}
+
 bool is_valid_thread(int tid) {
   return (tid >= 0) && (tid < MAX_THREADS) && all_threads[tid].id != -1;
 }

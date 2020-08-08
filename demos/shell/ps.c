@@ -42,11 +42,21 @@ void worker(int argc, char* argv[]) {
     get_thread_state(tid, &state);
 	  const char* state_name = thread_state_to_str(state);
 
+    int child_tid;
+    get_child(tid, &child_tid);
+    const char* child_name = NULL;
+    if (child_tid != -1) {
+      thread_name(child_tid, &child_name);
+    }
+
     printf("|-----------|\n");
     printf("| Thread %u\n", tid);
     printf("|-----------|\n");
     printf("| Name      | %s\n", name);
     printf("| State     | %s (%u)\n", state_name, state);
+    if (child_name) {
+    printf("| Child     | %s (%u)\n", child_name, child_tid);
+    }
     printf("|-----------|\n");
   }
 }

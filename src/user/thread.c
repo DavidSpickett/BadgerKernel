@@ -145,6 +145,10 @@ void get_kernel_config(KernelConfig* config) {
   DO_SYSCALL_1(get_kernel_config, config);
 }
 
+bool get_child(int tid, int* child) {
+  return DO_SYSCALL_2(get_child, tid, child);
+}
+
 bool thread_join(int tid, ThreadState* state) {
   // state may be NULL so use a local
   ThreadState got;
