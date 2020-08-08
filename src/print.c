@@ -1,6 +1,7 @@
 #include "print.h"
 #include <stdint.h>
 #include <string.h>
+#include <stdlib.h>
 
 int putchar(int chr) {
   // This must be a an int write not a char
@@ -71,6 +72,19 @@ int vprintf(const char* fmt, va_list args) {
       case 's': // string
       {
         len += putstr(va_arg(args, const char*));
+        fmt++;
+        break;
+      }
+      case 'i': // Signed decimal
+      {
+        char int_str[17];
+        int num = va_arg(args, int);
+        if (num < 0) {
+          len += putchar('-');
+          num = abs(num);
+        }
+        uint_to_str(num, int_str, 10);
+        len += putstr(int_str);
         fmt++;
         break;
       }

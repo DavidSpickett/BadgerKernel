@@ -19,8 +19,7 @@ void worker(int argc, char* argv[]) {
 
   int ret = list_dir(path, res, MAX_RES);
   if (ret != 0) {
-    // TODO: ability to print signed numbers
-    printf("Couldn't ls %s, error %u\n", path, ret);
+    printf("Couldn't ls %s, error %i\n", path, ret);
     return;
   }
 

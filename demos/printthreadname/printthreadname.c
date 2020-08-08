@@ -19,6 +19,7 @@ void setup(void) {
 
   // Check we can escape %
   printf("%% Print Demo %%\n");
+  printf("Signed numbers: %i %i %i %i %i\n", -2, -1, 0, 1, 2);
 
   char buf[100];
   const char* hex = "hex";
