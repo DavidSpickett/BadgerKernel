@@ -8,6 +8,7 @@ int add_named_thread(void (*worker)(void), const char* name);
 int add_thread(void (*worker)(void));
 #if CODE_PAGE_SIZE
 int add_thread_from_file(const char* filename);
+int add_thread_from_file_with_args(const char* filename, const ThreadArgs* args);
 #endif
 int add_named_thread(void (*worker)(void), const char* name);
 int add_named_thread_with_args(void (*worker)(), const char* name,

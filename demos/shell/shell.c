@@ -60,7 +60,6 @@ static ProcessedCmdLine split_cmd_line(char* cmd_line) {
 static void help(int argc, char* argv[]);
 static void quit(int argc, char* argv[]);
 static void  run(int argc, char* argv[]);
-static void echo(int argc, char* argv[]);
 static void   ps(int argc, char* argv[]);
 
 typedef struct {
@@ -72,7 +71,6 @@ BuiltinCommand builtins[] = {
   {"help", help, "help <command name>"},
   {"quit", quit, "Quit the shell"},
   {"run",  run,  "run <program name>"},
-  {"echo", echo, "echo <thing> <thing2> <...>"},
   {"ps",   ps,   "Shows system threads"},
 };
 
@@ -133,16 +131,6 @@ static void ps(int argc, char* argv[]) {
   }
 }
 
-static void echo(int argc, char* argv[]) {
-  if (!argc) {
-    return;
-  }
-  for (int i=1; i<argc; ++i) {
-    printf("%s ", argv[i]);
-  }
-  printf("\n");
-}
-
 //TODO: thread names are pointers so some time after
 // run() finishes the pointer to the name on the stack is invalid
 // So after you run a few more commands you'll see that the name
@@ -151,8 +139,8 @@ static void echo(int argc, char* argv[]) {
 // Again, this workaround breaks if we have background processes
 char run_progname[256];
 static void run(int argc, char* argv[]) {
-  if (argc != 2) {
-    printf("run expects 1 argument, the program name\n");
+  if (argc < 2) {
+    printf("run expects at least 1 argument, the program name\n");
     return;
   }
   strcpy(run_progname, argv[1]);
@@ -165,7 +153,10 @@ static void run(int argc, char* argv[]) {
   }
   close(test);
 
-  int tid = add_thread_from_file(run_progname);
+  // Pass on rest of arguments, +/- 1 to skip "run"
+  // The program will still expect argv[0] to be its name
+  const ThreadArgs args = make_args(argc-1, argv+1, 0, 0);
+  int tid = add_thread_from_file_with_args(run_progname, &args);
   // Set it as our child so we come back here when done
   set_child(tid);
 }

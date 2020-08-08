@@ -73,6 +73,10 @@ int add_thread(void (*worker)(void)) {
 int add_thread_from_file(const char* filename) {
   return DO_SYSCALL_1(add_thread_from_file, filename);
 }
+
+int add_thread_from_file_with_args(const char* filename, const ThreadArgs* args) {
+  return DO_SYSCALL_2(add_thread_from_file_with_args, filename, args);
+}
 #endif
 
 int add_named_thread_with_args(
@@ -130,10 +134,6 @@ bool get_msg(int* sender, int* message) {
 
 bool send_msg(int destination, int message) {
   return DO_SYSCALL_2(send_msg, destination, message);
-}
-
-bool thread_name(int tid, const char** name) {
-  return DO_SYSCALL_2(thread_name, tid, name);
 }
 
 bool thread_join(int tid, ThreadState* state) {

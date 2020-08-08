@@ -4,4 +4,5 @@ endif()
 
 add_demo(shell)
 add_loadable(shell test_app)
+add_loadable(shell echo)
 target_compile_definitions(shell PRIVATE CODE_BACKING_PAGES=3)

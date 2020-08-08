@@ -456,7 +456,15 @@ static size_t find_free_backing_page() {
 #endif
 
 #if CODE_PAGE_SIZE
+
+// TODO: consolidate all these "add thread" variations
 int k_add_thread_from_file(const char* filename) {
+  const ThreadArgs noargs = {0,0,0,0};
+  return k_add_thread_from_file_with_args(filename, &noargs);
+}
+
+int k_add_thread_from_file_with_args(const char* filename,
+                                     const ThreadArgs* args) {
 #if CODE_BACKING_PAGES
   size_t free_page = find_free_backing_page();
   // If we have backing, don't count the active
@@ -479,7 +487,7 @@ int k_add_thread_from_file(const char* filename) {
   dest = &code_page_backing[free_page][0];
 #endif
 
-  int tid = k_add_named_thread(load_elf(filename, dest), filename);
+  int tid = k_add_named_thread_with_args(load_elf(filename, dest), filename, args);
 
 #if CODE_BACKING_PAGES
   all_threads[tid].code_backing_page = free_page;

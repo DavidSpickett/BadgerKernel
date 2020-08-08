@@ -12,7 +12,9 @@
   FNADDR k_add_thread
 #ifdef CODE_PAGE_SIZE
   FNADDR k_add_thread_from_file
+  FNADDR k_add_thread_from_file_with_args
 #else
+  FNADDR k_invalid_syscall
   FNADDR k_invalid_syscall
 #endif
   FNADDR k_add_named_thread_with_args
@@ -50,6 +52,7 @@ typedef enum {
   syscall_add_thread,
   // Functionality optional but included always to keep order
   syscall_add_thread_from_file,
+  syscall_add_thread_from_file_with_args,
   syscall_add_named_thread_with_args,
   syscall_get_thread_id,
   syscall_get_thread_name,

@@ -48,6 +48,7 @@ typedef struct {
 int k_add_thread(void (*worker)(void));
 #if CODE_PAGE_SIZE
 int k_add_thread_from_file(const char* filename);
+int k_add_thread_from_file_with_args(const char* filename, const ThreadArgs* args);
 #endif
 int k_add_named_thread(void (*worker)(void), const char* name);
 int k_add_named_thread_with_args(void (*worker)(), const char* name,
