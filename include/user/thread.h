@@ -29,6 +29,7 @@ void log_event(const char* event, ...);
 
 // TODO: more extensible interface for this?
 void set_kernel_config(const KernelConfig* config);
+void get_kernel_config(KernelConfig* config);
 
 bool yield_to(int tid);
 bool yield_next(void);

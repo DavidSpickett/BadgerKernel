@@ -33,6 +33,10 @@ void k_set_kernel_config(const KernelConfig* config) {
   kernel_config = *config;
 }
 
+void k_get_kernel_config(KernelConfig* config) {
+  *config = kernel_config;
+}
+
 bool k_set_child(int child) {
   // Assuming that no one wants to clear child
   // so ID of -1 is not allowed

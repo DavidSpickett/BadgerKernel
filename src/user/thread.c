@@ -47,8 +47,13 @@ void format_thread_name(char* out) {
 // TODO: maybe logging should go via syscall
 // to prevent splitting messages?
 void log_event(const char* event, ...) {
-  //TODO: Big hack here so these don't print in shell demo
-  return;
+  KernelConfig cfg;
+  get_kernel_config(&cfg);
+
+  if (!cfg.log_threads) {
+    return;
+  }
+
   char thread_name[THREAD_NAME_SIZE + 1];
   format_thread_name(thread_name);
   printf("Thread %s: ", thread_name);
@@ -134,6 +139,10 @@ bool get_msg(int* sender, int* message) {
 
 bool send_msg(int destination, int message) {
   return DO_SYSCALL_2(send_msg, destination, message);
+}
+
+void get_kernel_config(KernelConfig* config) {
+  DO_SYSCALL_1(get_kernel_config, config);
 }
 
 bool thread_join(int tid, ThreadState* state) {

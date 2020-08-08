@@ -71,6 +71,7 @@ bool k_get_msg(int* sender, int* message);
 bool k_send_msg(int destination, int message);
 
 void k_set_kernel_config(const KernelConfig* config);
+void k_get_kernel_config(KernelConfig* config);
 bool k_get_thread_state(int tid, ThreadState* state);
 bool k_set_child(int child);
 
