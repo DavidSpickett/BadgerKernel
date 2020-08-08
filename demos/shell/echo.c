@@ -1,6 +1,6 @@
 #include "print.h"
 
-void main(int argc, char* argv[]) {
+void worker(int argc, char* argv[]) {
   if (argc <= 1) {
     return;
   }

@@ -60,7 +60,6 @@ static ProcessedCmdLine split_cmd_line(char* cmd_line) {
 static void help(int argc, char* argv[]);
 static void quit(int argc, char* argv[]);
 static void  run(int argc, char* argv[]);
-static void   ps(int argc, char* argv[]);
 
 typedef struct {
   const char* name;
@@ -71,65 +70,7 @@ BuiltinCommand builtins[] = {
   {"help", help, "help <command name>"},
   {"quit", quit, "Quit the shell"},
   {"run",  run,  "run <program name>"},
-  {"ps",   ps,   "Shows system threads"},
 };
-
-
-static void ps(int argc, char* argv[]) {
-  if (argc > 1) {
-    printf("ps expects no arguments");
-    return;
-  }
-
-  for (int tid=0; ; ++tid) {
-    const char* name;
-    bool valid = thread_name(tid, &name);
-
-    // TODO: this is wrong if we have gaps in thread
-    // allocation. Like valid invaid valid, we'll miss
-    // the third one. Works for now with how the shell
-    // starts processes
-    if (!valid) {
-      break;
-    }
-
-    ThreadState state;
-    get_thread_state(tid, &state);
-
-    const char* state_name;
-    // TODO: move somewhere general?
-    switch (state) {
-      case(init):
-        state_name = "init";
-        break;
-      case(running):
-        state_name = "running";
-        break;
-      case(suspended):
-        state_name = "suspended";
-        break;
-      case(waiting):
-        state_name = "waiting";
-        break;
-      case(finished):
-        state_name = "finished";
-        break;
-      case(cancelled):
-        state_name = "cancelled";
-        break;
-      default:
-        state_name = "unknown";
-        break;
-    }
-
-    printf("|-----------|\n");
-    printf("| Thread %u\n", tid);
-    printf("|-----------|\n");
-    printf("| Name      | %s\n", name);
-    printf("| State     | %s (%u)\n", state_name, state);
-    printf("|-----------|\n");
-  }
-}
 
 //TODO: thread names are pointers so some time after
 // run() finishes the pointer to the name on the stack is invalid
