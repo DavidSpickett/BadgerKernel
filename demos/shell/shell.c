@@ -106,6 +106,7 @@ static void run(int argc, char* argv[]) {
   int tid = add_thread_from_file_with_args(run_progname, &args);
   // Set it as our child so we come back here when done
   set_child(tid);
+  yield();
 }
 
 static void help(int argc, char* argv[]) {
