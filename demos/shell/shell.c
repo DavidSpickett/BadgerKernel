@@ -159,6 +159,7 @@ static void do_command(char* cmd) {
   for (size_t i=0; i<num_builtins; ++i) {
     if (!strcmp(parts.parts[0], builtins[i].name)) {
       tid = add_named_thread_with_args(builtins[i].fn, builtins[i].name, &args);
+      break;
     }
   }
 
@@ -166,6 +167,7 @@ static void do_command(char* cmd) {
   for (size_t i=0; i<num_programs; ++i) {
     if (strcmp(parts.parts[0], programs[i]) == 0) {
       tid = add_thread_from_file_with_args(programs[i], &args);
+      break;
     }
   }
 
