@@ -18,41 +18,44 @@ static ProcessedCmdLine split_cmd_line(char* cmd_line) {
   ProcessedCmdLine parts;
   parts.num_parts = 0;
 
+  if (!cmd_line || (*cmd_line == '\0')) {
+    return parts;
+  }
+
   // If there is data and there is at least one character
-  if (cmd_line && (*cmd_line != '\0')) {
-    char* curr = cmd_line;
-    const char* start_part = cmd_line;
-    for ( ; *curr; ++curr) {
-      if (*curr == ' ') {
-        // If there is non space chars to actually save
-        if (curr != start_part) {
-          // Save current part
-          parts.parts[parts.num_parts] = start_part;
-          parts.num_parts++;
+  char* curr = cmd_line;
+  const char* start_part = cmd_line;
+  for ( ; *curr; ++curr) {
+    if (*curr == ' ') {
+      // If there is non space chars to actually save
+      if (curr != start_part) {
+        // Save current part
+        parts.parts[parts.num_parts] = start_part;
+        parts.num_parts++;
 
-          if (parts.num_parts >= MAX_CMD_LINE_PARTS) {
-            printf("Too many parts to command line!\n");
-            exit(1);
-          }
+        if (parts.num_parts >= MAX_CMD_LINE_PARTS) {
+          printf("Too many parts to command line!\n");
+          exit(1);
         }
-        // Which means we'll fill all spaces with null terminators
-        *curr = '\0';
-        // Start new part
-        start_part = curr+1;
       }
-    }
-    // Catch leftover part
-    if (start_part < curr) {
-      // TODO: dedupe
-      parts.parts[parts.num_parts] = start_part;
-      parts.num_parts++;
-
-      if (parts.num_parts >= MAX_CMD_LINE_PARTS) {
-        printf("Too many parts to command line!\n");
-        exit(1);
-      }
+      // Which means we'll fill all spaces with null terminators
+      *curr = '\0';
+      // Start new part
+      start_part = curr+1;
     }
   }
+  // Catch leftover part
+  if (start_part < curr) {
+    // TODO: dedupe
+    parts.parts[parts.num_parts] = start_part;
+    parts.num_parts++;
+
+    if (parts.num_parts >= MAX_CMD_LINE_PARTS) {
+      printf("Too many parts to command line!\n");
+      exit(1);
+    }
+  }
+
   return parts;
 }
 
@@ -161,7 +164,7 @@ static void do_command(char* cmd) {
 
   // Then programs
   for (size_t i=0; i<num_programs; ++i) {
-    if (!strcmp(parts.parts[0], programs[i])) {
+    if (strcmp(parts.parts[0], programs[i]) == 0) {
       tid = add_thread_from_file_with_args(programs[i], &args);
     }
   }
@@ -191,62 +194,68 @@ static void command_loop(int input) {
 
     assert(in[INPUT_BUFFER_SIZE-1] == '\0');
 
-    if (got && (got != INPUT_BUFFER_SIZE)) {
-      for (const char* curr = in; *curr != '\0'; ++curr) {
-        switch (*curr) {
-          case '\r': // Enter
-            cmd_line[cmd_line_pos] = '\0';
-            cmd_line_pos = 0;
-            printf("\n");
-            do_command(cmd_line);
-            PRINT_PROMPT
-            break;
-          case 0x03: // End of text ( Ctrl-C )
-            cmd_line_pos = 0;
-            printf("\n");
-            PRINT_PROMPT
-            break;
-          case 0x1B: // Escape char
-            if (*(curr+1) == '[') {
-              switch (*(curr+2)) {
-                case 'A': // Up
-                case 'B': // Down
-                  curr += 2; // Ignore
-                  break;
-                case 'C': // Right / forward
-                  // TODO: cursor pos
-                  curr += 2;
-                  break;
-                case 'D': // Left / back
-                  curr += 2;
-                  break;
-              }
-            } else {
-              printf("Unhandled escape sequence!\n");
-              exit(1);
+    // TODO: that second condition is a bit dodgy
+    if (!got || (got == INPUT_BUFFER_SIZE)) {
+      continue;
+    }
+
+    for (const char* curr = in; *curr != '\0'; ++curr) {
+      switch (*curr) {
+        case '\r': // Enter
+          cmd_line[cmd_line_pos] = '\0';
+          cmd_line_pos = 0;
+          printf("\n");
+          do_command(cmd_line);
+          PRINT_PROMPT
+          break;
+        case 0x03: // End of text ( Ctrl-C )
+          cmd_line_pos = 0;
+          printf("\n");
+          PRINT_PROMPT
+          break;
+        case 0x1B: // Escape char
+          if (*(curr+1) == '[') {
+            switch (*(curr+2)) {
+              case 'A': // Up
+              case 'B': // Down
+                curr += 2; // Ignore
+                break;
+              case 'C': // Right / forward
+                // TODO: cursor pos
+                curr += 2;
+                break;
+              case 'D': // Left / back
+                curr += 2;
+                break;
+              default:
+                assert(0); // Shouldn't get here
+                __builtin_unreachable();
             }
-            break;
-          case 0x7F: // Backspace
-            if (cmd_line_pos) {
-              cmd_line_pos--;
-              printf("\b \b");
-            }
-            break;
-          case 0x04: // End of transmission (Ctrl-D)
-            quit(0, NULL);
-            break;
-          default:
-            if (cmd_line_pos < MAX_CMD_LINE) {
-              cmd_line[cmd_line_pos] = *curr;
-              ++cmd_line_pos;
-              // TODO: directly putchar
-              char out[2];
-              out[0] = *curr;
-              out[1] = '\0';
-              printf("%s", out);
-            }
-            break;
-        }
+          } else {
+            printf("Unhandled escape sequence!\n");
+            exit(1);
+          }
+          break;
+        case 0x7F: // Backspace
+          if (cmd_line_pos) {
+            cmd_line_pos--;
+            printf("\b \b");
+          }
+          break;
+        case 0x04: // End of transmission (Ctrl-D)
+          quit(0, NULL);
+          break;
+        default:
+          if (cmd_line_pos < MAX_CMD_LINE) {
+            cmd_line[cmd_line_pos] = *curr;
+            ++cmd_line_pos;
+            // TODO: directly putchar
+            char out[2];
+            out[0] = *curr;
+            out[1] = '\0';
+            printf("%s", out);
+          }
+          break;
       }
     }
   }

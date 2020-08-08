@@ -22,6 +22,7 @@ static const char* thread_state_to_str(ThreadState state) {
 }
 
 void worker(int argc, char* argv[]) {
+  (void)argv;
   if (argc > 1) {
     printf("ps expects no arguments");
     return;
