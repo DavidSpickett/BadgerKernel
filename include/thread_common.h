@@ -19,7 +19,9 @@ typedef struct {
   size_t a4;
 } ThreadArgs;
 
+// Note the () around the args so we don't mess up pointer
+// arithmetic e.g. make_args(argv+1...) => (size_t)(argv+1)
 #define make_args(a, b, c, d)                   \
-  { (size_t)a, (size_t)b, (size_t)c, (size_t)d }
+  { (size_t)(a), (size_t)(b), (size_t)(c), (size_t)(d) }
 
 #endif /* ifdef THREAD_COMMON_H */
