@@ -1,12 +1,17 @@
+# Only here for the shell demo
+function(add_loadable_no_test PARENT NAME)
+  __add_loadable(${PARENT} ${NAME} OFF OFF)
+endfunction(add_loadable_no_test)
+
 function(add_loadable PARENT NAME)
-  __add_loadable(${PARENT} ${NAME} OFF)
+  __add_loadable(${PARENT} ${NAME} OFF ON)
 endfunction(add_loadable)
 
 function(add_shared_loadable PARENT NAME)
-  __add_loadable(${PARENT} ${NAME} ON)
+  __add_loadable(${PARENT} ${NAME} ON ON)
 endfunction(add_shared_loadable)
 
-function(__add_loadable PARENT NAME PIE)
+function(__add_loadable PARENT NAME PIE TEST)
   # Enable loading in the parent kernel
   if( BP_LOWER STREQUAL "arm" )
     set( CODE_PAGE_SIZE 9216 )
@@ -41,6 +46,8 @@ function(__add_loadable PARENT NAME PIE)
 
   # TODO: not ideal, we end up building them during the lit run
   add_dependencies(run_${PARENT} ${NAME})
-  add_dependencies(test_${PARENT} ${NAME})
+  if(TEST)
+    add_dependencies(test_${PARENT} ${NAME})
+  endif()
   add_dependencies(debug_${PARENT} ${NAME})
 endfunction(__add_loadable)
