@@ -67,10 +67,16 @@ typedef struct {
   const char* help_text;
 } BuiltinCommand;
 BuiltinCommand builtins[] = {
-  {"help", help, "help <command name>"},
+  {"help", help, "help <builtin name>"},
   {"quit", quit, "Quit the shell"},
   {"run",  run,  "run <program name>"},
 };
+const size_t num_builtins = sizeof(builtins)/sizeof(BuiltinCommand);
+
+// Semihosting has no way to 'ls' a dir
+// so maintain a manual list
+const char* programs[] = {"echo", "ps"};
+const size_t num_programs = sizeof(programs)/sizeof(const char*);
 
 //TODO: thread names are pointers so some time after
 // run() finishes the pointer to the name on the stack is invalid
@@ -108,20 +114,23 @@ static void help(int argc, char* argv[]) {
     return;
   }
 
-  size_t num_commands = sizeof(builtins)/sizeof(BuiltinCommand);
   if (argc == 2) {
-    // Specific command help
-    for (size_t i=0; i<num_commands; ++i) {
+    // Builtin help
+    for (size_t i=0; i<num_builtins; ++i) {
       if (!strcmp(argv[1], builtins[i].name)) {
         printf("%s\n", builtins[i].help_text);
         return;
       }
     }
-    printf("Unknown command \"%s\"\n", argv[1]);
+    printf("Unknown builtin \"%s\"\n", argv[1]);
   } else {
-    printf("Available commands are:\n");
-    for (size_t i=0; i<num_commands; ++i) {
+    printf("Builtins:\n");
+    for (size_t i=0; i<num_builtins; ++i) {
       printf("%s ", builtins[i].name);
+    }
+    printf("\nPrograms:\n");
+    for (size_t i=0; i<num_programs; ++i) {
+      printf("%s ", programs[i]);
     }
     printf("\n");
   }
@@ -139,12 +148,20 @@ static void do_command(char* cmd) {
     return;
   }
 
-  size_t num_commands = sizeof(builtins)/sizeof(BuiltinCommand);
   int tid = -1;
   ThreadArgs args = make_args(parts.num_parts, &parts.parts, 0, 0);
-  for (size_t i=0; i<num_commands; ++i) {
+
+  // Builtins take priority
+  for (size_t i=0; i<num_builtins; ++i) {
     if (!strcmp(parts.parts[0], builtins[i].name)) {
       tid = add_named_thread_with_args(builtins[i].fn, builtins[i].name, &args);
+    }
+  }
+
+  // Then programs
+  for (size_t i=0; i<num_programs; ++i) {
+    if (!strcmp(parts.parts[0], programs[i])) {
+      tid = add_thread_from_file_with_args(programs[i], &args);
     }
   }
 
