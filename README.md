@@ -8,8 +8,6 @@ All bare metal platforms use exceptions for switching threads. Either by yieldin
 
 ## Building
 
-### Bare Metal
-
 Install cmake and an arm-none-eabi or aarch64-elf toolchain. (Linaro releases are the easiest way to get these)
 
 Install QEMU with Arm support (this will get you aarch64 too):
