@@ -70,10 +70,7 @@ void delete_new(void) {
 }
 
 void setup(void) {
-  KernelConfig cfg = { .log_scheduler=false,
-                       .log_threads=true,
-                       .destroy_on_stack_err=false};
-  k_set_kernel_config(&cfg);
+  k_set_kernel_config(0, KCFG_LOG_SCHEDULER);
 
   k_add_named_thread(read_file, "reader");
   k_add_named_thread(fail_open, "fail_open");

@@ -1,6 +1,7 @@
 #ifndef USER_THREAD_H
 #define USER_THREAD_H
 
+#include <stdint.h>
 #include "thread_common.h"
 #include "thread_state.h"
 
@@ -28,9 +29,8 @@ bool get_child(int tid, int* child);
 
 void log_event(const char* event, ...);
 
-// TODO: more extensible interface for this?
-void set_kernel_config(const KernelConfig* config);
-void get_kernel_config(KernelConfig* config);
+void set_kernel_config(uint32_t enable, uint32_t disable);
+uint32_t get_kernel_config(void);
 
 bool yield_to(int tid);
 bool yield_next(void);

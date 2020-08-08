@@ -16,12 +16,7 @@ void foo() {
 void disable_logging(void) {
   // Creates a .got section
   log_event("Disabling scheduler logging");
-  KernelConfig cfg = {
-    .destroy_on_stack_err=false,
-    .log_threads=true,
-    .log_scheduler=false,
-  };
-  set_kernel_config(&cfg);
+  set_kernel_config(0, KCFG_LOG_SCHEDULER);
 }
 
 // This does *not* need a relocation because

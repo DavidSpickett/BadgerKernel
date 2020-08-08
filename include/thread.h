@@ -70,8 +70,8 @@ void k_log_event(const char* event, ...);
 bool k_get_msg(int* sender, int* message);
 bool k_send_msg(int destination, int message);
 
-void k_set_kernel_config(const KernelConfig* config);
-void k_get_kernel_config(KernelConfig* config);
+void k_set_kernel_config(uint32_t enable, uint32_t disable);
+uint32_t k_get_kernel_config(void);
 bool k_get_thread_state(int tid, ThreadState* state);
 bool k_set_child(int child);
 bool k_get_child(int tid, int* child);

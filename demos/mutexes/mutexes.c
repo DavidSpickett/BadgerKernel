@@ -29,10 +29,7 @@ void thread_work(const char* word) {
 }
 
 void setup(void) {
-  KernelConfig cfg = { .log_scheduler=false,
-                       .log_threads=true,
-                       .destroy_on_stack_err=false};
-  k_set_kernel_config(&cfg);
+  k_set_kernel_config(0, KCFG_LOG_SCHEDULER);
 
   init_mutex(&buffer_mutex);
 

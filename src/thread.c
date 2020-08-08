@@ -16,9 +16,7 @@ __attribute__((section(".thread_structs"))) Thread all_threads[MAX_THREADS];
 __attribute__((section(".thread_vars"))) Thread* volatile next_thread;
 
 __attribute__((section(".thread_vars")))
-KernelConfig kernel_config = {.destroy_on_stack_err = false,
-                        .log_threads = true,
-                        .log_scheduler = true};
+uint32_t kernel_config = KCFG_LOG_SCHEDULER | KCFG_LOG_THREADS;
 
 #if CODE_PAGE_SIZE
 __attribute__((section(".code_page"))) uint8_t code_page[CODE_PAGE_SIZE];
@@ -29,12 +27,13 @@ uint8_t code_page_backing[CODE_BACKING_PAGES][CODE_PAGE_SIZE];
 #endif
 #endif /* CODE_PAGE_SIZE */
 
-void k_set_kernel_config(const KernelConfig* config) {
-  kernel_config = *config;
+void k_set_kernel_config(uint32_t enable, uint32_t disable) {
+  kernel_config |= enable;
+  kernel_config &= ~disable;
 }
 
-void k_get_kernel_config(KernelConfig* config) {
-  *config = kernel_config;
+uint32_t k_get_kernel_config(void) {
+  return kernel_config;
 }
 
 bool k_set_child(int child) {
@@ -264,7 +263,7 @@ void k_format_thread_name(char* out) {
 }
 
 void k_log_event(const char* event, ...) {
-  if (!kernel_config.log_threads) {
+  if (!(kernel_config & KCFG_LOG_THREADS)) {
     return;
   }
 
@@ -281,7 +280,7 @@ void k_log_event(const char* event, ...) {
 }
 
 void log_scheduler_event(const char* event) {
-  if (kernel_config.log_scheduler) {
+  if (kernel_config & KCFG_LOG_SCHEDULER) {
     printf("Thread  <scheduler>: %s\n", event);
   }
 }
@@ -602,7 +601,7 @@ void check_stack(void) {
       k_log_event("Stack overflow!");
     }
 
-    if (kernel_config.destroy_on_stack_err) {
+    if (kernel_config & KCFG_DESTROY_ON_STACK_ERR) {
      /* Setting -1 here, instead of state=finished is fine,
          because A: the thread didn't actually finish
                  B: the thread struct is actually invalid */

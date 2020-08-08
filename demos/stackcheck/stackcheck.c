@@ -58,10 +58,8 @@ void watcher() {
 }
 
 void setup(void) {
-  KernelConfig cfg = { .log_scheduler=false,
-                       .log_threads=true,
-                       .destroy_on_stack_err=true};
-  k_set_kernel_config(&cfg);
+  k_set_kernel_config(KCFG_DESTROY_ON_STACK_ERR,
+    KCFG_LOG_SCHEDULER);
 
   k_add_named_thread(underflow, "underflow");
   k_add_named_thread(watcher, "watcher");

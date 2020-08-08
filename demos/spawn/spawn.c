@@ -41,10 +41,7 @@ void spawner() {
 }
 
 void setup(void) {
-  KernelConfig cfg = { .log_scheduler=false,
-                       .log_threads=true,
-                       .destroy_on_stack_err=false};
-  k_set_kernel_config(&cfg);
+  k_set_kernel_config(0, KCFG_LOG_SCHEDULER);
 
   k_add_named_thread(spawner, "spawner");
 }

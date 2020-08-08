@@ -274,9 +274,7 @@ void run_shell() {
 }
 
 void setup(void) {
-  KernelConfig cfg = { .log_scheduler=false,
-                       .log_threads=false,
-                       .destroy_on_stack_err=false};
-  k_set_kernel_config(&cfg);
+  k_set_kernel_config(0,
+    KCFG_LOG_SCHEDULER | KCFG_LOG_THREADS);
   k_add_named_thread(run_shell, "shell");
 }

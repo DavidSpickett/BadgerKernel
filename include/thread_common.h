@@ -6,11 +6,9 @@
 
 // Thread related stuff available to user and kernel
 
-typedef struct {
-  bool destroy_on_stack_err;
-  bool log_scheduler;
-  bool log_threads;
-} KernelConfig;
+#define KCFG_DESTROY_ON_STACK_ERR 1<<0
+#define KCFG_LOG_SCHEDULER        1<<1
+#define KCFG_LOG_THREADS          1<<2
 
 typedef struct {
   size_t a1;

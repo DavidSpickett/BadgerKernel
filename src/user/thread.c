@@ -47,10 +47,7 @@ void format_thread_name(char* out) {
 // TODO: maybe logging should go via syscall
 // to prevent splitting messages?
 void log_event(const char* event, ...) {
-  KernelConfig cfg;
-  get_kernel_config(&cfg);
-
-  if (!cfg.log_threads) {
+  if (!(get_kernel_config() & KCFG_LOG_THREADS)) {
     return;
   }
 
@@ -101,8 +98,12 @@ bool thread_name(int tid, const char** name) {
   return DO_SYSCALL_2(thread_name, tid, name);
 }
 
-void set_kernel_config(const KernelConfig* config) {
-  DO_SYSCALL_1(set_kernel_config, config);
+void set_kernel_config(uint32_t enable, uint32_t disable) {
+  DO_SYSCALL_2(set_kernel_config, enable, disable);
+}
+
+uint32_t get_kernel_config(void) {
+  return DO_SYSCALL_0(get_kernel_config);
 }
 
 bool set_child(int child) {
@@ -139,10 +140,6 @@ bool get_msg(int* sender, int* message) {
 
 bool send_msg(int destination, int message) {
   return DO_SYSCALL_2(send_msg, destination, message);
-}
-
-void get_kernel_config(KernelConfig* config) {
-  DO_SYSCALL_1(get_kernel_config, config);
 }
 
 bool get_child(int tid, int* child) {

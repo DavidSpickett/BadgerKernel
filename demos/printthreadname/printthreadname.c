@@ -12,10 +12,7 @@ void go_to_sleep(void) {
 }
 
 void setup(void) {
-  KernelConfig cfg = { .log_scheduler=false,
-                       .log_threads=true,
-                       .destroy_on_stack_err=false};
-  k_set_kernel_config(&cfg);
+  k_set_kernel_config(0, KCFG_LOG_SCHEDULER);
 
   // Check we can escape %
   printf("%% Print Demo %%\n");
