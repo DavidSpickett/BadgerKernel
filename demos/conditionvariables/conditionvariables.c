@@ -43,8 +43,6 @@ void signaller(void) {
 }
 
 void setup(void) {
-  k_set_kernel_config(0, KCFG_LOG_SCHEDULER);
-
   init_condition_variable(&cond_var);
 
   const unsigned num_waiting = 5;

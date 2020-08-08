@@ -19,6 +19,8 @@ void thread2() {
 }
 
 void setup(void) {
+  k_set_kernel_config(KCFG_LOG_SCHEDULER, 0);
+
   k_add_named_thread(thread1, "first");
   k_add_named_thread(thread2, "second");
 }

@@ -70,8 +70,6 @@ void delete_new(void) {
 }
 
 void setup(void) {
-  k_set_kernel_config(0, KCFG_LOG_SCHEDULER);
-
   k_add_named_thread(read_file, "reader");
   k_add_named_thread(fail_open, "fail_open");
   k_add_named_thread(write_new, "write_new");

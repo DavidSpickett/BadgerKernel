@@ -16,7 +16,7 @@ __attribute__((section(".thread_structs"))) Thread all_threads[MAX_THREADS];
 __attribute__((section(".thread_vars"))) Thread* volatile next_thread;
 
 __attribute__((section(".thread_vars")))
-uint32_t kernel_config = KCFG_LOG_SCHEDULER | KCFG_LOG_THREADS;
+uint32_t kernel_config = KCFG_LOG_THREADS;
 
 #if CODE_PAGE_SIZE
 __attribute__((section(".code_page"))) uint8_t code_page[CODE_PAGE_SIZE];

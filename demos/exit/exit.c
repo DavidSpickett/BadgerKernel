@@ -22,8 +22,6 @@ void counter() {
 }
 
 void setup(void) {
-  k_set_kernel_config(0, KCFG_LOG_SCHEDULER);
-
   ThreadArgs ta1 = make_args(2, 0, 0, 0);
   k_add_named_thread_with_args(work, NULL, &ta1);
 

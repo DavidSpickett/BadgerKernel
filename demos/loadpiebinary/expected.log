@@ -1,6 +1,8 @@
 Thread     <HIDDEN>: Loading program "piebinary"
+Thread    piebinary: yielding
 Thread  <scheduler>: scheduling new thread
 Thread  <scheduler>: next thread chosen
+Thread    piebinary: resuming
 Thread    piebinary: Disabling scheduler logging
 Thread    piebinary: Hello
 Thread    piebinary: Adding a new thread

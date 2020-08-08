@@ -308,6 +308,7 @@ static const KernelSymbolInfo kernel_symbols[] = {
   {"printf", (size_t)printf},
   {"exit", (size_t)exit},
   {"set_kernel_config", (size_t)set_kernel_config},
+  {"yield", (size_t)yield},
 };
 
 static size_t get_kernel_symbol_value(const char* name) {

@@ -29,8 +29,6 @@ void thread_work(const char* word) {
 }
 
 void setup(void) {
-  k_set_kernel_config(0, KCFG_LOG_SCHEDULER);
-
   init_mutex(&buffer_mutex);
 
   const char* word1 = "dog";

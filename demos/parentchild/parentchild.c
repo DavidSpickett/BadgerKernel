@@ -32,8 +32,6 @@ void worker_0() {
 }
 
 void setup(void) {
-  k_set_kernel_config(0, KCFG_LOG_SCHEDULER);
-
   k_add_thread(worker_0);
   k_add_thread(worker_4);
 }

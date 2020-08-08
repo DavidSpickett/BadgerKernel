@@ -24,6 +24,8 @@ void load_again() {
 }
 
 void setup(void) {
+  k_set_kernel_config(KCFG_LOG_SCHEDULER, 0);
+
   const char* filename = "task";
 
   k_add_thread_from_file(filename);

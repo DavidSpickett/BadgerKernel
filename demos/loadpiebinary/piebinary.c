@@ -27,6 +27,8 @@ static void add_foo_thread(void) {
 }
 
 void worker() {
+  set_kernel_config(KCFG_LOG_SCHEDULER, 0);
+  yield();
   disable_logging();
 
   const char* msg = "Hello";

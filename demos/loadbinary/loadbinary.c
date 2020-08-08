@@ -21,6 +21,8 @@ void load_again() {
 }
 
 void setup(void) {
+  k_set_kernel_config(KCFG_LOG_SCHEDULER, 0);
+
   k_add_thread_from_file(filename);
   k_add_named_thread(load_again, "load_again");
   // Fails because single code page is in use

@@ -41,8 +41,6 @@ void canceller() {
 }
 
 void setup(void) {
-  k_set_kernel_config(0, KCFG_LOG_SCHEDULER);
-
   k_add_thread(work);
   k_add_thread(canceller);
   k_add_thread(work);

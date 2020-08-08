@@ -24,8 +24,6 @@ void sub_printer(char** words, int num_phrases, unsigned int offset) {
 static const char* words[] = {"food", "alligator", "magazine", "raptor"};
 
 void setup(void) {
-  k_set_kernel_config(0, KCFG_LOG_SCHEDULER);
-
   ThreadArgs p_args = make_args(3, "aardvark", 1, 2);
   k_add_named_thread_with_args(printer, "printer", &p_args);
 

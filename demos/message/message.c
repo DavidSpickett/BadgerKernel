@@ -51,8 +51,6 @@ __attribute__((noreturn)) void receiver() {
 }
 
 void setup(void) {
-  k_set_kernel_config(0, KCFG_LOG_SCHEDULER);
-
   k_add_named_thread(spammer, "spammer");
   k_add_named_thread(sender, "spammer");
   k_add_named_thread(receiver, "receiver");
