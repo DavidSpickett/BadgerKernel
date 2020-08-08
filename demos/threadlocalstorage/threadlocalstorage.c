@@ -16,6 +16,6 @@ void thread_worker() {
 }
 
 void setup(void) {
-  k_add_thread(thread_worker);
-  k_add_thread(thread_worker);
+  K_ADD_THREAD(thread_worker);
+  K_ADD_THREAD(thread_worker);
 }

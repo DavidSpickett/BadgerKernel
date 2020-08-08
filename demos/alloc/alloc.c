@@ -332,5 +332,5 @@ void dispatcher() {
 }
 
 void setup(void) {
-  k_add_named_thread(dispatcher, "dispatcher");
+  K_ADD_NAMED_THREAD(dispatcher, "dispatcher");
 }

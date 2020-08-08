@@ -162,7 +162,7 @@ __attribute__((noreturn)) void entry(void) {
   k_log_event("Loading program \"%s\"", startup_prog);
   // Empty means load builtin threads
   if (strcmp(startup_prog, "")) {
-    k_add_thread_from_file(startup_prog);
+    K_ADD_THREAD_FROM_FILE(startup_prog);
   } else {
 #else
   {
@@ -476,13 +476,42 @@ static size_t find_free_backing_page() {
 #endif
 
 #if CODE_PAGE_SIZE
+static void setup_code_page(size_t idx) {
+  Thread* curr = _current_thread;
+#if CODE_BACKING_PAGES
+  if (curr) {
+    size_t page = curr->code_backing_page;
+    if (page != INVALID_PAGE) {
+      all_threads[idx].code_backing_page = page;
+    }
+  }
+#else
+  // Check null because we might be in setup() which runs as kernel
+  if (curr && curr->in_code_page) {
+    // Code page must live as long as all threads created by code in it
+    all_threads[idx].in_code_page = true;
+  }
+#endif /* CODE_BACKING_PAGES */
+}
+#endif /* CODE_PAGE_SIZE */
 
-// TODO: consolidate all these "add thread" variations
-int k_add_thread_from_file(const char* filename) {
-  const ThreadArgs noargs = {0,0,0,0};
-  return k_add_thread_from_file_with_args(filename, &noargs);
+static int k_add_named_thread_with_args(void (*worker)(), const char* name,
+                               const ThreadArgs* args) {
+  for (size_t idx = 0; idx < MAX_THREADS; ++idx) {
+    if (all_threads[idx].id == -1 ||
+        all_threads[idx].state == cancelled ||
+        all_threads[idx].state == finished) {
+      init_thread(&all_threads[idx], idx, name, worker, args);
+#if CODE_PAGE_SIZE
+      setup_code_page(idx);
+#endif
+      return idx;
+    }
+  }
+  return -1;
 }
 
+#if CODE_PAGE_SIZE
 int k_add_thread_from_file_with_args(const char* filename,
                                      const ThreadArgs* args) {
 #if CODE_BACKING_PAGES
@@ -518,49 +547,25 @@ int k_add_thread_from_file_with_args(const char* filename,
 }
 #endif
 
-int k_add_thread(void (*worker)(void)) {
-  return k_add_named_thread(worker, NULL);
-}
-
-int k_add_named_thread(void (*worker)(), const char* name) {
-  ThreadArgs args = {0, 0, 0, 0};
-  return k_add_named_thread_with_args(worker, name, &args);
-}
-
-#if CODE_PAGE_SIZE
-static void setup_code_page(size_t idx) {
-  Thread* curr = _current_thread;
-#if CODE_BACKING_PAGES
-  if (curr) {
-    size_t page = curr->code_backing_page;
-    if (page != INVALID_PAGE) {
-      all_threads[idx].code_backing_page = page;
-    }
+int k_add_thread(const char* name,
+                 const ThreadArgs* args,
+                 void* worker,
+                 size_t kind) {
+  ThreadArgs dummy_args = {0,0,0,0};
+  if (!args) {
+    args = &dummy_args;
   }
+
+  if (kind == THREAD_FILE) {
+#ifndef CODE_PAGE_SIZE
+    assert(0);
 #else
-  // Check null because we might be in setup() which runs as kernel
-  if (curr && curr->in_code_page) {
-    // Code page must live as long as all threads created by code in it
-    all_threads[idx].in_code_page = true;
-  }
-#endif /* CODE_BACKING_PAGES */
-}
-#endif /* CODE_PAGE_SIZE */
-
-int k_add_named_thread_with_args(void (*worker)(), const char* name,
-                               const ThreadArgs* args) {
-  for (size_t idx = 0; idx < MAX_THREADS; ++idx) {
-    if (all_threads[idx].id == -1 ||
-        all_threads[idx].state == cancelled ||
-        all_threads[idx].state == finished) {
-      init_thread(&all_threads[idx], idx, name, worker, args);
-#if CODE_PAGE_SIZE
-      setup_code_page(idx);
+    return k_add_thread_from_file_with_args((const char*) worker, args);
 #endif
-      return idx;
-    }
+  } else if (kind == THREAD_FUNC) {
+    return k_add_named_thread_with_args(worker, name, args);
   }
-  return -1;
+  __builtin_unreachable();
 }
 
 void thread_wait(void) {

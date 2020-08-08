@@ -10,16 +10,7 @@
 #define FNADDR .word
 #endif
   // Note: NO COMMAS ON THE ENDS!!
-  FNADDR k_add_named_thread
   FNADDR k_add_thread
-#ifdef CODE_PAGE_SIZE
-  FNADDR k_add_thread_from_file
-  FNADDR k_add_thread_from_file_with_args
-#else
-  FNADDR k_invalid_syscall
-  FNADDR k_invalid_syscall
-#endif
-  FNADDR k_add_named_thread_with_args
   FNADDR k_get_thread_id
   FNADDR k_get_thread_name
   FNADDR k_set_kernel_config
@@ -53,12 +44,7 @@
 #include <stddef.h>
 
 typedef enum {
-  syscall_add_named_thread = 0,
-  syscall_add_thread,
-  // Functionality optional but included always to keep order
-  syscall_add_thread_from_file,
-  syscall_add_thread_from_file_with_args,
-  syscall_add_named_thread_with_args,
+  syscall_add_thread = 0,
   syscall_get_thread_id,
   syscall_get_thread_name,
   syscall_set_kernel_config,

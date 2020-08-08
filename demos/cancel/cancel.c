@@ -20,7 +20,7 @@ void canceller() {
   assert(thread_cancel(2));
 
   // Cancelled threads should be re-used
-  int tid = add_thread(work);
+  int tid = add_thread_from_worker(work);
   assert(tid == 2);
   assert(thread_cancel(tid));
 
@@ -41,7 +41,7 @@ void canceller() {
 }
 
 void setup(void) {
-  k_add_thread(work);
-  k_add_thread(canceller);
-  k_add_thread(work);
+  K_ADD_THREAD(work);
+  K_ADD_THREAD(canceller);
+  K_ADD_THREAD(work);
 }

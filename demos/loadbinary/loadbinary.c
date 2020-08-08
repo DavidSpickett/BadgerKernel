@@ -23,8 +23,8 @@ void load_again() {
 void setup(void) {
   k_set_kernel_config(KCFG_LOG_SCHEDULER, 0);
 
-  k_add_thread_from_file(filename);
-  k_add_named_thread(load_again, "load_again");
+  K_ADD_THREAD_FROM_FILE(filename);
+  K_ADD_NAMED_THREAD(load_again, "load_again");
   // Fails because single code page is in use
-  assert(k_add_thread_from_file(filename) == -1);
+  assert(K_ADD_THREAD_FROM_FILE(filename) == -1);
 }

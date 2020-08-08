@@ -10,6 +10,9 @@
 #define KCFG_LOG_SCHEDULER        1<<1
 #define KCFG_LOG_THREADS          1<<2
 
+#define THREAD_FUNC 0
+#define THREAD_FILE 1
+
 typedef struct {
   size_t a1;
   size_t a2;

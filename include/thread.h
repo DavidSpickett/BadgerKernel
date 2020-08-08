@@ -45,14 +45,19 @@ typedef struct {
   uint64_t top_canary;
 } Thread;
 
-int k_add_thread(void (*worker)(void));
-#if CODE_PAGE_SIZE
-int k_add_thread_from_file(const char* filename);
-int k_add_thread_from_file_with_args(const char* filename, const ThreadArgs* args);
-#endif
-int k_add_named_thread(void (*worker)(void), const char* name);
-int k_add_named_thread_with_args(void (*worker)(), const char* name,
-                               const ThreadArgs* args);
+int k_add_thread_from_file_with_args(const char* filename,
+                                     const ThreadArgs* args);
+
+int k_add_thread(const char* name,
+                 const ThreadArgs* args,
+                 void* worker,
+                 size_t kind);
+
+// Macros to make writing setup()s easier
+#define K_ADD_THREAD(worker) k_add_thread(NULL, NULL, worker, THREAD_FUNC)
+#define K_ADD_NAMED_THREAD(worker, name) k_add_thread(name, NULL, worker, THREAD_FUNC)
+#define K_ADD_NAMED_THREAD_WITH_ARGS(worker, name, args) k_add_thread(name, args, worker, THREAD_FUNC)
+#define K_ADD_THREAD_FROM_FILE(filename) k_add_thread(filename, NULL, (void*)filename, THREAD_FILE)
 
 bool is_valid_thread(int tid);
 int k_get_thread_id(void);

@@ -47,7 +47,7 @@ void setup(void) {
 
   const unsigned num_waiting = 5;
   for (unsigned i = 0; i < num_waiting; ++i) {
-    k_add_thread(waiter);
+    K_ADD_THREAD(waiter);
   }
-  k_add_named_thread(signaller, "signaller");
+  K_ADD_NAMED_THREAD(signaller, "signaller");
 }

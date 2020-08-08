@@ -22,15 +22,15 @@ void setup(void) {
   printf("%s", buf);
 
   // Use up some IDs
-  assert(k_add_thread(go_to_sleep) != -1);
-  assert(k_add_thread(go_to_sleep) != -1);
+  assert(K_ADD_THREAD(go_to_sleep) != -1);
+  assert(K_ADD_THREAD(go_to_sleep) != -1);
   printf("Added 2 threads which are now sleeping.\n");
 
   // ID 2
-  k_add_named_thread(work, "name_that_gets_cut_off");
+  K_ADD_NAMED_THREAD(work, "name_that_gets_cut_off");
   // The rest
   int tid = -1;
   do {
-    tid = k_add_thread(work);
+    tid = K_ADD_THREAD(work);
   } while (tid != -1);
 }

@@ -61,7 +61,7 @@ void setup(void) {
   k_set_kernel_config(KCFG_DESTROY_ON_STACK_ERR,
     KCFG_LOG_SCHEDULER);
 
-  k_add_named_thread(underflow, "underflow");
-  k_add_named_thread(watcher, "watcher");
-  k_add_named_thread(overflow, "overflow");
+  K_ADD_NAMED_THREAD(underflow, "underflow");
+  K_ADD_NAMED_THREAD(watcher, "watcher");
+  K_ADD_NAMED_THREAD(overflow, "overflow");
 }

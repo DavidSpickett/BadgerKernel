@@ -41,5 +41,5 @@ void spawner() {
 }
 
 void setup(void) {
-  k_add_named_thread(spawner, "spawner");
+  K_ADD_NAMED_THREAD(spawner, "spawner");
 }

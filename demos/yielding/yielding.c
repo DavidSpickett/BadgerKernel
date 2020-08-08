@@ -25,6 +25,6 @@ __attribute__((noreturn)) void thread_worker_0() {
 void setup(void) {
   k_set_kernel_config(KCFG_LOG_SCHEDULER, 0);
 
-  k_add_thread(thread_worker_0);
-  k_add_thread(thread_worker_1);
+  K_ADD_THREAD(thread_worker_0);
+  K_ADD_THREAD(thread_worker_1);
 }

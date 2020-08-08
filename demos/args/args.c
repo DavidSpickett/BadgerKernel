@@ -25,9 +25,9 @@ static const char* words[] = {"food", "alligator", "magazine", "raptor"};
 
 void setup(void) {
   ThreadArgs p_args = make_args(3, "aardvark", 1, 2);
-  k_add_named_thread_with_args(printer, "printer", &p_args);
+  K_ADD_NAMED_THREAD_WITH_ARGS(printer, "printer", &p_args);
 
   // Only takes 3, just zero the 4th arg
   ThreadArgs sp_args = make_args(words, 4, 2, 0);
-  k_add_named_thread_with_args(sub_printer, "sub_printer", &sp_args);
+  K_ADD_NAMED_THREAD_WITH_ARGS(sub_printer, "sub_printer", &sp_args);
 }

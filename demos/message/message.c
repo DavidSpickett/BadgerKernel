@@ -51,7 +51,7 @@ __attribute__((noreturn)) void receiver() {
 }
 
 void setup(void) {
-  k_add_named_thread(spammer, "spammer");
-  k_add_named_thread(sender, "spammer");
-  k_add_named_thread(receiver, "receiver");
+  K_ADD_NAMED_THREAD(spammer, "spammer");
+  K_ADD_NAMED_THREAD(sender, "spammer");
+  K_ADD_NAMED_THREAD(receiver, "receiver");
 }

@@ -21,7 +21,7 @@ void thread_work() {
 
   log_event(*curr_msg);
   curr_msg++;
-  add_thread(thread_work);
+  add_thread_from_worker(thread_work);
   enable_timer();
   while (1) { //!OCLINT
   }
@@ -30,5 +30,5 @@ void thread_work() {
 void setup(void) {
   k_set_kernel_config(KCFG_LOG_SCHEDULER, 0);
 
-  k_add_thread(thread_work);
+  K_ADD_THREAD(thread_work);
 }

@@ -11,12 +11,12 @@ void worker_4() { log_event("Four!"); }
 void worker_0() {
   log_event("Zero!");
 
-  int tid = add_thread(worker_1);
+  int tid = add_thread_from_worker(worker_1);
   assert(set_child(tid));
 
   // Won't run yet because we yield to worker_1
   // Then it comes back to us on finish
-  int last_child_tid = add_thread(worker_3);
+  int last_child_tid = add_thread_from_worker(worker_3);
 
   // Run the child thread
   // (not the second thread added in the setup function)
@@ -32,6 +32,6 @@ void worker_0() {
 }
 
 void setup(void) {
-  k_add_thread(worker_0);
-  k_add_thread(worker_4);
+  K_ADD_THREAD(worker_0);
+  K_ADD_THREAD(worker_4);
 }

@@ -33,9 +33,9 @@ void setup(void) {
 
   const char* word1 = "dog";
   ThreadArgs args1 = make_args(word1, 0, 0, 0);
-  k_add_named_thread_with_args(thread_work, NULL, &args1);
+  K_ADD_NAMED_THREAD_WITH_ARGS(thread_work, NULL, &args1);
 
   const char* word2 = "cat";
   ThreadArgs args2 = make_args(word2, 0, 0, 0);
-  k_add_named_thread_with_args(thread_work, NULL, &args2);
+  K_ADD_NAMED_THREAD_WITH_ARGS(thread_work, NULL, &args2);
 }

@@ -28,13 +28,13 @@ void setup(void) {
 
   const char* filename = "task";
 
-  k_add_thread_from_file(filename);
+  K_ADD_THREAD_FROM_FILE(filename);
   // This will be able to load it again because page 0 was freed
   // when the first thread's keepalive exited
-  k_add_named_thread(load_again, "load_again");
+  K_ADD_NAMED_THREAD(load_again, "load_again");
 
-  k_add_thread_from_file(filename);
-  k_add_thread_from_file(filename);
+  K_ADD_THREAD_FROM_FILE(filename);
+  K_ADD_THREAD_FROM_FILE(filename);
   // This fails because we've used up all the backing pages
-  assert(k_add_thread_from_file(filename) == -1);
+  assert(K_ADD_THREAD_FROM_FILE(filename) == -1);
 }
