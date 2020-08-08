@@ -2,6 +2,7 @@
 #include "thread.h"
 #include "user/file.h"
 #include "user/util.h"
+#include "util.h"
 #include "print.h"
 #include <string.h>
 
@@ -55,6 +56,7 @@ static ProcessedCmdLine split_cmd_line(char* cmd_line) {
   return parts;
 }
 
+/* Note that these all look like main() */
 static void help(int argc, char* argv[]);
 static void quit(int argc, char* argv[]);
 static void  run(int argc, char* argv[]);
@@ -150,7 +152,7 @@ static void echo(int argc, char* argv[]) {
 char run_progname[256];
 static void run(int argc, char* argv[]) {
   if (argc != 2) {
-    printf("run expects 1 argument, the program name");
+    printf("run expects 1 argument, the program name\n");
     return;
   }
   strcpy(run_progname, argv[1]);
@@ -215,6 +217,8 @@ static void do_command(char* cmd) {
   }
 
   if (tid != -1) {
+    // So that we return here
+    set_child(tid);
     yield_to(tid);
   } else {
     printf("Unknown command \"%s\"\n", cmd);
@@ -235,9 +239,10 @@ static void command_loop(int input) {
     // -1 for null terminator space
     ssize_t got = read(input, &in, INPUT_BUFFER_SIZE-1);
 
-    if (got) {
-      const char* curr = in;
-      while (*curr != '\0') {
+    assert(in[INPUT_BUFFER_SIZE-1] == '\0');
+
+    if (got && (got != INPUT_BUFFER_SIZE)) {
+      for (const char* curr = in; *curr != '\0'; ++curr) {
         switch (*curr) {
           case '\r': // Enter
             cmd_line[cmd_line_pos] = '\0';
@@ -292,7 +297,6 @@ static void command_loop(int input) {
             }
             break;
         }
-        ++curr;
       }
     }
   }
