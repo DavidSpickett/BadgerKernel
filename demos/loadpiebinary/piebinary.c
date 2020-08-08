@@ -18,6 +18,7 @@ void disable_logging(void) {
   log_event("Disabling scheduler logging");
   KernelConfig cfg = {
     .destroy_on_stack_err=false,
+    .log_threads=true,
     .log_scheduler=false,
   };
   set_kernel_config(&cfg);

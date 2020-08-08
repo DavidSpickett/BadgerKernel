@@ -52,6 +52,7 @@ __attribute__((noreturn)) void receiver() {
 
 void setup(void) {
   KernelConfig cfg = { .log_scheduler=false,
+                       .log_threads=true,
                        .destroy_on_stack_err=false};
   k_set_kernel_config(&cfg);
 

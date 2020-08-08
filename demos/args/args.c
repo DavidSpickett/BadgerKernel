@@ -25,6 +25,7 @@ static const char* words[] = {"food", "alligator", "magazine", "raptor"};
 
 void setup(void) {
   KernelConfig cfg = { .log_scheduler=false,
+                       .log_threads=true,
                        .destroy_on_stack_err=false};
   k_set_kernel_config(&cfg);
 

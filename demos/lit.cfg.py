@@ -39,6 +39,7 @@ config.suffixes = ['.log']
 config.test_source_root = os.path.dirname(__file__)
 config.test_exec_root = os.path.join(config.test_source_root, '..')
 
+config.excludes.add('shell')
 # lower() because Azure config is case sensitive but local use may not be
 if platform.lower() == 'aarch64':
   config.excludes.add('threadlocalstorage')
