@@ -59,6 +59,10 @@ pip install lit
 lit demos/
 ```
 
+## Shell
+
+There is a interactive shell, do "make run_shell" to see it. There's some basic commands provided and it can run loadable programs as commands. (see demos/shell for examples)
+
 ## References
 
 ### Qemu
