@@ -264,20 +264,9 @@ void run_shell() {
 }
 
 void setup(void) {
-<<<<<<< HEAD
   KernelConfig cfg = { .log_scheduler=false,
                        .log_threads=false,
                        .destroy_on_stack_err=false};
   k_set_kernel_config(&cfg);
-=======
-  KernelConfig cfg = {
-    .log_scheduler = false,
-    .log_threads = false,
-    .destroy_on_stack_err = false,
-  };
-  k_set_kernel_config(&cfg);
-
-  // This fn runs as kernel
->>>>>>> 30d4c4e... Get shell running again after syscall merge
   k_add_named_thread(run_shell, "shell");
 }
