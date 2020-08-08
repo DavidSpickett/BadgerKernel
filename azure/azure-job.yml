@@ -53,22 +53,6 @@ jobs:
         workingDirectory: $(Agent.BuildDirectory)
         displayName: install-lit
 
-      - script: |
-          # pipefail so the OCLint tee can propogate return code
-          set -ex -o pipefail
-          mkdir oclint
-          wget -qO- https://github.com/oclint/oclint/releases/download/v0.13.1/oclint-0.13.1-x86_64-linux-4.4.0-112-generic.tar.gz | tar xzf - -C oclint --strip-components=1
-          export PATH=$(pwd)/toolchain/bin/:$(pwd)/oclint/bin/:$PATH
-          cd ARMMultiTasking
-          # If we enable UBSAN we get weird LTO warnings at O0 for Arm
-          # Disabling those warnings uses a flag that Clang/OCLint doesn't understand
-          cmake . -DBUILD_PLATFORM=${{build_platform}} -DOPT_LEVEL=0 -DSANITIZERS=OFF -DCOMPILER=${{parameters.compiler}}
-          tmpfile=$(mktemp)
-          oclint `find -not \( -path ./CMakeFiles -prune \) -not \( -name elf.c \) -not \( -name print.c \) -not \( -path ./demos/shell -prune \) -regex ".*\.c"` -max-priority-1 0 -max-priority-2 0 -max-priority-3 0
-        workingDirectory: $(Agent.BuildDirectory)
-        displayName: oclint
-        continueOnError: true
-
       - ${{ each opt_level in parameters.opt_level }}:
         - ${{ each lto in parameters.lto }}:
           - ${{ each sanitizers in parameters.sanitizers }}:
