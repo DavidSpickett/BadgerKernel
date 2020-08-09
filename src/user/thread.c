@@ -153,7 +153,11 @@ bool send_msg(int destination, int message) {
 }
 
 bool get_child(int tid, int* child) {
-  return DO_SYSCALL_2(get_child, tid, child);
+  size_t res;
+  bool got = DO_SYSCALL_3(get_thread_property, tid,
+    TPROP_CHILD, &res);
+  *child = res;
+  return got;
 }
 
 bool get_thread_property(int tid, size_t property,
