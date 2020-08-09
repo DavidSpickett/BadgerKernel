@@ -91,7 +91,8 @@ int add_named_thread_with_args(
 }
 
 int get_thread_id(void) {
-  int ret;
+  // Volatile required to pick up result after syscall
+  volatile int ret = 0;
   DO_SYSCALL_3(get_thread_property, -1,
     TPROP_ID, &ret);
   return ret;
