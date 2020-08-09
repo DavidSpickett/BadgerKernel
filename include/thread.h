@@ -62,7 +62,7 @@ int k_add_thread(const char* name,
 bool is_valid_thread(int tid);
 int k_get_thread_id(void);
 bool k_get_thread_property(int tid, size_t property,
-                         size_t* res);
+                         void* res);
 
 bool k_yield_next(void);
 bool k_yield_to(int tid);

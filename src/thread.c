@@ -72,7 +72,7 @@ int k_get_thread_id(void) {
 }
 
 bool k_get_thread_property(int tid, size_t property,
-                           size_t* res) {
+                           void* res) {
   // -1 means use current thread
   if (tid == -1) {
     tid = k_get_thread_id();
@@ -83,17 +83,21 @@ bool k_get_thread_property(int tid, size_t property,
 
   Thread* thread = &all_threads[tid];
   switch (property) {
+    // Cast to correct type is important here so that
+    // we don't overwrite more of the result than expected.
     case TPROP_ID:
-      *res = thread->id;
+      *(int*)res = thread->id;
       break;
     case TPROP_NAME:
-      *res = (size_t)thread->name;
+      *(const char**)res = thread->name;
       break;
     case TPROP_CHILD:
-      *res = thread->child;
+      *(int*)res = thread->child;
       break;
     case TPROP_STATE:
-      *res = thread->state;
+      // This one is a bit weird given that it's
+      // actually a size_t in the struct.
+      *(ThreadState*)res = thread->state;
       break;
     default:
       return false;
