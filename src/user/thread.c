@@ -125,8 +125,12 @@ bool set_child(int child) {
 }
 
 bool get_thread_state(int tid, ThreadState* state) {
-  return DO_SYSCALL_3(get_thread_property, tid,
-    TPROP_STATE, state);
+  // Volatile to make sure we get the result of the syscall
+  volatile ThreadState s = init;
+  bool got  = DO_SYSCALL_3(get_thread_property, tid,
+    TPROP_STATE, &s);
+  *state = s;
+  return got;
 }
 
 void yield(void) {
@@ -158,8 +162,11 @@ bool send_msg(int destination, int message) {
 }
 
 bool get_child(int tid, int* child) {
-  return DO_SYSCALL_3(get_thread_property, tid,
-    TPROP_CHILD, child);
+  volatile int c = 0;
+  bool got = DO_SYSCALL_3(get_thread_property, tid,
+    TPROP_CHILD, &c);
+  *child = c;
+  return got;
 }
 
 bool get_thread_property(int tid, size_t property,
