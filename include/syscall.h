@@ -13,8 +13,8 @@
   FNADDR k_add_thread
   FNADDR k_get_thread_property
   FNADDR k_set_thread_property
-  FNADDR k_set_kernel_config
   FNADDR k_get_kernel_config
+  FNADDR k_set_kernel_config
   FNADDR k_thread_yield
   FNADDR k_yield_to
   FNADDR k_yield_next
@@ -43,8 +43,8 @@ typedef enum {
   syscall_add_thread = 0,
   syscall_get_thread_property,
   syscall_set_thread_property,
-  syscall_set_kernel_config,
   syscall_get_kernel_config,
+  syscall_set_kernel_config,
   // TODO: sane ordering for these?
   syscall_thread_yield,
   syscall_yield_to,
