@@ -18,6 +18,9 @@ int add_named_thread(void (*worker)(void), const char* name);
 int add_named_thread_with_args(void (*worker)(), const char* name,
                                const ThreadArgs* args);
 
+bool get_thread_property(int tid, size_t property,
+                         size_t* res);
+
 // As in, the current ID
 int get_thread_id(void);
 const char* get_thread_name(void);

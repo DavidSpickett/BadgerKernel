@@ -100,6 +100,37 @@ int k_get_thread_id(void) {
   return _current_thread ? _current_thread->id : -1;
 }
 
+bool k_get_thread_property(int tid, size_t property,
+                           size_t* res) {
+  // -1 means use current thread
+  if (tid == -1) {
+    tid = k_get_thread_id();
+  }
+  if (!is_valid_thread(tid)) {
+    return false;
+  }
+
+  Thread* thread = &all_threads[tid];
+  switch (property) {
+    case TPROP_ID:
+      *res = thread->id;
+      break;
+    case TPROP_NAME:
+      *res = (size_t)thread->name;
+      break;
+    case TPROP_CHILD:
+      *res = thread->child;
+      break;
+    case TPROP_STATE:
+      *res = thread->state;
+      break;
+    default:
+      return false;
+  }
+
+  return true;
+}
+
 bool k_thread_name(int tid, const char** name) {
   if (!is_valid_thread(tid)) {
     return false;

@@ -11,7 +11,7 @@
 #endif
   // Note: NO COMMAS ON THE ENDS!!
   FNADDR k_add_thread
-  FNADDR k_get_thread_id
+  FNADDR k_get_thread_property
   FNADDR k_get_thread_name
   FNADDR k_set_kernel_config
   FNADDR k_get_kernel_config
@@ -45,7 +45,7 @@
 
 typedef enum {
   syscall_add_thread = 0,
-  syscall_get_thread_id,
+  syscall_get_thread_property,
   syscall_get_thread_name,
   syscall_set_kernel_config,
   syscall_get_kernel_config,

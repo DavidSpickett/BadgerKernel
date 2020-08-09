@@ -90,7 +90,10 @@ int add_named_thread_with_args(
 }
 
 int get_thread_id(void) {
-  return DO_SYSCALL_0(get_thread_id);
+  int ret;
+  DO_SYSCALL_3(get_thread_property, -1,
+    TPROP_ID, (size_t*)&ret);
+  return ret;
 }
 
 const char* get_thread_name(void) {
@@ -147,6 +150,12 @@ bool send_msg(int destination, int message) {
 
 bool get_child(int tid, int* child) {
   return DO_SYSCALL_2(get_child, tid, child);
+}
+
+bool get_thread_property(int tid, size_t property,
+                         size_t* res) {
+  return DO_SYSCALL_3(get_thread_property,
+                      tid, property, res);
 }
 
 bool thread_join(int tid, ThreadState* state) {

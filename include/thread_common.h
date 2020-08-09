@@ -10,6 +10,11 @@
 #define KCFG_LOG_SCHEDULER        1<<1
 #define KCFG_LOG_THREADS          1<<2
 
+#define TPROP_ID    0
+#define TPROP_NAME  1
+#define TPROP_CHILD 2
+#define TPROP_STATE 3
+
 #define THREAD_FUNC 0
 #define THREAD_FILE 1
 
