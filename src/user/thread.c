@@ -111,7 +111,8 @@ uint32_t get_kernel_config(void) {
 }
 
 bool set_child(int child) {
-  return DO_SYSCALL_1(set_child, child);
+  return DO_SYSCALL_3(set_thread_property, -1,
+    TPROP_CHILD, &child);
 }
 
 bool get_thread_state(int tid, ThreadState* state) {

@@ -62,7 +62,9 @@ int k_add_thread(const char* name,
 bool is_valid_thread(int tid);
 int k_get_thread_id(void);
 bool k_get_thread_property(int tid, size_t property,
-                         void* res);
+                           void* res);
+bool k_set_thread_property(int tid, size_t property,
+                           const void* res);
 
 bool k_yield_next(void);
 bool k_yield_to(int tid);
@@ -77,7 +79,6 @@ bool k_send_msg(int destination, int message);
 
 void k_set_kernel_config(uint32_t enable, uint32_t disable);
 uint32_t k_get_kernel_config(void);
-bool k_set_child(int child);
 
 void k_thread_yield(Thread* next);
 bool k_yield_to(int tid);

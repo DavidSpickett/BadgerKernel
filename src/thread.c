@@ -36,17 +36,6 @@ uint32_t k_get_kernel_config(void) {
   return kernel_config;
 }
 
-bool k_set_child(int child) {
-  // Assuming that no one wants to clear child
-  // so ID of -1 is not allowed
-  if (is_valid_thread(child)) {
-    _current_thread->child = child;
-    all_threads[child].parent = k_get_thread_id();
-    return true;
-  }
-  return false;
-}
-
 bool is_valid_thread(int tid) {
   return (tid >= 0) && (tid < MAX_THREADS) && all_threads[tid].id != -1;
 }
@@ -70,6 +59,36 @@ void k_invalid_syscall(size_t arg1, size_t arg2, size_t arg3, size_t arg4) {
 int k_get_thread_id(void) {
   return _current_thread ? _current_thread->id : -1;
 }
+
+bool k_set_thread_property(int tid, size_t property,
+                           const void* value) {
+  // -1 means use current thread
+  if (tid == -1) {
+    tid = k_get_thread_id();
+  }
+  if (!is_valid_thread(tid)) {
+    return false;
+  }
+
+  Thread* thread = &all_threads[tid];
+  switch (property) {
+    case TPROP_CHILD: {
+      // Not sure I like one property call setting two things
+      int child = *(const int*)value;
+      if (is_valid_thread(child)) {
+        thread->child = child;
+        all_threads[child].parent = tid;
+      }
+      break;
+    }
+    default:
+      assert(0);
+      return false;
+  }
+
+  return true;
+}
+
 
 bool k_get_thread_property(int tid, size_t property,
                            void* res) {
@@ -100,6 +119,7 @@ bool k_get_thread_property(int tid, size_t property,
       *(ThreadState*)res = thread->state;
       break;
     default:
+      assert(0);
       return false;
   }
 
