@@ -23,7 +23,9 @@ void underflow() {
   log_event("recursing");
   recurse(distance / ALLOC_SIZE);
   // Reset the name so we have consistent test output
-  _current_thread->name = "underflowed";
+  // To do this we need a correct thread ID
+  _current_thread->id = 0;
+  set_thread_name(-1, "underflowed");
   yield();
 }
 

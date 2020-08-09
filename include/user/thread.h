@@ -20,10 +20,13 @@ int add_named_thread_with_args(void (*worker)(), const char* name,
 
 bool get_thread_property(int tid, size_t property,
                          size_t* res);
+bool set_thread_property(int tid, size_t property,
+                         const void* value);
 
 // As in, the current ID
 int get_thread_id(void);
 bool thread_name(int tid, const char** name);
+bool set_thread_name(int tid, const char* name);
 
 void yield(void);
 bool thread_join(int tid, ThreadState* state);

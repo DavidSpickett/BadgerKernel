@@ -12,7 +12,7 @@ void format_thread_name(char* out) {
     out[idx] = ' ';
   }
 
-  const char* name;
+  const char* name = NULL;
   thread_name(-1, &name);
 
   if (name == NULL) {
@@ -98,8 +98,16 @@ int get_thread_id(void) {
 }
 
 bool thread_name(int tid, const char** name) {
-  return DO_SYSCALL_3(get_thread_property, tid,
+  bool got = DO_SYSCALL_3(get_thread_property, tid,
     TPROP_NAME, name);
+  // Bodge for inconsistent results on Arm 0s LTO UBSAN
+  asm volatile ("" ::: "memory");
+  return got;
+}
+
+bool set_thread_name(int tid, const char* name) {
+  return DO_SYSCALL_3(set_thread_property, tid,
+    TPROP_NAME, &name);
 }
 
 void set_kernel_config(uint32_t enable, uint32_t disable) {
@@ -157,6 +165,12 @@ bool get_thread_property(int tid, size_t property,
                          size_t* res) {
   return DO_SYSCALL_3(get_thread_property,
                       tid, property, res);
+}
+
+bool set_thread_property(int tid, size_t property,
+                         const void* value) {
+  return DO_SYSCALL_3(set_thread_property,
+                      tid, property, value);
 }
 
 bool thread_join(int tid, ThreadState* state) {

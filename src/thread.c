@@ -81,6 +81,9 @@ bool k_set_thread_property(int tid, size_t property,
       }
       break;
     }
+    case TPROP_NAME:
+      thread->name = *(const char**)value;
+      break;
     default:
       assert(0);
       return false;
