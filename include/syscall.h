@@ -14,7 +14,6 @@
   FNADDR k_get_thread_property
   FNADDR k_set_kernel_config
   FNADDR k_get_kernel_config
-  FNADDR k_get_thread_state
   FNADDR k_set_child
   FNADDR k_get_child
   FNADDR k_thread_yield
@@ -47,7 +46,6 @@ typedef enum {
   syscall_set_kernel_config,
   syscall_get_kernel_config,
   // TODO: sane ordering for these?
-  syscall_get_thread_state,
   syscall_set_child,
   syscall_get_child,
   syscall_thread_yield,

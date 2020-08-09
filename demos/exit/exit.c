@@ -17,7 +17,7 @@ void counter() {
     ThreadState state;
     thread_join(i, &state);
     assert(state == finished);
-    log_event("thread %u exited", i);
+    log_event("thread %i exited", i);
   }
 }
 

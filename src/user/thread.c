@@ -91,7 +91,9 @@ int add_named_thread_with_args(
 }
 
 int get_thread_id(void) {
-  int ret;
+  // Note this is size_t since the call assumes
+  // a size_t of space to write back to.
+  size_t ret;
   DO_SYSCALL_3(get_thread_property, -1,
     TPROP_ID, (size_t*)&ret);
   return ret;
@@ -115,7 +117,11 @@ bool set_child(int child) {
 }
 
 bool get_thread_state(int tid, ThreadState* state) {
-  return DO_SYSCALL_2(get_thread_state, tid, state);
+  size_t res;
+  bool got = DO_SYSCALL_3(get_thread_property, tid,
+    TPROP_STATE, &res);
+  *state = res;
+  return got;
 }
 
 void yield(void) {

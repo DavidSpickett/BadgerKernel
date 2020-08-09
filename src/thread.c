@@ -75,14 +75,6 @@ static bool can_schedule_thread(int tid) {
      all_threads[tid].state == running);
 }
 
-bool k_get_thread_state(int tid, ThreadState* state) {
-  if (is_valid_thread(tid)) {
-    *state = all_threads[tid].state;
-    return true;
-  }
-  return false;
-}
-
 Thread* current_thread(void);
 
 void k_invalid_syscall(size_t arg1, size_t arg2, size_t arg3, size_t arg4) {
