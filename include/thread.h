@@ -61,9 +61,6 @@ int k_add_thread(const char* name,
 
 bool is_valid_thread(int tid);
 int k_get_thread_id(void);
-const char* k_get_thread_name(void);
-bool k_thread_name(int tid, const char** name);
-
 bool k_get_thread_property(int tid, size_t property,
                          size_t* res);
 

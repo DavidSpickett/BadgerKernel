@@ -12,7 +12,8 @@ void format_thread_name(char* out) {
     out[idx] = ' ';
   }
 
-  const char* name = get_thread_name();
+  const char* name;
+  thread_name(-1, &name);
 
   if (name == NULL) {
     int tid = get_thread_id();
@@ -96,12 +97,9 @@ int get_thread_id(void) {
   return ret;
 }
 
-const char* get_thread_name(void) {
-  return (const char*)DO_SYSCALL_0(get_thread_name);
-}
-
 bool thread_name(int tid, const char** name) {
-  return DO_SYSCALL_2(thread_name, tid, name);
+  return DO_SYSCALL_3(get_thread_property, tid,
+    TPROP_NAME, name);
 }
 
 void set_kernel_config(uint32_t enable, uint32_t disable) {

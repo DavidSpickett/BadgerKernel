@@ -11,7 +11,9 @@ void work() {
     yield();
   }
 
-  log_event("Hello my name is %s", get_thread_name());
+  const char* tname;
+  thread_name(-1, &tname);
+  log_event("Hello my name is %s", tname);
 }
 
 void spawner() {

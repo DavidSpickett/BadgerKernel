@@ -92,10 +92,6 @@ void k_invalid_syscall(size_t arg1, size_t arg2, size_t arg3, size_t arg4) {
   k_exit(1);
 }
 
-const char* k_get_thread_name(void) {
-  return _current_thread->name;
-}
-
 int k_get_thread_id(void) {
   return _current_thread ? _current_thread->id : -1;
 }
@@ -128,14 +124,6 @@ bool k_get_thread_property(int tid, size_t property,
       return false;
   }
 
-  return true;
-}
-
-bool k_thread_name(int tid, const char** name) {
-  if (!is_valid_thread(tid)) {
-    return false;
-  }
-  *name = all_threads[tid].name;
   return true;
 }
 

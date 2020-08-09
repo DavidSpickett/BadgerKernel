@@ -23,7 +23,6 @@ bool get_thread_property(int tid, size_t property,
 
 // As in, the current ID
 int get_thread_id(void);
-const char* get_thread_name(void);
 bool thread_name(int tid, const char** name);
 
 void yield(void);

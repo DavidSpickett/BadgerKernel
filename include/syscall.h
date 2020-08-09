@@ -12,7 +12,6 @@
   // Note: NO COMMAS ON THE ENDS!!
   FNADDR k_add_thread
   FNADDR k_get_thread_property
-  FNADDR k_get_thread_name
   FNADDR k_set_kernel_config
   FNADDR k_get_kernel_config
   FNADDR k_get_thread_state
@@ -33,7 +32,6 @@
   FNADDR k_malloc
   FNADDR k_realloc
   FNADDR k_free
-  FNADDR k_thread_name
   FNADDR k_list_dir
   FNADDR k_invalid_syscall
   FNADDR k_invalid_syscall
@@ -46,7 +44,6 @@
 typedef enum {
   syscall_add_thread = 0,
   syscall_get_thread_property,
-  syscall_get_thread_name,
   syscall_set_kernel_config,
   syscall_get_kernel_config,
   // TODO: sane ordering for these?
@@ -68,7 +65,6 @@ typedef enum {
   syscall_malloc,
   syscall_realloc,
   syscall_free,
-  syscall_thread_name,
   syscall_list_dir,
   syscall_eol,
 } Syscall;
