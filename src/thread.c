@@ -108,14 +108,6 @@ bool k_thread_name(int tid, const char** name) {
   return true;
 }
 
-bool k_thread_state(int tid, ThreadState* state) {
-  if (!is_valid_thread(tid)) {
-    return false;
-  }
-  *state = all_threads[tid].state;
-  return true;
-}
-
 void init_thread(Thread* thread, int tid, const char* name,
                  void (*do_work)(void), const ThreadArgs* args) {
   // thread_start will jump to this
