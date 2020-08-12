@@ -1,7 +1,7 @@
 #ifndef USER_FILE_H
 #define USER_FILE_H
 
-#include "file_common.h"
+#include "common/file.h"
 #include <sys/types.h>
 #include <stddef.h>
 

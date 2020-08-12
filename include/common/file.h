@@ -1,5 +1,5 @@
-#ifndef FILE_COMMON_H
-#define FILE_COMMON_H
+#ifndef COMMON_FILE_H
+#define COMMON_FILE_H
 
 // These are semihosting values, not posix
 #define O_RDONLY 0
@@ -8,4 +8,4 @@
 // Seek to offset from beginning
 #define SEEK_CUR 0
 
-#endif /* ifdef FILE_COMMON_H */
+#endif /* ifdef COMMON_FILE_H */

@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <sys/types.h>
-#include "file_common.h"
+#include "common/file.h"
 
 int k_list_dir(const char* path, char* out, size_t outsz);
 int k_open(const char* path, int oflag, ...);
