@@ -1,7 +1,6 @@
 #include "print.h"
 #include "thread.h"
 #include "util.h"
-#include "file_system.h"
 #if CODE_PAGE_SIZE
 #include "elf.h"
 #endif

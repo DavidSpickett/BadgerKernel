@@ -4,6 +4,8 @@
 #include "print.h"
 #include <stdbool.h>
 
+void k_exit(int status);
+
 /* Turns out, OCLint will complain about the macros
    in <assert.h> as well! Hooray. So we'll make our
    own macro, with solitaire and diet coke.

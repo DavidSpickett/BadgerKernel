@@ -1,7 +1,9 @@
 #ifndef USER_FILE_H
 #define USER_FILE_H
 
-#include "file_system.h"
+#include "file_common.h"
+#include <sys/types.h>
+#include <stddef.h>
 
 int list_dir(const char* path, char* out, size_t outsz);
 int open(const char* path, int oflag, ...);
@@ -12,4 +14,4 @@ int remove(const char* path);
 int close(int filedes);
 void exit(int status);
 
-#endif /* ifdef USER_FILM_H */
+#endif /* ifdef USER_FILE_H */

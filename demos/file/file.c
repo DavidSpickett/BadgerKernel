@@ -38,7 +38,7 @@ const char* temp_file = "demos/file/file_demo_temp_file";
 const char* temp_contents = "new file for file demo!\n";
 void write_new(void) {
   log_event("Writing temp file");
-  int newfile = open(temp_file, O_WRONLY | O_CREAT, S_IRUSR);
+  int newfile = open(temp_file, O_WRONLY);
   assert(newfile != -1);
   size_t len = strlen(temp_contents);
   size_t ret = write(newfile, temp_contents, len);
