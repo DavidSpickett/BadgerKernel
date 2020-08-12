@@ -8,9 +8,21 @@
 
 #define MAX_CMD_LINE_PARTS 20
 typedef struct {
-  int num_parts;
+  size_t num_parts;
   const char* parts[MAX_CMD_LINE_PARTS];
 } ProcessedCmdLine;
+
+static void AddCmdLinePart(ProcessedCmdLine* cmdline,
+                    const char* part) {
+  cmdline->parts[cmdline->num_parts] = part;
+  cmdline->num_parts++;
+
+  if (cmdline->num_parts >= MAX_CMD_LINE_PARTS) {
+    printf("Too many parts to command line!\n");
+    exit(1);
+  }
+}
+
 static ProcessedCmdLine split_cmd_line(char* cmd_line) {
   /* Take a long string with whitespace in and make it into
      effectivley a list of strings by null terminating where
@@ -29,14 +41,7 @@ static ProcessedCmdLine split_cmd_line(char* cmd_line) {
     if (*curr == ' ') {
       // If there is non space chars to actually save
       if (curr != start_part) {
-        // Save current part
-        parts.parts[parts.num_parts] = start_part;
-        parts.num_parts++;
-
-        if (parts.num_parts >= MAX_CMD_LINE_PARTS) {
-          printf("Too many parts to command line!\n");
-          exit(1);
-        }
+        AddCmdLinePart(&parts, start_part);
       }
       // Which means we'll fill all spaces with null terminators
       *curr = '\0';
@@ -44,16 +49,10 @@ static ProcessedCmdLine split_cmd_line(char* cmd_line) {
       start_part = curr+1;
     }
   }
+
   // Catch leftover part
   if (start_part < curr) {
-    // TODO: dedupe
-    parts.parts[parts.num_parts] = start_part;
-    parts.num_parts++;
-
-    if (parts.num_parts >= MAX_CMD_LINE_PARTS) {
-      printf("Too many parts to command line!\n");
-      exit(1);
-    }
+    AddCmdLinePart(&parts, start_part);
   }
 
   return parts;
