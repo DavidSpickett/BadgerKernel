@@ -531,15 +531,21 @@ int k_add_thread(const char* name,
     args = &dummy_args;
   }
 
-  if (kind == THREAD_FILE) {
+  switch (kind) {
+    case THREAD_FILE:
 #ifndef CODE_PAGE_SIZE
-    assert(0);
+      assert(0);
 #else
-    return k_add_thread_from_file_with_args((const char*) worker, args);
+      return k_add_thread_from_file_with_args(
+              (const char*) worker, args);
 #endif
-  } else if (kind == THREAD_FUNC) {
-    return k_add_named_thread_with_args(worker, name, args);
+    case THREAD_FUNC:
+      return k_add_named_thread_with_args(worker, name, args);
+    default:
+      assert(0);
+      break;
   }
+
   __builtin_unreachable();
 }
 
