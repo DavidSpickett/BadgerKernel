@@ -22,6 +22,10 @@
 #define THREAD_FUNC 0
 #define THREAD_FILE 1
 
+#define YIELD_ANY  0
+#define YIELD_TO   1
+#define YIELD_NEXT 2
+
 typedef struct {
   size_t a1;
   size_t a2;

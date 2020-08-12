@@ -380,24 +380,16 @@ bool thread_cancel(int tid) {
 extern void thread_switch(void);
 void check_stack(void);
 
-void k_thread_yield(Thread* next) {
+static bool k_do_yield(Thread* to) {
   check_stack();
 
-  next_thread = next;
+  next_thread = to;
   do_scheduler();
   // Assembly handler will see next_thread set and do the switch
-}
-
-bool k_yield_to(int tid) {
-  if (!can_schedule_thread(tid)) {
-    return false;
-  }
-
-  k_thread_yield(&all_threads[tid]);
   return true;
 }
 
-bool k_yield_next(void) {
+static bool k_yield_next(void) {
   // Yield to next valid thread, wrapping around the list
   // Pretty much what the scheduler does, but you will return
   // to current thread if there isn't another one to go to
@@ -409,7 +401,7 @@ bool k_yield_next(void) {
   for (size_t idx = id + 1; idx < limit; ++idx) {
     size_t idx_in_range = idx % MAX_THREADS;
     if (can_schedule_thread(idx_in_range)) {
-      k_thread_yield(&all_threads[idx_in_range]);
+      k_do_yield(&all_threads[idx_in_range]);
       found = true;
       break;
     }
@@ -418,6 +410,27 @@ bool k_yield_next(void) {
   // If we set next_thread then we'll switch after this return
   // If not, back to the same thread
   return found;
+}
+
+bool k_yield(int tid, int kind) {
+  switch (kind) {
+    case YIELD_ANY:
+      assert(tid == INVALID_THREAD);
+      return k_do_yield(NULL);
+    case YIELD_TO:
+      if (!can_schedule_thread(tid)) {
+        return false;
+      }
+      return k_do_yield(&all_threads[tid]);
+    case YIELD_NEXT:
+      assert(tid == INVALID_THREAD);
+      return k_yield_next();
+    default:
+      assert(0);
+      break;
+  }
+
+  __builtin_unreachable();
 }
 
 #if CODE_PAGE_SIZE && ! CODE_BACKING_PAGES

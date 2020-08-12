@@ -8,9 +8,7 @@ get_thread_property
 set_thread_property
 get_kernel_config
 set_kernel_config
-thread_yield
-yield_to
-yield_next
+yield
 get_msg
 send_msg
 open

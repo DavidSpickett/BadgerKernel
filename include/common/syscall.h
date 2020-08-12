@@ -13,9 +13,7 @@
   FNADDR k_set_thread_property
   FNADDR k_get_kernel_config
   FNADDR k_set_kernel_config
-  FNADDR k_thread_yield
-  FNADDR k_yield_to
-  FNADDR k_yield_next
+  FNADDR k_yield
   FNADDR k_get_msg
   FNADDR k_send_msg
   FNADDR k_open
@@ -43,9 +41,7 @@ typedef enum {
   syscall_set_thread_property,
   syscall_get_kernel_config,
   syscall_set_kernel_config,
-  syscall_thread_yield,
-  syscall_yield_to,
-  syscall_yield_next,
+  syscall_yield,
   syscall_get_msg,
   syscall_send_msg,
   syscall_open,

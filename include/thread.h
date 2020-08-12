@@ -66,8 +66,6 @@ bool k_get_thread_property(int tid, size_t property,
 bool k_set_thread_property(int tid, size_t property,
                            const void* res);
 
-bool k_yield_next(void);
-bool k_yield_to(int tid);
 void thread_wait(void);
 bool thread_wake(int tid);
 bool thread_cancel(int tid);
@@ -80,8 +78,7 @@ bool k_send_msg(int destination, int message);
 void k_set_kernel_config(uint32_t enable, uint32_t disable);
 uint32_t k_get_kernel_config(void);
 
-void k_thread_yield(Thread* next);
-bool k_yield_to(int tid);
+bool k_yield(int tid, int kind);
 
 void k_invalid_syscall(size_t arg1, size_t arg2,
                        size_t arg3, size_t arg4);
