@@ -12,7 +12,7 @@ void work() {
   }
 
   const char* tname;
-  thread_name(-1, &tname);
+  thread_name(CURRENT_THREAD, &tname);
   log_event("Hello my name is %s", tname);
 }
 

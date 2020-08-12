@@ -5,8 +5,8 @@
 void load_again() {
   // This yielding is also testing that going from
   // non backed to backed and vice versa works
-  int tid = -1;
-  while (tid == -1) {
+  int tid = INVALID_THREAD;
+  while (tid == INVALID_THREAD) {
     yield();
     tid = add_thread_from_file("task2");
   }
@@ -15,7 +15,7 @@ void load_again() {
   // Cancelling this new thread should release its backing page
   assert(thread_cancel(tid));
   tid = add_thread_from_file("task2");
-  assert(tid != -1);
+  assert(tid != INVALID_THREAD);
 
   // Check that skipping the scheduler still copies
   // in the new program. If not we'll see "Hello" instead
@@ -36,5 +36,5 @@ void setup(void) {
   K_ADD_THREAD_FROM_FILE(filename);
   K_ADD_THREAD_FROM_FILE(filename);
   // This fails because we've used up all the backing pages
-  assert(K_ADD_THREAD_FROM_FILE(filename) == -1);
+  assert(K_ADD_THREAD_FROM_FILE(filename) == INVALID_THREAD);
 }

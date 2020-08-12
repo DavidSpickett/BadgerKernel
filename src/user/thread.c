@@ -13,13 +13,13 @@ void format_thread_name(char* out) {
   }
 
   const char* name = NULL;
-  thread_name(-1, &name);
+  thread_name(CURRENT_THREAD, &name);
 
   if (name == NULL) {
     int tid = get_thread_id();
 
     // If the thread had a stack issue
-    if (tid == -1) {
+    if (tid == INVALID_THREAD) {
       const char* hidden = "<HIDDEN>";
       size_t h_len = strlen(hidden);
       size_t padding = THREAD_NAME_SIZE - h_len;

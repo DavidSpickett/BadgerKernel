@@ -98,7 +98,7 @@ static void run(int argc, char* argv[]) {
   // The program will still expect argv[0] to be its name
   const ThreadArgs args = make_args(argc-1, argv+1, 0, 0);
   int tid = add_thread_from_file_with_args(run_progname, &args);
-  if (tid == -1) {
+  if (tid == INVALID_THREAD) {
     printf("Couldn't load \"%s\"\n", run_progname);
   } else {
     // Set it as our child so we come back here when done
@@ -147,7 +147,7 @@ static void do_command(char* cmd) {
     return;
   }
 
-  int tid = -1;
+  int tid = INVALID_THREAD;
   ThreadArgs args = make_args(parts.num_parts, &parts.parts, 0, 0);
 
   // Builtins take priority
@@ -166,7 +166,7 @@ static void do_command(char* cmd) {
     }
   }
 
-  if (tid != -1) {
+  if (tid != INVALID_THREAD) {
     // So that we return here
     set_child(tid);
     yield_to(tid);

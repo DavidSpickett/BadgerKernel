@@ -37,7 +37,8 @@ uint32_t k_get_kernel_config(void) {
 }
 
 bool is_valid_thread(int tid) {
-  return (tid >= 0) && (tid < MAX_THREADS) && all_threads[tid].id != -1;
+  return (tid >= 0) && (tid < MAX_THREADS) &&
+          all_threads[tid].id != INVALID_THREAD;
 }
 
 static bool can_schedule_thread(int tid) {
@@ -57,13 +58,12 @@ void k_invalid_syscall(size_t arg1, size_t arg2, size_t arg3, size_t arg4) {
 }
 
 int k_get_thread_id(void) {
-  return _current_thread ? _current_thread->id : -1;
+  return _current_thread ? _current_thread->id : INVALID_THREAD;
 }
 
 bool k_set_thread_property(int tid, size_t property,
                            const void* value) {
-  // -1 means use current thread
-  if (tid == -1) {
+  if (tid == CURRENT_THREAD) {
     tid = k_get_thread_id();
   }
   if (!is_valid_thread(tid)) {
@@ -95,8 +95,7 @@ bool k_set_thread_property(int tid, size_t property,
 
 bool k_get_thread_property(int tid, size_t property,
                            void* res) {
-  // -1 means use current thread
-  if (tid == -1) {
+  if (tid == CURRENT_THREAD) {
     tid = k_get_thread_id();
   }
   if (!is_valid_thread(tid)) {
@@ -138,8 +137,8 @@ void init_thread(Thread* thread, int tid, const char* name,
   thread->id = tid;
   thread->name = name;
   thread->args = *args;
-  thread->parent = -1;
-  thread->child = -1;
+  thread->parent = INVALID_THREAD;
+  thread->child = INVALID_THREAD;
 
   // Start message buffer empty
   thread->next_msg = &(thread->messages[0]);
@@ -167,7 +166,7 @@ extern void start_thread_switch(void);
 __attribute__((noreturn)) void entry(void) {
   for (size_t idx = 0; idx < MAX_THREADS; ++idx) {
     ThreadArgs noargs = {0, 0, 0, 0};
-    init_thread(&all_threads[idx], -1, NULL, NULL, &noargs);
+    init_thread(&all_threads[idx], INVALID_THREAD, NULL, NULL, &noargs);
   }
 
 #if defined CODE_PAGE_SIZE && defined STARTUP_PROG
@@ -176,7 +175,7 @@ __attribute__((noreturn)) void entry(void) {
   // Empty means load builtin threads
   if (strcmp(startup_prog, "")) {
     int tid = K_ADD_THREAD_FROM_FILE(startup_prog);
-    if (tid == -1) {
+    if (tid == INVALID_THREAD) {
       k_log_event("Failed to find STARTUP_PROG \"%s\"",
         startup_prog);
       k_exit(1);
@@ -221,7 +220,7 @@ bool k_send_msg(int destination, int message) {
   if (
       // Invalid destination
       destination >= MAX_THREADS || destination < 0 ||
-      all_threads[destination].id == -1 ||
+      all_threads[destination].id == INVALID_THREAD ||
       // Buffer is full
       all_threads[destination].msgs_full) {
     return false;
@@ -254,7 +253,7 @@ void k_format_thread_name(char* out) {
     int tid = k_get_thread_id();
 
     // If the thread had a stack issue
-    if (tid == -1) {
+    if (tid == INVALID_THREAD) {
       const char* hidden = "<HIDDEN>";
       size_t h_len = strlen(hidden);
       size_t padding = THREAD_NAME_SIZE - h_len;
@@ -467,7 +466,7 @@ static int code_page_in_use_by() {
       return all_threads[idx].id;
     }
   }
-  return -1;
+  return INVALID_THREAD;
 }
 #endif
 
@@ -516,7 +515,7 @@ static void setup_code_page(size_t idx) {
 static int k_add_named_thread_with_args(void (*worker)(), const char* name,
                                const ThreadArgs* args) {
   for (size_t idx = 0; idx < MAX_THREADS; ++idx) {
-    if (all_threads[idx].id == -1 ||
+    if (all_threads[idx].id == INVALID_THREAD ||
         all_threads[idx].state == cancelled ||
         all_threads[idx].state == finished) {
       init_thread(&all_threads[idx], idx, name, worker, args);
@@ -526,7 +525,7 @@ static int k_add_named_thread_with_args(void (*worker)(), const char* name,
       return idx;
     }
   }
-  return -1;
+  return INVALID_THREAD;
 }
 
 #if CODE_PAGE_SIZE
@@ -538,9 +537,9 @@ int k_add_thread_from_file_with_args(const char* filename,
   // page as useable for loading.
   if (free_page == INVALID_PAGE) {
 #else
-  if (code_page_in_use_by() != -1) {
+  if (code_page_in_use_by() != INVALID_THREAD) {
 #endif
-    return -1;
+    return INVALID_THREAD;
   }
 
   uint8_t* dest = code_page;
@@ -550,7 +549,7 @@ int k_add_thread_from_file_with_args(const char* filename,
 
   void (*entry)() = load_elf(filename, dest);
   if (!entry) {
-    return -1;
+    return INVALID_THREAD;
   }
   int tid = k_add_named_thread_with_args(entry, filename, args);
 
@@ -612,7 +611,7 @@ void check_stack(void) {
 
   if (underflow || overflow) {
     // Don't schedule this again, or rely on its ID
-    _current_thread->id = -1;
+    _current_thread->id = INVALID_THREAD;
     _current_thread->name = NULL;
 
     if (underflow) {
@@ -623,10 +622,10 @@ void check_stack(void) {
     }
 
     if (kernel_config & KCFG_DESTROY_ON_STACK_ERR) {
-     /* Setting -1 here, instead of state=finished is fine,
+     /* Setting INVALID_THREAD here, instead of state=finished is fine,
          because A: the thread didn't actually finish
                  B: the thread struct is actually invalid */
-      _current_thread->id = -1;
+      _current_thread->id = INVALID_THREAD;
 
       // Would clear heap allocs here but we can't trust the thread ID
 

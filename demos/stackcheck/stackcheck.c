@@ -25,7 +25,7 @@ void underflow() {
   // Reset the name so we have consistent test output
   // To do this we need a correct thread ID
   _current_thread->id = 0;
-  set_thread_name(-1, "underflowed");
+  set_thread_name(CURRENT_THREAD, "underflowed");
   yield();
 }
 
@@ -38,8 +38,8 @@ void overflow() {
      (top of stack - sp) < (sp - current_thread)
      So overflow is garaunteed.
   */
-  // Set -1 so scheduler doesn't check that position == ID
-  memset((void*)&dummy, -1, distance);
+  // Set INVALID_THREAD so scheduler doesn't check that position == ID
+  memset((void*)&dummy, INVALID_THREAD, distance);
   while (1) {
     yield();
   }

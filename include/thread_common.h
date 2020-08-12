@@ -6,6 +6,10 @@
 
 // Thread related stuff available to user and kernel
 
+#define INVALID_THREAD -1
+// For the set/get property API
+#define CURRENT_THREAD INVALID_THREAD
+
 #define KCFG_DESTROY_ON_STACK_ERR 1<<0
 #define KCFG_LOG_SCHEDULER        1<<1
 #define KCFG_LOG_THREADS          1<<2

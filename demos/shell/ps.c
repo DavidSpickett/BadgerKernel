@@ -46,7 +46,7 @@ void worker(int argc, char* argv[]) {
     int child_tid;
     get_child(tid, &child_tid);
     const char* child_name = NULL;
-    if (child_tid != -1) {
+    if (child_tid != INVALID_THREAD) {
       thread_name(child_tid, &child_name);
     }
 
