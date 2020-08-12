@@ -310,10 +310,10 @@ static const KernelSymbolInfo kernel_symbols[] = {
   {"set_kernel_config", (size_t)set_kernel_config},
   {"yield", (size_t)yield},
 };
+const size_t num_kernel_symbols = sizeof(kernel_symbols)/sizeof(KernelSymbolInfo);
 
 static size_t get_kernel_symbol_value(const char* name) {
-  size_t num_symbols = sizeof(kernel_symbols)/sizeof(KernelSymbolInfo);
-  for (size_t idx=0; idx < num_symbols; ++idx) {
+  for (size_t idx=0; idx < num_kernel_symbols; ++idx) {
     // TODO: are you supposed to use the names here?
     // Maybe you can just compare indexes and name table index
     if (!strcmp(kernel_symbols[idx].name, name)) {
