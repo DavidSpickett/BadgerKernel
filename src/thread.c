@@ -470,8 +470,7 @@ static int code_page_in_use_by() {
 #endif
 
 #if CODE_BACKING_PAGES
-static size_t find_free_backing_page() {
-  //TODO: not very efficient
+static size_t find_free_backing_page(void) {
   bool possible[CODE_BACKING_PAGES];
   for (size_t i=0; i<CODE_BACKING_PAGES; ++i) {
     possible[i] = true;
@@ -671,7 +670,6 @@ __attribute__((noreturn)) void thread_start(void) {
   cleanup_thread(_current_thread);
 
   // Calling thread_switch directly so we don't print 'yielding'
-  // TODO: we save state here that we don't need to
   thread_switch();
 
   __builtin_unreachable();
