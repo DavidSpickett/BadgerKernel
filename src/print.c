@@ -1,4 +1,5 @@
 #include "print.h"
+#include "common/thread.h"
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
@@ -146,4 +147,39 @@ int sprintf(char* str, const char* fmt, ...) {
   *str = '\0';
   va_end(args);
   return str - start;
+}
+
+void format_thread_name(char* out, int tid,
+                        const char* name) {
+  // fill with spaces (no +1 as we'll terminate it later)
+  for (size_t idx = 0; idx < THREAD_NAME_SIZE; ++idx) {
+    out[idx] = ' ';
+  }
+
+  if (name == NULL) {
+    // If the thread had a stack issue
+    if (tid == INVALID_THREAD) {
+      const char* hidden = "<HIDDEN>";
+      size_t h_len = strlen(hidden);
+      size_t padding = THREAD_NAME_SIZE - h_len;
+      strncpy(&out[padding], hidden, h_len);
+    } else {
+      // Just show the ID number (assume max 999 threads)
+      char idstr[4];
+      int len = sprintf(idstr, "%u", tid);
+      strcpy(&out[THREAD_NAME_SIZE - len], idstr);
+    }
+  } else {
+    size_t name_len = strlen(name);
+
+    // cut off long names
+    if (name_len > THREAD_NAME_SIZE) {
+      name_len = THREAD_NAME_SIZE;
+    }
+
+    size_t padding = THREAD_NAME_SIZE - name_len;
+    strncpy(&out[padding], name, name_len);
+  }
+
+  out[THREAD_NAME_SIZE] = '\0';
 }

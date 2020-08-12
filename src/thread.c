@@ -235,56 +235,15 @@ bool k_send_msg(int destination, int message) {
   return true;
 }
 
-extern void thread_switch(void);
-void check_stack(void);
-void k_format_thread_name(char* out) {
-  // fill with spaces (no +1 as we'll terminate it later)
-  for (size_t idx = 0; idx < THREAD_NAME_SIZE; ++idx) {
-    out[idx] = ' ';
-  }
-
-  const char* name = NULL;
-  if (_current_thread) {
-    name = _current_thread->name;
-  }
-
-  if (name == NULL) {
-    int tid = k_get_thread_id();
-
-    // If the thread had a stack issue
-    if (tid == INVALID_THREAD) {
-      const char* hidden = "<HIDDEN>";
-      size_t h_len = strlen(hidden);
-      size_t padding = THREAD_NAME_SIZE - h_len;
-      strncpy(&out[padding], hidden, h_len);
-    } else {
-      // Just show the ID number (assume max 999 threads)
-      char idstr[4];
-      int len = sprintf(idstr, "%u", tid);
-      strcpy(&out[THREAD_NAME_SIZE - len], idstr);
-    }
-  } else {
-    size_t name_len = strlen(name);
-
-    // cut off long names
-    if (name_len > THREAD_NAME_SIZE) {
-      name_len = THREAD_NAME_SIZE;
-    }
-
-    size_t padding = THREAD_NAME_SIZE - name_len;
-    strncpy(&out[padding], name, name_len);
-  }
-
-  out[THREAD_NAME_SIZE] = '\0';
-}
-
 void k_log_event(const char* event, ...) {
   if (!(kernel_config & KCFG_LOG_THREADS)) {
     return;
   }
 
   char thread_name[THREAD_NAME_SIZE + 1];
-  k_format_thread_name(thread_name);
+  const char* name = NULL;
+  k_get_thread_property(CURRENT_THREAD, TPROP_NAME, &name);
+  format_thread_name(thread_name, k_get_thread_id(), name);
   printf("Thread %s: ", thread_name);
 
   va_list args;
@@ -417,6 +376,9 @@ bool thread_cancel(int tid) {
   }
   return set;
 }
+
+extern void thread_switch(void);
+void check_stack(void);
 
 void k_thread_yield(Thread* next) {
   check_stack();

@@ -4,47 +4,6 @@
 #include <stdarg.h>
 #include <string.h>
 
-#define THREAD_NAME_SIZE 12
-
-void format_thread_name(char* out) {
-  // fill with spaces (no +1 as we'll terminate it later)
-  for (size_t idx = 0; idx < THREAD_NAME_SIZE; ++idx) {
-    out[idx] = ' ';
-  }
-
-  const char* name = NULL;
-  thread_name(CURRENT_THREAD, &name);
-
-  if (name == NULL) {
-    int tid = get_thread_id();
-
-    // If the thread had a stack issue
-    if (tid == INVALID_THREAD) {
-      const char* hidden = "<HIDDEN>";
-      size_t h_len = strlen(hidden);
-      size_t padding = THREAD_NAME_SIZE - h_len;
-      strncpy(&out[padding], hidden, h_len);
-    } else {
-      // Just show the ID number (assume max 999 threads)
-      char idstr[4];
-      int len = sprintf(idstr, "%u", tid);
-      strcpy(&out[THREAD_NAME_SIZE - len], idstr);
-    }
-  } else {
-    size_t name_len = strlen(name);
-
-    // cut off long names
-    if (name_len > THREAD_NAME_SIZE) {
-      name_len = THREAD_NAME_SIZE;
-    }
-
-    size_t padding = THREAD_NAME_SIZE - name_len;
-    strncpy(&out[padding], name, name_len);
-  }
-
-  out[THREAD_NAME_SIZE] = '\0';
-}
-
 // TODO: maybe logging should go via syscall
 // to prevent splitting messages?
 void log_event(const char* event, ...) {
@@ -52,9 +11,12 @@ void log_event(const char* event, ...) {
     return;
   }
 
-  char thread_name[THREAD_NAME_SIZE + 1];
-  format_thread_name(thread_name);
-  printf("Thread %s: ", thread_name);
+  char formatted_name[THREAD_NAME_SIZE + 1];
+  const char* name;
+  thread_name(CURRENT_THREAD, &name);
+  format_thread_name(formatted_name, get_thread_id(),
+                     name);
+  printf("Thread %s: ", formatted_name);
 
   va_list args;
   va_start(args, event);
