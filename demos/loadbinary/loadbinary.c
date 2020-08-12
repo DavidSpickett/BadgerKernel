@@ -23,7 +23,7 @@ void load_again() {
 void setup(void) {
   k_set_kernel_config(KCFG_LOG_SCHEDULER, 0);
 
-  K_ADD_THREAD_FROM_FILE(filename);
+  assert(K_ADD_THREAD_FROM_FILE(filename) != -1);
   K_ADD_NAMED_THREAD(load_again, "load_again");
   // Fails because single code page is in use
   assert(K_ADD_THREAD_FROM_FILE(filename) == -1);

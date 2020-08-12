@@ -603,7 +603,11 @@ void (*load_elf(const char* filename, void* dest))(void) {
   DEBUG_MSG_ELF("Processing \"%s\"\n", filename);
   int elf = k_open(filename, O_RDONLY);
   if (elf < 0) {
-    PRINT_EXIT("Couldn't open file %s\n", filename);
+    DEBUG_MSG_ELF("Couldn't open file %s\n", filename);
+    // Entry could be 0 in a pie ELF, but when it's returned
+    // it's offset so it'd be non zero
+    // Hence we're ok to use NULL to mean couldn't open
+    return NULL;
   }
 
   size_t header_size = sizeof(ElfHeader);

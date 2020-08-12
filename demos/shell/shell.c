@@ -94,21 +94,17 @@ static void run(int argc, char* argv[]) {
   }
   strcpy(run_progname, argv[1]);
 
-  // TODO: bodge since load_elf hard errors
-  int test = open(run_progname, O_RDONLY);
-  if (test < 0) {
-    printf("Couldn't find application \"%s\"\n", run_progname);
-    return;
-  }
-  close(test);
-
   // Pass on rest of arguments, +/- 1 to skip "run"
   // The program will still expect argv[0] to be its name
   const ThreadArgs args = make_args(argc-1, argv+1, 0, 0);
   int tid = add_thread_from_file_with_args(run_progname, &args);
-  // Set it as our child so we come back here when done
-  set_child(tid);
-  yield_to(tid);
+  if (tid == -1) {
+    printf("Couldn't load \"%s\"\n", run_progname);
+  } else {
+    // Set it as our child so we come back here when done
+    set_child(tid);
+    yield_to(tid);
+  }
 }
 
 static void help(int argc, char* argv[]) {

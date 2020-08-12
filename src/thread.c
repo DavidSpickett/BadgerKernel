@@ -175,7 +175,12 @@ __attribute__((noreturn)) void entry(void) {
   k_log_event("Loading program \"%s\"", startup_prog);
   // Empty means load builtin threads
   if (strcmp(startup_prog, "")) {
-    K_ADD_THREAD_FROM_FILE(startup_prog);
+    int tid = K_ADD_THREAD_FROM_FILE(startup_prog);
+    if (tid == -1) {
+      k_log_event("Failed to find STARTUP_PROG \"%s\"",
+        startup_prog);
+      k_exit(1);
+    }
   } else {
 #else
   {
@@ -538,18 +543,16 @@ int k_add_thread_from_file_with_args(const char* filename,
     return -1;
   }
 
-  int file = k_open(filename, O_RDONLY);
-  if (file < 0) {
-    printf("Couldn't load %s\n", filename);
-    k_exit(1);
-  }
-
   uint8_t* dest = code_page;
 #if CODE_BACKING_PAGES
   dest = &code_page_backing[free_page][0];
 #endif
 
-  int tid = k_add_named_thread_with_args(load_elf(filename, dest), filename, args);
+  void (*entry)() = load_elf(filename, dest);
+  if (!entry) {
+    return -1;
+  }
+  int tid = k_add_named_thread_with_args(entry, filename, args);
 
 #if CODE_BACKING_PAGES
   all_threads[tid].code_backing_page = free_page;
