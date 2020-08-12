@@ -1,5 +1,5 @@
 #include "user/thread.h"
-#include "syscall.h"
+#include "common/syscall.h"
 #include "print.h"
 #include <stdarg.h>
 #include <string.h>

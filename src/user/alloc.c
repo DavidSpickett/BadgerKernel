@@ -1,5 +1,5 @@
 #include "user/alloc.h"
-#include "syscall.h"
+#include "common/syscall.h"
 
 void* malloc(size_t size) {
   return (void*)DO_SYSCALL_1(malloc, size);

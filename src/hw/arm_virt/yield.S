@@ -117,7 +117,7 @@ syscall_ret:
   b exception_return
 
 syscall_handlers:
-#include "syscall.h"
+#include "common/syscall.h"
 
 .global start_thread_switch
 start_thread_switch:

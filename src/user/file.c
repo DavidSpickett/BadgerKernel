@@ -1,5 +1,5 @@
 #include "user/file.h"
-#include "syscall.h"
+#include "common/syscall.h"
 #include <stddef.h>
 
 int list_dir(const char* path, char* out, size_t outsz) {

@@ -1,7 +1,7 @@
 #include "print.h"
 #include "thread_state.h"
 #include "util.h"
-#include "syscall.h"
+#include "common/syscall.h"
 
 // NUMREGs chosen to be callee saved
 #ifdef __aarch64__

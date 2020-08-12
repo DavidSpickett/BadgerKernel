@@ -131,7 +131,7 @@ syscall_ret:
   eret
 
 syscall_handlers:
-#include "syscall.h"
+#include "common/syscall.h"
 
 enable_timer:
   mrs x0, CNTVCT_EL0     // Get current count

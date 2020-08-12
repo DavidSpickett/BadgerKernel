@@ -254,4 +254,4 @@ generic_syscall:
   bx lr
 
 syscall_handlers:
-#include "syscall.h"
+#include "common/syscall.h"
