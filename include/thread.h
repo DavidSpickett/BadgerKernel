@@ -2,7 +2,7 @@
 #define THREAD_H
 
 #include "thread_state.h"
-#include "thread_common.h"
+#include "common/thread.h"
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>

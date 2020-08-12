@@ -1,5 +1,5 @@
-#ifndef THREAD_COMMON_H
-#define THREAD_COMMON_H
+#ifndef COMMON_THREAD_H
+#define COMMON_THREAD_H
 
 #include <stddef.h>
 #include <stdbool.h>
@@ -34,4 +34,4 @@ typedef struct {
 #define make_args(a, b, c, d)                   \
   { (size_t)(a), (size_t)(b), (size_t)(c), (size_t)(d) }
 
-#endif /* ifdef THREAD_COMMON_H */
+#endif /* ifdef COMMON_THREAD_H */

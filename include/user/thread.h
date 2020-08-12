@@ -2,7 +2,7 @@
 #define USER_THREAD_H
 
 #include <stdint.h>
-#include "thread_common.h"
+#include "common/thread.h"
 #include "thread_state.h"
 
 int add_thread(const char* name,
