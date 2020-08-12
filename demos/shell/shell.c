@@ -206,13 +206,13 @@ static void command_loop(int input) {
         case '\r': // Enter
           cmd_line[cmd_line_pos] = '\0';
           cmd_line_pos = 0;
-          printf("\n");
+          putchar('\n');
           do_command(cmd_line);
           PRINT_PROMPT
           break;
         case 0x03: // End of text ( Ctrl-C )
           cmd_line_pos = 0;
-          printf("\n");
+          putchar('\n');
           PRINT_PROMPT
           break;
         case 0x1B: // Escape char
@@ -251,11 +251,7 @@ static void command_loop(int input) {
           if (cmd_line_pos < MAX_CMD_LINE) {
             cmd_line[cmd_line_pos] = *curr;
             ++cmd_line_pos;
-            // TODO: directly putchar
-            char out[2];
-            out[0] = *curr;
-            out[1] = '\0';
-            printf("%s", out);
+            putchar(*curr);
           }
           break;
       }
