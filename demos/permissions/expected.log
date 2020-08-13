@@ -17,6 +17,15 @@ Thread       runner: yielding
 Thread     new_name: exiting
 Thread       runner: resuming
 Thread       runner: yielding
+Thread  userinherit: yielding
+Thread         SAME: exiting
+Thread  userinherit: resuming
+Thread  userinherit: yielding
+Thread      reduced: exiting
+Thread  userinherit: resuming
+Thread  userinherit: exiting
+Thread       runner: resuming
+Thread       runner: yielding
 Thread      cleanup: exiting
 Thread       runner: resuming
 Thread       runner: exiting
