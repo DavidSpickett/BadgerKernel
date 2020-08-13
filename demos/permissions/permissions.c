@@ -44,6 +44,16 @@ void cannot_tconfig() {
   assert(!set_thread_name(-1, "won't see this!"));
 }
 
+void cannot_mutli() {
+  // Grab back just to check we handle mutiple
+  // permissions being removed
+  assert(close(read_fd) == -1);
+  assert(malloc(sizeof(int)) == NULL);
+  set_kernel_config(KCFG_LOG_SCHEDULER, 0);
+  // This one we are allowed to do
+  assert(set_thread_name(-1, "new_name"));
+}
+
 void cleanup() {
   assert(close(read_fd) == 0);
   assert(close(write_fd) == 0);
@@ -77,14 +87,17 @@ void runner() {
   set_child(tid);
   yield();
 
-  // TODO: thread config check!!!!!
   tid = add_thread("notconfig", NULL, cannot_tconfig,
     THREAD_FUNC | TPERM_NO_TCONFIG);
   set_child(tid);
   yield();
 
-  // TODO: permissions should inherit so you don't
-  // need ALL here
+  tid = add_thread("nomulti", NULL, cannot_mutli,
+    THREAD_FUNC | TPERM_NO_FILE | TPERM_NO_ALLOC |
+    TPERM_NO_KCONFIG);
+  set_child(tid);
+  yield();
+
   tid = add_thread("cleanup", NULL, cleanup,
     THREAD_FUNC);
   set_child(tid);
@@ -92,7 +105,7 @@ void runner() {
 }
 
 void setup(void) {
-  // This will inherit kernel permissions
+  // This will inherit kernel permissions (everything)
   assert(k_add_thread("runner", NULL, runner,
     THREAD_FUNC) != -1);
 }

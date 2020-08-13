@@ -34,7 +34,7 @@
 #define TPERM_KCONFIG (1 << 3)
 #define TPERM_TCONFIG (1 << 4)
 
-// Use when setting permissons on new threads
+// Use when removing permissions via add_thread
 #define TPERM_NO_ALL     ((uint32_t)TPERM_ALL     << TFLAG_PERM_SHIFT)
 #define TPERM_NO_CREATE  ((uint32_t)TPERM_CREATE  << TFLAG_PERM_SHIFT)
 #define TPERM_NO_FILE    ((uint32_t)TPERM_FILE    << TFLAG_PERM_SHIFT)
