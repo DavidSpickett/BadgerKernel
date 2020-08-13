@@ -54,6 +54,29 @@ void cannot_mutli() {
   assert(set_thread_name(-1, "new_name"));
 }
 
+void same_permissions() {
+  assert(set_thread_name(-1, "SAME"));
+}
+
+void reduced_permissions() {
+  assert(!set_thread_name(-1, "REDUCED"));
+}
+
+// Check that threads created by user threads also inherit
+void user_inherit() {
+  // This thread will have same permissions
+  int tid = add_thread("same", NULL, same_permissions,
+    THREAD_FUNC);
+  set_child(tid);
+  yield();
+
+  // This has one removed
+  tid = add_thread("reduced", NULL, reduced_permissions,
+    THREAD_FUNC | TPERM_NO_TCONFIG);
+  set_child(tid);
+  yield();
+}
+
 void cleanup() {
   assert(close(read_fd) == 0);
   assert(close(write_fd) == 0);
@@ -95,6 +118,11 @@ void runner() {
   tid = add_thread("nomulti", NULL, cannot_mutli,
     THREAD_FUNC | TPERM_NO_FILE | TPERM_NO_ALLOC |
     TPERM_NO_KCONFIG);
+  set_child(tid);
+  yield();
+
+  tid = add_thread("userinherit", NULL, user_inherit,
+    THREAD_FUNC);
   set_child(tid);
   yield();
 
