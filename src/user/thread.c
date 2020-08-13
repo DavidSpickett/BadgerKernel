@@ -32,29 +32,27 @@ int add_thread(const char* name, const ThreadArgs* args,
 }
 
 int add_named_thread(void (*worker)(void), const char* name) {
-  return add_thread(name, NULL, worker,
-    THREAD_FUNC | TPERM_ALL);
+  return add_thread(name, NULL, worker, THREAD_FUNC);
 }
 
 int add_thread_from_worker(void (*worker)(void)) {
-  return add_thread(NULL, NULL, worker,
-    THREAD_FUNC | TPERM_ALL);
+  return add_thread(NULL, NULL, worker, THREAD_FUNC);
 }
 
 int add_thread_from_file(const char* filename) {
   return add_thread(filename, NULL, (void*)filename,
-    THREAD_FILE | TPERM_ALL);
+    THREAD_FILE);
 }
 
 int add_thread_from_file_with_args(const char* filename, const ThreadArgs* args) {
   return add_thread(filename, args, (void*)filename,
-    THREAD_FILE | TPERM_ALL);
+    THREAD_FILE);
 }
 
 int add_named_thread_with_args(
       void (*worker)(), const char* name, const ThreadArgs *args) {
   return add_thread(name, args, worker,
-    THREAD_FUNC | TPERM_ALL);
+    THREAD_FUNC);
 }
 
 int get_thread_id(void) {

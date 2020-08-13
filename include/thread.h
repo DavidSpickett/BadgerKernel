@@ -48,7 +48,7 @@ typedef struct {
 
 int k_add_thread_from_file_with_args(const char* filename,
                                      const ThreadArgs* args,
-                                     uint16_t permissions);
+                                     uint16_t remove_permissions);
 
 int k_add_thread(const char* name,
                  const ThreadArgs* args,
@@ -56,10 +56,10 @@ int k_add_thread(const char* name,
                  uint32_t flags);
 
 // Macros to make writing setup()s easier
-#define K_ADD_THREAD(worker) k_add_thread(NULL, NULL, worker, THREAD_FUNC | TPERM_CAN_ALL)
-#define K_ADD_NAMED_THREAD(worker, name) k_add_thread(name, NULL, worker, THREAD_FUNC | TPERM_CAN_ALL)
-#define K_ADD_NAMED_THREAD_WITH_ARGS(worker, name, args) k_add_thread(name, args, worker, THREAD_FUNC | TPERM_CAN_ALL)
-#define K_ADD_THREAD_FROM_FILE(filename) k_add_thread(filename, NULL, (void*)filename, THREAD_FILE | TPERM_CAN_ALL)
+#define K_ADD_THREAD(worker) k_add_thread(NULL, NULL, worker, THREAD_FUNC)
+#define K_ADD_NAMED_THREAD(worker, name) k_add_thread(name, NULL, worker, THREAD_FUNC)
+#define K_ADD_NAMED_THREAD_WITH_ARGS(worker, name, args) k_add_thread(name, args, worker, THREAD_FUNC)
+#define K_ADD_THREAD_FROM_FILE(filename) k_add_thread(filename, NULL, (void*)filename, THREAD_FILE)
 
 bool is_valid_thread(int tid);
 int k_get_thread_id(void);

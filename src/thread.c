@@ -507,11 +507,20 @@ static void setup_code_page(size_t idx) {
 #endif /* CODE_PAGE_SIZE */
 
 static int k_add_named_thread_with_args(void (*worker)(), const char* name,
-                               const ThreadArgs* args, uint16_t permissions) {
+                               const ThreadArgs* args, uint16_t remove_permissions) {
   for (size_t idx = 0; idx < MAX_THREADS; ++idx) {
     if (all_threads[idx].id == INVALID_THREAD ||
         all_threads[idx].state == cancelled ||
         all_threads[idx].state == finished) {
+
+      // New thread's permissions is the current thread's
+      // minus any it wants to remove
+      uint16_t permissions = TPERM_ALL;
+      if (_current_thread) {
+        permissions = _current_thread->permissions;
+      }
+      permissions &= ~remove_permissions;
+
       init_thread(&all_threads[idx], idx, name,
                   worker, args, permissions);
 #if CODE_PAGE_SIZE
@@ -526,7 +535,7 @@ static int k_add_named_thread_with_args(void (*worker)(), const char* name,
 #if CODE_PAGE_SIZE
 int k_add_thread_from_file_with_args(const char* filename,
                                      const ThreadArgs* args,
-                                     uint16_t permissions) {
+                                     uint16_t remove_permissions) {
 #if CODE_BACKING_PAGES
   size_t free_page = find_free_backing_page();
   // If we have backing, don't count the active
@@ -548,7 +557,7 @@ int k_add_thread_from_file_with_args(const char* filename,
     return INVALID_THREAD;
   }
   int tid = k_add_named_thread_with_args(
-    entry, filename, args, permissions);
+    entry, filename, args, remove_permissions);
 
 #if CODE_BACKING_PAGES
   all_threads[tid].code_backing_page = free_page;
@@ -573,20 +582,20 @@ int k_add_thread(const char* name,
   }
 
   uint16_t kind = flags & TFLAG_KIND_MASK;
-  uint16_t permissions = flags >> TFLAG_PERM_SHIFT;
+  uint16_t remove_permissions = flags >> TFLAG_PERM_SHIFT;
   switch (kind) {
     case THREAD_FILE:
 #ifndef CODE_PAGE_SIZE
       assert(0);
 #else
       return k_add_thread_from_file_with_args(
-              (const char*) worker, args, permissions);
+              (const char*) worker, args, remove_permissions);
 #endif
     case THREAD_FUNC:
       return k_add_named_thread_with_args(worker, name,
-        args, permissions);
+        args, remove_permissions);
     default:
-      assert(0);
+      assert(0 && "invalid flags!");
       break;
   }
 

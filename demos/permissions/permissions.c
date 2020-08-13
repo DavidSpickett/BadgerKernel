@@ -53,7 +53,7 @@ void cleanup() {
 // by MAX_THREADS
 void runner() {
   int tid = add_thread("noalloc", NULL, cannot_alloc,
-    THREAD_FUNC | TPERM_NO_ALLOC(TPERM_CAN_ALL));
+    THREAD_FUNC | TPERM_NO_ALLOC);
   assert(tid != -1);
   set_child(tid);
   yield();
@@ -63,40 +63,36 @@ void runner() {
   write_fd = open("__perm_demo", O_WRONLY);
 
   tid = add_thread("nofile", NULL, cannot_file,
-    THREAD_FUNC | TPERM_NO_FILE(TPERM_CAN_ALL));
+    THREAD_FUNC | TPERM_NO_FILE);
   set_child(tid);
   yield();
 
   tid = add_thread("nocreate", NULL, cannot_create,
-    THREAD_FUNC | TPERM_NO_CREATE(TPERM_CAN_ALL));
+    THREAD_FUNC | TPERM_NO_CREATE);
   set_child(tid);
   yield();
 
-  // TODO: maybe a better API is that permissions
-  // in add thread are only ever NEGATIVE, the rest
-  // are inherited from the creator
-
   tid = add_thread("nokconfig", NULL, cannot_kconfig,
-    THREAD_FUNC | TPERM_NO_KCONFIG(TPERM_CAN_ALL));
+    THREAD_FUNC | TPERM_NO_KCONFIG);
   set_child(tid);
   yield();
 
   // TODO: thread config check!!!!!
   tid = add_thread("notconfig", NULL, cannot_tconfig,
-    THREAD_FUNC | TPERM_NO_TCONFIG(TPERM_CAN_ALL));
+    THREAD_FUNC | TPERM_NO_TCONFIG);
   set_child(tid);
   yield();
 
   // TODO: permissions should inherit so you don't
   // need ALL here
   tid = add_thread("cleanup", NULL, cleanup,
-    THREAD_FUNC | TPERM_CAN_ALL);
+    THREAD_FUNC);
   set_child(tid);
   yield();
 }
 
 void setup(void) {
-  // TODO: should inherit perms from kernel?
+  // This will inherit kernel permissions
   assert(k_add_thread("runner", NULL, runner,
-    THREAD_FUNC | TPERM_CAN_ALL) != -1);
+    THREAD_FUNC) != -1);
 }
