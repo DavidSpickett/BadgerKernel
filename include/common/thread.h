@@ -19,8 +19,35 @@
 #define TPROP_CHILD 2
 #define TPROP_STATE 3
 
+#define TFLAG_KIND_MASK 0xFFFF
 #define THREAD_FUNC 0
 #define THREAD_FILE 1
+
+// Amount to shift up when making "flags" for add_thread
+#define TFLAG_PERM_SHIFT 16
+
+#define TPERM_NONE    (0)
+#define TPERM_ALL     (0xFFFF)
+#define TPERM_CREATE  (1 << 0)
+#define TPERM_FILE    (1 << 1)
+#define TPERM_ALLOC   (1 << 2)
+#define TPERM_KCONFIG (1 << 3)
+#define TPERM_TCONFIG (1 << 4)
+
+// Use when setting permissons on new threads
+#define TPERM_CAN_ALL     ((uint32_t)TPERM_ALL     << TFLAG_PERM_SHIFT)
+#define TPERM_CAN_CREATE  ((uint32_t)TPERM_CREATE  << TFLAG_PERM_SHIFT)
+#define TPERM_CAN_FILE    ((uint32_t)TPERM_FILE    << TFLAG_PERM_SHIFT)
+#define TPERM_CAN_ALLOC   ((uint32_t)TPERM_ALLOC   << TFLAG_PERM_SHIFT)
+#define TPERM_CAN_KCONFIG ((uint32_t)TPERM_KCONFIG << TFLAG_PERM_SHIFT)
+#define TPERM_CAN_TCONFIG ((uint32_t)TPERM_TCONFIG << TFLAG_PERM_SHIFT)
+
+// Use when clearing permissions for new threads
+#define TPERM_NO_CREATE(FLAGS)  (FLAGS & ~TPERM_CAN_CREATE)
+#define TPERM_NO_FILE(FLAGS)    (FLAGS & ~TPERM_CAN_FILE)
+#define TPERM_NO_ALLOC(FLAGS)   (FLAGS & ~TPERM_CAN_ALLOC)
+#define TPERM_NO_KCONFIG(FLAGS) (FLAGS & ~TPERM_CAN_KCONFIG)
+#define TPERM_NO_TCONFIG(FLAGS) (FLAGS & ~TPERM_CAN_TCONFIG)
 
 #define YIELD_ANY  0
 #define YIELD_TO   1

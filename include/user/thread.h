@@ -8,7 +8,7 @@
 int add_thread(const char* name,
                const ThreadArgs* args,
                void* worker,
-               size_t kind);
+               uint32_t flags);
 
 int add_named_thread(void (*worker)(void), const char* name);
 int add_thread_from_worker(void (*worker)(void));

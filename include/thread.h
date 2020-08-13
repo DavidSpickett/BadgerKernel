@@ -34,6 +34,7 @@ typedef struct {
   bool msgs_full;
   int parent;
   int child;
+  uint16_t permissions;
 #if CODE_PAGE_SIZE
   bool in_code_page;
 #if CODE_BACKING_PAGES
@@ -46,18 +47,19 @@ typedef struct {
 } Thread;
 
 int k_add_thread_from_file_with_args(const char* filename,
-                                     const ThreadArgs* args);
+                                     const ThreadArgs* args,
+                                     uint16_t permissions);
 
 int k_add_thread(const char* name,
                  const ThreadArgs* args,
                  void* worker,
-                 size_t kind);
+                 uint32_t flags);
 
 // Macros to make writing setup()s easier
-#define K_ADD_THREAD(worker) k_add_thread(NULL, NULL, worker, THREAD_FUNC)
-#define K_ADD_NAMED_THREAD(worker, name) k_add_thread(name, NULL, worker, THREAD_FUNC)
-#define K_ADD_NAMED_THREAD_WITH_ARGS(worker, name, args) k_add_thread(name, args, worker, THREAD_FUNC)
-#define K_ADD_THREAD_FROM_FILE(filename) k_add_thread(filename, NULL, (void*)filename, THREAD_FILE)
+#define K_ADD_THREAD(worker) k_add_thread(NULL, NULL, worker, THREAD_FUNC | TPERM_CAN_ALL)
+#define K_ADD_NAMED_THREAD(worker, name) k_add_thread(name, NULL, worker, THREAD_FUNC | TPERM_CAN_ALL)
+#define K_ADD_NAMED_THREAD_WITH_ARGS(worker, name, args) k_add_thread(name, args, worker, THREAD_FUNC | TPERM_CAN_ALL)
+#define K_ADD_THREAD_FROM_FILE(filename) k_add_thread(filename, NULL, (void*)filename, THREAD_FILE | TPERM_CAN_ALL)
 
 bool is_valid_thread(int tid);
 int k_get_thread_id(void);
@@ -82,5 +84,7 @@ bool k_yield(int tid, int kind);
 
 void k_invalid_syscall(size_t arg1, size_t arg2,
                        size_t arg3, size_t arg4);
+
+bool k_has_no_permission(uint16_t permission);
 
 #endif /* ifdef THREAD_H */

@@ -26,7 +26,21 @@ uint8_t code_page_backing[CODE_BACKING_PAGES][CODE_PAGE_SIZE];
 #endif
 #endif /* CODE_PAGE_SIZE */
 
+bool k_has_no_permission(uint16_t permission) {
+  // Default is kernel which can do anything
+  uint16_t has = TPERM_ALL;
+  // Which should only happen in setup()s
+  if (_current_thread) {
+    has = _current_thread->permissions;
+  }
+  return (has & permission) == 0;
+}
+
 void k_set_kernel_config(uint32_t enable, uint32_t disable) {
+  if (k_has_no_permission(TPERM_KCONFIG)) {
+    return;
+  }
+
   kernel_config |= enable;
   kernel_config &= ~disable;
 }
@@ -62,6 +76,9 @@ int k_get_thread_id(void) {
 
 bool k_set_thread_property(int tid, size_t property,
                            const void* value) {
+  if (k_has_no_permission(TPERM_TCONFIG)) {
+    return false;
+  }
   if (tid == CURRENT_THREAD) {
     tid = k_get_thread_id();
   }
@@ -128,7 +145,9 @@ bool k_get_thread_property(int tid, size_t property,
 }
 
 void init_thread(Thread* thread, int tid, const char* name,
-                 void (*do_work)(void), const ThreadArgs* args) {
+                 void (*do_work)(void), const ThreadArgs* args,
+                 uint16_t permissions)
+{
   // thread_start will jump to this
   thread->work = do_work;
   thread->state = init;
@@ -138,6 +157,7 @@ void init_thread(Thread* thread, int tid, const char* name,
   thread->args = *args;
   thread->parent = INVALID_THREAD;
   thread->child = INVALID_THREAD;
+  thread->permissions = permissions;
 
   // Start message buffer empty
   thread->next_msg = &(thread->messages[0]);
@@ -165,7 +185,8 @@ extern void start_thread_switch(void);
 __attribute__((noreturn)) void entry(void) {
   for (size_t idx = 0; idx < MAX_THREADS; ++idx) {
     ThreadArgs noargs = {0, 0, 0, 0};
-    init_thread(&all_threads[idx], INVALID_THREAD, NULL, NULL, &noargs);
+    init_thread(&all_threads[idx], INVALID_THREAD,
+      NULL, NULL, &noargs, TPERM_NONE);
   }
 
 #if defined CODE_PAGE_SIZE && defined STARTUP_PROG
@@ -486,12 +507,13 @@ static void setup_code_page(size_t idx) {
 #endif /* CODE_PAGE_SIZE */
 
 static int k_add_named_thread_with_args(void (*worker)(), const char* name,
-                               const ThreadArgs* args) {
+                               const ThreadArgs* args, uint16_t permissions) {
   for (size_t idx = 0; idx < MAX_THREADS; ++idx) {
     if (all_threads[idx].id == INVALID_THREAD ||
         all_threads[idx].state == cancelled ||
         all_threads[idx].state == finished) {
-      init_thread(&all_threads[idx], idx, name, worker, args);
+      init_thread(&all_threads[idx], idx, name,
+                  worker, args, permissions);
 #if CODE_PAGE_SIZE
       setup_code_page(idx);
 #endif
@@ -503,7 +525,8 @@ static int k_add_named_thread_with_args(void (*worker)(), const char* name,
 
 #if CODE_PAGE_SIZE
 int k_add_thread_from_file_with_args(const char* filename,
-                                     const ThreadArgs* args) {
+                                     const ThreadArgs* args,
+                                     uint16_t permissions) {
 #if CODE_BACKING_PAGES
   size_t free_page = find_free_backing_page();
   // If we have backing, don't count the active
@@ -524,7 +547,8 @@ int k_add_thread_from_file_with_args(const char* filename,
   if (!entry) {
     return INVALID_THREAD;
   }
-  int tid = k_add_named_thread_with_args(entry, filename, args);
+  int tid = k_add_named_thread_with_args(
+    entry, filename, args, permissions);
 
 #if CODE_BACKING_PAGES
   all_threads[tid].code_backing_page = free_page;
@@ -538,22 +562,29 @@ int k_add_thread_from_file_with_args(const char* filename,
 int k_add_thread(const char* name,
                  const ThreadArgs* args,
                  void* worker,
-                 size_t kind) {
+                 uint32_t flags) {
+  if (k_has_no_permission(TPERM_CREATE)) {
+    return -1;
+  }
+
   ThreadArgs dummy_args = {0,0,0,0};
   if (!args) {
     args = &dummy_args;
   }
 
+  uint16_t kind = flags & TFLAG_KIND_MASK;
+  uint16_t permissions = flags >> TFLAG_PERM_SHIFT;
   switch (kind) {
     case THREAD_FILE:
 #ifndef CODE_PAGE_SIZE
       assert(0);
 #else
       return k_add_thread_from_file_with_args(
-              (const char*) worker, args);
+              (const char*) worker, args, permissions);
 #endif
     case THREAD_FUNC:
-      return k_add_named_thread_with_args(worker, name, args);
+      return k_add_named_thread_with_args(worker, name,
+        args, permissions);
     default:
       assert(0);
       break;

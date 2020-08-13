@@ -69,6 +69,10 @@ static void* to_heap_ptr(size_t tag_idx) {
 }
 
 void* k_malloc(size_t size) {
+  if (k_has_no_permission(TPERM_ALLOC)) {
+    return NULL;
+  }
+
   // Divide rounding up
   size_t num_blocks = to_blocks(size);
   size_t alloc_idx = find_free_space(num_blocks);
@@ -99,6 +103,10 @@ static bool can_realloc_free(void* ptr) {
 }
 
 void* k_realloc(void* ptr, size_t size) {
+  if (k_has_no_permission(TPERM_ALLOC)) {
+    return NULL;
+  }
+
   if (!ptr) {
     // realloc NULL is just malloc
     return k_malloc(size);
@@ -151,7 +159,8 @@ void k_free_all(int tid) {
 }
 
 void k_free(void* ptr) {
-  if (!can_realloc_free(ptr)) {
+  if (k_has_no_permission(TPERM_ALLOC) ||
+      !can_realloc_free(ptr)) {
     return;
   }
 

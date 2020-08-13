@@ -1,10 +1,15 @@
 #include "util.h"
 #include "semihosting.h"
 #include "file.h"
+#include "thread.h"
 #include <stddef.h>
 #include <string.h>
 
 int k_list_dir(const char* path, char* out, size_t outsz) {
+  if (k_has_no_permission(TPERM_FILE)) {
+    return -1;
+  }
+
   // Semihosting doesn't provide an 'ls' command
   // so make our own with a temp file
   char cmd[128];
@@ -32,20 +37,30 @@ int k_list_dir(const char* path, char* out, size_t outsz) {
   return 0;
 }
 
-
-
 int k_open(const char* path, int oflag, ...) {
+  if (k_has_no_permission(TPERM_FILE)) {
+    return -1;
+  }
+
   volatile size_t parameters[] = {(size_t)path, oflag, strlen(path)};
   return generic_semihosting_call(SYS_OPEN, parameters);
 }
 
 ssize_t k_read(int fildes, void* buf, size_t nbyte) {
+  if (k_has_no_permission(TPERM_FILE)) {
+    return 0;
+  }
+
   volatile size_t parameters[] = {fildes, (size_t)buf, nbyte};
   size_t ret = generic_semihosting_call(SYS_READ, parameters);
   return nbyte - ret;
 }
 
 ssize_t k_write(int filedes, const void* buf, size_t nbyte) {
+  if (k_has_no_permission(TPERM_FILE)) {
+    return 0;
+  }
+
   volatile size_t parameters[] = {filedes, (size_t)buf, nbyte};
   size_t ret = generic_semihosting_call(SYS_WRITE, parameters);
   return nbyte - ret;
@@ -53,17 +68,29 @@ ssize_t k_write(int filedes, const void* buf, size_t nbyte) {
 
 off_t k_lseek(int fd, off_t offset, int whence) { //!OCLINT
   assert(whence == SEEK_CUR);
+  if (k_has_no_permission(TPERM_FILE)) {
+    return (off_t)-1;
+  }
+
   volatile size_t parameters[] = {fd, offset};
   int got = generic_semihosting_call(SYS_SEEK, parameters);
   return got == 0 ? offset : (off_t)-1;
 }
 
 int k_remove(const char* path) {
+  if (k_has_no_permission(TPERM_FILE)) {
+    return -1;
+  }
+
   volatile size_t parameters[] = {(size_t)path, strlen(path)};
   return generic_semihosting_call(SYS_REMOVE, parameters);
 }
 
 int k_close(int filedes) {
+  if (k_has_no_permission(TPERM_FILE)) {
+    return -1;
+  }
+
   /* Need to make sure this is in initialised.
      If we use &filedes it thinks we only need
      the address of it. */
