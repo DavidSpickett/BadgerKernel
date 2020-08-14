@@ -101,59 +101,42 @@ void cleanup() {
   assert(close(write_fd) == 0);
 }
 
+#define RUN_TEST_THREAD(NAME, FN, FLAGS) \
+  tid = add_thread(NAME, NULL, FN, FLAGS); \
+  assert(tid != -1); \
+  set_child(tid); \
+  yield();
+
 // Use this to run one by one so we aren't limited
 // by MAX_THREADS
 void runner() {
-  int tid = add_thread("noalloc", NULL, cannot_alloc,
+  int tid = -1;
+
+  RUN_TEST_THREAD("noalloc", cannot_alloc,
     THREAD_FUNC | TPERM_NO_ALLOC);
-  assert(tid != -1);
-  set_child(tid);
-  yield();
 
   // Since cannot_file obviously can't make these
   read_fd = open("CMakeLists.txt", O_RDONLY);
   write_fd = open("__perm_demo", O_WRONLY);
 
-  tid = add_thread("nofile", NULL, cannot_file,
+  RUN_TEST_THREAD("nofile", cannot_file,
     THREAD_FUNC | TPERM_NO_FILE);
-  set_child(tid);
-  yield();
-
-  tid = add_thread("nocreate", NULL, cannot_create,
+  RUN_TEST_THREAD("nocreate", cannot_create,
     THREAD_FUNC | TPERM_NO_CREATE);
-  set_child(tid);
-  yield();
-
-  tid = add_thread("nokconfig", NULL, cannot_kconfig,
+  RUN_TEST_THREAD("nokconfig", cannot_kconfig,
     THREAD_FUNC | TPERM_NO_KCONFIG);
-  set_child(tid);
-  yield();
-
-  tid = add_thread("notconfig", NULL, cannot_tconfig,
+  RUN_TEST_THREAD("notconfig", cannot_tconfig,
     THREAD_FUNC | TPERM_NO_TCONFIG);
-  set_child(tid);
-  yield();
-
-  tid = add_thread("nomulti", NULL, cannot_mutli,
+  RUN_TEST_THREAD("nomulti", cannot_mutli,
     THREAD_FUNC | TPERM_NO_FILE | TPERM_NO_ALLOC |
     TPERM_NO_KCONFIG);
-  set_child(tid);
-  yield();
-
-  tid = add_thread("userinherit", NULL, user_inherit,
+  RUN_TEST_THREAD("userinherit", user_inherit,
     THREAD_FUNC);
-  set_child(tid);
-  yield();
-
-  tid = add_thread("userreduce", NULL, user_reduce,
+  RUN_TEST_THREAD("userreduce", user_reduce,
     THREAD_FUNC);
-  set_child(tid);
-  yield();
 
-  tid = add_thread("cleanup", NULL, cleanup,
+  RUN_TEST_THREAD("cleanup", cleanup,
     THREAD_FUNC);
-  set_child(tid);
-  yield();
 }
 
 void setup(void) {
