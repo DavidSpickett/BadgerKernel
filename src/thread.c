@@ -1,7 +1,7 @@
 #include "print.h"
 #include "thread.h"
+#include "common/trace.h"
 #include "util.h"
-#include "port.h"
 #if CODE_PAGE_SIZE
 #include "elf.h"
 #endif
@@ -104,6 +104,13 @@ bool k_set_thread_property(int tid, size_t property,
     case TPROP_PERMISSIONS:
       thread->permissions &= ~(*(uint16_t*)value);
       break;
+    case TPROP_REGISTERS: {
+      // TODO: calling this on an "init" thread is invalid
+      RegisterContext* ctx = (RegisterContext*)value;
+      memcpy(thread->stack_ptr, ctx, STACK_CTX_SIZE);
+      /* Ignoring writes to sp */
+      break;
+    }
     default:
       assert(0);
       return false;
@@ -143,6 +150,15 @@ bool k_get_thread_property(int tid, size_t property,
     case TPROP_PERMISSIONS:
       *(uint16_t*)res = thread->permissions;
       break;
+    case TPROP_REGISTERS: {
+      // TODO: trace permission?
+      RegisterContext* ctx = (RegisterContext*)res;
+      *ctx = *(RegisterContext*)thread->stack_ptr;
+      // Added manually since it doesn't live on stack
+      // TODO: this cast is going to depend on platform
+      ctx->sp = (uint32_t)thread->stack_ptr;
+      break;
+    }
     default:
       assert(0);
       return false;
@@ -324,6 +340,12 @@ static size_t next_possible_thread_idx(const Thread* curr) {
   return 0;
 }
 
+// TODO: delete me!
+static void foo(void) {
+  k_log_event("Hey how did I get here?");
+  while (1) {}
+}
+
 void do_scheduler(void) {
   // NULL next_thread means choose one for us
   // otherwise just do required housekeeping to switch
@@ -354,7 +376,19 @@ void do_scheduler(void) {
 
     log_scheduler_event("next thread chosen");
     next_thread = &all_threads[_idx];
-    print_register_context(next_thread);
+
+    // Note this only works on threads about to get restored
+    // Since those that come in via the yield syscall
+    // haven't saved their registers when this runs
+    // So they would just write over our modifications
+    if (next_thread->state != init) {
+      RegisterContext ctx;
+      k_get_thread_property(_idx, TPROP_REGISTERS, &ctx);
+      ctx.pc = (uint32_t)foo;
+      k_set_thread_property(_idx, TPROP_REGISTERS, &ctx);
+      k_get_thread_property(_idx, TPROP_REGISTERS, &ctx);
+      print_register_context(ctx);
+    }
 
 #if CODE_BACKING_PAGES
     swap_paged_threads(_current_thread, next_thread);

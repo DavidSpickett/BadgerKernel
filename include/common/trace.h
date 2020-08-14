@@ -28,7 +28,13 @@ typedef struct {
   /* aka the exception mode lr */
   uint32_t pc;
   uint32_t cpsr;
+  /* patched in by the kernel */
+  uint32_t sp;
 } __attribute__((packed)) RegisterContext;
+// To tell the kernel that everything but sp needs
+// to be written back to the thread's stack.
+// (since sp is part of the Thread struct itself)
+#define STACK_CTX_SIZE (sizeof(RegisterContext)-sizeof(uint32_t))
 #endif
 
 void print_register_context(RegisterContext ctx);
