@@ -99,9 +99,9 @@ set( KERNEL_SOURCES
   src/hw/${PLATFORM_SRC}/vectors.s
   src/hw/${PLATFORM_SRC}/startup.s
   src/hw/${PLATFORM_SRC}/yield.S
-  src/hw/${PLATFORM_SRC}/port.c
   src/hw/arm_util.c
   src/print.c
+  src/trace.c
   src/alloc.c
   src/syscall.c
 )
