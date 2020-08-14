@@ -1,6 +1,7 @@
 #include "print.h"
 #include "thread.h"
 #include "util.h"
+#include "port.h"
 #if CODE_PAGE_SIZE
 #include "elf.h"
 #endif
@@ -353,6 +354,7 @@ void do_scheduler(void) {
 
     log_scheduler_event("next thread chosen");
     next_thread = &all_threads[_idx];
+    print_register_context(next_thread);
 
 #if CODE_BACKING_PAGES
     swap_paged_threads(_current_thread, next_thread);
