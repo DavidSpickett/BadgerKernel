@@ -18,6 +18,11 @@ int add_named_thread(void (*worker)(void), const char* name);
 int add_named_thread_with_args(void (*worker)(), const char* name,
                                const ThreadArgs* args);
 
+// TODO: it's a uint32_t so you can use the existing
+// _NO_ macros, which are shifted << 16 already
+// Returns the updated set of permissions
+uint16_t permissions(uint32_t remove);
+
 bool get_thread_property(int tid, size_t property,
                          size_t* res);
 bool set_thread_property(int tid, size_t property,

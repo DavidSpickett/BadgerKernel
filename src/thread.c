@@ -100,6 +100,9 @@ bool k_set_thread_property(int tid, size_t property,
     case TPROP_NAME:
       thread->name = *(const char**)value;
       break;
+    case TPROP_PERMISSIONS:
+      thread->permissions &= ~(*(uint16_t*)value);
+      break;
     default:
       assert(0);
       return false;
@@ -135,6 +138,9 @@ bool k_get_thread_property(int tid, size_t property,
       // This one is a bit weird given that it's
       // actually a size_t in the struct.
       *(ThreadState*)res = thread->state;
+      break;
+    case TPROP_PERMISSIONS:
+      *(uint16_t*)res = thread->permissions;
       break;
     default:
       assert(0);

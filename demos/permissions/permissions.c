@@ -77,6 +77,25 @@ void user_inherit() {
   yield();
 }
 
+void user_reduce() {
+  // Same idea as the others except we remove
+  // permissons within the same thread.
+  uint16_t perm = permissions(TPERM_NO_FILE);
+  assert((perm & TPERM_FILE) == 0);
+  cannot_file();
+
+  // ... assume the rest follow the same pattern
+  // Except for TCONFIG, which means we can't change
+  // our permissions anymore. (which makes sense but
+  // was surprising to me at least)
+  perm = permissions(TPERM_NO_TCONFIG);
+  cannot_tconfig();
+
+  assert(perm & TPERM_KCONFIG);
+  perm = permissions(TPERM_NO_KCONFIG);
+  assert(perm & TPERM_KCONFIG);
+}
+
 void cleanup() {
   assert(close(read_fd) == 0);
   assert(close(write_fd) == 0);
@@ -122,6 +141,11 @@ void runner() {
   yield();
 
   tid = add_thread("userinherit", NULL, user_inherit,
+    THREAD_FUNC);
+  set_child(tid);
+  yield();
+
+  tid = add_thread("userreduce", NULL, user_reduce,
     THREAD_FUNC);
   set_child(tid);
   yield();

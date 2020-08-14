@@ -134,6 +134,16 @@ bool get_child(int tid, int* child) {
   return got;
 }
 
+uint16_t permissions(uint32_t remove) {
+  uint16_t to_remove = remove >> TFLAG_PERM_SHIFT;
+  set_thread_property(-1, TPROP_PERMISSIONS,
+    &to_remove);
+  volatile uint16_t new_permissions = 0;
+  get_thread_property(-1, TPROP_PERMISSIONS,
+    (size_t*)&new_permissions);
+  return new_permissions;
+}
+
 bool get_thread_property(int tid, size_t property,
                          size_t* res) {
   return DO_SYSCALL_3(get_thread_property,
