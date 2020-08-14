@@ -21,6 +21,9 @@ void setup(void) {
   sprintf(buf, "Sprintf %s: 0x%X\n", hex, 0xABAB);
   printf("%s", buf);
 
+  printf("Padding 0x%8x 0x%08x 0x%10x\n",
+    0xCDEF, 0xABCD, 0x3344);
+
   // Use up some IDs
   assert(K_ADD_THREAD(go_to_sleep) != INVALID_THREAD);
   assert(K_ADD_THREAD(go_to_sleep) != INVALID_THREAD);

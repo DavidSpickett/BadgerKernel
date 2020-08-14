@@ -3,12 +3,23 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
+#include <ctype.h>
+
+static int putchar_n(int chr, int repeat) {
+  if (repeat < 0) {
+    return 0;
+  }
+
+  for(int i=0 ; i<repeat; ++i) {
+    // This must be a an int write not a char
+    volatile unsigned int* const UART0 = (unsigned int*)UART_BASE;
+    *UART0 = (unsigned int)chr;
+  }
+  return repeat;
+}
 
 int putchar(int chr) {
-  // This must be a an int write not a char
-  volatile unsigned int* const UART0 = (unsigned int*)UART_BASE;
-  *UART0 = (unsigned int)chr;
-  return 1;
+  return putchar_n(chr, 1);
 }
 
 int putstr(const char* str) {
@@ -61,6 +72,100 @@ int printf(const char* fmt, ...) {
   return printed;
 }
 
+static size_t pow(size_t base, size_t power) {
+  if (!power) {
+    return 1;
+  }
+  size_t ret = 1;
+  for ( ; power > 1; --power) {
+    ret *= base;
+  }
+  return ret;
+}
+
+static size_t consume_uint(const char** in) {
+  if (!isdigit(**in)) {
+    return (size_t)-1;
+  }
+
+  // Find end of number
+  const char* end_ptr = (*in)+1;
+  while (isdigit(*end_ptr)) {
+    ++end_ptr;
+  }
+
+  const char* begin_ptr = *in;
+  size_t num = 0;
+
+  size_t multiplier = pow(10, end_ptr-begin_ptr);
+
+  for ( ; begin_ptr<end_ptr; ++begin_ptr) {
+    num += ((*begin_ptr)-48)*multiplier;
+    multiplier /= 10;
+  }
+
+  // Consume the number
+  *in = end_ptr;
+  return num;
+}
+
+static va_list handle_format_char(int* out_len, const char** fmt_chr,
+                                  va_list args) {
+  // Save a bunch of * by making a copy now and
+  // assigning back at the end
+  const char* fmt = *fmt_chr;
+  int len = 0;
+  size_t padding_len = consume_uint(&fmt);
+  if (padding_len == (size_t)-1) {
+    padding_len = 0;
+  }
+
+  switch (*fmt) {
+    case 's': // string
+    {
+      len += putstr(va_arg(args, const char*));
+      fmt++;
+      break;
+    }
+    case 'i': // Signed decimal
+    {
+      char int_str[17];
+      int num = va_arg(args, int);
+      if (num < 0) {
+        len += putchar('-');
+        num = abs(num);
+      }
+      uint_to_str(num, int_str, 10);
+      len += putstr(int_str);
+      fmt++;
+      break;
+    }
+    case 'u': // Unsigned decimal
+    case 'x': // unsigned hex
+    {
+      unsigned base = *fmt == 'u' ? 10 : 16;
+      // 64 bit hex plus null terminator
+      char num_str[17];
+      uint_to_str(va_arg(args, size_t), num_str, base);
+      len += strlen(num_str);
+      putchar_n('0', padding_len-len);
+      putstr(num_str);
+      fmt++;
+      break;
+    }
+    case '%': // Escaped %
+      len += putchar(*fmt++);
+      break;
+    default:
+      __builtin_unreachable();
+      break;
+  }
+
+  *fmt_chr = fmt;
+  *out_len += len;
+  return args;
+}
+
 int vprintf(const char* fmt, va_list args) {
   int len = 0;
 
@@ -68,45 +173,7 @@ int vprintf(const char* fmt, va_list args) {
     // Check for formatting arg
     if (*fmt == '%') {
       fmt++;
-
-      switch (*fmt) {
-      case 's': // string
-      {
-        len += putstr(va_arg(args, const char*));
-        fmt++;
-        break;
-      }
-      case 'i': // Signed decimal
-      {
-        char int_str[17];
-        int num = va_arg(args, int);
-        if (num < 0) {
-          len += putchar('-');
-          num = abs(num);
-        }
-        uint_to_str(num, int_str, 10);
-        len += putstr(int_str);
-        fmt++;
-        break;
-      }
-      case 'u': // Unsigned decimal
-      case 'x': // unsigned hex
-      {
-        unsigned base = *fmt == 'u' ? 10 : 16;
-        // 64 bit hex plus null terminator
-        char num_str[17];
-        uint_to_str(va_arg(args, size_t), num_str, base);
-        len += putstr(num_str);
-        fmt++;
-        break;
-      }
-      case '%': // Escaped %
-        len += putchar(*fmt++);
-        break;
-      default:
-        __builtin_unreachable();
-        break;
-      }
+      args = handle_format_char(&len, &fmt, args);
     } else {
       // Any non formatting character
       len += putchar(*fmt++);
