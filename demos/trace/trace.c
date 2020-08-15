@@ -41,8 +41,17 @@ void tracer() {
   // Get out of init state
   yield();
 
-  // +4 as the pc will be on the next instruction
-  size_t target_pc = ((size_t)work_finished)+4;
+  size_t target_pc = (size_t)work_finished;
+#ifdef __thumb__
+  // +2 for next instr
+  target_pc += 2;
+  // Stored PC doesn't include mode bit so remove it
+  // TODO: why is that?
+  target_pc &= ~1;
+#else
+  target_pc += 4;
+#endif
+
   while(ctx.pc != target_pc) {
     yield();
     get_thread_registers(tid, &ctx);
