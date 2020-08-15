@@ -1,0 +1,11 @@
+Thread       tracer: yielding
+Thread       tracee: Working...
+Thread       tracee: yielding
+Thread       tracer: resuming
+Thread       tracer: yielding
+Thread       tracee: resuming
+Thread       tracer: resuming
+Thread       tracer: Hit work_finished!
+Thread       tracer: Redirected tracee
+Thread       tracer: yielding
+Thread       tracee: Finished program

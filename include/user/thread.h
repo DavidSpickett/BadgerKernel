@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include "common/thread.h"
+#include "common/trace.h"
 #include "thread_state.h"
 
 int add_thread(const char* name,
@@ -27,6 +28,9 @@ bool get_thread_property(int tid, size_t property,
                          size_t* res);
 bool set_thread_property(int tid, size_t property,
                          const void* value);
+
+bool get_thread_registers(int tid, RegisterContext* regs);
+bool set_thread_registers(int tid, RegisterContext regs);
 
 // As in, the current ID
 int get_thread_id(void);

@@ -144,6 +144,21 @@ uint16_t permissions(uint32_t remove) {
   return new_permissions;
 }
 
+
+bool get_thread_registers(int tid,
+                  RegisterContext* regs) {
+  volatile RegisterContext ret;
+  bool got = get_thread_property(tid, TPROP_REGISTERS,
+    (size_t*)&ret);
+  *regs = ret;
+  return got;
+}
+
+bool set_thread_registers(int tid, RegisterContext regs) {
+  return set_thread_property(tid, TPROP_REGISTERS,
+    &regs);
+}
+
 bool get_thread_property(int tid, size_t property,
                          size_t* res) {
   return DO_SYSCALL_3(get_thread_property,
