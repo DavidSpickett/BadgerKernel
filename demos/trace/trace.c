@@ -12,9 +12,15 @@ void tracee() {
   work_finished();
 }
 
-// Note: the original plan was to write this svc in manually.// However this code will be in ROM so that couldn't be done.
+// Note: the original plan was to write this svc in manually
+// However this code will be in ROM so that couldn't be done.
 
-__attribute__((naked)) void work_finished(void) {
+// Naked is ignored on AArch64 so we're just going to have
+// to trust that the svc is the 1st instruction
+#ifndef __aarch64__
+__attribute__((naked))
+#endif
+void work_finished(void) {
   // Need naked so the address of this instr is the same
   // as the address of the function
   asm volatile(
