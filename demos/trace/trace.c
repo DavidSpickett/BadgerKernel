@@ -20,6 +20,8 @@ void tracee() {
 #ifndef __aarch64__
 __attribute__((naked))
 #endif
+// If this is inlined we'll never hit the original fn
+__attribute__((noinline))
 void work_finished(void) {
   // Need naked so the address of this instr is the same
   // as the address of the function
