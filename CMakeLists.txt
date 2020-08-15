@@ -27,6 +27,8 @@ elseif( BP_LOWER STREQUAL "aarch64" )
   set( RAM_START    "0x40000000" )
   set( UART_BASE    "0x09000000" )
   set( QEMU_CMD     "qemu-system-aarch64 -M virt -cpu cortex-a57" )
+  # O3 LTO UBSAN trace demo needs some extra
+  set( STACK_SIZE 3 )
 elseif( BP_LOWER STREQUAL "thumb" )
   set( PREFIX       "arm-none-eabi-" )
   set( PLATFORM     "-mthumb -mcpu=cortex-m4" )
