@@ -86,7 +86,6 @@ typedef struct {
 // (since sp is part of the Thread struct itself)
 #define STACK_CTX_SIZE (sizeof(RegisterContext)-sizeof(size_t))
 
-
 void print_register_context(RegisterContext ctx);
 
 #endif /* ifdef COMMON_TRACE_H */
