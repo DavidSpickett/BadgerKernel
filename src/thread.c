@@ -210,8 +210,6 @@ void init_thread(Thread* thread, int tid, const char* name,
 
 extern void setup(void);
 extern void start_thread_switch(void);
-Thread setup_thread;
-
 __attribute__((noreturn)) void entry(void) {
   for (size_t idx = 0; idx < MAX_THREADS; ++idx) {
     ThreadArgs noargs = {0, 0, 0, 0};
@@ -234,11 +232,11 @@ __attribute__((noreturn)) void entry(void) {
 #else
   {
 #endif
+    Thread* setup_thread = &all_threads[MAX_THREADS-1];
     ThreadArgs args = {0,0,0,0};
-    init_thread(&setup_thread, INVALID_THREAD, "setup",
-                 setup, &args,
-                 TPERM_ALL);
-    next_thread = &setup_thread;
+    init_thread(setup_thread, INVALID_THREAD, "setup",
+                setup, &args, TPERM_ALL);
+    next_thread = setup_thread;
   }
 
   start_thread_switch(); // Not thread_switch as we're in kernel mode
