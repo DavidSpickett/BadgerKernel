@@ -7,7 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#define MAX_THREADS 6
+// MAX_THREADS is defined by CMake
 #define THREAD_STACK_SIZE 1024 * STACK_SIZE
 #define STACK_CANARY      0xcafebeefdeadf00d
 

@@ -1,13 +1,14 @@
-function(add_demo NAME)
-  __add_demo(${NAME} ON)
+function(add_demo NAME MAX_THREADS)
+  __add_demo(${NAME} ON, ${MAX_THREADS})
 endfunction()
 
-function(add_demo_no_test NAME)
-  __add_demo(${NAME} OFF)
+function(add_demo_no_test NAME MAX_THREADS)
+  __add_demo(${NAME} OFF ${MAX_THREADS})
 endfunction()
 
-function(__add_demo NAME TEST)
+function(__add_demo NAME TEST MAX_THREADS)
   add_executable ( ${NAME} demos/${NAME}/${NAME}.c ${KERNEL_SOURCES} )
+  target_compile_definitions(${NAME} PRIVATE MAX_THREADS=${MAX_THREADS})
 
   target_link_libraries(${NAME} PRIVATE "-Wl,-T,linker/kernel.ld,-defsym=ram_start=${RAM_START},-defsym=ram_size=${RAM_SIZE},-lgcc,-lc,-N,--build-id=none")
 

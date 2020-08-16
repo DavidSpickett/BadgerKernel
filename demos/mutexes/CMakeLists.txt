@@ -1,1 +1,1 @@
-add_demo(mutexes)
+add_demo(mutexes 6)

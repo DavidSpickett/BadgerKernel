@@ -1,1 +1,1 @@
-add_demo(permissions)
+add_demo(permissions 6)

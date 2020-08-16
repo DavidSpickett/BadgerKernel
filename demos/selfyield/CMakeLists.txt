@@ -1,1 +1,1 @@
-add_demo(selfyield)
+add_demo(selfyield 6)

@@ -1,1 +1,1 @@
-add_demo(conditionvariables)
+add_demo(conditionvariables 6)

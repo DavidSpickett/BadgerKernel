@@ -1,1 +1,1 @@
-add_demo(printthreadname)
+add_demo(printthreadname 6)

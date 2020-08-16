@@ -1,1 +1,1 @@
-add_demo(spawn)
+add_demo(spawn 6)

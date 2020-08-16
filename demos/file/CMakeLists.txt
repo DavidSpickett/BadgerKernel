@@ -1,1 +1,1 @@
-add_demo(file)
+add_demo(file 6)

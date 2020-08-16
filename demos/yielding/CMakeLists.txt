@@ -1,1 +1,1 @@
-add_demo(yielding)
+add_demo(yielding 6)

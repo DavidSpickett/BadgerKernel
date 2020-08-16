@@ -1,1 +1,1 @@
-add_demo(generated)
+add_demo(generated 6)

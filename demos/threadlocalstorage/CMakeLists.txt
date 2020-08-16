@@ -3,4 +3,4 @@ if(BP_LOWER STREQUAL "aarch64")
   return()
 endif()
 
-add_demo(threadlocalstorage)
+add_demo(threadlocalstorage 6)

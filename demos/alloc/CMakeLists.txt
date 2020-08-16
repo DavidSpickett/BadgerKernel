@@ -1,1 +1,1 @@
-add_demo(alloc)
+add_demo(alloc 6)

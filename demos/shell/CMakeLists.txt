@@ -1,9 +1,8 @@
-# We don't have enough RAM on the Thumb board
-if(LTO OR (BP_LOWER STREQUAL "thumb"))
+if(LTO)
   return()
 endif()
 
-add_demo_no_test(shell)
+add_demo_no_test(shell 3)
 add_loadable_no_test(shell echo)
 add_loadable_no_test(shell ps)
 add_loadable_no_test(shell ls)
