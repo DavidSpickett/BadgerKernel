@@ -1,1 +1,1 @@
-add_demo(cancel 6)
+add_demo(cancel 3)

@@ -1,1 +1,1 @@
-add_demo(timer 6)
+add_demo(timer 4)

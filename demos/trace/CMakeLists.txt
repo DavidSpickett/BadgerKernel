@@ -1,1 +1,1 @@
-add_demo(trace 6)
+add_demo(trace 2)

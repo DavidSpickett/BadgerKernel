@@ -1,1 +1,1 @@
-add_demo(exit 6)
+add_demo(exit 3)

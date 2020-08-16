@@ -1,1 +1,1 @@
-add_demo(args 6)
+add_demo(args 2)

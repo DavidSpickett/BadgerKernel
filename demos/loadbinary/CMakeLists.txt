@@ -3,5 +3,5 @@ if(LTO)
   return()
 endif()
 
-add_demo(loadbinary 6)
+add_demo(loadbinary 3)
 add_loadable(loadbinary binary)

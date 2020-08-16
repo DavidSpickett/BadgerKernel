@@ -3,7 +3,7 @@ if(LTO)
   return()
 endif()
 
-add_demo(loadpiebinary 6)
+add_demo(loadpiebinary 2)
 add_shared_loadable(loadpiebinary piebinary)
 
 target_compile_definitions(loadpiebinary PRIVATE "STARTUP_PROG=\"piebinary\"")

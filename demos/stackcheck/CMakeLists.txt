@@ -1,1 +1,1 @@
-add_demo(stackcheck 6)
+add_demo(stackcheck 4)

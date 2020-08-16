@@ -1,1 +1,1 @@
-add_demo(message 6)
+add_demo(message 3)
