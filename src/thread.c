@@ -709,7 +709,10 @@ __attribute__((noreturn)) void thread_start(void) {
                          _current_thread->args.a3, _current_thread->args.a4);
 
   // Yield back to the scheduler
-  k_log_event("exiting");
+  // TODO: bodge so that the setup thread doesn't log
+  if (_current_thread->id != INVALID_THREAD) {
+    k_log_event("exiting");
+  }
 
   // Make sure we're not scheduled again
   _current_thread->state = finished;
