@@ -1,5 +1,4 @@
 #include "user/thread.h"
-#include "thread.h"
 #include "condition_variable.h"
 #include "util.h"
 
@@ -47,7 +46,7 @@ void setup(void) {
 
   const unsigned num_waiting = 5;
   for (unsigned i = 0; i < num_waiting; ++i) {
-    K_ADD_THREAD(waiter);
+    add_thread_from_worker(waiter);
   }
-  K_ADD_NAMED_THREAD(signaller, "signaller");
+  add_named_thread(signaller, "signaller");
 }

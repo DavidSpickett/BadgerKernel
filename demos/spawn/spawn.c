@@ -1,5 +1,4 @@
 #include "user/thread.h"
-#include "thread.h"
 #include "util.h"
 #include <stddef.h>
 
@@ -43,5 +42,5 @@ void spawner() {
 }
 
 void setup(void) {
-  K_ADD_NAMED_THREAD(spawner, "spawner");
+  add_named_thread(spawner, "spawner");
 }

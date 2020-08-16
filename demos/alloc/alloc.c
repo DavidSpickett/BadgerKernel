@@ -1,5 +1,4 @@
 #include "user/thread.h"
-#include "thread.h"
 #include "user/alloc.h"
 #include "util.h"
 #include <stdint.h>
@@ -332,5 +331,5 @@ void dispatcher() {
 }
 
 void setup(void) {
-  K_ADD_NAMED_THREAD(dispatcher, "dispatcher");
+  add_named_thread(dispatcher, "dispatcher");
 }

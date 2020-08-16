@@ -1,5 +1,4 @@
 #include "user/thread.h"
-#include "thread.h"
 #include "util.h"
 
 __attribute__((noreturn)) void work() {
@@ -41,7 +40,7 @@ void canceller() {
 }
 
 void setup(void) {
-  K_ADD_THREAD(work);
-  K_ADD_THREAD(canceller);
-  K_ADD_THREAD(work);
+  add_thread_from_worker(work);
+  add_thread_from_worker(canceller);
+  add_thread_from_worker(work);
 }

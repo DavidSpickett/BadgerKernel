@@ -1,5 +1,4 @@
 #include "user/thread.h"
-#include "thread.h"
 #include "util.h"
 #include "file.h"
 #include "user/file.h"
@@ -141,6 +140,6 @@ void runner() {
 
 void setup(void) {
   // This will inherit kernel permissions (everything)
-  assert(k_add_thread("runner", NULL, runner,
+  assert(add_thread("runner", NULL, runner,
     THREAD_FUNC) != -1);
 }

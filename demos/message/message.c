@@ -1,6 +1,5 @@
 #include "user/thread.h"
 #include "user/util.h"
-#include "thread.h"
 #include "util.h"
 
 __attribute__((noreturn)) void sender() {
@@ -51,7 +50,7 @@ __attribute__((noreturn)) void receiver() {
 }
 
 void setup(void) {
-  K_ADD_NAMED_THREAD(spammer, "spammer");
-  K_ADD_NAMED_THREAD(sender, "spammer");
-  K_ADD_NAMED_THREAD(receiver, "receiver");
+  add_named_thread(spammer, "spammer");
+  add_named_thread(sender, "spammer");
+  add_named_thread(receiver, "receiver");
 }

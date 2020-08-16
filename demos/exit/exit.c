@@ -1,5 +1,4 @@
 #include "user/thread.h"
-#include "thread.h"
 #include "util.h"
 #include <stddef.h>
 
@@ -23,10 +22,10 @@ void counter() {
 
 void setup(void) {
   ThreadArgs ta1 = make_args(2, 0, 0, 0);
-  K_ADD_NAMED_THREAD_WITH_ARGS(work, NULL, &ta1);
+  add_named_thread_with_args(work, NULL, &ta1);
 
   ThreadArgs ta2 = make_args(4, 0, 0, 0);
-  K_ADD_NAMED_THREAD_WITH_ARGS(work, NULL, &ta2);
+  add_named_thread_with_args(work, NULL, &ta2);
 
-  K_ADD_THREAD(counter);
+  add_thread_from_worker(counter);
 }

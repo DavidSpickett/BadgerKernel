@@ -1,5 +1,5 @@
 #include "user/thread.h"
-#include "thread.h"
+#include "thread.h" // For struct Thread
 #include "util.h"
 #include <stddef.h>
 #include <stdint.h>
@@ -62,10 +62,10 @@ void watcher() {
 }
 
 void setup(void) {
-  k_set_kernel_config(KCFG_DESTROY_ON_STACK_ERR,
+  set_kernel_config(KCFG_DESTROY_ON_STACK_ERR,
     KCFG_LOG_SCHEDULER);
 
-  K_ADD_NAMED_THREAD(underflow, "underflow");
-  K_ADD_NAMED_THREAD(watcher, "watcher");
-  K_ADD_NAMED_THREAD(overflow, "overflow");
+  add_named_thread(underflow, "underflow");
+  add_named_thread(watcher, "watcher");
+  add_named_thread(overflow, "overflow");
 }

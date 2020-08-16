@@ -1,4 +1,3 @@
-#include "thread.h"
 #include "user/thread.h"
 #include "util.h"
 
@@ -19,8 +18,8 @@ void thread2() {
 }
 
 void setup(void) {
-  k_set_kernel_config(KCFG_LOG_SCHEDULER, 0);
+  set_kernel_config(KCFG_LOG_SCHEDULER, 0);
 
-  K_ADD_NAMED_THREAD(thread1, "first");
-  K_ADD_NAMED_THREAD(thread2, "second");
+  add_named_thread(thread1, "first");
+  add_named_thread(thread2, "second");
 }

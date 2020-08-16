@@ -1,5 +1,4 @@
 #include "user/thread.h"
-#include "thread.h"
 #include "util.h"
 #include <limits.h>
 
@@ -21,10 +20,10 @@ void load_again() {
 }
 
 void setup(void) {
-  k_set_kernel_config(KCFG_LOG_SCHEDULER, 0);
+  set_kernel_config(KCFG_LOG_SCHEDULER, 0);
 
-  assert(K_ADD_THREAD_FROM_FILE(filename) != INVALID_THREAD);
-  K_ADD_NAMED_THREAD(load_again, "load_again");
+  assert(add_thread_from_file(filename) != INVALID_THREAD);
+  add_named_thread(load_again, "load_again");
   // Fails because single code page is in use
-  assert(K_ADD_THREAD_FROM_FILE(filename) == INVALID_THREAD);
+  assert(add_thread_from_file(filename) == INVALID_THREAD);
 }

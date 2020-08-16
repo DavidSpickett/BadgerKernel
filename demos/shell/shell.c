@@ -1,5 +1,4 @@
 #include "user/thread.h"
-#include "thread.h"
 #include "user/file.h"
 #include "user/util.h"
 #include "util.h"
@@ -267,7 +266,7 @@ void run_shell() {
 }
 
 void setup(void) {
-  k_set_kernel_config(0,
+  set_kernel_config(0,
     KCFG_LOG_SCHEDULER | KCFG_LOG_THREADS);
-  K_ADD_NAMED_THREAD(run_shell, "shell");
+  add_named_thread(run_shell, "shell");
 }

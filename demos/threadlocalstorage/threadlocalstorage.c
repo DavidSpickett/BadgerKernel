@@ -1,5 +1,4 @@
 #include "user/thread.h"
-#include "thread.h"
 #include "util.h"
 
 __thread int num = 2;
@@ -16,6 +15,6 @@ void thread_worker() {
 }
 
 void setup(void) {
-  K_ADD_THREAD(thread_worker);
-  K_ADD_THREAD(thread_worker);
+  add_thread_from_worker(thread_worker);
+  add_thread_from_worker(thread_worker);
 }

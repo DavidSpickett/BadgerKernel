@@ -1,5 +1,4 @@
 #include "user/thread.h"
-#include "thread.h"
 
 /*
   Check that when switching threads via
@@ -22,7 +21,7 @@ void thread(void) {
 }
 
 void setup(void) {
-  k_set_kernel_config(KCFG_LOG_SCHEDULER, 0);
+  set_kernel_config(KCFG_LOG_SCHEDULER, 0);
 
-  K_ADD_THREAD(thread);
+  add_thread_from_worker(thread);
 }

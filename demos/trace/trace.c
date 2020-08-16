@@ -1,5 +1,4 @@
 #include "user/thread.h"
-#include "thread.h"
 #include "user/util.h"
 #include "util.h"
 #include "common/trace.h"
@@ -75,5 +74,5 @@ void tracer() {
 
 
 void setup(void) {
-  K_ADD_NAMED_THREAD(tracer, "tracer");
+  add_named_thread(tracer, "tracer");
 }

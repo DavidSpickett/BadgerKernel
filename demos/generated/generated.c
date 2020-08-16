@@ -6,7 +6,5 @@
   zero threads is handled correctly.
 */
 
-#include "thread.h"
-
 void setup(void) {
 }

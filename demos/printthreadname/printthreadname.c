@@ -1,7 +1,5 @@
 #include "print.h"
 #include "user/thread.h"
-#include "thread.h"
-#include "thread.h"
 #include "util.h"
 
 void work(void) {
@@ -25,15 +23,15 @@ void setup(void) {
     0xCDEF, 0xABCD, 0x3344);
 
   // Use up some IDs
-  assert(K_ADD_THREAD(go_to_sleep) != INVALID_THREAD);
-  assert(K_ADD_THREAD(go_to_sleep) != INVALID_THREAD);
+  assert(add_thread_from_worker(go_to_sleep) != INVALID_THREAD);
+  assert(add_thread_from_worker(go_to_sleep) != INVALID_THREAD);
   printf("Added 2 threads which are now sleeping.\n");
 
   // ID 2
-  K_ADD_NAMED_THREAD(work, "name_that_gets_cut_off");
+  add_named_thread(work, "name_that_gets_cut_off");
   // The rest
   int tid = INVALID_THREAD;
   do {
-    tid = K_ADD_THREAD(work);
+    tid = add_thread_from_worker(work);
   } while (tid != INVALID_THREAD);
 }

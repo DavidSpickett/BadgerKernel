@@ -1,6 +1,5 @@
 #include "user/thread.h"
 #include "user/util.h"
-#include "thread.h"
 #include "timer.h"
 #include "util.h"
 #include <string.h>
@@ -28,7 +27,7 @@ void thread_work() {
 }
 
 void setup(void) {
-  k_set_kernel_config(KCFG_LOG_SCHEDULER, 0);
+  set_kernel_config(KCFG_LOG_SCHEDULER, 0);
 
-  K_ADD_THREAD(thread_work);
+  add_thread_from_worker(thread_work);
 }

@@ -2,7 +2,6 @@
 // This demo is for semihosting file access
 #include "print.h"
 #include "user/thread.h"
-#include "thread.h"
 #include "util.h"
 #include "user/file.h"
 #include <string.h>
@@ -70,9 +69,9 @@ void delete_new(void) {
 }
 
 void setup(void) {
-  K_ADD_NAMED_THREAD(read_file, "reader");
-  K_ADD_NAMED_THREAD(fail_open, "fail_open");
-  K_ADD_NAMED_THREAD(write_new, "write_new");
-  K_ADD_NAMED_THREAD(read_new, "read_new");
-  K_ADD_NAMED_THREAD(delete_new, "delete_new");
+  add_named_thread(read_file, "reader");
+  add_named_thread(fail_open, "fail_open");
+  add_named_thread(write_new, "write_new");
+  add_named_thread(read_new, "read_new");
+  add_named_thread(delete_new, "delete_new");
 }

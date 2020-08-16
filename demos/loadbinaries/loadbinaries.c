@@ -1,5 +1,4 @@
 #include "user/thread.h"
-#include "thread.h"
 #include "util.h"
 
 void load_again() {
@@ -24,17 +23,17 @@ void load_again() {
 }
 
 void setup(void) {
-  k_set_kernel_config(KCFG_LOG_SCHEDULER, 0);
+  set_kernel_config(KCFG_LOG_SCHEDULER, 0);
 
   const char* filename = "task";
 
-  K_ADD_THREAD_FROM_FILE(filename);
+  add_thread_from_file(filename);
   // This will be able to load it again because page 0 was freed
   // when the first thread's keepalive exited
-  K_ADD_NAMED_THREAD(load_again, "load_again");
+  add_named_thread(load_again, "load_again");
 
-  K_ADD_THREAD_FROM_FILE(filename);
-  K_ADD_THREAD_FROM_FILE(filename);
+  add_thread_from_file(filename);
+  add_thread_from_file(filename);
   // This fails because we've used up all the backing pages
-  assert(K_ADD_THREAD_FROM_FILE(filename) == INVALID_THREAD);
+  assert(add_thread_from_file(filename) == INVALID_THREAD);
 }

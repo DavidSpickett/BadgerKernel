@@ -1,5 +1,4 @@
 #include "user/thread.h"
-#include "thread.h" // For setup's add thread
 #include "user/util.h"
 #include "util.h"
 
@@ -32,6 +31,6 @@ void worker_0() {
 }
 
 void setup(void) {
-  K_ADD_THREAD(worker_0);
-  K_ADD_THREAD(worker_4);
+  add_thread_from_worker(worker_0);
+  add_thread_from_worker(worker_4);
 }
