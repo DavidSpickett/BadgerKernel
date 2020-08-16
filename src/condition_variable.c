@@ -1,4 +1,5 @@
 #include "condition_variable.h"
+#include "user/thread.h"
 
 void init_condition_variable(ConditionVariable* cond_var) {
   cond_var->first = 0;

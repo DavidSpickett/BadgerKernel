@@ -144,7 +144,6 @@ uint16_t permissions(uint32_t remove) {
   return new_permissions;
 }
 
-
 bool get_thread_registers(int tid,
                   RegisterContext* regs) {
   volatile RegisterContext ret;
@@ -169,6 +168,18 @@ bool set_thread_property(int tid, size_t property,
                          const void* value) {
   return DO_SYSCALL_3(set_thread_property,
                       tid, property, value);
+}
+
+void thread_wait(void) {
+  DO_SYSCALL_0(thread_wait);
+}
+
+bool thread_wake(int tid) {
+  return DO_SYSCALL_1(thread_wake, tid);
+}
+
+bool thread_cancel(int tid) {
+  return DO_SYSCALL_1(thread_cancel, tid);
 }
 
 bool thread_join(int tid, ThreadState* state) {

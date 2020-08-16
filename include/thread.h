@@ -68,9 +68,9 @@ bool k_get_thread_property(int tid, size_t property,
 bool k_set_thread_property(int tid, size_t property,
                            const void* res);
 
-void thread_wait(void);
-bool thread_wake(int tid);
-bool thread_cancel(int tid);
+void k_thread_wait(void);
+bool k_thread_wake(int tid);
+bool k_thread_cancel(int tid);
 
 // TODO: dedupe?
 void k_log_event(const char* event, ...);

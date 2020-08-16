@@ -11,6 +11,9 @@ set_kernel_config
 yield
 get_msg
 send_msg
+thread_wait
+thread_wake
+thread_cancel
 open
 read
 write

@@ -44,6 +44,10 @@ bool get_thread_state(int tid, ThreadState* state)
 bool set_child(int child);
 bool get_child(int tid, int* child);
 
+void thread_wait(void);
+bool thread_wake(int tid);
+bool thread_cancel(int tid);
+
 void log_event(const char* event, ...);
 
 void set_kernel_config(uint32_t enable, uint32_t disable);

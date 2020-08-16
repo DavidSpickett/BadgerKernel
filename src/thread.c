@@ -411,7 +411,7 @@ static bool set_thread_state(int tid, ThreadState state) {
   return false;
 }
 
-bool thread_wake(int tid) {
+bool k_thread_wake(int tid) {
   return set_thread_state(tid, suspended);
 }
 
@@ -429,7 +429,7 @@ static void cleanup_thread(Thread* thread) {
 #endif
 }
 
-bool thread_cancel(int tid) {
+bool k_thread_cancel(int tid) {
   bool set = set_thread_state(tid, cancelled);
   if (set) {
     cleanup_thread(&all_threads[tid]);
@@ -641,11 +641,10 @@ int k_add_thread(const char* name,
   __builtin_unreachable();
 }
 
-void thread_wait(void) {
+void k_thread_wait(void) {
   _current_thread->state = waiting;
-  // Skip the yielding print
-  next_thread = NULL;
-  thread_switch();
+  // Manually move to next thread
+  do_scheduler();
 }
 
 // Use these struct names to ensure that these are

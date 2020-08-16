@@ -16,6 +16,9 @@
   FNADDR k_yield
   FNADDR k_get_msg
   FNADDR k_send_msg
+  FNADDR k_thread_wait
+  FNADDR k_thread_wake
+  FNADDR k_thread_cancel
   FNADDR k_open
   FNADDR k_read
   FNADDR k_write
@@ -44,6 +47,9 @@ typedef enum {
   syscall_yield,
   syscall_get_msg,
   syscall_send_msg,
+  syscall_thread_wait,
+  syscall_thread_wake,
+  syscall_thread_cancel,
   syscall_open,
   syscall_read,
   syscall_write,
