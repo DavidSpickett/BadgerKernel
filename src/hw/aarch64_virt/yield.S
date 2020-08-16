@@ -229,10 +229,12 @@ load_next_thread:
   // Otherwise pick a new thread and do housekeeping
   msr SPSel, #1              // Use kernel's stack
   bl do_scheduler            // This will set next_thread
-  msr SPSel, #0              // Back to user stack
   ldr x6, [x21]              // Get new next_thread
 
 actually_load_thread:
+  /* Either we ran the code above, or kernel jumped here
+     to run setup_thread. Either way we want to set EL0_SP */
+  msr SPSel, #0            // Back to user stack
   str x6, [x20]            // _current_thread = next_thread
   mov x12, #0              // Set next to null for next switch to call scheduler
   str x12, [x21]           // next_thread = NULL

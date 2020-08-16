@@ -1,5 +1,4 @@
 #include "user/thread.h"
-#include "thread.h" // For setup's add thread
 #include "user/util.h"
 
 __attribute__((noreturn)) void thread_worker_1() {
@@ -23,8 +22,8 @@ __attribute__((noreturn)) void thread_worker_0() {
 }
 
 void setup(void) {
-  k_set_kernel_config(KCFG_LOG_SCHEDULER, 0);
+  set_kernel_config(KCFG_LOG_SCHEDULER, 0);
 
-  K_ADD_THREAD(thread_worker_0);
-  K_ADD_THREAD(thread_worker_1);
+  add_thread_from_worker(thread_worker_0);
+  add_thread_from_worker(thread_worker_1);
 }

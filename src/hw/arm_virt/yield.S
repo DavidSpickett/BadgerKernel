@@ -176,10 +176,12 @@ load_next_thread:
   cps #SUPERVISOR_MODE     // Use kernel's stack
   // Note that r10/r11 are callee saved so we can still use them after this
   bl do_scheduler          // This will set next_thread
-  cps #SYSTEM_MODE         // Back to user stack
   ldr r4, [r11]            // Get new next_thread
 
 actually_load_thread:
+  /* Either we ran the code above or the kernel jumped here
+     directly, either way want system (aka user) SP */
+  cps #SYSTEM_MODE         // Back to user stack
   str r4, [r10]        // _current_thread = next_thread
   mov r5, #0           // Set next to null for next switch to call scheduler
   str r5, [r11]        // next_thread = NULL
