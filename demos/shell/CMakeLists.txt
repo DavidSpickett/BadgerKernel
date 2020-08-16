@@ -1,4 +1,5 @@
-if(LTO)
+# We don't have enough RAM on the Thumb board
+if(LTO OR (BP_LOWER STREQUAL "thumb"))
   return()
 endif()
 
