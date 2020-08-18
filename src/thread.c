@@ -1,6 +1,7 @@
 #include "print.h"
 #include "thread.h"
 #include "common/trace.h"
+#include "common/errno.h"
 #include "util.h"
 #if CODE_PAGE_SIZE
 #include "elf.h"
@@ -78,12 +79,14 @@ int k_get_thread_id(void) {
 bool k_set_thread_property(int tid, size_t property,
                            const void* value) {
   if (k_has_no_permission(TPERM_TCONFIG)) {
+    _current_thread->err_no = E_PERM;
     return false;
   }
   if (tid == CURRENT_THREAD) {
     tid = k_get_thread_id();
   }
   if (!is_valid_thread(tid)) {
+    _current_thread->err_no = E_INVALID_ID;
     return false;
   }
 
@@ -129,6 +132,7 @@ bool k_get_thread_property(int tid, size_t property,
     tid = k_get_thread_id();
   }
   if (!is_valid_thread(tid)) {
+    _current_thread->err_no = E_INVALID_ID;
     return false;
   }
 
@@ -165,6 +169,9 @@ bool k_get_thread_property(int tid, size_t property,
       ctx->sp = (size_t)thread->stack_ptr;
       break;
     }
+    case TPROP_ERRNO_PTR:
+      *(int**)res = &_current_thread->err_no;
+      break;
     default:
       assert(0);
       return false;
@@ -187,6 +194,7 @@ void init_thread(Thread* thread, int tid, const char* name,
   thread->parent = INVALID_THREAD;
   thread->child = INVALID_THREAD;
   thread->permissions = permissions;
+  thread->err_no = 0;
 
   // Start message buffer empty
   thread->next_msg = &(thread->messages[0]);

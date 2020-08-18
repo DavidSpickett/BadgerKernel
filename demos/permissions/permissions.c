@@ -3,6 +3,7 @@
 #include "file.h"
 #include "user/file.h"
 #include "user/alloc.h"
+#include "common/errno.h"
 
 void cannot_alloc() {
   assert(malloc(sizeof(int)) == NULL);
@@ -54,15 +55,22 @@ void cannot_mutli() {
 }
 
 void same_permissions() {
+  errno = 0;
   assert(set_thread_name(-1, "SAME"));
+  assert(errno == 0);
 }
 
 void reduced_permissions() {
+  errno = 0;
   assert(!set_thread_name(-1, "REDUCED"));
+  assert(errno == E_PERM);
 }
 
 // Check that threads created by user threads also inherit
 void user_inherit() {
+  // Check that errno is per thread
+  errno = 0;
+
   // This thread will have same permissions
   int tid = add_thread("same", NULL, same_permissions,
     THREAD_FUNC);
@@ -74,6 +82,9 @@ void user_inherit() {
     THREAD_FUNC | TPERM_NO_TCONFIG);
   set_child(tid);
   yield();
+
+  // Would be E_PERM if it weren't per thread
+  assert(errno == 0);
 }
 
 void user_reduce() {
@@ -93,6 +104,17 @@ void user_reduce() {
   assert(perm & TPERM_KCONFIG);
   perm = permissions(TPERM_NO_KCONFIG);
   assert(perm & TPERM_KCONFIG);
+}
+
+void errno_checks() {
+  // Check non E_PERM values
+  errno = 0;
+  assert(!set_thread_name(-99, "food"));
+  assert(errno == E_INVALID_ID);
+  errno = 0;
+  const char* tname = NULL;
+  assert(!thread_name(-99, &tname));
+  assert(errno == E_INVALID_ID);
 }
 
 void cleanup() {
@@ -132,6 +154,8 @@ void runner() {
   RUN_TEST_THREAD("userinherit", user_inherit,
     THREAD_FUNC);
   RUN_TEST_THREAD("userreduce", user_reduce,
+    THREAD_FUNC);
+  RUN_TEST_THREAD("errno", errno_checks,
     THREAD_FUNC);
 
   RUN_TEST_THREAD("cleanup", cleanup,

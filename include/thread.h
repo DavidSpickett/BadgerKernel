@@ -35,6 +35,8 @@ typedef struct {
   int parent;
   int child;
   uint16_t permissions;
+  // Not "errno" so that we don't clash with the macro
+  int err_no;
 #if CODE_PAGE_SIZE
   bool in_code_page;
 #if CODE_BACKING_PAGES

@@ -29,6 +29,9 @@ Thread       runner: yielding
 Thread   userreduce: exiting
 Thread       runner: resuming
 Thread       runner: yielding
+Thread        errno: exiting
+Thread       runner: resuming
+Thread       runner: yielding
 Thread      cleanup: exiting
 Thread       runner: resuming
 Thread       runner: exiting

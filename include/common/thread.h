@@ -20,6 +20,7 @@
 #define TPROP_STATE       3
 #define TPROP_PERMISSIONS 4
 #define TPROP_REGISTERS   5
+#define TPROP_ERRNO_PTR   6
 
 #define TFLAG_KIND_MASK 0xFFFF
 #define THREAD_FUNC 0

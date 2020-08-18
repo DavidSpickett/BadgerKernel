@@ -92,6 +92,7 @@ set( KERNEL_SOURCES
   src/mutex.c
   src/condition_variable.c
   src/syscall.c
+  src/errno.c
   src/hw/arm_file.c
   # /user files here for threads within the same binary
   src/user/thread.c
