@@ -1,5 +1,6 @@
 #include "user/thread.h"
 #include "util.h"
+#include "common/errno.h"
 
 void load_again() {
   // This yielding is also testing that going from
@@ -35,5 +36,11 @@ void setup(void) {
   add_thread_from_file(filename);
   add_thread_from_file(filename);
   // This fails because we've used up all the backing pages
+  errno = 0;
   assert(add_thread_from_file(filename) == INVALID_THREAD);
+  assert(errno == 0);
+
+  // This file doesn't exist
+  assert(add_thread_from_file("/?/:/;") == -1);
+  assert(errno == E_NOT_FOUND);
 }

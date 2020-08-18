@@ -32,6 +32,7 @@ bool k_has_no_permission(uint16_t permission) {
   // Default is kernel which can do anything
   uint16_t has = TPERM_ALL;
   // Which should only happen in setup()s
+  // TODO: I don't think this is true anymore
   if (_current_thread) {
     has = _current_thread->permissions;
   }
@@ -601,6 +602,10 @@ int k_add_thread_from_file_with_args(const char* filename,
 
   void (*entry)() = load_elf(filename, dest);
   if (!entry) {
+    // Startup may call this to load STARTUP_PROG
+    if (_current_thread) {
+      _current_thread->err_no = E_NOT_FOUND;
+    }
     return INVALID_THREAD;
   }
   int tid = k_add_named_thread_with_args(
