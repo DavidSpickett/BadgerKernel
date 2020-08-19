@@ -8,18 +8,21 @@ Thread            1: yielding
 Thread            2: resuming
 Thread            2: yielding
 Thread            0: resuming
-Thread            0: exiting
-Thread            1: resuming
-Thread            1: yielding
-Thread            2: resuming
-Thread            2: thread 0 exited
-Thread            2: yielding
-Thread            1: resuming
-Thread            1: yielding
-Thread            2: resuming
-Thread            2: yielding
+Thread            0: yielding
 Thread            1: resuming
 Thread            1: exiting
 Thread            2: resuming
-Thread            2: thread 1 exited
+Thread            2: yielding
+Thread            0: resuming
+Thread            0: thread 1 exited
+Thread            0: yielding
+Thread            2: resuming
+Thread            2: yielding
+Thread            0: resuming
+Thread            0: yielding
+Thread            2: resuming
 Thread            2: exiting
+Thread            0: resuming
+Thread            0: thread 2 exited
+Thread            0: thread 3 exited
+Thread            0: exiting

@@ -9,10 +9,8 @@ void work(int num) {
 }
 
 void counter() {
-  int our_id = get_thread_id();
-
-  // Since we're the last thread added, we're the upper bound on ID
-  for (int i = 0; i < our_id; ++i) {
+  // Start at 1 so we don't join on ourselves
+  for (int i = 1; i < 4; ++i) {
     ThreadState state;
     thread_join(i, &state);
     assert(state == finished);
@@ -27,5 +25,6 @@ void setup(void) {
   ThreadArgs ta2 = make_args(4, 0, 0, 0);
   add_named_thread_with_args(work, NULL, &ta2);
 
-  add_thread_from_worker(counter);
+  yield();
+  counter();
 }
