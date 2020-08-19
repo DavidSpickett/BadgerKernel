@@ -1,3 +1,4 @@
+Thread            0: exiting
 Thread  <scheduler>: scheduling new thread
 Thread  <scheduler>: next thread chosen
 Thread        first: yielding
