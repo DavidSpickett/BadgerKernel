@@ -1,12 +1,12 @@
-Thread            0: foo
-Thread            0: yielding
-Thread            1: cancelling thread 2
+Thread            1: foo
 Thread            1: yielding
-Thread            0: resuming
-Thread            0: foo
-Thread            0: yielding
+Thread            2: cancelling thread 3
+Thread            2: yielding
 Thread            1: resuming
-Thread            1: cancelling thread 0
+Thread            1: foo
 Thread            1: yielding
-Thread            1: resuming
-Thread            1: exiting
+Thread            2: resuming
+Thread            2: cancelling thread 1
+Thread            2: yielding
+Thread            2: resuming
+Thread            2: exiting
