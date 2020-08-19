@@ -29,13 +29,7 @@ uint8_t code_page_backing[CODE_BACKING_PAGES][CODE_PAGE_SIZE];
 #endif /* CODE_PAGE_SIZE */
 
 bool k_has_no_permission(uint16_t permission) {
-  // Default is kernel which can do anything
-  uint16_t has = TPERM_ALL;
-  // Which should only happen in setup()s
-  // TODO: I don't think this is true anymore
-  if (_current_thread) {
-    has = _current_thread->permissions;
-  }
+  uint16_t has = _current_thread->permissions;
   return (has & permission) == 0;
 }
 
@@ -219,7 +213,6 @@ void init_thread(Thread* thread, int tid, const char* name,
 
 extern void setup(void);
 extern void start_thread_switch(void);
-Thread setup_thread;
 
 __attribute__((noreturn)) void entry(void) {
   for (size_t idx = 0; idx < MAX_THREADS; ++idx) {
@@ -243,11 +236,7 @@ __attribute__((noreturn)) void entry(void) {
 #else
   {
 #endif
-    ThreadArgs args = {0,0,0,0};
-    init_thread(&setup_thread, INVALID_THREAD, "setup",
-                 setup, &args,
-                 TPERM_ALL);
-    next_thread = &setup_thread;
+    k_add_thread(NULL, NULL, setup, THREAD_FUNC);
   }
 
   start_thread_switch(); // Not thread_switch as we're in kernel mode
@@ -350,11 +339,6 @@ static size_t next_possible_thread_idx(const Thread* curr) {
     // Children always return to parents
     if (is_valid_thread(curr->parent)) {
       return curr->parent;
-    }
-
-    // Initial setup thread has ID of -1
-    if (curr->id == INVALID_THREAD) {
-      return 0;
     }
 
     // +1 to skip the current thread
@@ -722,10 +706,7 @@ __attribute__((noreturn)) void thread_start(void) {
                          _current_thread->args.a3, _current_thread->args.a4);
 
   // Yield back to the scheduler
-  // TODO: bodge so that the setup thread doesn't log
-  if (_current_thread->id != INVALID_THREAD) {
-    k_log_event("exiting");
-  }
+  k_log_event("exiting");
 
   // Make sure we're not scheduled again
   _current_thread->state = finished;

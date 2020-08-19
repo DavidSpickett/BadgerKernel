@@ -1,5 +1,3 @@
-Thread  <scheduler>: scheduling new thread
-Thread  <scheduler>: next thread chosen
 Thread            0: working
 Thread            0: yielding
 Thread  <scheduler>: scheduling new thread
