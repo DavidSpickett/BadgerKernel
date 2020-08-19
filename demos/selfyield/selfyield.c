@@ -16,12 +16,7 @@ void log_things() {
   log_event("two");
 }
 
-void thread(void) {
-  log_things();
-}
-
 void setup(void) {
   set_kernel_config(KCFG_LOG_SCHEDULER, 0);
-
-  add_thread_from_worker(thread);
+  log_things();
 }
