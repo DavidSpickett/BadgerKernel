@@ -2,27 +2,27 @@
 #include "user/util.h"
 #include "util.h"
 
-void worker_1() { log_event("One!"); }
-/* Two printed in worker_0 */
-void worker_3() { log_event("Three!"); }
+void worker_2() { log_event("Two!"); }
+/* Three printed in worker_1 */
 void worker_4() { log_event("Four!"); }
+void worker_5() { log_event("Five!"); }
 
-void worker_0() {
-  log_event("Zero!");
+void worker_1() {
+  log_event("One!");
 
-  int tid = add_thread_from_worker(worker_1);
+  int tid = add_thread_from_worker(worker_2);
   assert(set_child(tid));
 
-  // Won't run yet because we yield to worker_1
+  // Won't run yet because we yield to worker_2
   // Then it comes back to us on finish
-  int last_child_tid = add_thread_from_worker(worker_3);
+  int last_child_tid = add_thread_from_worker(worker_4);
 
   // Run the child thread
   // (not the second thread added in the setup function)
   yield();
 
   // Child returns here when it ends
-  log_event("Two!");
+  log_event("Three!");
 
   // Now we'll add a child thread but exit before it runs
   assert(set_child(last_child_tid));
@@ -31,6 +31,6 @@ void worker_0() {
 }
 
 void setup(void) {
-  add_thread_from_worker(worker_0);
-  add_thread_from_worker(worker_4);
+  add_thread_from_worker(worker_1);
+  add_thread_from_worker(worker_5);
 }

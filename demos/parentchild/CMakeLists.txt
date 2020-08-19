@@ -1,1 +1,1 @@
-add_demo(parentchild 4)
+add_demo(parentchild 5)
