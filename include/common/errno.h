@@ -3,7 +3,7 @@
 
 #include "user/thread.h"
 
-#define errno *__get_errno()
+#define errno (*__get_errno())
 
 // Note: kernel should set via thread struct
 int* __get_errno(void);
