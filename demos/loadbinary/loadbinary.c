@@ -1,4 +1,5 @@
 #include "user/thread.h"
+#include "common/errno.h"
 #include "util.h"
 #include <limits.h>
 
@@ -6,7 +7,9 @@ const char* filename = "binary";
 void load_again() {
   // Fails because other_worker from binary is still active
   // (worker has finished though)
+  errno = 0;
   assert(add_thread_from_file(filename) == INVALID_THREAD);
+  assert(errno == E_NO_PAGE);
   yield();
   log_event("loading binary again");
   // Now that all threads from binary have finished
