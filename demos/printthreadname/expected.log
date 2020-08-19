@@ -3,7 +3,7 @@ Signed numbers: -2 -1 0 1 2
 Sprintf hex: 0xABAB
 Padding 0x0000CDEF 0x0000ABCD 0x0000003344
 Added 2 threads which are now sleeping.
+Thread            0: exiting
 Thread name_that_ge: exiting
-Thread            3: exiting
 Thread            4: exiting
 Thread            5: exiting
