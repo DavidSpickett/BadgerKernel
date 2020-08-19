@@ -57,12 +57,6 @@ int k_add_thread(const char* name,
                  void* worker,
                  uint32_t flags);
 
-// Macros to make writing setup()s easier
-#define K_ADD_THREAD(worker) k_add_thread(NULL, NULL, worker, THREAD_FUNC)
-#define K_ADD_NAMED_THREAD(worker, name) k_add_thread(name, NULL, worker, THREAD_FUNC)
-#define K_ADD_NAMED_THREAD_WITH_ARGS(worker, name, args) k_add_thread(name, args, worker, THREAD_FUNC)
-#define K_ADD_THREAD_FROM_FILE(filename) k_add_thread(filename, NULL, (void*)filename, THREAD_FILE)
-
 bool is_valid_thread(int tid);
 int k_get_thread_id(void);
 bool k_get_thread_property(int tid, size_t property,

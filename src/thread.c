@@ -29,6 +29,10 @@ uint8_t code_page_backing[CODE_BACKING_PAGES][CODE_PAGE_SIZE];
 #endif /* CODE_PAGE_SIZE */
 
 bool k_has_no_permission(uint16_t permission) {
+  if (!_current_thread) {
+    // Must be kernel (famous last words)
+    return false;
+  }
   uint16_t has = _current_thread->permissions;
   return (has & permission) == 0;
 }
@@ -223,14 +227,18 @@ __attribute__((noreturn)) void entry(void) {
       NULL, NULL, &noargs, TPERM_NONE);
   }
 
+  ThreadArgs empty_args = make_args(0,0,0,0);
+
 #if defined CODE_PAGE_SIZE && defined STARTUP_PROG
   const char* startup_prog = STARTUP_PROG;
   k_log_event("Loading program \"%s\"", startup_prog);
   // Empty means load builtin threads
   if (strcmp(startup_prog, "")) {
-    int tid = K_ADD_THREAD_FROM_FILE(startup_prog);
+    int tid = k_add_thread_from_file_with_args(
+      startup_prog, &empty_args, 0);
     if (tid == INVALID_THREAD) {
-      k_log_event("Failed to find STARTUP_PROG \"%s\"",
+      // No errno for kernel, so some generic phrasing
+      k_log_event("Failed to load STARTUP_PROG \"%s\"",
         startup_prog);
       k_exit(1);
     }
@@ -238,9 +246,8 @@ __attribute__((noreturn)) void entry(void) {
 #else
   {
 #endif
-    // Use this version to bypass the permission check
-    ThreadArgs args = make_args(0,0,0,0);
-    k_add_named_thread_with_args(setup, NULL, &args, 0);
+    k_add_named_thread_with_args(setup, NULL,
+      &empty_args, 0);
   }
 
   start_thread_switch(); // Not thread_switch as we're in kernel mode
@@ -299,7 +306,9 @@ void k_log_event(const char* event, ...) {
 
   char thread_name[THREAD_NAME_SIZE + 1];
   const char* name = NULL;
-  k_get_thread_property(CURRENT_THREAD, TPROP_NAME, &name);
+  if (_current_thread) {
+    name = _current_thread->name;
+  }
   format_thread_name(thread_name, k_get_thread_id(), name);
   printf("Thread %s: ", thread_name);
 
