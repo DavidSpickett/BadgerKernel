@@ -130,8 +130,9 @@ void cleanup() {
 
 // Use this to run one by one so we aren't limited
 // by MAX_THREADS
-void runner() {
+void setup(void) {
   int tid = -1;
+  set_thread_name(-1, "runner");
 
   RUN_TEST_THREAD("noalloc", cannot_alloc,
     THREAD_FUNC | TPERM_NO_ALLOC);
@@ -160,10 +161,4 @@ void runner() {
 
   RUN_TEST_THREAD("cleanup", cleanup,
     THREAD_FUNC);
-}
-
-void setup(void) {
-  // This will inherit kernel permissions (everything)
-  assert(add_thread("runner", NULL, runner,
-    THREAD_FUNC) != -1);
 }
