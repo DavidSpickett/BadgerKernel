@@ -580,6 +580,9 @@ int k_add_thread_from_file_with_args(const char* filename,
 #else
   if (code_page_in_use_by() != INVALID_THREAD) {
 #endif
+    if (_current_thread) {
+      _current_thread->err_no = E_NO_PAGE;
+    }
     return INVALID_THREAD;
   }
 

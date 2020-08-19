@@ -5,7 +5,7 @@ void keep_page(int tid) {
   // Keep going back to load_again and trying find a free page
   // Which won't succeed until all of these have exited
   log_event("keeping thread %u's page alive", tid);
-  yield_to(1);
+  yield_to(2);
   log_event("releasing page for thread %u", tid);
 }
 
