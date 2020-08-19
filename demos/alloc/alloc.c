@@ -109,9 +109,6 @@ void errors() {
   assert(!bad_malloc);
 }
 
-__attribute__((
-  annotate("oclint:suppress[high cyclomatic complexity]"),
-  annotate("oclint:suppress[high ncss method]")))
 void realloc_more() {
   // Realloc with nullptr is just malloc
   size_t array_sz = 8;
@@ -312,7 +309,10 @@ void free_cancel() {
   tid = add_named_thread(fn, name); \
   thread_join(tid, &state);
 
-void dispatcher() {
+
+void setup(void) {
+  set_thread_name(-1, "dispatcher");
+
   // Single thread to send and wait on threads
   // so that we don't have to have MAX_THREADS = number of tests
   int tid; ThreadState state;
@@ -328,8 +328,4 @@ void dispatcher() {
   RUN_TEST_THREAD(free_exit, "free_exit");
   RUN_TEST_THREAD(free_exit, "freed_exit");
   RUN_TEST_THREAD(free_cancel, "free_cancel");
-}
-
-void setup(void) {
-  add_named_thread(dispatcher, "dispatcher");
 }

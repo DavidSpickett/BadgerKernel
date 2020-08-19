@@ -213,7 +213,9 @@ void init_thread(Thread* thread, int tid, const char* name,
 
 extern void setup(void);
 extern void start_thread_switch(void);
-
+// TODO: collect all these forward declarations
+static int k_add_named_thread_with_args(void (*worker)(), const char* name,
+                                 const ThreadArgs* args, uint16_t remove_permissions);
 __attribute__((noreturn)) void entry(void) {
   for (size_t idx = 0; idx < MAX_THREADS; ++idx) {
     ThreadArgs noargs = {0, 0, 0, 0};
@@ -236,7 +238,9 @@ __attribute__((noreturn)) void entry(void) {
 #else
   {
 #endif
-    k_add_thread(NULL, NULL, setup, THREAD_FUNC);
+    // Use this version to bypass the permission check
+    ThreadArgs args = make_args(0,0,0,0);
+    k_add_named_thread_with_args(setup, NULL, &args, 0);
   }
 
   start_thread_switch(); // Not thread_switch as we're in kernel mode
