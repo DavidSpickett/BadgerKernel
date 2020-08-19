@@ -48,5 +48,7 @@ void setup(void) {
   for (unsigned i = 0; i < num_waiting; ++i) {
     add_thread_from_worker(waiter);
   }
-  add_named_thread(signaller, "signaller");
+
+  set_thread_name(-1, "signaller");
+  signaller();
 }
