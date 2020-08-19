@@ -20,6 +20,8 @@ __attribute__((noinline)) void recurse(int repeat) {
 }
 
 void underflow() {
+  set_thread_name(-1, "underflow");
+
   char dummy;
   size_t distance = (void*)(&dummy) - (void*)_current_thread;
   log_event("recursing");
@@ -65,7 +67,7 @@ void setup(void) {
   set_kernel_config(KCFG_DESTROY_ON_STACK_ERR,
     KCFG_LOG_SCHEDULER);
 
-  add_named_thread(underflow, "underflow");
   add_named_thread(watcher, "watcher");
   add_named_thread(overflow, "overflow");
+  underflow();
 }
