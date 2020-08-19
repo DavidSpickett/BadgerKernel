@@ -53,7 +53,9 @@ void worker(int argc, char* argv[]) {
     printf("|-----------|\n");
     printf("| Thread %u\n", tid);
     printf("|-----------|\n");
+    if (name) {
     printf("| Name      | %s\n", name);
+    }
     printf("| State     | %s (%u)\n", state_name, state);
     if (child_name) {
     printf("| Child     | %s (%u)\n", child_name, child_tid);
