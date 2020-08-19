@@ -16,5 +16,5 @@ void thread_worker() {
 
 void setup(void) {
   add_thread_from_worker(thread_worker);
-  add_thread_from_worker(thread_worker);
+  thread_worker();
 }
