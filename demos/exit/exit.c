@@ -10,8 +10,8 @@ void work(int num) {
 
 void counter() {
   // Start at 1 so we don't join on ourselves
-  for (int i = 1; i < 4; ++i) {
-    ThreadState state;
+  for (int i = 1; i < 3; ++i) {
+    ThreadState state = init;
     thread_join(i, &state);
     assert(state == finished);
     log_event("thread %i exited", i);
