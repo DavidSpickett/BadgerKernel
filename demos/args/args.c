@@ -23,7 +23,7 @@ void sub_printer(char** words, int num_phrases, unsigned int offset) {
 static const char* words[] = {"food", "alligator", "magazine", "raptor"};
 
 void setup(void) {
-  ThreadArgs p_args = make_args(3, "aardvark", 1, 2);
+  ThreadArgs p_args = make_args(3, "aardvark", 2, 2);
   add_named_thread_with_args(printer, "printer", &p_args);
 
   // Only takes 3, just zero the 4th arg
