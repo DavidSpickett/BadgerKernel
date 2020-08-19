@@ -1,7 +1,7 @@
 Thread      spammer: spammed
 Thread      spammer: yielding
-Thread      spammer: message box was full
-Thread      spammer: yielding
+Thread       sender: message box was full
+Thread       sender: yielding
 Thread     receiver: discarded spam message
 Thread     receiver: discarded spam message
 Thread     receiver: discarded spam message
@@ -11,9 +11,9 @@ Thread     receiver: yielding
 Thread      spammer: resuming
 Thread      spammer: spammed
 Thread      spammer: yielding
-Thread      spammer: resuming
-Thread      spammer: message box was full
-Thread      spammer: yielding
+Thread       sender: resuming
+Thread       sender: message box was full
+Thread       sender: yielding
 Thread     receiver: resuming
 Thread     receiver: discarded spam message
 Thread     receiver: discarded spam message
@@ -24,9 +24,9 @@ Thread     receiver: yielding
 Thread      spammer: resuming
 Thread      spammer: not spamming
 Thread      spammer: yielding
-Thread      spammer: resuming
-Thread      spammer: sent a message
-Thread      spammer: yielding
+Thread       sender: resuming
+Thread       sender: sent a message
+Thread       sender: yielding
 Thread     receiver: resuming
 Thread     receiver: discarded spam message
 Thread     receiver: got message from sender
