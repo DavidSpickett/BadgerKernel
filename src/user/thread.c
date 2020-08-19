@@ -72,10 +72,11 @@ int get_thread_id(void) {
 }
 
 bool thread_name(int tid, const char** name) {
+  // Volatile to pick up syscall result
+  const char* volatile _name = NULL;
   bool got = DO_SYSCALL_3(get_thread_property, tid,
-    TPROP_NAME, name);
-  // Bodge for inconsistent results on Arm 0s LTO UBSAN
-  asm volatile ("" ::: "memory");
+    TPROP_NAME, &_name);
+  *name = _name;
   return got;
 }
 
