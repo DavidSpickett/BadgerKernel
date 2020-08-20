@@ -66,16 +66,15 @@ int add_named_thread_with_args(
 int get_thread_id(void) {
   // Volatile required to pick up result after syscall
   volatile int ret = 0;
-  DO_SYSCALL_3(get_thread_property, -1,
-    TPROP_ID, &ret);
+  get_thread_property(-1, TPROP_ID, (size_t*)&ret);
   return ret;
 }
 
 bool thread_name(int tid, const char** name) {
   // Volatile to pick up syscall result
   const char* volatile _name = NULL;
-  bool got = DO_SYSCALL_3(get_thread_property, tid,
-    TPROP_NAME, &_name);
+  bool got = get_thread_property(tid,
+    TPROP_NAME, (size_t*)&_name);
   *name = _name;
   return got;
 }
@@ -101,8 +100,8 @@ bool set_child(int child) {
 bool get_thread_state(int tid, ThreadState* state) {
   // Volatile to make sure we get the result of the syscall
   volatile ThreadState s = init;
-  bool got  = DO_SYSCALL_3(get_thread_property, tid,
-    TPROP_STATE, &s);
+  bool got = get_thread_property(tid,
+    TPROP_STATE, (size_t*)&s);
   *state = s;
   return got;
 }
@@ -137,8 +136,8 @@ bool send_msg(int destination, int message) {
 
 bool get_child(int tid, int* child) {
   volatile int c = 0;
-  bool got = DO_SYSCALL_3(get_thread_property, tid,
-    TPROP_CHILD, &c);
+  bool got = get_thread_property(tid,
+    TPROP_CHILD, (size_t*)&c);
   *child = c;
   return got;
 }
@@ -167,8 +166,11 @@ bool set_thread_registers(int tid, RegisterContext regs) {
     &regs);
 }
 
+// Note that callers must apply volatile to their
+// own res parameter. Since only they know the actual
+// data type and therefore its correct size.
 bool get_thread_property(int tid, size_t property,
-                         size_t* res) {
+                         void* res) {
   return DO_SYSCALL_3(get_thread_property,
                       tid, property, res);
 }

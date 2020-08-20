@@ -25,7 +25,7 @@ int add_named_thread_with_args(void (*worker)(), const char* name,
 uint16_t permissions(uint32_t remove);
 
 bool get_thread_property(int tid, size_t property,
-                         size_t* res);
+                         void* res);
 bool set_thread_property(int tid, size_t property,
                          const void* value);
 
