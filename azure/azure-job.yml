@@ -30,13 +30,6 @@ jobs:
         - script: sudo apt-get install -y gcc-arm-none-eabi libnewlib-arm-none-eabi
           displayName: apt-get-toolchain
 
-      - ${{ if eq(parameters.compiler, 'clang') }}:
-        - script: |
-            sudo apt-get install -y clang-9
-            # Make 'clang' be clang-9
-            sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-9 100
-          displayName: apt-get-clang-9
-
       - ${{ if eq(build_platform, 'AARCH64') }}:
         - template: get-linaro-toolchain.yml
           parameters:
