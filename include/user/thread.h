@@ -48,6 +48,9 @@ void thread_wait(void);
 bool thread_wake(int tid);
 bool thread_cancel(int tid);
 
+bool thread_signal(int tid);
+bool set_signal_handler(void (*handler)(void));
+
 void log_event(const char* event, ...);
 
 void set_kernel_config(uint32_t enable, uint32_t disable);

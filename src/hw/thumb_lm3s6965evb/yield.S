@@ -255,3 +255,16 @@ generic_syscall:
 
 syscall_handlers:
 #include "common/syscall.h"
+
+.global __signal_handler_entry
+__signal_handler_entry:
+  ldr r0, =_current_thread
+  ldr r0, [r0]
+  add r0, r0, 8 // Skip stack_ptr and state
+  ldr r0, [r0]
+  blx r0
+  svc svc_thread_switch
+.global __signal_handler_end
+__signal_handler_end:
+  // user PC will point here after svc above
+  nop

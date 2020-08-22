@@ -116,6 +116,12 @@ bool k_set_thread_property(int tid, size_t property,
       /* Ignoring writes to sp */
       break;
     }
+    case TPROP_PENDING_SIGNAL:
+      thread->pending_signal = *(uint8_t*)value;
+      break;
+    case TPROP_SIGNAL_HANDLER:
+      thread->signal_handler = *(void (**)(void))value;
+      break;
     default:
       assert(0);
       return false;
@@ -185,7 +191,9 @@ void init_thread(Thread* thread, int tid, const char* name,
 {
   // thread_start will jump to this
   thread->work = do_work;
+  thread->signal_handler = NULL;
   thread->state = init;
+  thread->pending_signal = 0;
 
   thread->id = tid;
   thread->name = name;
@@ -362,6 +370,22 @@ static size_t next_possible_thread_idx(const Thread* curr) {
   return 0;
 }
 
+extern void __signal_handler_entry(void);
+extern void __signal_handler_end(void);
+static void install_signal_handler(Thread* thread) {
+  // Note: NOT sizeof(RegisterContext)!
+  thread->stack_ptr -= STACK_CTX_SIZE;
+
+  // sp is patched on end, so it is safe to cast to it
+  RegisterContext* handler_ctx = (RegisterContext*)thread->stack_ptr;
+  memset(handler_ctx, 0, sizeof(RegisterContext));
+
+  handler_ctx->pc = (size_t)__signal_handler_entry;
+  // TODO: thumb specific
+  // Run in Thumb mode
+  handler_ctx->xpsr = (1<<24);
+}
+
 void do_scheduler(void) {
   // NULL next_thread means choose one for us
   // otherwise just do required housekeeping to switch
@@ -396,6 +420,27 @@ void do_scheduler(void) {
 #if CODE_BACKING_PAGES
     swap_paged_threads(_current_thread, next_thread);
 #endif
+
+    const RegisterContext* next_ctx =
+      (const RegisterContext*)next_thread->stack_ptr;
+
+    // Stored PC doesn't include Thumb bit
+    if (next_ctx->pc == ((size_t)__signal_handler_end & ~1)) {
+
+      // Finish handling
+      next_thread->pending_signal = 0;
+      // Remove signal handler context
+      // Note: NOT sizeof(RegisterContext)!
+      next_thread->stack_ptr += STACK_CTX_SIZE;
+    }
+
+    if (next_thread->pending_signal) {
+      if (next_thread->signal_handler) {
+        install_signal_handler(next_thread);
+      } else {
+        next_thread->pending_signal = 0;
+      }
+    }
 
     return; //!OCLINT
   }

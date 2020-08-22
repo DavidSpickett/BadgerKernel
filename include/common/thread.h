@@ -14,13 +14,15 @@
 #define KCFG_LOG_SCHEDULER        1<<1
 #define KCFG_LOG_THREADS          1<<2
 
-#define TPROP_ID          0
-#define TPROP_NAME        1
-#define TPROP_CHILD       2
-#define TPROP_STATE       3
-#define TPROP_PERMISSIONS 4
-#define TPROP_REGISTERS   5
-#define TPROP_ERRNO_PTR   6
+#define TPROP_ID             0
+#define TPROP_NAME           1
+#define TPROP_CHILD          2
+#define TPROP_STATE          3
+#define TPROP_PERMISSIONS    4
+#define TPROP_REGISTERS      5
+#define TPROP_ERRNO_PTR      6
+#define TPROP_PENDING_SIGNAL 7
+#define TPROP_SIGNAL_HANDLER 8
 
 #define TFLAG_KIND_MASK 0xFFFF
 #define THREAD_FUNC 0

@@ -166,6 +166,21 @@ bool set_thread_registers(int tid, RegisterContext regs) {
     &regs);
 }
 
+// TODO: odd that permissions can stop this??
+// I think the real issue here is that setting your
+// own properties is the same permission as setting
+// anyone's properties
+bool thread_signal(int tid) {
+  uint8_t signal = 1;
+  return DO_SYSCALL_3(set_thread_property,
+    tid, TPROP_PENDING_SIGNAL, &signal);
+}
+
+bool set_signal_handler(void (*handler)(void)) {
+  return DO_SYSCALL_3(set_thread_property,
+    -1, TPROP_SIGNAL_HANDLER, &handler);
+}
+
 // Note that callers must apply volatile to their
 // own res parameter. Since only they know the actual
 // data type and therefore its correct size.
