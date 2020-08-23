@@ -1,5 +1,6 @@
 #include "thread_state.h"
 #include "util.h"
+#include "generic_asm.h"
 // For assert's exit
 #include "user/util.h"
 #include "semihosting.h"
@@ -16,17 +17,6 @@ static size_t get_semihosting_event(int status) {
 
   return 0x20024; // ADP_Stopped_InternalError
 }
-
-#ifdef __aarch64__
-#define RCHR "x"
-#define SEMIHOSTING_CALL "hlt 0xf000"
-#elif defined __thumb__
-#define RCHR "r"
-#define SEMIHOSTING_CALL "bkpt 0xab"
-#else /* Arm */
-#define RCHR "r"
-#define SEMIHOSTING_CALL "svc 0x123456"
-#endif
 
 size_t generic_semihosting_call(size_t operation, volatile size_t* parameters) {
   size_t ret;

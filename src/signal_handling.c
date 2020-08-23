@@ -1,20 +1,10 @@
 #include <string.h>
 #include "thread.h"
+#include "generic_asm.h"
 #include "common/trace.h"
 
 extern void __signal_handler_entry(void);
 extern void __signal_handler_end(void);
-
-// TODO: generic asm header?
-#ifdef __aarch64__
-#define RCHR "x"
-#define OFFSET "16"
-#define BLR "blr"
-#else
-#define RCHR "r"
-#define OFFSET "8"
-#define BLR "blx"
-#endif
 
 __attribute__((used, naked))
 static void handler_wrapper(void) {
@@ -24,7 +14,7 @@ static void handler_wrapper(void) {
     // r0/x0 has the signal number
     "  ldr "RCHR"1, =_current_thread\n\t"
     "  ldr "RCHR"1, ["RCHR"1]\n\t"
-    "  add "RCHR"1, "RCHR"1, #"OFFSET"\n\t"
+    "  add "RCHR"1, "RCHR"1, #2*"PTR_SIZE"\n\t"
     "  ldr "RCHR"1, ["RCHR"1]\n\t"
     "  "BLR" "RCHR"1\n\t"
     "  svc %0\n\t"
