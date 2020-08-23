@@ -3,7 +3,7 @@ Thread     receiver: hello
 Thread     receiver: yielding
 Thread    signaller: resuming
 Thread    signaller: yielding
-Thread     receiver: got a signal!
+Thread     receiver: got a signal: 2
 Thread    signaller: resuming
 Thread    signaller: yielding
 Thread     receiver: resuming
@@ -11,7 +11,7 @@ Thread     receiver: hello again
 Thread     receiver: yielding
 Thread    signaller: resuming
 Thread    signaller: yielding
-Thread     receiver: got a signal again!
+Thread     receiver: got a signal again: 3
 Thread    signaller: resuming
 Thread    signaller: yielding
 Thread     receiver: resuming

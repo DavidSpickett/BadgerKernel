@@ -23,8 +23,8 @@ typedef struct {
   uint8_t* stack_ptr;
   // Not an enum directly because we need to know its size
   size_t state;
-  void (*signal_handler)(void);
-  uint8_t pending_signal;
+  void (*signal_handler)(unsigned int);
+  unsigned int pending_signal;
   int id;
   const char* name;
   // Deliberately not (void)

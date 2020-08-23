@@ -119,7 +119,7 @@ bool k_set_thread_property(int tid, size_t property,
       thread->pending_signal = *(uint8_t*)value;
       break;
     case TPROP_SIGNAL_HANDLER:
-      thread->signal_handler = *(void (**)(void))value;
+      thread->signal_handler = *(void (**)(unsigned int))value;
       break;
     default:
       assert(0);
@@ -369,14 +369,14 @@ static size_t next_possible_thread_idx(const Thread* curr) {
 
 extern void __signal_handler_entry(void);
 extern void __signal_handler_end(void);
-static void install_signal_handler(Thread* thread) {
+static void install_signal_handler(Thread* thread, unsigned int signal) {
   thread->stack_ptr -= sizeof(RegisterContext);
-
-  // sp is patched on end, so it is safe to cast to it
   RegisterContext* handler_ctx = (RegisterContext*)thread->stack_ptr;
   memset(handler_ctx, 0, sizeof(RegisterContext));
 
   handler_ctx->pc = (size_t)__signal_handler_entry;
+  // TODO: arch specific names
+  handler_ctx->r0 = signal;
   // TODO: thumb specific
   // Run in Thumb mode
 #ifdef __thumb__
@@ -433,7 +433,8 @@ void do_scheduler(void) {
 
     if (next_thread->pending_signal) {
       if (next_thread->signal_handler) {
-        install_signal_handler(next_thread);
+        install_signal_handler(next_thread,
+          next_thread->pending_signal);
       } else {
         next_thread->pending_signal = 0;
       }

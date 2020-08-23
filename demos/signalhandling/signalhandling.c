@@ -1,12 +1,12 @@
 #include "user/thread.h"
 #include "user/util.h"
 
-void signal_handler(void) {
-  log_event("got a signal!");
+void signal_handler(unsigned int signal) {
+  log_event("got a signal: %u", signal);
 }
 
-void other_signal_handler(void) {
-  log_event("got a signal again!");
+void other_signal_handler(unsigned int signal) {
+  log_event("got a signal again: %u", signal);
 }
 
 void worker() {
@@ -28,21 +28,21 @@ void setup(void) {
   int tid = add_named_thread(worker, "receiver");
 
   // TODO: signal to an init thread is ignored
-  thread_signal(tid);
+  thread_signal(tid, 1);
   yield();
 
   // First handler
-  thread_signal(tid);
+  thread_signal(tid, 2);
   yield(); // runs handler
   yield(); // runs normal thread again
 
   // Second handler
-  thread_signal(tid);
+  thread_signal(tid, 3);
   yield();
   yield();
 
   // No handler
-  thread_signal(tid);
+  thread_signal(tid, 4);
   yield();
   yield();
 }
