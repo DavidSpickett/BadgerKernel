@@ -16,11 +16,13 @@ void init_register_context(Thread* thread) {
   memset(ctx, 0, sizeof(RegisterContext));
 
   ctx->pc = (size_t)thread_start;
+
 #ifdef __thumb__
   // Must run in Thumb mode
   ctx->xpsr = (1<<24);
 #elif defined __aarch64__
-#error
+  // Run in EL0
+  ctx->spsr_el1 = 0;
 #else
   // Run in user mode
   ctx->cpsr = 0x10;
@@ -31,8 +33,11 @@ static void install_signal_handler(Thread* thread, uint32_t signal) {
 	init_register_context(thread);
   RegisterContext* handler_ctx = (RegisterContext*)thread->stack_ptr;
   handler_ctx->pc = (size_t)__signal_handler_entry;
-  // TODO: arch specific names
+#ifdef __aarch64__
+  handler_ctx->x0 = signal;
+#else
   handler_ctx->r0 = signal;
+#endif
 }
 
 static uint32_t next_signal(uint32_t pending_signals) {

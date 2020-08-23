@@ -213,6 +213,7 @@ finalise_timer:
 exception_return:
   rfeia sp! // restore CPSR and lr then eret
 
+// TODO: dedupe?
 .global __signal_handler_entry
 __signal_handler_entry:
   // R0 has the signal number

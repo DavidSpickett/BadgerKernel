@@ -242,29 +242,13 @@ actually_load_thread:
   ldr x3, [x20], #8        // x3 = _current_thread->stack_ptr
   mov sp, x3
 
-  /* check that this thread has been run at least once */
-  ldr x3, [x20]            // x3 = _current_thread->state
-  mov x4, #init
-  cmp x3, x4
-
-  mov x4, #running         // either way it'll start running
+  mov x4, #running         // start running
   str x4, [x20]            // _current_thread->state = running
 
-  /* Don't restore if it's never run before */
-  bne restore_regs
-
-  /* Fake return PC value */
-  ldr x30, =thread_start
-  msr ELR_EL1, x30
-  /* Make sure we return to EL0
-     Since the first start_threadswitch will
-     just be called from EL1 directly */
-  mov x30, #0
-  msr SPSR_EL1, x30
-  b exception_return
-
-restore_regs:
-  /* Restore all registers of the new thread */
+  /* Restore all registers of the new thread
+     (even init state threads have a blank context
+      to restore)
+  */
   ldp x29, x30, [sp], #16
   ldp x27, x28, [sp], #16
   ldp x25, x26, [sp], #16
@@ -284,7 +268,7 @@ restore_regs:
   /* x1 = restore PC */
   msr ELR_EL1, x1
 
-  /* This is FPSR/PSR */
+  /* This is FPSR/SPSR */
   ldp x0, x1, [sp], #16
   msr FPSR, x0
   msr SPSR_EL1, x1
@@ -294,3 +278,17 @@ restore_regs:
 
 exception_return:
   eret
+
+.global __signal_handler_entry
+__signal_handler_entry:
+  // X0 has the signal number
+  ldr x1, =_current_thread
+  ldr x1, [x1]
+  add x1, x1, #16 // Skip stack_ptr and state
+  ldr x1, [x1]
+  blr x1
+  svc svc_thread_switch
+.global __signal_handler_end
+__signal_handler_end:
+  // user PC will point here after svc above
+  nop

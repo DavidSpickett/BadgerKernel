@@ -237,6 +237,7 @@ generic_syscall:
 syscall_handlers:
 #include "common/syscall.h"
 
+// TODO: dedupe?
 .global __signal_handler_entry
 __signal_handler_entry:
   // R0 has the signal number
