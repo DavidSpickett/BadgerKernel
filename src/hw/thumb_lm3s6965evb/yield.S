@@ -242,7 +242,7 @@ __signal_handler_entry:
   // R0 has the signal number
   ldr r1, =_current_thread
   ldr r1, [r1]
-  add r1, r1, 8 // Skip stack_ptr and state
+  add r1, r1, #8 // Skip stack_ptr and state
   ldr r1, [r1]
   blx r1
   svc svc_thread_switch

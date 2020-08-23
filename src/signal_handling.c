@@ -19,8 +19,11 @@ void init_register_context(Thread* thread) {
 #ifdef __thumb__
   // Must run in Thumb mode
   ctx->xpsr = (1<<24);
-#else
+#elif defined __aarch64__
 #error
+#else
+  // Run in user mode
+  ctx->cpsr = 0x10;
 #endif
 }
 

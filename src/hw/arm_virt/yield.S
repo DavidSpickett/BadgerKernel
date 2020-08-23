@@ -188,24 +188,10 @@ actually_load_thread:
   ldr r10, [r10]       // r10 = _current_thread
   ldr sp, [r10], #4    // sp = current_thread->stack_ptr
 
-  /* check that this thread has been run at least once */
-  ldr r3, [r10]        // r3 = _current_thread->state
-  mov r4, #init
-  cmp r3, r4
-
-  mov r4, #running      // either way it'll start running
+  mov r4, #running      // start running
   str r4, [r10]         // _current_thread->state = running
 
-  /* Don't restore if it's never run before */
-  bne restore_regs
-
-  /* if not we need to fake the lr and CPSR being on the stack */
-  ldr r4, =thread_start // init link register
-  mov r5, #USER_MODE    // not sure of mode but flags should be 0
-  stmdb sp!, {r4,r5}
-  b exception_return    // don't restore other regs, just these two when we return
-
-restore_regs:
+  /* even an init state thread will have a blank context to restore */
   pop {r0-r12, r14}     // restore our own regs (no sp/pc)
   b exception_return
 
@@ -226,3 +212,17 @@ finalise_timer:
 
 exception_return:
   rfeia sp! // restore CPSR and lr then eret
+
+.global __signal_handler_entry
+__signal_handler_entry:
+  // R0 has the signal number
+  ldr r1, =_current_thread
+  ldr r1, [r1]
+  add r1, r1, #8 // Skip stack_ptr and state
+  ldr r1, [r1]
+  blx r1
+  svc svc_thread_switch
+.global __signal_handler_end
+__signal_handler_end:
+  // user PC will point here after svc above
+  nop
