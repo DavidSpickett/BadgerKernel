@@ -41,7 +41,17 @@ void cannot_kconfig() {
 }
 
 void cannot_tconfig() {
+  // Can't config self
   assert(!set_thread_name(-1, "won't see this!"));
+  // Can config other
+  assert(set_thread_name(0, "runner"));
+}
+
+void cannot_tconfig_other() {
+  // Can't config other
+  assert(!set_thread_name(0, "won't see this either!"));
+  // Can config self
+  assert(set_thread_name(CURRENT_THREAD, "no_tconfig_other"));
 }
 
 void cannot_mutli() {
@@ -149,6 +159,8 @@ void setup(void) {
     THREAD_FUNC | TPERM_NO_KCONFIG);
   RUN_TEST_THREAD("notconfig", cannot_tconfig,
     THREAD_FUNC | TPERM_NO_TCONFIG);
+  RUN_TEST_THREAD("notconfigother", cannot_tconfig_other,
+    THREAD_FUNC | TPERM_NO_TCONFIG_OTHER);
   RUN_TEST_THREAD("nomulti", cannot_mutli,
     THREAD_FUNC | TPERM_NO_FILE | TPERM_NO_ALLOC |
     TPERM_NO_KCONFIG);

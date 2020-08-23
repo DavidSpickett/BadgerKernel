@@ -77,10 +77,16 @@ int k_get_thread_id(void) {
 
 bool k_set_thread_property(int tid, size_t property,
                            const void* value) {
-  if (k_has_no_permission(TPERM_TCONFIG)) {
+  if (
+    ((tid == CURRENT_THREAD) &&
+      k_has_no_permission(TPERM_TCONFIG)) ||
+    ((tid != CURRENT_THREAD) &&
+      k_has_no_permission(TPERM_TCONFIG_OTHER))
+  ) {
     _current_thread->err_no = E_PERM;
     return false;
   }
+
   if (tid == CURRENT_THREAD) {
     tid = k_get_thread_id();
   }
