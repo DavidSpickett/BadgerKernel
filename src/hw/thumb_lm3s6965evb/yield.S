@@ -192,29 +192,10 @@ actually_load_thread:
 
   /* no need to restore PC, exc return will do that */
 
-  /* check that this thread has been run at least once */
-  add r6, #4
-  ldr r3, [r6]          // r3 = _current_thread->state
-  mov r4, #init
-  cmp r3, r4
-
-  mov r4, #running      // either way it'll start running
+  mov r4, #running      // start running
   str r4, [r6]          // _current_thread->state = running
 
-  /* Don't restore if it's never run before */
-  bne restore_regs
-
-  /* If it's never been scheduled we need to fake PC and EPSR
-     values being on the stack. (lr doesn't matter) */
-  sub sp, #(8*4)       // size of the expected return frame
-  ldr r4, =thread_start
-  str r4, [sp, #(6*4)] // store intial pc
-  mov r1, #1           // Set Thumb bit in EPSR
-  lsl r1, #24
-  str r1, [sp, #(7*4)] // store intial EPSR
-  b exception_return
-
-restore_regs:
+  // Even init threads have some saved context setup by init_thread
   pop {r4-r11}
 
 exception_return:

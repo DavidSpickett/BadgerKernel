@@ -1,27 +1,21 @@
 Thread    signaller: yielding
-Thread     receiver: hello
+Thread     receiver: got signal 1
+Thread    signaller: resuming
+Thread    signaller: yielding
+Thread     receiver: changing handler...
 Thread     receiver: yielding
 Thread    signaller: resuming
 Thread    signaller: yielding
-Thread     receiver: got a signal: 2
+Thread     receiver: got a signal again, it was 2
 Thread    signaller: resuming
 Thread    signaller: yielding
-Thread     receiver: resuming
-Thread     receiver: hello again
-Thread     receiver: yielding
-Thread    signaller: resuming
-Thread    signaller: yielding
-Thread     receiver: got a signal again: 3
+Thread     receiver: got a signal again, it was 3
 Thread    signaller: resuming
 Thread    signaller: yielding
 Thread     receiver: resuming
 Thread     receiver: removing handler
 Thread     receiver: yielding
 Thread    signaller: resuming
-Thread    signaller: yielding
+Thread    signaller: exiting
 Thread     receiver: resuming
 Thread     receiver: exiting
-Thread    signaller: resuming
-Thread    signaller: yielding
-Thread    signaller: resuming
-Thread    signaller: exiting

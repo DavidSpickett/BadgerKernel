@@ -115,11 +115,15 @@ bool k_set_thread_property(int tid, size_t property,
       memcpy(thread->stack_ptr, ctx, sizeof(RegisterContext));
       break;
     }
-    case TPROP_PENDING_SIGNAL:
-      thread->pending_signal = *(uint8_t*)value;
+    case TPROP_PENDING_SIGNALS: {
+      uint32_t signal = *(uint32_t*)value;
+      if (signal) {
+        thread->pending_signals |=  1 << (signal-1);
+      }
       break;
+    }
     case TPROP_SIGNAL_HANDLER:
-      thread->signal_handler = *(void (**)(unsigned int))value;
+      thread->signal_handler = *(void (**)(uint32_t))value;
       break;
     default:
       assert(0);
@@ -190,7 +194,7 @@ void init_thread(Thread* thread, int tid, const char* name,
   thread->work = do_work;
   thread->signal_handler = NULL;
   thread->state = init;
-  thread->pending_signal = 0;
+  thread->pending_signals = 0;
 
   thread->id = tid;
   thread->name = name;
@@ -218,6 +222,9 @@ void init_thread(Thread* thread, int tid, const char* name,
   size_t stack_ptr = (size_t)(&(thread->stack[THREAD_STACK_SIZE]));
   // Mask to align to 16 bytes for AArch64
   thread->stack_ptr = (uint8_t*)(stack_ptr & ~0xF);
+
+  // Setup the initial restore frame
+  init_register_context(thread);
 }
 
 extern void setup(void);

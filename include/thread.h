@@ -23,8 +23,8 @@ typedef struct {
   uint8_t* stack_ptr;
   // Not an enum directly because we need to know its size
   size_t state;
-  void (*signal_handler)(unsigned int);
-  unsigned int pending_signal;
+  void (*signal_handler)(uint32_t);
+  uint32_t pending_signals;
   int id;
   const char* name;
   // Deliberately not (void)
@@ -85,7 +85,8 @@ void k_invalid_syscall(size_t arg1, size_t arg2,
 
 bool k_has_no_permission(uint16_t permission);
 
-void install_signal_handler(Thread* thread, unsigned int signal);
 void check_signals(Thread* thread);
+void thread_start(void);
+void init_register_context(Thread* thread);
 
 #endif /* ifdef THREAD_H */

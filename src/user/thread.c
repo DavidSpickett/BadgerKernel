@@ -170,13 +170,13 @@ bool set_thread_registers(int tid, RegisterContext regs) {
 // I think the real issue here is that setting your
 // own properties is the same permission as setting
 // anyone's properties
-bool thread_signal(int tid, unsigned int signal) {
-  return DO_SYSCALL_3(set_thread_property,
-    tid, TPROP_PENDING_SIGNAL, &signal);
+bool thread_signal(int tid, uint32_t signal) {
+  return set_thread_property(
+    tid, TPROP_PENDING_SIGNALS, &signal);
 }
 
-bool set_signal_handler(void (*handler)(unsigned int)) {
-  return DO_SYSCALL_3(set_thread_property,
+bool set_signal_handler(void (*handler)(uint32_t)) {
+  return set_thread_property(
     -1, TPROP_SIGNAL_HANDLER, &handler);
 }
 
