@@ -3,7 +3,7 @@
 #include "util.h"
 #include "common/trace.h"
 
-void work_finished();
+extern void work_finished(void);
 
 void tracee() {
   log_event("Working...");
@@ -14,17 +14,12 @@ void tracee() {
 // Note: the original plan was to write this svc in manually
 // However this code will be in ROM so that couldn't be done.
 
-// Naked is ignored on AArch64 so we're just going to have
-// to trust that the svc is the 1st instruction
-#ifndef __aarch64__
-__attribute__((naked))
-#endif
-// If this is inlined we'll never hit the original fn
-__attribute__((noinline))
-void work_finished(void) {
-  // Need naked so the address of this instr is the same
-  // as the address of the function
+__attribute__((naked, used))
+void __work_finished(void) {
+  // By defining work_finished in assembly we can be sure of it's address
   asm volatile(
+    ".global work_finished\n\t"
+    "work_finished:\n\t"
     "svc %0\n\t"
     // If the tracer doesn't redirect us we'll loop forever
     "b tracee\n\t"
