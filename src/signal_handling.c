@@ -5,6 +5,35 @@
 extern void __signal_handler_entry(void);
 extern void __signal_handler_end(void);
 
+// TODO: generic asm header?
+#ifdef __aarch64__
+#define RCHR "x"
+#define OFFSET "16"
+#define BLR "blr"
+#else
+#define RCHR "r"
+#define OFFSET "8"
+#define BLR "blx"
+#endif
+
+__attribute__((used, naked))
+static void handler_wrapper(void) {
+  asm volatile (
+    ".global __signal_handler_entry\n\t"
+    "__signal_handler_entry:\n\t"
+    // r0/x0 has the signal number
+    "  ldr "RCHR"1, =_current_thread\n\t"
+    "  ldr "RCHR"1, ["RCHR"1]\n\t"
+    "  add "RCHR"1, "RCHR"1, #"OFFSET"\n\t"
+    "  ldr "RCHR"1, ["RCHR"1]\n\t"
+    "  "BLR" "RCHR"1\n\t"
+    "  svc %0\n\t"
+    ".global __signal_handler_end\n\t"
+    "__signal_handler_end:\n\t"
+    "  nop\n\t"
+    :: "i"(svc_thread_switch));
+}
+
 void init_register_context(Thread* thread) {
   // This sets up the initial entry state of a thread
   // which will be restored on first run.

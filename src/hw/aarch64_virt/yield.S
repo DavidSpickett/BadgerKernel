@@ -278,17 +278,3 @@ actually_load_thread:
 
 exception_return:
   eret
-
-.global __signal_handler_entry
-__signal_handler_entry:
-  // X0 has the signal number
-  ldr x1, =_current_thread
-  ldr x1, [x1]
-  add x1, x1, #16 // Skip stack_ptr and state
-  ldr x1, [x1]
-  blr x1
-  svc svc_thread_switch
-.global __signal_handler_end
-__signal_handler_end:
-  // user PC will point here after svc above
-  nop

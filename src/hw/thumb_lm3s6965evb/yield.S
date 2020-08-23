@@ -236,18 +236,3 @@ generic_syscall:
 
 syscall_handlers:
 #include "common/syscall.h"
-
-// TODO: dedupe?
-.global __signal_handler_entry
-__signal_handler_entry:
-  // R0 has the signal number
-  ldr r1, =_current_thread
-  ldr r1, [r1]
-  add r1, r1, #8 // Skip stack_ptr and state
-  ldr r1, [r1]
-  blx r1
-  svc svc_thread_switch
-.global __signal_handler_end
-__signal_handler_end:
-  // user PC will point here after svc above
-  nop
