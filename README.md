@@ -51,6 +51,7 @@ make
 | parentchild                       | Setting child threads to set the order they run in, relative to a parent thread.   |
 | permissions                       | Setting syscall access permissions per thread. (includes errno usage)              |
 | trace                             | Redirecting another thread by writing to its PC.                                   |
+| signalhandling                    | Installing and invoking signal handlers.                                           |
 
 Each demo has 'run_<demo>', 'debug_<demo>' and 'test_<demo>' make targets. To test all demos use lit. (best done in a virtualenv)
 
