@@ -107,10 +107,8 @@ bool k_set_thread_property(int tid, size_t property,
       thread->permissions &= ~(*(uint16_t*)value);
       break;
     case TPROP_REGISTERS: {
-      // TODO: calling this on an "init" thread is invalid
-      if (thread->state == init) {
-        return false;
-      }
+      // Note that setting registers on an init thread doesn't
+      // serve much purpose but it won't break anything.
       RegisterContext* ctx = (RegisterContext*)value;
       memcpy(thread->stack_ptr, ctx, sizeof(RegisterContext));
       break;
@@ -166,11 +164,6 @@ bool k_get_thread_property(int tid, size_t property,
       *(uint16_t*)res = thread->permissions;
       break;
     case TPROP_REGISTERS: {
-      // TODO: can't get regs for an init thread
-      if (thread->state == init) {
-        return false;
-      }
-      // TODO: trace permission?
       RegisterContext* ctx = (RegisterContext*)res;
       *ctx = *(RegisterContext*)thread->stack_ptr;
       break;

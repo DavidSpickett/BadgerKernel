@@ -40,13 +40,13 @@ void tracer() {
   int tid = add_named_thread(tracee, "tracee");
   set_child(tid);
 
-  // Can't set/get regs for an init state
+  // // Can't set/get regs for an init state
   RegisterContext ctx;
-  assert(!get_thread_registers(tid, &ctx));
-  assert(!set_thread_registers(tid, ctx));
+  // assert(!get_thread_registers(tid, &ctx));
+  // assert(!set_thread_registers(tid, ctx));
 
-  // Get out of init state
-  yield();
+  // // Get out of init state
+  // yield();
 
   size_t target_pc = (size_t)work_finished;
 #ifdef __thumb__
@@ -71,7 +71,6 @@ void tracer() {
   log_event("Redirected tracee");
   yield();
 }
-
 
 void setup(void) {
   add_named_thread(tracer, "tracer");
