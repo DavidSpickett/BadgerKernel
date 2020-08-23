@@ -77,14 +77,11 @@ typedef struct {
   size_t pc;
   size_t cpsr;
 #endif
-  /* patched in by the kernel */
-  size_t sp;
+  /* stack pointer is in thread struct
+     We don't provide it here because modifying it
+     would prevent the thread from resuming correctly.
+  */
 } __attribute__((packed)) RegisterContext;
-
-// To tell the kernel that everything but sp needs
-// to be written back to the thread's stack.
-// (since sp is part of the Thread struct itself)
-#define STACK_CTX_SIZE (sizeof(RegisterContext)-sizeof(size_t))
 
 void print_register_context(RegisterContext ctx);
 

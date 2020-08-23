@@ -112,8 +112,7 @@ bool k_set_thread_property(int tid, size_t property,
         return false;
       }
       RegisterContext* ctx = (RegisterContext*)value;
-      memcpy(thread->stack_ptr, ctx, STACK_CTX_SIZE);
-      /* Ignoring writes to sp */
+      memcpy(thread->stack_ptr, ctx, sizeof(RegisterContext));
       break;
     }
     case TPROP_PENDING_SIGNAL:
@@ -170,8 +169,6 @@ bool k_get_thread_property(int tid, size_t property,
       // TODO: trace permission?
       RegisterContext* ctx = (RegisterContext*)res;
       *ctx = *(RegisterContext*)thread->stack_ptr;
-      // Added manually since it doesn't live on stack
-      ctx->sp = (size_t)thread->stack_ptr;
       break;
     }
     case TPROP_ERRNO_PTR:
@@ -373,8 +370,7 @@ static size_t next_possible_thread_idx(const Thread* curr) {
 extern void __signal_handler_entry(void);
 extern void __signal_handler_end(void);
 static void install_signal_handler(Thread* thread) {
-  // Note: NOT sizeof(RegisterContext)!
-  thread->stack_ptr -= STACK_CTX_SIZE;
+  thread->stack_ptr -= sizeof(RegisterContext);
 
   // sp is patched on end, so it is safe to cast to it
   RegisterContext* handler_ctx = (RegisterContext*)thread->stack_ptr;
@@ -383,7 +379,9 @@ static void install_signal_handler(Thread* thread) {
   handler_ctx->pc = (size_t)__signal_handler_entry;
   // TODO: thumb specific
   // Run in Thumb mode
+#ifdef __thumb__
   handler_ctx->xpsr = (1<<24);
+#endif
 }
 
 void do_scheduler(void) {
@@ -430,8 +428,7 @@ void do_scheduler(void) {
       // Finish handling
       next_thread->pending_signal = 0;
       // Remove signal handler context
-      // Note: NOT sizeof(RegisterContext)!
-      next_thread->stack_ptr += STACK_CTX_SIZE;
+      next_thread->stack_ptr += sizeof(RegisterContext);
     }
 
     if (next_thread->pending_signal) {
