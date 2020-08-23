@@ -85,4 +85,7 @@ void k_invalid_syscall(size_t arg1, size_t arg2,
 
 bool k_has_no_permission(uint16_t permission);
 
+void install_signal_handler(Thread* thread, unsigned int signal);
+void check_signals(Thread* thread);
+
 #endif /* ifdef THREAD_H */

@@ -367,23 +367,6 @@ static size_t next_possible_thread_idx(const Thread* curr) {
   return 0;
 }
 
-extern void __signal_handler_entry(void);
-extern void __signal_handler_end(void);
-static void install_signal_handler(Thread* thread, unsigned int signal) {
-  thread->stack_ptr -= sizeof(RegisterContext);
-  RegisterContext* handler_ctx = (RegisterContext*)thread->stack_ptr;
-  memset(handler_ctx, 0, sizeof(RegisterContext));
-
-  handler_ctx->pc = (size_t)__signal_handler_entry;
-  // TODO: arch specific names
-  handler_ctx->r0 = signal;
-  // TODO: thumb specific
-  // Run in Thumb mode
-#ifdef __thumb__
-  handler_ctx->xpsr = (1<<24);
-#endif
-}
-
 void do_scheduler(void) {
   // NULL next_thread means choose one for us
   // otherwise just do required housekeeping to switch
@@ -419,26 +402,7 @@ void do_scheduler(void) {
     swap_paged_threads(_current_thread, next_thread);
 #endif
 
-    const RegisterContext* next_ctx =
-      (const RegisterContext*)next_thread->stack_ptr;
-
-    // Stored PC doesn't include Thumb bit
-    if (next_ctx->pc == ((size_t)__signal_handler_end & ~1)) {
-
-      // Finish handling
-      next_thread->pending_signal = 0;
-      // Remove signal handler context
-      next_thread->stack_ptr += sizeof(RegisterContext);
-    }
-
-    if (next_thread->pending_signal) {
-      if (next_thread->signal_handler) {
-        install_signal_handler(next_thread,
-          next_thread->pending_signal);
-      } else {
-        next_thread->pending_signal = 0;
-      }
-    }
+    check_signals(next_thread);
 
     return; //!OCLINT
   }
