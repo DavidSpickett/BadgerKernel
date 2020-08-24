@@ -52,22 +52,27 @@ void print_register_context(RegisterContext ctx) {
 
 typedef struct {
   size_t fp;
+  size_t ip;
+  size_t lr;
+  size_t pc;
 } FrameInfo;
 
 void print_backtrace(RegisterContext ctx) {
-  // In current frame fp points directly to fp stored on stack.
-  // Subsequent fp values read *from* the stack actually point
-  // to just *after the stored fp value.
+  // Assuming -mapcs-frame is on
+  FrameInfo info;
+  info.pc = ctx.pc;
+  // TODO: first lr can be bogus
+  info.lr = ctx.lr;
+  info.ip = ctx.r12;
+  info.fp = ctx.r11;
 
-  // 0 is current frame
-  printf("0: fp - 0x%08x (current)\n", ctx.r11, ctx.pc);
-  // The rest from walking the frame pointers
+  printf("0 - pc: 0x%08x lr: 0x%08x ip: 0x%08x fp: 0x%08x\n",
+      info.pc, info.lr, info.ip, info.fp);
   int depth = 1;
-
-  uint32_t fp = ctx.r11;
-  while (fp) {
-    fp = *(uint32_t*)(fp-4);
-    printf("%i: fp - 0x%08x\n", depth, fp);
+  while (info.fp) {
+    info = *(FrameInfo*)(info.fp-12);
+    printf("%i - pc: 0x%08x lr: 0x%08x ip: 0x%08x fp: 0x%08x\n",
+      depth, info.pc, info.lr, info.ip, info.fp);
     depth++;
   }
 }

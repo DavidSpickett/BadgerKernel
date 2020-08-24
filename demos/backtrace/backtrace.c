@@ -22,7 +22,7 @@ void bar(void) {
   int j = 0xdeadbeef; (void)j;
   //log_event("hey!");
   //yield();
-  //do_nothing(); // corrupt lr register?
+  do_nothing(); // corrupt lr register?
  asm volatile("svc %0" : : "i"(svc_thread_switch) : "memory");
   // Would backtrace here but you can't read your own
   // regs as they aren't fully saved when you just
