@@ -84,5 +84,6 @@ typedef struct {
 } __attribute__((packed)) RegisterContext;
 
 void print_register_context(RegisterContext ctx);
+void print_backtrace(RegisterContext ctx);
 
 #endif /* ifdef COMMON_TRACE_H */

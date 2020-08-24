@@ -49,3 +49,25 @@ void print_register_context(RegisterContext ctx) {
   ctx.r12, ctx.lr, ctx.pc,  ctx.cpsr);
 }
 #endif
+
+typedef struct {
+  size_t fp;
+} FrameInfo;
+
+void print_backtrace(RegisterContext ctx) {
+  // In current frame fp points directly to fp stored on stack.
+  // Subsequent fp values read *from* the stack actually point
+  // to just *after the stored fp value.
+
+  // 0 is current frame
+  printf("0: fp - 0x%08x (current)\n", ctx.r11, ctx.pc);
+  // The rest from walking the frame pointers
+  int depth = 1;
+
+  uint32_t fp = ctx.r11;
+  while (fp) {
+    fp = *(uint32_t*)(fp-4);
+    printf("%i: fp - 0x%08x\n", depth, fp);
+    depth++;
+  }
+}
