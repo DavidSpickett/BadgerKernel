@@ -54,13 +54,15 @@ void backtracer() {
 
   RegisterContext ctx;
   get_thread_registers(0, &ctx);
-  // Backtrace from branch function
+  log_event("backtrace from branch function");
+  // Technically it's from generic_syscall which is a leaf
+  // The point is the user thread was in a branch function
   print_backtrace(ctx, backtrace_symbols, num_symbols);
 
   yield();
 
   get_thread_registers(0, &ctx);
-  // Backtrace from leaf function
+  log_event("backtrace from leaf function");
   print_backtrace(ctx, backtrace_symbols, num_symbols);
 }
 

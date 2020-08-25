@@ -50,12 +50,13 @@ void print_register_context(RegisterContext ctx) {
 }
 #endif
 
-/* All of this backtrace stuff is assuming that
-   -mapcs-frame is used. Even then only on Arm.
-   Thumb appears to have no standard.
-   AArch64 works but will show a different number
-   of frames due to some functions not modifying
-   the frame pointer. */
+/* Backtraces work conistently for Arm with
+   -mapcs-frame and mostly for AArch64.
+   (give or take one frame because some functions
+    don't modify the frame pointer)
+   Thumb doesn't work at all, there doesn't
+   seem to be a pattern to how the fp is handled.
+*/
 
 typedef struct {
 #ifdef __aarch64__
