@@ -51,13 +51,22 @@ void print_register_context(RegisterContext ctx) {
 #endif
 
 /* All of this backtrace stuff is assuming that
-   -mapcs-frame is used. */
+   -mapcs-frame is used. Even then only on Arm.
+   Thumb appears to have no standard.
+   AArch64 works but will show a different number
+   of frames due to some functions not modifying
+   the frame pointer. */
 
 typedef struct {
+#ifdef __aarch64__
+  size_t fp;
+  size_t lr;
+#else
   size_t fp;
   size_t ip;
   size_t lr;
   size_t pc;
+#endif
 } FrameInfo;
 
 static const char* find_symbol(const Symbol* symbols,
@@ -83,19 +92,29 @@ void print_backtrace(RegisterContext ctx,
                      const Symbol* symbols,
                      size_t num_symbols) {
   FrameInfo info;
+#ifdef __aarch64__
+  info.fp = ctx.x29;
+  info.lr = ctx.x30;
+#else
   info.pc = ctx.pc;
   info.lr = ctx.lr;
   info.ip = ctx.r12;
   info.fp = ctx.r11;
+#endif
 
-  printf("0: 0x%08x (%s)\n",
-      info.pc,
-      find_symbol(symbols, num_symbols, (void*)info.pc));
+  printf("0: 0x%08x (%s)\n", ctx.pc,
+      find_symbol(symbols, num_symbols, (void*)ctx.pc));
+
   int depth = 1;
   while (info.fp) {
+#ifdef __aarch64__
+    // AArch64 points to stored fp
+    info = *(FrameInfo*)(info.fp);
+#else
+    // Arm points to some way into the frame info
     info = *(FrameInfo*)(info.fp-12);
-    printf("%i: 0x%08x (%s)\n",
-      depth, info.lr,
+#endif
+    printf("%i: 0x%08x (%s)\n", depth, info.lr,
       find_symbol(symbols, num_symbols, (void*)info.lr));
     depth++;
   }
