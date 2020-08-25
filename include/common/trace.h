@@ -84,6 +84,14 @@ typedef struct {
 } __attribute__((packed)) RegisterContext;
 
 void print_register_context(RegisterContext ctx);
-void print_backtrace(RegisterContext ctx);
+
+typedef struct {
+  const char* name;
+  void* start;
+  void* end;
+} Symbol;
+
+void print_backtrace(RegisterContext ctx,
+  const Symbol* symbols, size_t num_symbols);
 
 #endif /* ifdef COMMON_TRACE_H */

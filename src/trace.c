@@ -50,6 +50,9 @@ void print_register_context(RegisterContext ctx) {
 }
 #endif
 
+/* All of this backtrace stuff is assuming that
+   -mapcs-frame is used. */
+
 typedef struct {
   size_t fp;
   size_t ip;
@@ -57,22 +60,43 @@ typedef struct {
   size_t pc;
 } FrameInfo;
 
-void print_backtrace(RegisterContext ctx) {
-  // Assuming -mapcs-frame is on
+static const char* find_symbol(const Symbol* symbols,
+                               size_t num_symbols,
+                               void* address) {
+  if (address == 0) {
+    // All threads start with lr zeroed
+    return "<init>";
+  }
+
+  for (size_t idx=0; idx<num_symbols; ++idx) {
+    if (
+      (address >= symbols[idx].start) &&
+      (address <  symbols[idx].end)
+    ) {
+      return symbols[idx].name;
+    }
+  }
+  return "???";
+}
+
+void print_backtrace(RegisterContext ctx,
+                     const Symbol* symbols,
+                     size_t num_symbols) {
   FrameInfo info;
   info.pc = ctx.pc;
-  // TODO: first lr can be bogus
   info.lr = ctx.lr;
   info.ip = ctx.r12;
   info.fp = ctx.r11;
 
-  printf("0 - pc: 0x%08x lr: 0x%08x ip: 0x%08x fp: 0x%08x\n",
-      info.pc, info.lr, info.ip, info.fp);
+  printf("0: 0x%08x (%s)\n",
+      info.pc,
+      find_symbol(symbols, num_symbols, (void*)info.pc));
   int depth = 1;
   while (info.fp) {
     info = *(FrameInfo*)(info.fp-12);
-    printf("%i - pc: 0x%08x lr: 0x%08x ip: 0x%08x fp: 0x%08x\n",
-      depth, info.pc, info.lr, info.ip, info.fp);
+    printf("%i: 0x%08x (%s)\n",
+      depth, info.lr,
+      find_symbol(symbols, num_symbols, (void*)info.lr));
     depth++;
   }
 }

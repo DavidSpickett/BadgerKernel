@@ -3,47 +3,89 @@
 #include "util.h"
 #include "common/trace.h"
 
-void other() {
-  RegisterContext ctx;
-  assert(get_thread_registers(0, &ctx));
-  print_register_context(ctx);
-  print_backtrace(ctx);
-  exit(0);
-}
+// Hacky way to get function range without
+// debug info.
+// Add nop before label so that any PC will be
+// fn >= pc < __end_fn
+#define END_SYMBOL(NAME) \
+  asm volatile ( \
+    "nop\n\t" \
+    ".global __end_"NAME"\n\t" \
+    "__end_"NAME":\n\t" \
+  )
 
-void do_more_nothing(void) {
-}
-void do_nothing(void) {
-  do_more_nothing();
-}
+void branch(void);
+void setup(void);
+void leaf(void);
 
-void bar(void) {
-  int i = 0xdeadbeef; (void)i;
-  int j = 0xdeadbeef; (void)j;
-  //log_event("hey!");
-  //yield();
-  do_nothing(); // corrupt lr register?
- asm volatile("svc %0" : : "i"(svc_thread_switch) : "memory");
-  // Would backtrace here but you can't read your own
-  // regs as they aren't fully saved when you just
-  // syscall.
+void ccc(void) {
+  branch();
+  END_SYMBOL("ccc");
 }
-void zzz(void) {
-  bar();
-}
-void baz(void) {
+void bbb(void) {
   // If you get your fp offset wrong these show up
-  int i = 0xdeadbeef;
-  int j = 0xcafef00d;
-  (void)i;
-  (void)j;
-  zzz();
+  int i = 0xdeadbeef; (void)i;
+  int j = 0xcafef00d; (void)j;
+  ccc();
+  END_SYMBOL("bbb");
 }
-void foo(void) {
-  baz();
+void aaa(void) {
+  bbb();
+  END_SYMBOL("aaa");
+}
+
+extern void* __end_leaf;
+extern void* __end_branch;
+extern void* __end_ccc;
+extern void* __end_bbb;
+extern void* __end_aaa;
+extern void* __end_setup;
+void backtracer() {
+  const Symbol backtrace_symbols[] = {
+    {"leaf",   leaf,   &__end_leaf},
+    {"branch", branch, &__end_branch},
+    {"ccc",    ccc,    &__end_ccc},
+    {"bbb",    bbb,    &__end_bbb},
+    {"aaa",    aaa,    &__end_aaa},
+    {"setup",  setup,  &__end_setup},
+  };
+  const size_t num_symbols =
+    sizeof(backtrace_symbols)/sizeof(Symbol);
+
+  RegisterContext ctx;
+  get_thread_registers(0, &ctx);
+  // Backtrace from branch function
+  print_backtrace(ctx, backtrace_symbols, num_symbols);
+
+  yield();
+
+  get_thread_registers(0, &ctx);
+  // Backtrace from leaf function
+  print_backtrace(ctx, backtrace_symbols, num_symbols);
+}
+
+void leaf(void) {
+  // Use direct yield here so that it remains a leaf function
+  asm volatile("svc %0" : : "i"(svc_thread_switch) : "memory");
+  END_SYMBOL("leaf");
+}
+
+void do_nothing(void) {}
+void branch(void) {
+  // Can't rely on lr during a function
+  do_nothing();
+  yield();
+
+  leaf();
+
+  // TODO: Can't backtrace yourself because thread
+  // registers aren't fully saved on syscalls
+  END_SYMBOL("branch");
 }
 
 void setup(void) {
-  assert(add_thread_from_worker(other) != -1);
-  foo();
+  set_thread_name(-1, "tracee");
+  add_named_thread(backtracer, "backtracer");
+  aaa();
+  END_SYMBOL("setup");
 }
