@@ -48,7 +48,6 @@ message(STATUS "OPT_LEVEL is -O${OPT_LEVEL}")
 message(STATUS "SANITIZERS are ${SANITIZERS}")
 message(STATUS "LTO is ${LTO}")
 message(STATUS "COVERAGE is ${COVERAGE}")
-message(STATUS "COMPILER is ${COMPILER}")
 message(STATUS "STACK_SIZE is ${STACK_SIZE}KB")
 
 if(CCACHE)

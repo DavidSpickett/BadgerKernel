@@ -5,7 +5,6 @@ parameters:
   opt_level: []
   sanitizers: []
   lto: []
-  compiler: "gcc"
 
 jobs:
 - ${{ each build_platform in parameters.build_platform }}:
@@ -52,7 +51,7 @@ jobs:
                 rm -f CMakeCache.txt
                 export CCACHE_DIR=$(pwd)/.ccache
                 ccache -z
-                cmake . -DBUILD_PLATFORM=${{build_platform}} -DOPT_LEVEL=${{opt_level}} -DSANITIZERS=${{sanitizers}} -DLTO=${{lto}} -DCOMPILER=${{parameters.compiler}}
+                cmake . -DBUILD_PLATFORM=${{build_platform}} -DOPT_LEVEL=${{opt_level}} -DSANITIZERS=${{sanitizers}} -DLTO=${{lto}}
                 make clean
                 make -j2 make_demos
                 ccache -s
