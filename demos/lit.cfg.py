@@ -43,6 +43,10 @@ config.excludes.add('shell')
 # lower() because Azure config is case sensitive but local use may not be
 if platform.lower() == 'aarch64':
   config.excludes.add('threadlocalstorage')
+if not ( \
+    (platform.lower() == 'arm') and \
+    (opt_level == '0')):
+  config.excludes.add('backtrace')
 if lto == 'ON':
   config.excludes.add('loadbinary')
   config.excludes.add('loadbinaries')
