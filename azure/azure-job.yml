@@ -18,13 +18,8 @@ jobs:
 
       - script: |
           sudo apt-get update
-          sudo apt-get install -y python3-pip ccache
-        displayName: apt-get-py3pip-ccache
-
-      - ${{ if in(build_platform, 'ARM', 'THUMB', 'AARCH64') }}:
-        - script: |
-            sudo apt-get install -y qemu-system-arm
-          displayName: apt-get-qemu
+          sudo apt-get install -y python3-pip ccache expect qemu-system-arm
+        displayName: apt-installs
 
       - ${{ if in(build_platform, 'ARM', 'THUMB') }}:
         - script: sudo apt-get install -y gcc-arm-none-eabi libnewlib-arm-none-eabi

@@ -1,0 +1,33 @@
+#!/usr/bin/expect
+
+spawn cat backtrace_got.log
+
+expect "Thread       tracee: yielding"
+expect "Thread   backtracer: backtrace from branch function"
+# generic_syscall
+expect -re {0: 0x[0-9,a-f,A-F]{8} \(\?\?\?\)}
+# yield
+expect -re {1: 0x[0-9,a-f,A-F]{8} \(\?\?\?\)}
+expect -re {2: 0x[0-9,a-f,A-F]{8} \(branch\)}
+expect -re {3: 0x[0-9,a-f,A-F]{8} \(ccc\)}
+expect -re {4: 0x[0-9,a-f,A-F]{8} \(bbb\)}
+expect -re {5: 0x[0-9,a-f,A-F]{8} \(aaa\)}
+expect -re {6: 0x[0-9,a-f,A-F]{8} \(setup\)}
+# thread_start
+expect -re {7: 0x[0-9,a-f,A-F]{8} \(\?\?\?\)}
+expect -re {8: 0x[0-9,a-f,A-F]{8} \(<init>\)}
+expect "Thread   backtracer: yielding"
+expect "Thread       tracee: resuming"
+expect "Thread   backtracer: resuming"
+expect "Thread   backtracer: backtrace from leaf function"
+expect -re {0: 0x[0-9,a-f,A-F]{8} \(leaf\)}
+expect -re {1: 0x[0-9,a-f,A-F]{8} \(branch\)}
+expect -re {2: 0x[0-9,a-f,A-F]{8} \(ccc\)}
+expect -re {3: 0x[0-9,a-f,A-F]{8} \(bbb\)}
+expect -re {4: 0x[0-9,a-f,A-F]{8} \(aaa\)}
+expect -re {5: 0x[0-9,a-f,A-F]{8} \(setup\)}
+# thread_start
+expect -re {6: 0x[0-9,a-f,A-F]{8} \(\?\?\?\)}
+expect -re {7: 0x[0-9,a-f,A-F]{8} \(<init>\)}
+expect "Thread   backtracer: exiting"
+expect "Thread       tracee: exiting"
