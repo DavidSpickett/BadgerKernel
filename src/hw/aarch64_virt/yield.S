@@ -87,6 +87,7 @@ check_svc:
   mrs x0, ESR_EL1    // Reload then check svc code
   mov x1, #0xFFFF    // mask to get code
   and x0, x0, x1
+
   CHECK_SVC svc_thread_switch, check_stack_extent
   CHECK_SVC svc_enable_timer, enable_timer
   CHECK_SVC svc_disable_timer, disable_timer
