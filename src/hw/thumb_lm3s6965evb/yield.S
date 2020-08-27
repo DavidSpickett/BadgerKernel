@@ -18,9 +18,9 @@
   ldr r7, =next_thread
 .endm
 
-.global start_thread_switch
+.global load_first_thread
 .thumb_func
-start_thread_switch:
+load_first_thread:
   /* Unable to exception return to thread mode after a reset,
      no matter what EXC_RETURN is. *shrug*
      Second best option is to load up first thread manually. */

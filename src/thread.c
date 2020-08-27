@@ -227,7 +227,7 @@ void init_thread(Thread* thread, int tid, const char* name,
 }
 
 extern void setup(void);
-extern void start_thread_switch(void);
+extern void load_first_thread(void);
 // TODO: collect all these forward declarations
 static int k_add_named_thread_with_args(void (*worker)(), const char* name,
                                  const ThreadArgs* args, uint16_t remove_permissions);
@@ -261,7 +261,7 @@ __attribute__((noreturn)) void entry(void) {
       &empty_args, 0);
   }
 
-  start_thread_switch(); // Not thread_switch as we're in kernel mode
+  load_first_thread();
 
   __builtin_unreachable();
 }

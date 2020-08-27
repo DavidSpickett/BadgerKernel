@@ -75,7 +75,7 @@ handle_timer:
   ldr x1, =next_thread
   str x0, [x1] // next_thread = NULL
 
-  b start_thread_switch
+  b check_stack_extent
 
 .global handle_svc
 handle_svc:
@@ -92,7 +92,7 @@ check_svc:
   mrs x0, ESR_EL1    // Reload then check svc code
   mov x1, #0xFFFF    // mask to get code
   and x0, x0, x1
-  CHECK_SVC svc_thread_switch, start_thread_switch
+  CHECK_SVC svc_thread_switch, check_stack_extent
   CHECK_SVC svc_enable_timer, enable_timer
   CHECK_SVC svc_disable_timer, disable_timer
   CHECK_SVC svc_syscall, generic_syscall
@@ -123,7 +123,7 @@ generic_syscall:
   POP_KERNEL_TEMPS
   mov x0, x20 // Patch in result for eventual resume
   SAVE_KERNEL_TEMPS // Will get unstacked again later
-  b start_thread_switch
+  b check_stack_extent
 
 syscall_ret:
   POP_KERNEL_TEMPS
@@ -150,17 +150,11 @@ finalise_timer:
   POP_KERNEL_TEMPS
   eret
 
-.global start_thread_switch
-start_thread_switch:
-  /* If no thread has run before then we have nothing to restore */
-  ldr x0, =_current_thread // x0 = &_current_thread
-  ldr x0, [x0]             // x0 = _current_thread
-  mov x1, #0               // NULL means we just started up
-  cmp x0, x1
-  bne check_stack_extent   // If current is valid, save its context
-  // Otherwise we have come from/are in kernel mode loading the very first thread
+.global load_first_thread
+load_first_thread:
+  // Kernel calls this so no current thread to save
   CURRENT_IN_X20_NEXT_IN_X21
-  b load_next_thread       // Otherwise skip to loading the next thread
+  b load_next_thread
 
 check_stack_extent:
   ldr x0, =thread_stack_offset // x0 = &thread_stack_offset

@@ -63,7 +63,7 @@ handle_timer:
   ldr r1, =next_thread // r1 = &next_thread
   str r0, [r1]         // next_thread = NULL
 
-  b start_thread_switch
+  b check_stack_extent
 
 .global thread_switch
 thread_switch:
@@ -78,12 +78,11 @@ handle_exception:
   ldr r1, =0xFFFFFF        // mask to get code
   and r0, r0, r1
 
-  CHECK_SVC svc_thread_switch, start_thread_switch
+  CHECK_SVC svc_thread_switch, check_stack_extent
   CHECK_SVC svc_disable_timer, disable_timer
   CHECK_SVC svc_enable_timer, enable_timer
   CHECK_SVC svc_syscall, generic_syscall
-
-  b . //unknown svc
+  b . // unknown svc
 
 generic_syscall:
   // r8 = operation number
@@ -107,8 +106,8 @@ generic_syscall:
   // Otherwise the syscall requires a thread switch
   POP_KERNEL_TEMPS
   mov r0, r8 // Patch in result for eventual resume
-  SAVE_KERNEL_TEMPS // So that start_thread_switch can unstack them again
-  b start_thread_switch
+  SAVE_KERNEL_TEMPS // So that they can get unstacked later
+  b check_stack_extent
 
 syscall_ret:
   POP_TEMPS_GOTO_SYSTEM_MODE
@@ -133,17 +132,12 @@ finalise_timer:
   POP_TEMPS_GOTO_SYSTEM_MODE
   b exception_return
 
-.global start_thread_switch
-start_thread_switch:
-  /* If no thread has run before then there's nothing to restore. */
-  ldr r0, =_current_thread       // r0 = &_current_thread
-  ldr r0, [r0]                   // r0 = _current_thread
-  mov r1, #0                     // NULL means we just started up
-  cmp r0, r1
-  bne check_stack_extent         // If current is valid, save its context
-  // No saving temps here since we must have come from kernel mode directly
+.global load_first_thread
+load_first_thread:
+  // This is called from kernel mode so _current_thread is NULL
+  // No saving temps here since we came from the kernel
   CURRENT_IN_R10_NEXT_IN_R11
-  b load_next_thread             // Otherwise skip to loading the next thread
+  b load_next_thread           // load first thread
 
 check_stack_extent:
   // TODO: this is only checking *overflow*
