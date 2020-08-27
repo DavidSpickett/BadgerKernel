@@ -115,9 +115,9 @@ check_svc:
 
   CHECK_SVC svc_thread_switch, check_stack_extent
   CHECK_SVC svc_syscall,       generic_syscall
-  /* timer control is done from user mode */
-  /* unknown svc */
-  b .
+  // no enable_timer - done from user mode
+  // no disable_timer - done from user mode
+  b . // unknown svc
 
 .global check_stack_extent
 check_stack_extent:
