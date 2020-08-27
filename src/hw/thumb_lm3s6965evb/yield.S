@@ -75,14 +75,14 @@ handle_exception:
   and r0, r0, r1
   mov r1, #15      // Timer int
   cmp r0, r1
-  beq handle_interrupt
+  beq handle_timer
   mov r1, #11      // SVC
   cmp r0, r1
   beq handle_svc
   /* something unknown */
   b .
 
-handle_interrupt:
+handle_timer:
   /* Disable interrupts so the scheduler pick next thread */
   ldr r0, =NVIC_ICER0
   mvn r1, #0     // aka 0xFFFFFFFF, write ones to disable all
