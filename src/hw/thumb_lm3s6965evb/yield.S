@@ -206,10 +206,7 @@ generic_syscall:
 
   // Using r12 as it's part of the return stack frame already
   mrs r12, psp       // psp since kernel never uses this routine
-  ldr r0, [r12, #0]  // Restore argument registers
-  ldr r1, [r12, #4]
-  ldr r2, [r12, #8]
-  ldr r3, [r12, #12]
+  ldmia r12, {r0, r1, r2, r3} // Restore argument registers
 
   push {lr}
   blx r8             // call handler
