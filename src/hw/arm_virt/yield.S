@@ -113,11 +113,25 @@ generic_syscall:
 syscall_ret:
   POP_TEMPS_GOTO_SYSTEM_MODE
   mov r0, r8 // Put result in the right place so that thread will find it when it resumes
-
   b exception_return
 
 syscall_handlers:
 #include "common/syscall.h"
+
+enable_timer:
+  ldr r0, =1000
+  mcr p15, 0, r0, c14, c2, 0 // CNTP_TVAL
+  mov r0, #1                 // Enable, don't mask interrupt
+  mcr p15, 0, r0, c14, c2, 1 // CNTP_CTL
+  b finalise_timer
+
+disable_timer:
+  DISABLE_TIMER
+  b finalise_timer
+
+finalise_timer:
+  POP_TEMPS_GOTO_SYSTEM_MODE
+  b exception_return
 
 .global start_thread_switch
 start_thread_switch:
@@ -167,11 +181,11 @@ save_current_thread:
 
 load_next_thread:
   // If next_thread is null then it wasn't set by a syscall
-  // If so, run the scheduler to choose the next
+  // Run the scheduler to choose the next thread
   ldr r0, [r11]
   mov r1, #0
   cmp r0, r1
-  ldr r4, [r11]            // Value of next_thread for actually_load_thread to use if we don't branch
+  ldr r4, [r11]            // r4 = *(&next_thread)
   bne actually_load_thread
   cps #SUPERVISOR_MODE     // Use kernel's stack
   // Note that r10/r11 are callee saved so we can still use them after this
@@ -179,35 +193,18 @@ load_next_thread:
   ldr r4, [r11]            // Get new next_thread
 
 actually_load_thread:
-  /* Either we ran the code above or the kernel jumped here
-     directly, either way want system (aka user) SP */
-  cps #SYSTEM_MODE         // Back to user stack
+  cps #SYSTEM_MODE     // Back to user stack
   str r4, [r10]        // _current_thread = next_thread
   mov r5, #0           // Set next to null for next switch to call scheduler
   str r5, [r11]        // next_thread = NULL
   ldr r10, [r10]       // r10 = _current_thread
-  ldr sp, [r10], #4    // sp = current_thread->stack_ptr
+  ldr sp, [r10], #4    // sp = _current_thread->stack_ptr
 
   mov r4, #running      // start running
   str r4, [r10]         // _current_thread->state = running
 
   /* even an init state thread will have a blank context to restore */
   pop {r0-r12, r14}     // restore our own regs (no sp/pc)
-  b exception_return
-
-enable_timer:
-  ldr r0, =1000
-  mcr p15, 0, r0, c14, c2, 0 // CNTP_TVAL
-  mov r0, #1                 // Enable, don't mask interrupt
-  mcr p15, 0, r0, c14, c2, 1 // CNTP_CTL
-  b finalise_timer
-
-disable_timer:
-  DISABLE_TIMER
-  b finalise_timer
-
-finalise_timer:
-  POP_TEMPS_GOTO_SYSTEM_MODE
   b exception_return
 
 exception_return:

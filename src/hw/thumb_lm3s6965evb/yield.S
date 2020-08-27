@@ -6,16 +6,16 @@
 .set ICSR, 0xE000ED04
 .set NVIC_ICER0, 0XE000E180
 
-.macro CURRENT_IN_R6_NEXT_IN_R7
-  // Callee saved regs so we can call do_scheduler
-  ldr r6, =_current_thread
-  ldr r7, =next_thread
-.endm
-
 .macro CHECK_SVC code, handler
   mov r1, #\code
   cmp r2, r1
   beq \handler
+.endm
+
+.macro CURRENT_IN_R6_NEXT_IN_R7
+  // Callee saved regs so we can call do_scheduler
+  ldr r6, =_current_thread
+  ldr r7, =next_thread
 .endm
 
 .global start_thread_switch
@@ -167,7 +167,7 @@ load_next_thread:
 
   // If next thread is null then it wasn't set by a syscall
   // Run the scheduler to choose the next thread
-  ldr r4, [r7] // r7 = &next_thread
+  ldr r4, [r7] // r4 = *(&next_thread)
   mov r1, #0
   cmp r4, r1
   bne actually_load_thread
@@ -180,7 +180,6 @@ load_next_thread:
   ldr r4, [r7]             // Get new next_thread
 
 actually_load_thread:
-  ldr r4, [r7]          // r4 = next_thread
   str r4, [r6]          // _current_thread = next_thread
   mov r4, #0            // Set next to null for next switch to call scheduler
   str r4, [r7]          // next_thread = NULL

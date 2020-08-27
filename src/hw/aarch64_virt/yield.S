@@ -2,6 +2,18 @@
 
 .set TIMER_AMOUNT, 100000
 
+.macro CHECK_SVC code, handler
+  mov x1, #\code
+  cmp x0, x1
+  beq \handler
+.endm
+
+.macro CURRENT_IN_X20_NEXT_IN_X21
+  // Deliberatley callee saved so we can call the scheduler easily
+  ldr x20, =_current_thread
+  ldr x21, =next_thread
+.endm
+
 .macro DISABLE_TIMER
   mov x0, #2                 // Disable timer and mask interrupt
   msr CNTV_CTL_EL0, x0
@@ -37,10 +49,9 @@
   ldp x0,  x1,  [sp], #16
 .endm
 
-.macro CURRENT_IN_X20_NEXT_IN_X21
-  // Deliberatley callee saved so we can call the scheduler easily
-  ldr x20, =_current_thread
-  ldr x21, =next_thread
+.macro POP_KERNEL_TEMPS_USE_EL0_SP
+  POP_KERNEL_TEMPS
+  msr SPSel, #0
 .endm
 
 .global thread_switch
@@ -65,17 +76,6 @@ handle_timer:
   str x0, [x1] // next_thread = NULL
 
   b start_thread_switch
-
-.macro CHECK_SVC code, handler
-  mov x1, #\code
-  cmp x0, x1
-  beq \handler
-.endm
-
-.macro POP_KERNEL_TEMPS_USE_EL0_SP
-  POP_KERNEL_TEMPS
-  msr SPSel, #0
-.endm
 
 .global handle_svc
 handle_svc:
