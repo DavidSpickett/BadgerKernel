@@ -456,9 +456,11 @@ bool k_thread_cancel(int tid) {
   return set;
 }
 
-extern void thread_switch(void);
-void check_stack(void);
+static void thread_switch(void) {
+  asm volatile("svc %0" : : "i"(svc_thread_switch));
+}
 
+void check_stack(void);
 static bool k_do_yield(Thread* to) {
   check_stack();
 

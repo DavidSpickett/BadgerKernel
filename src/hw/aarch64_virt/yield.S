@@ -54,11 +54,6 @@
   msr SPSel, #0
 .endm
 
-.global thread_switch
-thread_switch:
-  svc svc_thread_switch
-  ret
-
 /* Having this as a seperate handler is easier than
    finding the exact right register to read.
    Since I'm not sure what would happen if there

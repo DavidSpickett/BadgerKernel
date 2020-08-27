@@ -46,12 +46,6 @@ load_first_thread:
   ldr lr, =thread_start
   bx lr
 
-.global thread_switch
-.thumb_func
-thread_switch:
-  svc svc_thread_switch
-  bx lr
-
 .global thread_switch_from_kernel_mode
 thread_switch_from_kernel_mode:
   mov lr, #0xFFFFFFFD  // Special return to user lr value

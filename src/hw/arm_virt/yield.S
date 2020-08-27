@@ -65,11 +65,6 @@ handle_timer:
 
   b check_stack_extent
 
-.global thread_switch
-thread_switch:
-  svc svc_thread_switch
-  bx lr
-
 .global handle_exception
 handle_exception:
   SAVE_KERNEL_TEMPS
