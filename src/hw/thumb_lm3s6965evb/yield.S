@@ -151,11 +151,9 @@ save_current_thread:
 
   /* Save stack pointer */
   ldr r1, [r6]           // r1 = _current_thread
-  mov r5, sp             // _current_thread->stack_ptr = sp
-  str r5, [r1]
+  str sp, [r1], #4       // _current_thread->stack_ptr = sp
 
   /* Update state */
-  add r1, r1, #4
   ldr r2, [r1]          // r2 = _current_thread->state
   mov r3, #running
   cmp r2, r3            // if we're something other than running, leave it as it is
