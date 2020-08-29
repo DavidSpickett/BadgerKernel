@@ -1,8 +1,8 @@
 #ifndef COMMON_TRACE_H
 #define COMMON_TRACE_H
 
-#include <stdint.h>
 #include "thread.h"
+#include <stdint.h>
 
 typedef struct {
 #ifdef __aarch64__
@@ -91,7 +91,7 @@ typedef struct {
   void* end;
 } Symbol;
 
-void print_backtrace(RegisterContext ctx,
-  const Symbol* symbols, size_t num_symbols);
+void print_backtrace(RegisterContext ctx, const Symbol* symbols,
+                     size_t num_symbols);
 
 #endif /* ifdef COMMON_TRACE_H */

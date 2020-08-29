@@ -1,10 +1,10 @@
 #ifndef FILE_H
 #define FILE_H
 
+#include "common/file.h"
 #include <stdbool.h>
 #include <stddef.h>
 #include <sys/types.h>
-#include "common/file.h"
 
 int k_list_dir(const char* path, char* out, size_t outsz);
 int k_open(const char* path, int oflag, ...);

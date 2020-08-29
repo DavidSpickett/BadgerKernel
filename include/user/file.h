@@ -2,8 +2,8 @@
 #define USER_FILE_H
 
 #include "common/file.h"
-#include <sys/types.h>
 #include <stddef.h>
+#include <sys/types.h>
 
 int list_dir(const char* path, char* out, size_t outsz);
 int open(const char* path, int oflag, ...);

@@ -1,8 +1,8 @@
 #ifndef THREAD_H
 #define THREAD_H
 
-#include "thread_state.h"
 #include "common/thread.h"
+#include "thread_state.h"
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -54,17 +54,13 @@ int k_add_thread_from_file_with_args(const char* filename,
                                      const ThreadArgs* args,
                                      uint16_t remove_permissions);
 
-int k_add_thread(const char* name,
-                 const ThreadArgs* args,
-                 void* worker,
+int k_add_thread(const char* name, const ThreadArgs* args, void* worker,
                  uint32_t flags);
 
 bool is_valid_thread(int tid);
 int k_get_thread_id(void);
-bool k_get_thread_property(int tid, size_t property,
-                           void* res);
-bool k_set_thread_property(int tid, size_t property,
-                           const void* res);
+bool k_get_thread_property(int tid, size_t property, void* res);
+bool k_set_thread_property(int tid, size_t property, const void* res);
 
 void k_thread_wait(void);
 bool k_thread_wake(int tid);
@@ -80,8 +76,7 @@ uint32_t k_get_kernel_config(void);
 
 bool k_yield(int tid, int kind);
 
-void k_invalid_syscall(size_t arg1, size_t arg2,
-                       size_t arg3, size_t arg4);
+void k_invalid_syscall(size_t arg1, size_t arg2, size_t arg3, size_t arg4);
 
 bool k_has_no_permission(uint16_t permission);
 

@@ -1,20 +1,19 @@
 #ifndef USER_THREAD_H
 #define USER_THREAD_H
 
-#include <stdint.h>
 #include "common/thread.h"
 #include "common/trace.h"
 #include "thread_state.h"
+#include <stdint.h>
 
-int add_thread(const char* name,
-               const ThreadArgs* args,
-               void* worker,
+int add_thread(const char* name, const ThreadArgs* args, void* worker,
                uint32_t flags);
 
 int add_named_thread(void (*worker)(void), const char* name);
 int add_thread_from_worker(void (*worker)(void));
 int add_thread_from_file(const char* filename);
-int add_thread_from_file_with_args(const char* filename, const ThreadArgs* args);
+int add_thread_from_file_with_args(const char* filename,
+                                   const ThreadArgs* args);
 int add_named_thread(void (*worker)(void), const char* name);
 int add_named_thread_with_args(void (*worker)(), const char* name,
                                const ThreadArgs* args);
@@ -24,10 +23,8 @@ int add_named_thread_with_args(void (*worker)(), const char* name,
 // Returns the updated set of permissions
 uint16_t permissions(uint32_t remove);
 
-bool get_thread_property(int tid, size_t property,
-                         void* res);
-bool set_thread_property(int tid, size_t property,
-                         const void* value);
+bool get_thread_property(int tid, size_t property, void* res);
+bool set_thread_property(int tid, size_t property, const void* value);
 
 bool get_thread_registers(int tid, RegisterContext* regs);
 bool set_thread_registers(int tid, RegisterContext regs);
@@ -39,8 +36,7 @@ bool set_thread_name(int tid, const char* name);
 
 void yield(void);
 bool thread_join(int tid, ThreadState* state);
-bool get_thread_state(int tid, ThreadState* state)
-  __attribute__((nonnull));
+bool get_thread_state(int tid, ThreadState* state) __attribute__((nonnull));
 bool set_child(int child);
 bool get_child(int tid, int* child);
 
