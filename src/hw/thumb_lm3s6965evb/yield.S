@@ -50,6 +50,27 @@
 1:
 .endm
 
+// This is just the load, returning into it can be handled differently
+.macro LOAD_NEXT_THREAD
+  CURRENT_IN_R6_NEXT_IN_R7
+  ldr r4, [r7]          // r4 = next_thread
+  str r4, [r6]          // _current_thread = next_thread
+  mov r4, #0            // Set next to null for next switch to call scheduler
+  str r4, [r7]          // next_thread = NULL
+  ldr r6, [r6]          // r6 = _current_thread
+  ldr r5, [r6]          // r5 = _current_thread->stack_ptr
+  mov sp, r5            // MSP = new thread's stack pointer
+
+  /* no need to restore PC, exc return will do that */
+
+  mov r4, #running      // start running
+  add r6, r6, #4        // r6 = &(current_thread->state)
+  str r4, [r6]          // _current_thread->state = running
+
+  // Even init threads have some saved context setup by init_thread
+  pop {r4-r11}
+.endm
+
 .global load_first_thread
 .thumb_func
 load_first_thread:
@@ -65,19 +86,7 @@ load_first_thread:
   isb
 
   CURRENT_IN_R6_NEXT_IN_R7
-  ldr r4, [r7]             // r4 = next_thread
-  str r4, [r6]             // _current_thread = next_thread
-  mov r4, #0
-  str r4, [r7]             // next_thread = NULL
-  ldr r6, [r6]             // r6 = _current_thread
-  ldr r4, [r6]             // r4 = _current_thread->stack_ptr
-  mov sp, r4
-  mov r4, #running         // Set thread running
-  add r6, r6, #4           // r6 = &(current_thread->state)
-  str r4, [r6]             // _current_thread->state = r4
-
-  // Even init threads have some saved context setup by init_thread
-  pop {r4-r11}
+  LOAD_NEXT_THREAD
 
   ldr lr, =thread_start
   bx lr
@@ -154,21 +163,7 @@ load_next_thread:
   ldr r4, [r7]             // Get new next_thread
 
 actually_load_thread:
-  str r4, [r6]          // _current_thread = next_thread
-  mov r4, #0            // Set next to null for next switch to call scheduler
-  str r4, [r7]          // next_thread = NULL
-  ldr r6, [r6]          // r5 = _current_thread
-  ldr r5, [r6]          // sp = _current_thread->stack_ptr
-  mov sp, r5            // MSP = new thread's stack pointer
-
-  /* no need to restore PC, exc return will do that */
-
-  mov r4, #running      // start running
-  add r6, r6, #4
-  str r4, [r6]          // _current_thread->state = running
-
-  // Even init threads have some saved context setup by init_thread
-  pop {r4-r11}
+  LOAD_NEXT_THREAD
 
   /* Set PSP after we have unstacked everything so it's
      correct for automatic exception return. */
