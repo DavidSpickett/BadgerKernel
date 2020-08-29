@@ -77,6 +77,10 @@ void branch(void) {
   // Can't rely on lr during a function
   do_nothing();
   yield();
+  // Note: you can't backtrace yourself because
+  // the frame info for the old frames will have
+  // been overwritten by you calling the backtrace
+  // function.
 
   leaf();
 
