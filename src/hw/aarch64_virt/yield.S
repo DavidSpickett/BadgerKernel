@@ -19,154 +19,8 @@
   msr CNTV_CTL_EL0, x0
 .endm
 
-.macro SAVE_KERNEL_TEMPS
-  msr SPSel, #1             // Use kernel stack
-  // All caller saved registers
-  stp x0,  x1,  [sp, #-16]!
-  stp x2,  x3,  [sp, #-16]!
-  stp x4,  x5,  [sp, #-16]!
-  stp x6,  x7,  [sp, #-16]!
-  stp x8,  x9,  [sp, #-16]!
-  stp x10, x11, [sp, #-16]!
-  stp x12, x13, [sp, #-16]!
-  stp x14, x15, [sp, #-16]!
-  stp x16, x17, [sp, #-16]!
-  stp x18, x29, [sp, #-16]!
-  stp x30, xzr, [sp, #-16]!
-.endm
-
-.macro POP_KERNEL_TEMPS
-  ldp x30, xzr, [sp], #16
-  ldp x18, x29, [sp], #16
-  ldp x16, x17, [sp], #16
-  ldp x14, x15, [sp], #16
-  ldp x12, x13, [sp], #16
-  ldp x10, x11, [sp], #16
-  ldp x8,  x9,  [sp], #16
-  ldp x6,  x7,  [sp], #16
-  ldp x4,  x5,  [sp], #16
-  ldp x2,  x3,  [sp], #16
-  ldp x0,  x1,  [sp], #16
-.endm
-
-.macro POP_KERNEL_TEMPS_USE_EL0_SP
-  POP_KERNEL_TEMPS
-  msr SPSel, #0
-.endm
-
-/* Having this as a seperate handler is easier than
-   finding the exact right register to read.
-   Since I'm not sure what would happen if there
-   were a pending timer int, and we happened to hit
-   an SVC at the same time. We might lose the SVC.
-*/
-.global handle_timer
-handle_timer:
-  SAVE_KERNEL_TEMPS
-  DISABLE_TIMER
-
-  /* Set next to NULL to run the scheduler */
-  mov x0, #0
-  ldr x1, =next_thread
-  str x0, [x1] // next_thread = NULL
-
-  b check_stack_extent
-
-.global handle_svc
-handle_svc:
-  SAVE_KERNEL_TEMPS
-  /* See what brought us here. */
-  mrs x0, ESR_EL1
-  lsr x0, x0, #26    // check exception code
-  mov x1, #0x15      // SVC
-  cmp x0, x1
-  beq check_svc
-  b .                // unknown source
-
-check_svc:
-  mrs x0, ESR_EL1    // Reload then check svc code
-  mov x1, #0xFFFF    // mask to get code
-  and x0, x0, x1
-
-  CHECK_SVC svc_thread_switch, check_stack_extent
-  CHECK_SVC svc_enable_timer, enable_timer
-  CHECK_SVC svc_disable_timer, disable_timer
-  CHECK_SVC svc_syscall, generic_syscall
-  b .                // unknown SVC
-
-generic_syscall:
-  // x20 = operation number
-  ldr x1, =syscall_handlers
-  lsl x20, x20, #3 // Shift 3 = *8, 8 bytes per address
-  add x20, x20, x1
-  ldr x20, [x20]
-
-  // Get back argument registers
-  POP_KERNEL_TEMPS
-  SAVE_KERNEL_TEMPS
-
-  blr x20     // Call handler
-  mov x20, x0 // Temporarily save result
-
-  // If next_thread is NULL by now, then just return normally
-  mov x0, #0
-  ldr x1, =next_thread
-  ldr x1, [x1]
-  cmp x0, x1
-  beq syscall_ret
-
-  // Otherwise we need to do a thread switch
-  POP_KERNEL_TEMPS
-  mov x0, x20 // Patch in result for eventual resume
-  SAVE_KERNEL_TEMPS // Will get unstacked again later
-  b check_stack_extent
-
-syscall_ret:
-  POP_KERNEL_TEMPS
-  mov x0, x20 // Patch back in result
-  eret
-
-syscall_handlers:
-#include "common/syscall.h"
-
-enable_timer:
-  mrs x0, CNTVCT_EL0     // Get current count
-  ldr x1, =TIMER_AMOUNT
-  add x1, x0, x1
-  msr CNTV_CVAL_EL0, x1  // New target is some point in the future
-
-  mov x0, #1
-  msr CNTV_CTL_EL0, x0
-
-  b finalise_timer
-
-disable_timer:
-  DISABLE_TIMER
-finalise_timer:
-  POP_KERNEL_TEMPS
-  eret
-
-.global load_first_thread
-load_first_thread:
-  // Kernel calls this so no current thread to save
-  CURRENT_IN_X20_NEXT_IN_X21
-  b load_next_thread
-
-check_stack_extent:
-  ldr x0, =thread_stack_offset // x0 = &thread_stack_offset
-  ldr x1, =_current_thread     // x1 = &_current_thread
-  ldr x0, [x0]                 // x0 = thread_stack_offset
-  ldr x1, [x1]                 // x1 = _current_thread
-  add x0, x1, x0               // get minimum valid stack pointer
-  msr SPSel, #0                // get thread's stack pointer
-  mov x1, sp
-  msr SPSel, #1                // back to kernel stack
-  sub x1, x1, #((31+2+1)*8)    // take away space we want to use
-  cmp x0, x1                   // is potential sp < min valid sp?
-  bhs stack_extent_failed      // call C function to error and exit
-
-save_current_thread:
-  POP_KERNEL_TEMPS_USE_EL0_SP
+.macro SAVE_CURRENT_THREAD
+  msr SPSel, #0 // Use user stack
 
   /* Save all registers to user stack */
   stp x0,  x1,  [sp, #-16]!
@@ -205,11 +59,114 @@ save_current_thread:
   ldr x2, [x1]         // x2 = _current_thread->state
   mov x3, #running
   cmp x2, x3           // if we're something other than running, leave it as it is
-  bne load_next_thread
+  bne 1f
   mov x2, #suspended   // otherwise move to suspended
   str x2, [x1]         // _current_thread->state = suspended
+1:
+.endm
+
+.macro NEXT_EQUAL_CURRENT
+  CURRENT_IN_X20_NEXT_IN_X21
+  ldr x20, [x20]
+  str x20, [x21] // next_thread = _current_thread
+.endm
+
+/* Having this as a seperate handler is easier than
+   finding the exact right register to read.
+   Since I'm not sure what would happen if there
+   were a pending timer int, and we happened to hit
+   an SVC at the same time. We might lose the SVC.
+*/
+.global handle_timer
+handle_timer:
+  SAVE_CURRENT_THREAD
+  DISABLE_TIMER
+
+  /* Set next to NULL to run the scheduler */
+  mov x0, #0
+  ldr x1, =next_thread
+  str x0, [x1] // next_thread = NULL
+
+  b load_next_thread
+
+.global handle_svc
+handle_svc:
+  SAVE_CURRENT_THREAD
+
+  /* See what brought us here. */
+  mrs x0, ESR_EL1
+  lsr x0, x0, #26    // check exception code
+  mov x1, #0x15      // SVC
+  cmp x0, x1
+  beq check_svc
+  b .                // unknown source
+
+check_svc:
+  mrs x0, ESR_EL1    // Reload then check svc code
+  mov x1, #0xFFFF    // mask to get code
+  and x0, x0, x1
+
+  CHECK_SVC svc_thread_switch, load_next_thread
+  CHECK_SVC svc_enable_timer, enable_timer
+  CHECK_SVC svc_disable_timer, disable_timer
+  CHECK_SVC svc_syscall, generic_syscall
+  b .                // unknown SVC
+
+generic_syscall:
+  // Get back arguments and syscall number
+  ldr x0,  [sp, #32*8]
+  ldr x1,  [sp, #33*8]
+  ldr x2,  [sp, #29*8]
+  ldr x3,  [sp, #26*8]
+  ldr x20, [sp, #11*8]
+
+  // x20 = operation number
+  ldr x4, =syscall_handlers
+  lsl x20, x20, #3 // Shift 3 = *8, 8 bytes per address
+  add x20, x20, x4
+  ldr x20, [x20]
+
+  msr SPSel, #1       // Use kernel's stack
+  blr x20             // Call handler
+  msr SPSel, #0       // Store result in saved thread
+  str x0, [sp, #32*8]
+
+  // If next thread is NULL, just resume current thread
+  mov x0, #0
+  ldr x1, =next_thread
+  ldr x1, [x1]
+  cmp x0, x1
+  bne 1f
+  NEXT_EQUAL_CURRENT
+1:
+  b load_next_thread
+
+syscall_handlers:
+#include "common/syscall.h"
+
+enable_timer:
+  mrs x0, CNTVCT_EL0     // Get current count
+  ldr x1, =TIMER_AMOUNT
+  add x1, x0, x1
+  msr CNTV_CVAL_EL0, x1  // New target is some point in the future
+
+  mov x0, #1
+  msr CNTV_CTL_EL0, x0
+
+  b finalise_timer
+disable_timer:
+  DISABLE_TIMER
+finalise_timer:
+  NEXT_EQUAL_CURRENT
+  b load_next_thread
+
+.global load_first_thread
+load_first_thread:
+  // Kernel calls this so no current thread to save
+  b load_next_thread
 
 load_next_thread:
+  CURRENT_IN_X20_NEXT_IN_X21
   // If next_thread is null then we need to run the scheduler
   ldr x6, [x21]        // x0 = next_thread
   mov x1, #0
@@ -266,5 +223,4 @@ actually_load_thread:
   /* Actual x0 and x1 */
   ldp x0, x1, [sp], #16
 
-exception_return:
   eret

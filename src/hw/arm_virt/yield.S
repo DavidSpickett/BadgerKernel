@@ -142,7 +142,6 @@ finalise_timer:
 load_first_thread:
   // This is called from kernel mode so _current_thread is NULL
   // No saving temps here since we came from the kernel
-  CURRENT_IN_R10_NEXT_IN_R11
   b load_next_thread           // load first thread
 
 load_next_thread:
