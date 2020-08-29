@@ -36,6 +36,7 @@ print(dedent("""\
 #define FNADDR .quad
 #else
 #define FNADDR .word
+// clang-format off
 #endif"""))
 
 for call in syscalls:
@@ -45,6 +46,7 @@ for i in range(4):
     print("  FNADDR k_invalid_syscall")
 
 print(dedent("""\
+// clang-format on
 #else
 
 #include <stddef.h>

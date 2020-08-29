@@ -7,6 +7,7 @@
 #define FNADDR .quad
 #else
 #define FNADDR .word
+// clang-format off
 #endif
   FNADDR k_add_thread
   FNADDR k_get_thread_property
@@ -34,6 +35,7 @@
   FNADDR k_invalid_syscall
   FNADDR k_invalid_syscall
   FNADDR k_invalid_syscall
+// clang-format on
 #else
 
 #include <stddef.h>
