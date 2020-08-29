@@ -1,4 +1,10 @@
-Thread            0: exiting
+Thread        setup: yielding
+Thread    prejumped: Changed registers!
+Thread        setup: resuming
+Thread        setup: yielding
+Thread     jumpself: Changed registers!
+Thread        setup: resuming
+Thread        setup: exiting
 Thread       tracer: yielding
 Thread       tracee: Working...
 Thread       tracee: yielding
