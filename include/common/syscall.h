@@ -64,7 +64,8 @@ typedef enum {
   syscall_eol,
 } Syscall;
 
-size_t generic_syscall(Syscall num, size_t arg1, size_t arg2, size_t arg3, size_t arg4);
+size_t generic_syscall(Syscall num, size_t arg1, size_t arg2,
+                       size_t arg3, size_t arg4);
 
 #define DO_SYSCALL_0(NAME) \
   generic_syscall(syscall_##NAME, 0, 0, 0, 0)
