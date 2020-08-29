@@ -64,8 +64,6 @@ load_first_thread:
   msr control, r0
   isb
 
-  // TODO: this doesn't restore init registers!
-
   CURRENT_IN_R6_NEXT_IN_R7
   ldr r4, [r7]             // r4 = next_thread
   str r4, [r6]             // _current_thread = next_thread
@@ -77,6 +75,10 @@ load_first_thread:
   mov r4, #running         // Set thread running
   add r6, r6, #4           // r6 = &(current_thread->state)
   str r4, [r6]             // _current_thread->state = r4
+
+  // Even init threads have some saved context setup by init_thread
+  pop {r4-r11}
+
   ldr lr, =thread_start
   bx lr
 
@@ -162,6 +164,7 @@ actually_load_thread:
   /* no need to restore PC, exc return will do that */
 
   mov r4, #running      // start running
+  add r6, r6, #4
   str r4, [r6]          // _current_thread->state = running
 
   // Even init threads have some saved context setup by init_thread
