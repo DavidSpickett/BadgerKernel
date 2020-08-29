@@ -21,11 +21,6 @@ static size_t get_semihosting_event(int status) {
 size_t generic_semihosting_call(size_t operation, size_t* parameters) {
   size_t ret;
   // clang-format off
-  /* I never intend to run this function on Linux, but OCLint checks
-     as if it were Linux and rejects this assembly. */
-#ifdef linux
-  ret = 0; (void)operation; (void)parameters;
-#else
   // We assume that we're already in kernel mode by this point
   asm volatile (
     "mov "RCHR"0, %[operation]\n\t"
@@ -37,7 +32,6 @@ size_t generic_semihosting_call(size_t operation, size_t* parameters) {
      [operation]"r"(operation)
     :RCHR"0", RCHR"1", "memory"
   );
-#endif /* ifdef linux */
   // clang-format on
 
   return ret;

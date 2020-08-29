@@ -13,11 +13,6 @@
 #endif
 
 size_t generic_syscall(Syscall num, size_t arg1, size_t arg2, size_t arg3, size_t arg4) {
-#ifdef linux
-  // OCLint doesn't handle inline asm well
-  (void)num; (void)arg1; (void)arg2; (void)arg3; (void)arg4;
-  return 0;
-#else
   register size_t reg0 __asm(RCHR"0") = arg1;
   register size_t reg1 __asm(RCHR"1") = arg2;
   register size_t reg2 __asm(RCHR"2") = arg3;
@@ -41,5 +36,4 @@ size_t generic_syscall(Syscall num, size_t arg1, size_t arg2, size_t arg3, size_
     :RCHR""NUMREG, "memory"
   );
   return reg0;
-#endif /* ifdef linux */
 }
