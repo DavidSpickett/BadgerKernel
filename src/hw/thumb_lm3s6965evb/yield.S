@@ -71,26 +71,6 @@
   pop {r4-r11}
 .endm
 
-.global load_first_thread
-.thumb_func
-load_first_thread:
-  /* Unable to exception return to thread mode after a reset,
-     no matter what EXC_RETURN is. *shrug*
-     Second best option is to load up first thread manually. */
-  bl do_scheduler          // Trashes lr but whatever
-
-  mrs r0, control
-  mov r1, #3               // Unprivleged, use PSP
-  orr r0, r0, r1
-  msr control, r0
-  isb
-
-  CURRENT_IN_R6_NEXT_IN_R7
-  LOAD_NEXT_THREAD
-
-  ldr lr, =thread_start
-  bx lr
-
 .global thread_switch_from_kernel_mode
 thread_switch_from_kernel_mode:
   mov lr, #0xFFFFFFFD  // Special return to user lr value
@@ -127,7 +107,7 @@ handle_timer:
   mov r0, #0
   str r0, [r1]         // next_thread = NULL
 
-  beq load_next_thread
+  b load_next_thread
   /* Pending status is cleared by exception return */
 
 handle_svc:
@@ -139,37 +119,9 @@ handle_svc:
 
   CHECK_SVC svc_thread_switch, load_next_thread
   CHECK_SVC svc_syscall,       generic_syscall
-  // no enable_timer - done from user mode
   // no disable_timer - done from user mode
+  // no enable_timer - done from user mode
   b . // unknown svc
-
-load_next_thread:
-  ldr r0, =stack_top       // Back to kernel stack
-  mov sp, r0
-
-  CURRENT_IN_R6_NEXT_IN_R7
-  // If next thread is null then it wasn't set by a syscall
-  // Run the scheduler to choose the next thread
-  ldr r4, [r7] // r4 = *(&next_thread)
-  mov r1, #0
-  cmp r4, r1
-  bne actually_load_thread
-
-  // Otherwise choose a new next_thread and do housekeping
-  // Note that r6/r7 are callee saved so we can still use them after this
-  push {lr}
-  bl do_scheduler          // This will set next_thread
-  pop {lr}
-  ldr r4, [r7]             // Get new next_thread
-
-actually_load_thread:
-  LOAD_NEXT_THREAD
-
-  /* Set PSP after we have unstacked everything so it's
-     correct for automatic exception return. */
-  mov r0, sp // r0 ok to trash because it's in the exception frame
-  msr psp, r0
-  bx lr
 
 generic_syscall:
   // Get back arguments and operation number
@@ -204,3 +156,51 @@ generic_syscall:
 
 syscall_handlers:
 #include "common/syscall.h"
+
+.global load_first_thread
+.thumb_func
+load_first_thread:
+  /* Unable to exception return to thread mode after a reset,
+     no matter what EXC_RETURN is. *shrug*
+     Second best option is to load up first thread manually. */
+  bl do_scheduler          // Trashes lr but whatever
+
+  mrs r0, control
+  mov r1, #3               // Unprivleged, use PSP
+  orr r0, r0, r1
+  msr control, r0
+  isb
+
+  CURRENT_IN_R6_NEXT_IN_R7
+  LOAD_NEXT_THREAD
+
+  ldr lr, =thread_start
+  bx lr
+
+load_next_thread:
+  ldr r0, =stack_top       // Back to kernel stack
+  mov sp, r0
+
+  CURRENT_IN_R6_NEXT_IN_R7
+  // If next thread is null then it wasn't set by a syscall
+  // Run the scheduler to choose the next thread
+  ldr r4, [r7] // r4 = *(&next_thread)
+  mov r1, #0
+  cmp r4, r1
+  bne actually_load_thread
+
+  // Otherwise choose a new next_thread and do housekeping
+  // Note that r6/r7 are callee saved so we can still use them after this
+  push {lr}
+  bl do_scheduler          // This will set next_thread
+  pop {lr}
+  ldr r4, [r7]             // Get new next_thread
+
+actually_load_thread:
+  LOAD_NEXT_THREAD
+
+  /* Set PSP after we have unstacked everything so it's
+     correct for automatic exception return. */
+  mov r0, sp // r0 ok to trash because it's in the exception frame
+  msr psp, r0
+  bx lr

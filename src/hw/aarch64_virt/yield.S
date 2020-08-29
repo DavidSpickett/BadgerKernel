@@ -14,9 +14,10 @@
   ldr x21, =next_thread
 .endm
 
-.macro DISABLE_TIMER
-  mov x0, #2                 // Disable timer and mask interrupt
-  msr CNTV_CTL_EL0, x0
+.macro NEXT_EQUAL_CURRENT
+  CURRENT_IN_X20_NEXT_IN_X21
+  ldr x20, [x20]
+  str x20, [x21] // next_thread = _current_thread
 .endm
 
 .macro SAVE_CURRENT_THREAD
@@ -65,10 +66,9 @@
 1:
 .endm
 
-.macro NEXT_EQUAL_CURRENT
-  CURRENT_IN_X20_NEXT_IN_X21
-  ldr x20, [x20]
-  str x20, [x21] // next_thread = _current_thread
+.macro DISABLE_TIMER
+  mov x0, #2                 // Disable timer and mask interrupt
+  msr CNTV_CTL_EL0, x0
 .endm
 
 /* Having this as a seperate handler is easier than
@@ -107,8 +107,8 @@ check_svc:
   and x0, x0, x1
 
   CHECK_SVC svc_thread_switch, load_next_thread
-  CHECK_SVC svc_enable_timer, enable_timer
   CHECK_SVC svc_disable_timer, disable_timer
+  CHECK_SVC svc_enable_timer, enable_timer
   CHECK_SVC svc_syscall, generic_syscall
   b .                // unknown SVC
 
@@ -149,10 +149,8 @@ enable_timer:
   ldr x1, =TIMER_AMOUNT
   add x1, x0, x1
   msr CNTV_CVAL_EL0, x1  // New target is some point in the future
-
   mov x0, #1
-  msr CNTV_CTL_EL0, x0
-
+  msr CNTV_CTL_EL0, x0 // Set enable bit
   b finalise_timer
 disable_timer:
   DISABLE_TIMER

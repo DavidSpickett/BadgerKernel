@@ -23,11 +23,6 @@
   str r1, [r0]             // next_thread = _current_thread
 .endm
 
-.macro DISABLE_TIMER
-  mov r0, #2                 // Disable timer and mask interrupt
-  mcr p15, 0, r0, c14, c2, 1 // CNTP_CTL
-.endm
-
 .macro SAVE_CURRENT_THREAD
   srsdb sp!, #SYSTEM_MODE // save CPSR and lr to system mode stack pointer
   cps #SYSTEM_MODE        // continue in system mode
@@ -49,6 +44,11 @@
   mov r3, #suspended   // otherwise move to suspended
   str r3, [r1]         // _current_thread->state = suspended
 1:
+.endm
+
+.macro DISABLE_TIMER
+  mov r0, #2                 // Disable timer and mask interrupt
+  mcr p15, 0, r0, c14, c2, 1 // CNTP_CTL
 .endm
 
 .global handle_timer
@@ -142,7 +142,7 @@ finalise_timer:
 load_first_thread:
   // This is called from kernel mode so _current_thread is NULL
   // No saving temps here since we came from the kernel
-  b load_next_thread           // load first thread
+  b load_next_thread
 
 load_next_thread:
   CURRENT_IN_R10_NEXT_IN_R11
@@ -173,5 +173,4 @@ actually_load_thread:
   /* even an init state thread will have a blank context to restore */
   pop {r0-r12, r14}     // restore our own regs (no sp/pc)
 
-exception_return:
   rfeia sp! // restore CPSR and lr then eret
