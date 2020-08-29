@@ -60,15 +60,14 @@ int add_named_thread_with_args(
 }
 
 int get_thread_id(void) {
-  // Volatile required to pick up result after syscall
   int ret = 0;
-  get_thread_property(-1, TPROP_ID, (size_t*)&ret);
+  get_thread_property(-1, TPROP_ID, &ret);
   return ret;
 }
 
 bool thread_name(int tid, const char** name) {
   bool got = get_thread_property(tid,
-    TPROP_NAME, (size_t*)name);
+    TPROP_NAME, name);
   return got;
 }
 
@@ -91,11 +90,8 @@ bool set_child(int child) {
 }
 
 bool get_thread_state(int tid, ThreadState* state) {
-  // Volatile to make sure we get the result of the syscall
-  volatile ThreadState s = init;
   bool got = get_thread_property(tid,
-    TPROP_STATE, (size_t*)&s);
-  *state = s;
+    TPROP_STATE, state);
   return got;
 }
 
@@ -128,10 +124,8 @@ bool send_msg(int destination, int message) {
 }
 
 bool get_child(int tid, int* child) {
-  volatile int c = 0;
   bool got = get_thread_property(tid,
-    TPROP_CHILD, (size_t*)&c);
-  *child = c;
+    TPROP_CHILD, child);
   return got;
 }
 
@@ -139,19 +133,15 @@ uint16_t permissions(uint32_t remove) {
   uint16_t to_remove = remove >> TFLAG_PERM_SHIFT;
   set_thread_property(-1, TPROP_PERMISSIONS,
     &to_remove);
-  volatile uint16_t new_permissions = 0;
+  uint16_t new_permissions = 0;
   get_thread_property(-1, TPROP_PERMISSIONS,
-    (size_t*)&new_permissions);
+    &new_permissions);
   return new_permissions;
 }
 
 bool get_thread_registers(int tid,
                   RegisterContext* regs) {
-  volatile RegisterContext ret;
-  bool got = get_thread_property(tid, TPROP_REGISTERS,
-    (size_t*)&ret);
-  *regs = ret;
-  return got;
+  return get_thread_property(tid, TPROP_REGISTERS, regs);
 }
 
 bool set_thread_registers(int tid, RegisterContext regs) {
@@ -159,10 +149,6 @@ bool set_thread_registers(int tid, RegisterContext regs) {
     &regs);
 }
 
-// TODO: odd that permissions can stop this??
-// I think the real issue here is that setting your
-// own properties is the same permission as setting
-// anyone's properties
 bool thread_signal(int tid, uint32_t signal) {
   return set_thread_property(
     tid, TPROP_PENDING_SIGNALS, &signal);
@@ -173,9 +159,6 @@ bool set_signal_handler(void (*handler)(uint32_t)) {
     -1, TPROP_SIGNAL_HANDLER, &handler);
 }
 
-// Note that callers must apply volatile to their
-// own res parameter. Since only they know the actual
-// data type and therefore its correct size.
 bool get_thread_property(int tid, size_t property,
                          void* res) {
   return DO_SYSCALL_3(get_thread_property,
