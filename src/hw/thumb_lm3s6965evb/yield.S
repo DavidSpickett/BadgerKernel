@@ -18,6 +18,38 @@
   ldr r7, =next_thread
 .endm
 
+.macro NEXT_EQUAL_CURRENT
+  CURRENT_IN_R6_NEXT_IN_R7
+  ldr r6, [r6]
+  str r6, [r7]
+.endm
+
+.macro SAVE_CURRENT_THREAD
+  /* Set MSP = PSP
+     We need to do this ourselves because writes to CONTROL.SPSEL
+     are ignored in handler mode. */
+  mrs r0, psp
+  mov sp, r0
+
+  /* callee saved regs */
+  push {r4-r11} // no lr, it's already on the stack
+
+  CURRENT_IN_R6_NEXT_IN_R7
+
+  /* Save stack pointer */
+  ldr r1, [r6]           // r1 = _current_thread
+  str sp, [r1], #4       // _current_thread->stack_ptr = sp
+
+  /* Update state */
+  ldr r2, [r1]          // r2 = _current_thread->state
+  mov r3, #running
+  cmp r2, r3            // if we're something other than running, leave it as it is
+  bne 1f
+  mov r3, #suspended    // otherwise move to suspended
+  str r3, [r1]          // _current_thread->state = suspended
+1:
+.endm
+
 .global load_first_thread
 .thumb_func
 load_first_thread:
@@ -31,6 +63,8 @@ load_first_thread:
   orr r0, r0, r1
   msr control, r0
   isb
+
+  // TODO: this doesn't restore init registers!
 
   CURRENT_IN_R6_NEXT_IN_R7
   ldr r4, [r7]             // r4 = next_thread
@@ -49,16 +83,12 @@ load_first_thread:
 .global thread_switch_from_kernel_mode
 thread_switch_from_kernel_mode:
   mov lr, #0xFFFFFFFD  // Special return to user lr value
-  b check_stack_extent
+  b load_next_thread
 
 .global handle_exception
 .thumb_func
 handle_exception:
-  /* r0-3, r12, lr, pc xPSR have already been saved
-     on the PSP stack.
-  */
-
-  /* See if this is a thread switch */
+  SAVE_CURRENT_THREAD
 
   /* check the exception/interrupt number first so we
      don't misdiagnose an instruction ending in FF or AB
@@ -86,79 +116,27 @@ handle_timer:
   mov r0, #0
   str r0, [r1]         // next_thread = NULL
 
-  beq check_stack_extent
+  beq load_next_thread
   /* Pending status is cleared by exception return */
 
 handle_svc:
-  ands r2, lr, #4
-  bne using_psp   // 0 means we were using the PSP
-  b .             // Getting here means we were using the MSP
-                  // Which is a bad(tm)
-using_psp:
-  mrs r2, psp
-check_svc:
-  mov r1, #(6*4)
-  add r2, r1      // find the PC we came from
-  ldr r2, [r2]
-  mvn r1, #1      // remove mode bit (not sure if it's always there)
-  and r2, r2, r1
+  ldr r2, [sp, #14*4] // find the PC we came from
   sub r2, r2, #2  // back one instruction to the svc
   ldr r2, [r2]    // load svc instruction
   mov r1, #0xff   // mask out the svc number
   and r2, r1, r2
 
-  CHECK_SVC svc_thread_switch, check_stack_extent
+  CHECK_SVC svc_thread_switch, load_next_thread
   CHECK_SVC svc_syscall,       generic_syscall
   // no enable_timer - done from user mode
   // no disable_timer - done from user mode
   b . // unknown svc
 
-.global check_stack_extent
-check_stack_extent:
-  /* Set MSP = PSP
-     We need to do this ourselves because writes to CONTROL.SPSEL
-     are ignored in handler mode. */
-  mrs r0, psp
-  mov sp, r0
-
-  /* Hardware has already stacked r0-3 for us. So we want
-     space to save r4-r7. If the automatic saving also caused
-     an underflow we'll detect it too.
-  */
-  ldr r0, =thread_stack_offset
-  ldr r1, =_current_thread
-  ldr r0, [r0]                 // r0 = thread_stack_offset
-  ldr r1, [r1]                 // r1 = _current_thread
-  add r0, r1, r0               // get min. valid stack pointer
-  mrs r1, psp                  // get current sp
-  sub r1, r1, #(7*4)           // take away (extra) space we want to use
-  cmp r0, r1                   // is potential sp < min valid sp?
-  ldr r2, =stack_extent_failed // can't get a relocation to this, use addr
-  bls save_current_thread      // can't conditonally branch to register...
-  bx r2                        // so branch over this instr if check passed
-
-save_current_thread:
-  /* callee saved regs */
-  push {r4-r11} // no lr, it's already on the stack
-
-  CURRENT_IN_R6_NEXT_IN_R7
-
-  /* Save stack pointer */
-  ldr r1, [r6]           // r1 = _current_thread
-  str sp, [r1], #4       // _current_thread->stack_ptr = sp
-
-  /* Update state */
-  ldr r2, [r1]          // r2 = _current_thread->state
-  mov r3, #running
-  cmp r2, r3            // if we're something other than running, leave it as it is
-  bne load_next_thread
-  mov r3, #suspended    // otherwise move to suspended
-  str r3, [r1]          // _current_thread->state = suspended
-
 load_next_thread:
   ldr r0, =stack_top       // Back to kernel stack
   mov sp, r0
 
+  CURRENT_IN_R6_NEXT_IN_R7
   // If next thread is null then it wasn't set by a syscall
   // Run the scheduler to choose the next thread
   ldr r4, [r7] // r4 = *(&next_thread)
@@ -189,7 +167,6 @@ actually_load_thread:
   // Even init threads have some saved context setup by init_thread
   pop {r4-r11}
 
-exception_return:
   /* Set PSP after we have unstacked everything so it's
      correct for automatic exception return. */
   mov r0, sp // r0 ok to trash because it's in the exception frame
@@ -197,30 +174,35 @@ exception_return:
   bx lr
 
 generic_syscall:
-  ldr r0, =stack_top // Reset kernel stack ptr
-  mov sp, r0
+  // Get back arguments and operation number
+  ldr r0, [sp, #8*4]
+  ldr r1, [sp, #9*4]
+  ldr r2, [sp, #10*4]
+  ldr r3, [sp, #11*4]
+  ldr r8, [sp, #4*4]
+
+  mov r6, sp        // Save current sp for after call (callee saved)
+  ldr r5, =stack_top // Use kernel stack
+  mov sp, r5
 
   // r8 = operation number
-  ldr r1, =syscall_handlers
-  ldr r8, [r1, r8, LSL#2] // Shift 2 = *4, 4 bytes per address
-
-  // Using r12 as it's part of the return stack frame already
-  mrs r12, psp       // psp since kernel never uses this routine
-  ldmia r12, {r0, r1, r2, r3} // Restore argument registers
+  ldr r5, =syscall_handlers
+  ldr r8, [r5, r8, LSL#2] // Shift 2 = *4, 4 bytes per address
 
   push {lr}
-  blx r8             // call handler
+  blx r8              // call handler
   pop {lr}
-  mrs r12, psp       // Store result in return stack
-  str r0, [r12]
+  str r0, [r6, #8*4] // Store result back in context
 
-  // If next_thread is not null then we need to thread switch to it
+  // If next_thread is NULL set it to current to resume current thread
   mov r0, #0
   ldr r1, =next_thread
   ldr r1, [r1]
   cmp r0, r1
-  bne check_stack_extent
-  bx lr
+  bne 1f
+  NEXT_EQUAL_CURRENT
+1:
+  b load_next_thread
 
 syscall_handlers:
 #include "common/syscall.h"

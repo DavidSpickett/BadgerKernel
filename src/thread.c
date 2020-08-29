@@ -681,12 +681,6 @@ void k_thread_wait(void) {
 __attribute__((section(".thread_vars"))) size_t thread_stack_offset =
     offsetof(Thread, stack);
 
-void stack_extent_failed(void) {
-  // current_thread is likely still valid here
-  k_log_event("Not enough stack to save context!");
-  k_exit(1);
-}
-
 #ifdef __thumb__
 extern void thread_switch_from_kernel_mode(void);
 #endif
