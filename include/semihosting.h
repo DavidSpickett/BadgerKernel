@@ -15,6 +15,6 @@
 #define SYS_EXIT   0x18
 
 size_t generic_semihosting_call(size_t operation,
-                                volatile size_t* parameters);
+                                size_t* parameters);
 
 #endif /* ifdef SEMIHOSTING_H */

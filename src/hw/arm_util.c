@@ -18,7 +18,7 @@ static size_t get_semihosting_event(int status) {
   return 0x20024; // ADP_Stopped_InternalError
 }
 
-size_t generic_semihosting_call(size_t operation, volatile size_t* parameters) {
+size_t generic_semihosting_call(size_t operation, size_t* parameters) {
   size_t ret;
   // clang-format off
   /* I never intend to run this function on Linux, but OCLint checks
@@ -35,7 +35,7 @@ size_t generic_semihosting_call(size_t operation, volatile size_t* parameters) {
     :[ret]"=r"(ret)
     :[parameters]"r"(parameters),
      [operation]"r"(operation)
-    :RCHR"0", RCHR"1"
+    :RCHR"0", RCHR"1", "memory"
   );
 #endif /* ifdef linux */
   // clang-format on
@@ -54,7 +54,7 @@ void k_exit(int status) {
   size_t event = get_semihosting_event(status);
 #ifdef __aarch64__
   // Parameter pack on 64 bit
-  volatile size_t parameters[] = {event, 0 /* exit code */};
+  size_t parameters[] = {event, 0 /* exit code */};
 #else
   // Single argument for 32 bit
   size_t* parameters = (size_t*)event;
