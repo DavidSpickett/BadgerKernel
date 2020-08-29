@@ -1,6 +1,6 @@
 BasedOnStyle: LLVM
 AlignConsecutiveMacros: 'true'
-AllowShortFunctionsOnASingleLine: None
+AllowShortFunctionsOnASingleLine: 'Empty'
 AllowShortLoopsOnASingleLine: 'true'
 Language: Cpp
 PointerAlignment: Left

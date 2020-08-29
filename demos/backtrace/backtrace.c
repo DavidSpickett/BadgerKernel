@@ -68,8 +68,7 @@ void leaf(void) {
   END_SYMBOL("leaf");
 }
 
-void do_nothing(void) {
-}
+void do_nothing(void) {}
 void branch(void) {
   // Can't rely on lr during a function
   do_nothing();

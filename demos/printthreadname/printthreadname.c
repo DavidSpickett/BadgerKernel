@@ -2,8 +2,7 @@
 #include "user/thread.h"
 #include "util.h"
 
-void work(void) {
-}
+void work(void) {}
 
 void go_to_sleep(void) {
   thread_wait();

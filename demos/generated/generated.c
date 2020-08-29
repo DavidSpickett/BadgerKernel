@@ -6,5 +6,4 @@
   zero threads is handled correctly.
 */
 
-void setup(void) {
-}
+void setup(void) {}
