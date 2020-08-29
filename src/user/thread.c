@@ -28,11 +28,7 @@ void log_event(const char* event, ...) {
 
 int add_thread(const char* name, const ThreadArgs* args,
                void* worker, uint32_t flags) {
-  // At some settings gcc decides (understandably) that
-  // args is initialised but never read, so it doesn't bother.
-  // This shows it that it will be read by the kernel and
-  // saves adding volatile to add the interfaces.
-  volatile ThreadArgs _args = {0,0,0,0};
+  ThreadArgs _args = {0,0,0,0};
   if (args) {
     _args = *args;
   }
@@ -65,17 +61,14 @@ int add_named_thread_with_args(
 
 int get_thread_id(void) {
   // Volatile required to pick up result after syscall
-  volatile int ret = 0;
+  int ret = 0;
   get_thread_property(-1, TPROP_ID, (size_t*)&ret);
   return ret;
 }
 
 bool thread_name(int tid, const char** name) {
-  // Volatile to pick up syscall result
-  const char* volatile _name = NULL;
   bool got = get_thread_property(tid,
-    TPROP_NAME, (size_t*)&_name);
-  *name = _name;
+    TPROP_NAME, (size_t*)name);
   return got;
 }
 

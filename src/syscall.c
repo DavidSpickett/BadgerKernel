@@ -38,7 +38,7 @@ size_t generic_syscall(Syscall num, size_t arg1, size_t arg2, size_t arg3, size_
      [svc_syscall]"i"(svc_syscall), [num]"r"((size_t)num)
     /* Clobbers the callee saved reg for num.
        Kernel saves the rest for us. */
-    :RCHR""NUMREG
+    :RCHR""NUMREG, "memory"
   );
   return reg0;
 #endif /* ifdef linux */

@@ -6,7 +6,7 @@
 extern void work_finished(void);
 
 static void set_thread_pc(int tid, void* pc) {
-  volatile RegisterContext ctx;
+  RegisterContext ctx;
   get_thread_registers(tid, (RegisterContext*)&ctx);
   // Remove bottom bit for thumb
   ctx.pc = ((size_t)pc) & ~1;
