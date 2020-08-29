@@ -409,7 +409,7 @@ void do_scheduler(void) {
 
     check_signals(next_thread);
 
-    return; //!OCLINT
+    return;
   }
 
   // If the current thread is the last one, just return to it

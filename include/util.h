@@ -6,10 +6,6 @@
 
 void k_exit(int status);
 
-/* Turns out, OCLint will complain about the macros
-   in <assert.h> as well! Hooray. So we'll make our
-   own macro, with solitaire and diet coke.
-*/
 __attribute__((noreturn)) void __assert_fail(const char* __assertion,
                                              const char* __file,
                                              unsigned int __line,

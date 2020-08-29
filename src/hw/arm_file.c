@@ -66,7 +66,7 @@ ssize_t k_write(int filedes, const void* buf, size_t nbyte) {
   return nbyte - ret;
 }
 
-off_t k_lseek(int fd, off_t offset, int whence) { //!OCLINT
+off_t k_lseek(int fd, off_t offset, int whence) {
   assert(whence == SEEK_CUR);
   if (k_has_no_permission(TPERM_FILE)) {
     return (off_t)-1;

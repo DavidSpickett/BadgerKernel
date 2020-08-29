@@ -5,4 +5,3 @@ AllowShortLoopsOnASingleLine: 'true'
 Language: Cpp
 PointerAlignment: Left
 UseTab: Never
-CommentPragmas: '^!OCLINT'

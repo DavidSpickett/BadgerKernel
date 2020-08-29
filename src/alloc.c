@@ -84,7 +84,7 @@ void* k_malloc(size_t size) {
     return to_heap_ptr(alloc_idx);
   }
 
-  return NULL; //!OCLINT
+  return NULL;
 }
 
 static bool can_realloc_free(void* ptr) {
@@ -144,7 +144,7 @@ void* k_realloc(void* ptr, size_t size) {
   // Restore original allocation
   block_tags[tag_idx].tag = old_tag;
   // Return nullptr on failure
-  return NULL; //!OCLINT
+  return NULL;
 }
 
 void k_free_all(int tid) {

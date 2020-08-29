@@ -19,7 +19,7 @@ ssize_t write(int fildes, const void* buf, size_t nbyte) {
   return DO_SYSCALL_3(write, fildes, buf, nbyte);
 }
 
-off_t lseek(int fd, off_t offset, int whence) { //!OCLINT
+off_t lseek(int fd, off_t offset, int whence) {
   return DO_SYSCALL_3(lseek, fd, offset, whence);
 }
 
