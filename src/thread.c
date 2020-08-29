@@ -1,22 +1,22 @@
-#include "print.h"
 #include "thread.h"
-#include "common/trace.h"
 #include "common/errno.h"
+#include "common/trace.h"
+#include "print.h"
 #include "util.h"
 #if CODE_PAGE_SIZE
 #include "elf.h"
 #endif
-#include <string.h>
-#include <stdarg.h>
 #include "alloc.h"
+#include <stdarg.h>
+#include <string.h>
 
 __attribute__((section(".thread_vars"))) Thread* _current_thread;
 
 __attribute__((section(".thread_structs"))) Thread all_threads[MAX_THREADS];
 __attribute__((section(".thread_vars"))) Thread* next_thread;
 
-__attribute__((section(".thread_vars")))
-uint32_t kernel_config = KCFG_LOG_THREADS;
+__attribute__((section(".thread_vars"))) uint32_t kernel_config =
+    KCFG_LOG_THREADS;
 
 #if CODE_PAGE_SIZE
 __attribute__((section(".code_page"))) uint8_t code_page[CODE_PAGE_SIZE];
@@ -51,22 +51,20 @@ uint32_t k_get_kernel_config(void) {
 
 bool is_valid_thread(int tid) {
   return (tid >= 0) && (tid < MAX_THREADS) &&
-          all_threads[tid].id != INVALID_THREAD;
+         all_threads[tid].id != INVALID_THREAD;
 }
 
 static bool can_schedule_thread(int tid) {
-  return is_valid_thread(tid) && \
-    (all_threads[tid].state == suspended ||
-     all_threads[tid].state == init ||
-     all_threads[tid].state == running);
+  return is_valid_thread(tid) &&
+         (all_threads[tid].state == suspended ||
+          all_threads[tid].state == init || all_threads[tid].state == running);
 }
 
 Thread* current_thread(void);
 
 void k_invalid_syscall(size_t arg1, size_t arg2, size_t arg3, size_t arg4) {
   printf("Unknown syscall invoked!\n");
-  printf("arg1: %u, arg2: %u, arg3: %u, arg4: %u\n",
-    arg1, arg2, arg3, arg4);
+  printf("arg1: %u, arg2: %u, arg3: %u, arg4: %u\n", arg1, arg2, arg3, arg4);
   k_exit(1);
 }
 
@@ -74,14 +72,9 @@ int k_get_thread_id(void) {
   return _current_thread ? _current_thread->id : INVALID_THREAD;
 }
 
-bool k_set_thread_property(int tid, size_t property,
-                           const void* value) {
-  if (
-    ((tid == CURRENT_THREAD) &&
-      k_has_no_permission(TPERM_TCONFIG)) ||
-    ((tid != CURRENT_THREAD) &&
-      k_has_no_permission(TPERM_TCONFIG_OTHER))
-  ) {
+bool k_set_thread_property(int tid, size_t property, const void* value) {
+  if (((tid == CURRENT_THREAD) && k_has_no_permission(TPERM_TCONFIG)) ||
+      ((tid != CURRENT_THREAD) && k_has_no_permission(TPERM_TCONFIG_OTHER))) {
     _current_thread->err_no = E_PERM;
     return false;
   }
@@ -121,7 +114,7 @@ bool k_set_thread_property(int tid, size_t property,
     case TPROP_PENDING_SIGNALS: {
       uint32_t signal = *(uint32_t*)value;
       if (signal) {
-        thread->pending_signals |=  1 << (signal-1);
+        thread->pending_signals |= 1 << (signal - 1);
       }
       break;
     }
@@ -136,9 +129,7 @@ bool k_set_thread_property(int tid, size_t property,
   return true;
 }
 
-
-bool k_get_thread_property(int tid, size_t property,
-                           void* res) {
+bool k_get_thread_property(int tid, size_t property, void* res) {
   if (tid == CURRENT_THREAD) {
     tid = k_get_thread_id();
   }
@@ -186,8 +177,7 @@ bool k_get_thread_property(int tid, size_t property,
 
 void init_thread(Thread* thread, int tid, const char* name,
                  void (*do_work)(void), const ThreadArgs* args,
-                 uint16_t permissions)
-{
+                 uint16_t permissions) {
   // thread_start will jump to this
   thread->work = do_work;
   thread->signal_handler = NULL;
@@ -229,35 +219,33 @@ extern void setup(void);
 extern void load_first_thread(void);
 // TODO: collect all these forward declarations
 static int k_add_named_thread_with_args(void (*worker)(), const char* name,
-                                 const ThreadArgs* args, uint16_t remove_permissions);
+                                        const ThreadArgs* args,
+                                        uint16_t remove_permissions);
 __attribute__((noreturn)) void entry(void) {
   for (size_t idx = 0; idx < MAX_THREADS; ++idx) {
     ThreadArgs noargs = {0, 0, 0, 0};
-    init_thread(&all_threads[idx], INVALID_THREAD,
-      NULL, NULL, &noargs, TPERM_NONE);
+    init_thread(&all_threads[idx], INVALID_THREAD, NULL, NULL, &noargs,
+                TPERM_NONE);
   }
 
-  ThreadArgs empty_args = make_args(0,0,0,0);
+  ThreadArgs empty_args = make_args(0, 0, 0, 0);
 
 #if defined CODE_PAGE_SIZE && defined STARTUP_PROG
   const char* startup_prog = STARTUP_PROG;
   k_log_event("Loading program \"%s\"", startup_prog);
   // Empty means load builtin threads
   if (strcmp(startup_prog, "")) {
-    int tid = k_add_thread_from_file_with_args(
-      startup_prog, &empty_args, 0);
+    int tid = k_add_thread_from_file_with_args(startup_prog, &empty_args, 0);
     if (tid == INVALID_THREAD) {
       // No errno for kernel, so some generic phrasing
-      k_log_event("Failed to load STARTUP_PROG \"%s\"",
-        startup_prog);
+      k_log_event("Failed to load STARTUP_PROG \"%s\"", startup_prog);
       k_exit(1);
     }
   } else {
 #else
   {
 #endif
-    k_add_named_thread_with_args(setup, NULL,
-      &empty_args, 0);
+    k_add_named_thread_with_args(setup, NULL, &empty_args, 0);
   }
 
   load_first_thread();
@@ -338,17 +326,16 @@ void log_scheduler_event(const char* event) {
 
 #if CODE_BACKING_PAGES
 static void swap_paged_threads(const Thread* current, const Thread* next) {
-    // See if we need to swap out current thread
-    if (current && (current->code_backing_page != INVALID_PAGE)) {
-      memcpy(code_page_backing[current->code_backing_page],
-             code_page, CODE_PAGE_SIZE);
-    }
-    // If the next thread's code is in a backing page
-    if (next->code_backing_page != INVALID_PAGE) {
-      memcpy(code_page,
-             code_page_backing[next->code_backing_page],
-             CODE_PAGE_SIZE);
-    }
+  // See if we need to swap out current thread
+  if (current && (current->code_backing_page != INVALID_PAGE)) {
+    memcpy(code_page_backing[current->code_backing_page], code_page,
+           CODE_PAGE_SIZE);
+  }
+  // If the next thread's code is in a backing page
+  if (next->code_backing_page != INVALID_PAGE) {
+    memcpy(code_page, code_page_backing[next->code_backing_page],
+           CODE_PAGE_SIZE);
+  }
 }
 #endif
 
@@ -394,7 +381,8 @@ void do_scheduler(void) {
     }
 
     if (all_threads[_idx].id != _idx) {
-      printf("thread ID %u and position %u inconsistent!\n", (unsigned)_idx, all_threads[_idx].id);
+      printf("thread ID %u and position %u inconsistent!\n", (unsigned)_idx,
+             all_threads[_idx].id);
       k_exit(1);
     }
 
@@ -513,9 +501,9 @@ bool k_yield(int tid, int kind) {
   __builtin_unreachable();
 }
 
-#if CODE_PAGE_SIZE && ! CODE_BACKING_PAGES
+#if CODE_PAGE_SIZE && !CODE_BACKING_PAGES
 static int code_page_in_use_by() {
-  for (size_t idx=0; idx<MAX_THREADS; ++idx) {
+  for (size_t idx = 0; idx < MAX_THREADS; ++idx) {
     if (all_threads[idx].in_code_page) {
       return all_threads[idx].id;
     }
@@ -527,16 +515,16 @@ static int code_page_in_use_by() {
 #if CODE_BACKING_PAGES
 static size_t find_free_backing_page(void) {
   bool possible[CODE_BACKING_PAGES];
-  for (size_t i=0; i<CODE_BACKING_PAGES; ++i) {
+  for (size_t i = 0; i < CODE_BACKING_PAGES; ++i) {
     possible[i] = true;
   }
-  for (size_t i=0; i<MAX_THREADS; ++i) {
+  for (size_t i = 0; i < MAX_THREADS; ++i) {
     size_t page = all_threads[i].code_backing_page;
     if (page != INVALID_PAGE) {
       possible[page] = false;
     }
   }
-  for (size_t i=0; i<CODE_BACKING_PAGES; ++i) {
+  for (size_t i = 0; i < CODE_BACKING_PAGES; ++i) {
     if (possible[i]) {
       return i;
     }
@@ -566,7 +554,8 @@ static void setup_code_page(size_t idx) {
 #endif /* CODE_PAGE_SIZE */
 
 static int k_add_named_thread_with_args(void (*worker)(), const char* name,
-                               const ThreadArgs* args, uint16_t remove_permissions) {
+                                        const ThreadArgs* args,
+                                        uint16_t remove_permissions) {
   for (size_t idx = 0; idx < MAX_THREADS; ++idx) {
     if (all_threads[idx].id == INVALID_THREAD ||
         all_threads[idx].state == cancelled ||
@@ -580,8 +569,7 @@ static int k_add_named_thread_with_args(void (*worker)(), const char* name,
       }
       permissions &= ~remove_permissions;
 
-      init_thread(&all_threads[idx], idx, name,
-                  worker, args, permissions);
+      init_thread(&all_threads[idx], idx, name, worker, args, permissions);
 #if CODE_PAGE_SIZE
       setup_code_page(idx);
 #endif
@@ -622,8 +610,8 @@ int k_add_thread_from_file_with_args(const char* filename,
     }
     return INVALID_THREAD;
   }
-  int tid = k_add_named_thread_with_args(
-    entry, filename, args, remove_permissions);
+  int tid =
+      k_add_named_thread_with_args(entry, filename, args, remove_permissions);
 
 #if CODE_BACKING_PAGES
   all_threads[tid].code_backing_page = free_page;
@@ -634,15 +622,13 @@ int k_add_thread_from_file_with_args(const char* filename,
 }
 #endif
 
-int k_add_thread(const char* name,
-                 const ThreadArgs* args,
-                 void* worker,
+int k_add_thread(const char* name, const ThreadArgs* args, void* worker,
                  uint32_t flags) {
   if (k_has_no_permission(TPERM_CREATE)) {
     return -1;
   }
 
-  ThreadArgs dummy_args = {0,0,0,0};
+  ThreadArgs dummy_args = {0, 0, 0, 0};
   if (!args) {
     args = &dummy_args;
   }
@@ -654,12 +640,12 @@ int k_add_thread(const char* name,
 #ifndef CODE_PAGE_SIZE
       assert(0);
 #else
-      return k_add_thread_from_file_with_args(
-              (const char*) worker, args, remove_permissions);
+      return k_add_thread_from_file_with_args((const char*)worker, args,
+                                              remove_permissions);
 #endif
     case THREAD_FUNC:
-      return k_add_named_thread_with_args(worker, name,
-        args, remove_permissions);
+      return k_add_named_thread_with_args(worker, name, args,
+                                          remove_permissions);
     default:
       assert(0 && "invalid flags!");
       break;
@@ -700,9 +686,9 @@ void check_stack(void) {
     }
 
     if (kernel_config & KCFG_DESTROY_ON_STACK_ERR) {
-     /* Setting INVALID_THREAD here, instead of state=finished is fine,
-         because A: the thread didn't actually finish
-                 B: the thread struct is actually invalid */
+      /* Setting INVALID_THREAD here, instead of state=finished is fine,
+          because A: the thread didn't actually finish
+                  B: the thread struct is actually invalid */
       _current_thread->id = INVALID_THREAD;
 
       // Would clear heap allocs here but we can't trust the thread ID
@@ -727,7 +713,7 @@ __attribute__((noreturn)) void thread_start(void) {
 
   // Call thread's actual function
   _current_thread->work(_current_thread->args.a1, _current_thread->args.a2,
-                         _current_thread->args.a3, _current_thread->args.a4);
+                        _current_thread->args.a3, _current_thread->args.a4);
 
   // Yield back to the scheduler
   k_log_event("exiting");

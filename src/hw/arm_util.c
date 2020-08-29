@@ -1,9 +1,9 @@
+#include "generic_asm.h"
 #include "thread_state.h"
 #include "util.h"
-#include "generic_asm.h"
 // For assert's exit
-#include "user/util.h"
 #include "semihosting.h"
+#include "user/util.h"
 #include <stddef.h>
 #include <string.h>
 

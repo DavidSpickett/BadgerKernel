@@ -14,13 +14,15 @@ typedef struct {
   __attribute__((used)) void __ubsan_handle_##NAME(SourceInfo* s,              \
                                                    ##__VA_ARGS__) {            \
     printf("UBSAN: " #NAME " @ %s:%u:%u\n", s->filename, s->line, s->column);  \
-    while (1) {}                                                               \
+    while (1) {                                                                \
+    }                                                                          \
     __builtin_unreachable();                                                   \
   }
 /* Using a while(1) to stall here and lit will kill the test after some time.
    I used to exit() but since that now goes through the kernel there's no way to
-   know whether we're already in the kernel. If we call normal exit() from kernel
-   bad things happen. (things that are harder to fix than adding a lit timeout)
+   know whether we're already in the kernel. If we call normal exit() from
+   kernel bad things happen. (things that are harder to fix than adding a lit
+   timeout)
 */
 
 ubhandler(divrem_overflow, void* a, void* b);

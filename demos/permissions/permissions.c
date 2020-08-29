@@ -1,9 +1,9 @@
+#include "common/errno.h"
+#include "file.h"
+#include "user/alloc.h"
+#include "user/file.h"
 #include "user/thread.h"
 #include "util.h"
-#include "file.h"
-#include "user/file.h"
-#include "user/alloc.h"
-#include "common/errno.h"
 
 void cannot_alloc() {
   assert(malloc(sizeof(int)) == NULL);
@@ -82,14 +82,13 @@ void user_inherit() {
   errno = 0;
 
   // This thread will have same permissions
-  int tid = add_thread("same", NULL, same_permissions,
-    THREAD_FUNC);
+  int tid = add_thread("same", NULL, same_permissions, THREAD_FUNC);
   set_child(tid);
   yield();
 
   // This has one removed
   tid = add_thread("reduced", NULL, reduced_permissions,
-    THREAD_FUNC | TPERM_NO_TCONFIG);
+                   THREAD_FUNC | TPERM_NO_TCONFIG);
   set_child(tid);
   yield();
 
@@ -132,10 +131,10 @@ void cleanup() {
   assert(close(write_fd) == 0);
 }
 
-#define RUN_TEST_THREAD(NAME, FN, FLAGS) \
-  tid = add_thread(NAME, NULL, FN, FLAGS); \
-  assert(tid != -1); \
-  set_child(tid); \
+#define RUN_TEST_THREAD(NAME, FN, FLAGS)                                       \
+  tid = add_thread(NAME, NULL, FN, FLAGS);                                     \
+  assert(tid != -1);                                                           \
+  set_child(tid);                                                              \
   yield();
 
 // Use this to run one by one so we aren't limited
@@ -144,33 +143,24 @@ void setup(void) {
   int tid = -1;
   set_thread_name(-1, "runner");
 
-  RUN_TEST_THREAD("noalloc", cannot_alloc,
-    THREAD_FUNC | TPERM_NO_ALLOC);
+  RUN_TEST_THREAD("noalloc", cannot_alloc, THREAD_FUNC | TPERM_NO_ALLOC);
 
   // Since cannot_file obviously can't make these
   read_fd = open("CMakeLists.txt", O_RDONLY);
   write_fd = open("__perm_demo", O_WRONLY);
 
-  RUN_TEST_THREAD("nofile", cannot_file,
-    THREAD_FUNC | TPERM_NO_FILE);
-  RUN_TEST_THREAD("nocreate", cannot_create,
-    THREAD_FUNC | TPERM_NO_CREATE);
-  RUN_TEST_THREAD("nokconfig", cannot_kconfig,
-    THREAD_FUNC | TPERM_NO_KCONFIG);
-  RUN_TEST_THREAD("notconfig", cannot_tconfig,
-    THREAD_FUNC | TPERM_NO_TCONFIG);
+  RUN_TEST_THREAD("nofile", cannot_file, THREAD_FUNC | TPERM_NO_FILE);
+  RUN_TEST_THREAD("nocreate", cannot_create, THREAD_FUNC | TPERM_NO_CREATE);
+  RUN_TEST_THREAD("nokconfig", cannot_kconfig, THREAD_FUNC | TPERM_NO_KCONFIG);
+  RUN_TEST_THREAD("notconfig", cannot_tconfig, THREAD_FUNC | TPERM_NO_TCONFIG);
   RUN_TEST_THREAD("notconfigother", cannot_tconfig_other,
-    THREAD_FUNC | TPERM_NO_TCONFIG_OTHER);
+                  THREAD_FUNC | TPERM_NO_TCONFIG_OTHER);
   RUN_TEST_THREAD("nomulti", cannot_mutli,
-    THREAD_FUNC | TPERM_NO_FILE | TPERM_NO_ALLOC |
-    TPERM_NO_KCONFIG);
-  RUN_TEST_THREAD("userinherit", user_inherit,
-    THREAD_FUNC);
-  RUN_TEST_THREAD("userreduce", user_reduce,
-    THREAD_FUNC);
-  RUN_TEST_THREAD("errno", errno_checks,
-    THREAD_FUNC);
+                  THREAD_FUNC | TPERM_NO_FILE | TPERM_NO_ALLOC |
+                      TPERM_NO_KCONFIG);
+  RUN_TEST_THREAD("userinherit", user_inherit, THREAD_FUNC);
+  RUN_TEST_THREAD("userreduce", user_reduce, THREAD_FUNC);
+  RUN_TEST_THREAD("errno", errno_checks, THREAD_FUNC);
 
-  RUN_TEST_THREAD("cleanup", cleanup,
-    THREAD_FUNC);
+  RUN_TEST_THREAD("cleanup", cleanup, THREAD_FUNC);
 }

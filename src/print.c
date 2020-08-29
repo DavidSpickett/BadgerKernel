@@ -1,16 +1,16 @@
 #include "print.h"
 #include "common/thread.h"
-#include <stdint.h>
-#include <string.h>
-#include <stdlib.h>
 #include <ctype.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
 
 static int putchar_n(int chr, int repeat) {
   if (repeat < 0) {
     return 0;
   }
 
-  for(int i=0 ; i<repeat; ++i) {
+  for (int i = 0; i < repeat; ++i) {
     // This must be a an int write not a char
     volatile unsigned int* const UART0 = (unsigned int*)UART_BASE;
     *UART0 = (unsigned int)chr;
@@ -63,7 +63,6 @@ size_t uint_to_str(uint64_t num, char* out, unsigned base) {
   return len;
 }
 
-
 int printf(const char* fmt, ...) {
   va_list args;
   va_start(args, fmt);
@@ -77,7 +76,7 @@ static size_t pow(size_t base, size_t power) {
     return 1;
   }
   size_t ret = 1;
-  for ( ; power > 1; --power) {
+  for (; power > 1; --power) {
     ret *= base;
   }
   return ret;
@@ -89,7 +88,7 @@ static size_t consume_uint(const char** in) {
   }
 
   // Find end of number
-  const char* end_ptr = (*in)+1;
+  const char* end_ptr = (*in) + 1;
   while (isdigit(*end_ptr)) {
     ++end_ptr;
   }
@@ -97,10 +96,10 @@ static size_t consume_uint(const char** in) {
   const char* begin_ptr = *in;
   size_t num = 0;
 
-  size_t multiplier = pow(10, end_ptr-begin_ptr);
+  size_t multiplier = pow(10, end_ptr - begin_ptr);
 
-  for ( ; begin_ptr<end_ptr; ++begin_ptr) {
-    num += ((*begin_ptr)-48)*multiplier;
+  for (; begin_ptr < end_ptr; ++begin_ptr) {
+    num += ((*begin_ptr) - 48) * multiplier;
     multiplier /= 10;
   }
 
@@ -148,7 +147,7 @@ static va_list handle_format_char(int* out_len, const char** fmt_chr,
       char num_str[17];
       uint_to_str(va_arg(args, size_t), num_str, base);
       len += strlen(num_str);
-      putchar_n('0', padding_len-len);
+      putchar_n('0', padding_len - len);
       putstr(num_str);
       fmt++;
       break;
@@ -216,8 +215,7 @@ int sprintf(char* str, const char* fmt, ...) {
   return str - start;
 }
 
-void format_thread_name(char* out, int tid,
-                        const char* name) {
+void format_thread_name(char* out, int tid, const char* name) {
   // fill with spaces (no +1 as we'll terminate it later)
   for (size_t idx = 0; idx < THREAD_NAME_SIZE; ++idx) {
     out[idx] = ' ';

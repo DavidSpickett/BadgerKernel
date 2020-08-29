@@ -1,5 +1,5 @@
-#include "user/thread.h"
 #include "mutex.h"
+#include "user/thread.h"
 #include "util.h"
 #include <string.h>
 

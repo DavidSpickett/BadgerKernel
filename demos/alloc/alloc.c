@@ -1,5 +1,5 @@
-#include "user/thread.h"
 #include "user/alloc.h"
+#include "user/thread.h"
 #include "util.h"
 #include <stdint.h>
 
@@ -305,17 +305,17 @@ void free_cancel() {
   assert(malloc(sizeof(uint32_t)) == freed_on_cancel);
 }
 
-#define RUN_TEST_THREAD(fn, name)   \
-  tid = add_named_thread(fn, name); \
+#define RUN_TEST_THREAD(fn, name)                                              \
+  tid = add_named_thread(fn, name);                                            \
   thread_join(tid, &state);
-
 
 void setup(void) {
   set_thread_name(-1, "dispatcher");
 
   // Single thread to send and wait on threads
   // so that we don't have to have MAX_THREADS = number of tests
-  int tid; ThreadState state;
+  int tid;
+  ThreadState state;
   RUN_TEST_THREAD(basic_types, "basic_types");
   RUN_TEST_THREAD(large_alloc, "large_alloc");
   RUN_TEST_THREAD(fragmented, "fragmented");

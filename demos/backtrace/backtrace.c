@@ -1,18 +1,16 @@
+#include "common/trace.h"
 #include "user/thread.h"
 #include "user/util.h"
 #include "util.h"
-#include "common/trace.h"
 
 // Hacky way to get function range without
 // debug info.
 // Add nop before label so that any PC will be
 // fn >= pc < __end_fn
-#define END_SYMBOL(NAME) \
-  asm volatile ( \
-    "nop\n\t" \
-    ".global __end_"NAME"\n\t" \
-    "__end_"NAME":\n\t" \
-  )
+#define END_SYMBOL(NAME)                                                       \
+  asm volatile("nop\n\t"                                                       \
+               ".global __end_" NAME "\n\t"                                    \
+               "__end_" NAME ":\n\t")
 
 void branch(void);
 void setup(void);
@@ -24,8 +22,10 @@ void ccc(void) {
 }
 void bbb(void) {
   // If you get your fp offset wrong these show up
-  int i = 0xdeadbeef; (void)i;
-  int j = 0xcafef00d; (void)j;
+  int i = 0xdeadbeef;
+  (void)i;
+  int j = 0xcafef00d;
+  (void)j;
   ccc();
   END_SYMBOL("bbb");
 }
@@ -42,15 +42,11 @@ extern void* __end_aaa;
 extern void* __end_setup;
 void backtracer() {
   const Symbol backtrace_symbols[] = {
-    {"leaf",   leaf,   &__end_leaf},
-    {"branch", branch, &__end_branch},
-    {"ccc",    ccc,    &__end_ccc},
-    {"bbb",    bbb,    &__end_bbb},
-    {"aaa",    aaa,    &__end_aaa},
-    {"setup",  setup,  &__end_setup},
+      {"leaf", leaf, &__end_leaf}, {"branch", branch, &__end_branch},
+      {"ccc", ccc, &__end_ccc},    {"bbb", bbb, &__end_bbb},
+      {"aaa", aaa, &__end_aaa},    {"setup", setup, &__end_setup},
   };
-  const size_t num_symbols =
-    sizeof(backtrace_symbols)/sizeof(Symbol);
+  const size_t num_symbols = sizeof(backtrace_symbols) / sizeof(Symbol);
 
   RegisterContext ctx;
   get_thread_registers(0, &ctx);
@@ -72,7 +68,8 @@ void leaf(void) {
   END_SYMBOL("leaf");
 }
 
-void do_nothing(void) {}
+void do_nothing(void) {
+}
 void branch(void) {
   // Can't rely on lr during a function
   do_nothing();

@@ -28,8 +28,7 @@ void setup(void) {
   // that an init thread can handle a signal even
   // before it's been run once.
   const void* handler_fn = signal_handler;
-  set_thread_property(tid, TPROP_SIGNAL_HANDLER,
-    &handler_fn);
+  set_thread_property(tid, TPROP_SIGNAL_HANDLER, &handler_fn);
 
   // This shows that even an init thread can handle a signal
   thread_signal(tid, 1);

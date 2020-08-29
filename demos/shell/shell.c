@@ -1,8 +1,8 @@
-#include "user/thread.h"
+#include "print.h"
 #include "user/file.h"
+#include "user/thread.h"
 #include "user/util.h"
 #include "util.h"
-#include "print.h"
 #include <string.h>
 
 #define MAX_CMD_LINE_PARTS 20
@@ -11,8 +11,7 @@ typedef struct {
   const char* parts[MAX_CMD_LINE_PARTS];
 } ProcessedCmdLine;
 
-static void AddCmdLinePart(ProcessedCmdLine* cmdline,
-                    const char* part) {
+static void AddCmdLinePart(ProcessedCmdLine* cmdline, const char* part) {
   cmdline->parts[cmdline->num_parts] = part;
   cmdline->num_parts++;
 
@@ -36,7 +35,7 @@ static ProcessedCmdLine split_cmd_line(char* cmd_line) {
   // If there is data and there is at least one character
   char* curr = cmd_line;
   const char* start_part = cmd_line;
-  for ( ; *curr; ++curr) {
+  for (; *curr; ++curr) {
     if (*curr == ' ') {
       // If there is non space chars to actually save
       if (curr != start_part) {
@@ -45,7 +44,7 @@ static ProcessedCmdLine split_cmd_line(char* cmd_line) {
       // Which means we'll fill all spaces with null terminators
       *curr = '\0';
       // Start new part
-      start_part = curr+1;
+      start_part = curr + 1;
     }
   }
 
@@ -60,7 +59,7 @@ static ProcessedCmdLine split_cmd_line(char* cmd_line) {
 /* Note that these all look like main() */
 static void help(int argc, char* argv[]);
 static void quit(int argc, char* argv[]);
-static void  run(int argc, char* argv[]);
+static void run(int argc, char* argv[]);
 
 typedef struct {
   const char* name;
@@ -68,18 +67,18 @@ typedef struct {
   const char* help_text;
 } BuiltinCommand;
 BuiltinCommand builtins[] = {
-  {"help", help, "help <builtin name>"},
-  {"quit", quit, "Quit the shell"},
-  {"run",  run,  "run <program name>"},
+    {"help", help, "help <builtin name>"},
+    {"quit", quit, "Quit the shell"},
+    {"run", run, "run <program name>"},
 };
-const size_t num_builtins = sizeof(builtins)/sizeof(BuiltinCommand);
+const size_t num_builtins = sizeof(builtins) / sizeof(BuiltinCommand);
 
 // Semihosting has no way to 'ls' a dir
 // so maintain a manual list
 const char* programs[] = {"echo", "ps", "ls"};
-const size_t num_programs = sizeof(programs)/sizeof(const char*);
+const size_t num_programs = sizeof(programs) / sizeof(const char*);
 
-//TODO: thread names are pointers so some time after
+// TODO: thread names are pointers so some time after
 // run() finishes the pointer to the name on the stack is invalid
 // So after you run a few more commands you'll see that the name
 // of the program's thread has gone. (which is lucky because it
@@ -95,7 +94,7 @@ static void run(int argc, char* argv[]) {
 
   // Pass on rest of arguments, +/- 1 to skip "run"
   // The program will still expect argv[0] to be its name
-  const ThreadArgs args = make_args(argc-1, argv+1, 0, 0);
+  const ThreadArgs args = make_args(argc - 1, argv + 1, 0, 0);
   int tid = add_thread_from_file_with_args(run_progname, &args);
   if (tid == INVALID_THREAD) {
     printf("Couldn't load \"%s\"\n", run_progname);
@@ -114,7 +113,7 @@ static void help(int argc, char* argv[]) {
 
   if (argc == 2) {
     // Builtin help
-    for (size_t i=0; i<num_builtins; ++i) {
+    for (size_t i = 0; i < num_builtins; ++i) {
       if (!strcmp(argv[1], builtins[i].name)) {
         printf("%s\n", builtins[i].help_text);
         return;
@@ -123,11 +122,11 @@ static void help(int argc, char* argv[]) {
     printf("Unknown builtin \"%s\"\n", argv[1]);
   } else {
     printf("Builtins:\n");
-    for (size_t i=0; i<num_builtins; ++i) {
+    for (size_t i = 0; i < num_builtins; ++i) {
       printf("%s ", builtins[i].name);
     }
     printf("\nPrograms:\n");
-    for (size_t i=0; i<num_programs; ++i) {
+    for (size_t i = 0; i < num_programs; ++i) {
       printf("%s ", programs[i]);
     }
     printf("\n");
@@ -135,7 +134,8 @@ static void help(int argc, char* argv[]) {
 }
 
 static void quit(int argc, char* argv[]) {
-  (void)argc; (void)argv;
+  (void)argc;
+  (void)argv;
   exit(0);
 }
 
@@ -150,7 +150,7 @@ static void do_command(char* cmd) {
   ThreadArgs args = make_args(parts.num_parts, &parts.parts, 0, 0);
 
   // Builtins take priority
-  for (size_t i=0; i<num_builtins; ++i) {
+  for (size_t i = 0; i < num_builtins; ++i) {
     if (!strcmp(parts.parts[0], builtins[i].name)) {
       tid = add_named_thread_with_args(builtins[i].fn, builtins[i].name, &args);
       break;
@@ -158,7 +158,7 @@ static void do_command(char* cmd) {
   }
 
   // Then programs
-  for (size_t i=0; i<num_programs; ++i) {
+  for (size_t i = 0; i < num_programs; ++i) {
     if (strcmp(parts.parts[0], programs[i]) == 0) {
       tid = add_thread_from_file_with_args(programs[i], &args);
       break;
@@ -176,7 +176,7 @@ static void do_command(char* cmd) {
 
 #define PRINT_PROMPT printf("$ ");
 
-#define MAX_CMD_LINE 256 // Bold assumptions
+#define MAX_CMD_LINE      256 // Bold assumptions
 #define INPUT_BUFFER_SIZE 16
 static void command_loop(int input) {
   char cmd_line[MAX_CMD_LINE];
@@ -184,11 +184,11 @@ static void command_loop(int input) {
   PRINT_PROMPT
 
   char in[INPUT_BUFFER_SIZE];
-  while(1) {
+  while (1) {
     // -1 for null terminator space
-    ssize_t got = read(input, &in, INPUT_BUFFER_SIZE-1);
+    ssize_t got = read(input, &in, INPUT_BUFFER_SIZE - 1);
 
-    assert(in[INPUT_BUFFER_SIZE-1] == '\0');
+    assert(in[INPUT_BUFFER_SIZE - 1] == '\0');
 
     // TODO: that second condition is a bit dodgy
     if (!got || (got == INPUT_BUFFER_SIZE)) {
@@ -210,10 +210,10 @@ static void command_loop(int input) {
           PRINT_PROMPT
           break;
         case 0x1B: // Escape char
-          if (*(curr+1) == '[') {
-            switch (*(curr+2)) {
-              case 'A': // Up
-              case 'B': // Down
+          if (*(curr + 1) == '[') {
+            switch (*(curr + 2)) {
+              case 'A':    // Up
+              case 'B':    // Down
                 curr += 2; // Ignore
                 break;
               case 'C': // Right / forward
@@ -266,8 +266,7 @@ void run_shell() {
 }
 
 void setup(void) {
-  set_kernel_config(0,
-    KCFG_LOG_SCHEDULER | KCFG_LOG_THREADS);
+  set_kernel_config(0, KCFG_LOG_SCHEDULER | KCFG_LOG_THREADS);
   set_thread_name(-1, "shell");
   run_shell();
 }

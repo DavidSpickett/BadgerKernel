@@ -1,6 +1,6 @@
+#include "timer.h"
 #include "user/thread.h"
 #include "user/util.h"
-#include "timer.h"
 #include "util.h"
 #include <string.h>
 
@@ -22,7 +22,8 @@ void thread_work() {
   curr_msg++;
   add_thread_from_worker(thread_work);
   enable_timer();
-  while (1) {}
+  while (1) {
+  }
 }
 
 void setup(void) {

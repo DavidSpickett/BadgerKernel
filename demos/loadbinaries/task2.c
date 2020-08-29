@@ -1,5 +1,5 @@
-#include "user/thread.h"
 #include "print.h"
+#include "user/thread.h"
 
 char buf[64];
 void worker() {

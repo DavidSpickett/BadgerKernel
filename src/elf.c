@@ -1,15 +1,15 @@
 #include "elf.h"
 #include "file.h"
-#include "util.h"
 #include "print.h"
 #include "thread.h"
 #include "user/thread.h"
+#include "util.h"
 // Only for symbols, only use k_<...> functions in this file
 #include "user/file.h"
-#include <string.h>
+#include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <assert.h>
+#include <string.h>
 
 #ifndef CODE_PAGE_SIZE
 #error "Loading ELFs requires CODE_PAGE_SIZE"
@@ -17,56 +17,62 @@
 
 #define DEBUG_ELF_LOAD 0
 // ## will remove the preceeding comma if there are zero args
-#define DEBUG_MSG_ELF(fmt, ...) \
-  do { if(DEBUG_ELF_LOAD) { printf(fmt, ## __VA_ARGS__); } } while(0)
-#define DEBUG_MSG_ELF_SECTION(msg) DEBUG_MSG_ELF("------ "msg" ------\n")
+#define DEBUG_MSG_ELF(fmt, ...)                                                \
+  do {                                                                         \
+    if (DEBUG_ELF_LOAD) {                                                      \
+      printf(fmt, ##__VA_ARGS__);                                              \
+    }                                                                          \
+  } while (0)
+#define DEBUG_MSG_ELF_SECTION(msg) DEBUG_MSG_ELF("------ " msg " ------\n")
 
-#define PRINT_EXIT(fmt, ...) printf("Error: "fmt, ## __VA_ARGS__); k_exit(1);
+#define PRINT_EXIT(fmt, ...)                                                   \
+  printf("Error: " fmt, ##__VA_ARGS__);                                        \
+  k_exit(1);
 
 #define MAX_SECTION_NAME_LEN 80
 // TODO: this assumption is more risky than the section names
 #define MAX_SYMBOL_NAME_LEN 256
 
 typedef struct {
-    unsigned char e_ident[16];
-    uint16_t      e_type;
-    uint16_t      e_machine;
-    uint32_t      e_version;
-    void*         e_entry;
-    size_t        e_phoff;
-    size_t        e_shoff;
-    uint32_t      e_flags;
-    uint16_t      e_ehsize;
-    uint16_t      e_phentsize;
-    uint16_t      e_phnum;
-    uint16_t      e_shentsize;
-    uint16_t      e_shnum;
-    uint16_t      e_shstrndx;
+  unsigned char e_ident[16];
+  uint16_t e_type;
+  uint16_t e_machine;
+  uint32_t e_version;
+  void* e_entry;
+  size_t e_phoff;
+  size_t e_shoff;
+  uint32_t e_flags;
+  uint16_t e_ehsize;
+  uint16_t e_phentsize;
+  uint16_t e_phnum;
+  uint16_t e_shentsize;
+  uint16_t e_shnum;
+  uint16_t e_shstrndx;
 } ElfHeader;
 
 typedef struct {
 #ifdef __aarch64__
-    uint32_t   sh_name;
-    uint32_t   sh_type;
-    uint64_t   sh_flags;
-    void*      sh_addr;
-    size_t     sh_offset;
-    uint64_t   sh_size;
-    uint32_t   sh_link;
-    uint32_t   sh_info;
-    uint64_t   sh_addralign;
-    uint64_t   sh_entsize;
+  uint32_t sh_name;
+  uint32_t sh_type;
+  uint64_t sh_flags;
+  void* sh_addr;
+  size_t sh_offset;
+  uint64_t sh_size;
+  uint32_t sh_link;
+  uint32_t sh_info;
+  uint64_t sh_addralign;
+  uint64_t sh_entsize;
 #else
-    uint32_t   sh_name;
-    uint32_t   sh_type;
-    uint32_t   sh_flags;
-    void*      sh_addr;
-    size_t     sh_offset;
-    uint32_t   sh_size;
-    uint32_t   sh_link;
-    uint32_t   sh_info;
-    uint32_t   sh_addralign;
-    uint32_t   sh_entsize;
+  uint32_t sh_name;
+  uint32_t sh_type;
+  uint32_t sh_flags;
+  void* sh_addr;
+  size_t sh_offset;
+  uint32_t sh_size;
+  uint32_t sh_link;
+  uint32_t sh_info;
+  uint32_t sh_addralign;
+  uint32_t sh_entsize;
 #endif /* ifdef __aarch64__ */
 } SectionHeader;
 
@@ -81,27 +87,27 @@ typedef struct {
 } ELFRelocation;
 #ifdef __aarch64__
 #define RELOC_SYM(info)  ((info) >> 32)
-#define RELOC_TYPE(info) ((info) & 0xFFFFFFFF)
+#define RELOC_TYPE(info) ((info)&0xFFFFFFFF)
 #else
 #define RELOC_SYM(info)  ((info) >> 8)
-#define RELOC_TYPE(info) ((info) & 0xFF)
+#define RELOC_TYPE(info) ((info)&0xFF)
 #endif
 
 typedef struct {
 #ifdef __aarch64__
   uint32_t st_name;
-  unsigned char	st_info;
-  unsigned char	st_other;
+  unsigned char st_info;
+  unsigned char st_other;
   uint16_t st_shndx;
   size_t st_value;
   size_t st_size;
 #else
-  uint32_t	st_name;
-  size_t	st_value;
-  uint32_t	st_size;
-  unsigned char	st_info;
-  unsigned char	st_other;
-  uint16_t	st_shndx;
+  uint32_t st_name;
+  size_t st_value;
+  uint32_t st_size;
+  unsigned char st_info;
+  unsigned char st_other;
+  uint16_t st_shndx;
 #endif
 } ELFSymbol;
 
@@ -144,12 +150,12 @@ typedef struct {
 #define EXPECTED_MACHINE 40
 #endif
 
-#define SHF_ALLOC 1<<1
+#define SHF_ALLOC 1 << 1
 
 #define SHN_UNDEF 0
 
 #define EI_DATA_BYTE 6
-#define ELFDATA2LSB 1
+#define ELFDATA2LSB  1
 
 #define ET_EXEC 2
 #define ET_DYN  3
@@ -180,7 +186,7 @@ static const char* elf_type_tostr(uint16_t type) {
 }
 
 static const char* reloc_type_tostr(size_t reloc_type) {
-  switch(reloc_type) {
+  switch (reloc_type) {
     case R_ARM_REL32:
       return "R_ARM_REL32";
     case R_ARM_GLOB_DAT:
@@ -201,7 +207,7 @@ static const char* reloc_type_tostr(size_t reloc_type) {
 }
 
 static const char* sym_bind_tostr(unsigned char bind) {
-  switch(bind) {
+  switch (bind) {
     case SYM_BIND_LOCAL:
       return "LOCAL";
     case SYM_BIND_GLOBAL:
@@ -231,7 +237,7 @@ static const char* sym_type_tostr(unsigned char type) {
       return "TLS";
     default:
       return "(unknown)";
-    }
+  }
 }
 
 extern uint8_t code_page[CODE_PAGE_SIZE];
@@ -243,12 +249,9 @@ static void checked_lseek(int filedes, off_t offset, int whence) {
   }
 }
 
-static void get_section_name(int elf,
-                             size_t name_table_offset,
-                             size_t name_offset,
-                             uint16_t idx,
-                             char* name) {
-  checked_lseek(elf, name_table_offset+name_offset, SEEK_CUR);
+static void get_section_name(int elf, size_t name_table_offset,
+                             size_t name_offset, uint16_t idx, char* name) {
+  checked_lseek(elf, name_table_offset + name_offset, SEEK_CUR);
   ssize_t got = k_read(elf, name, MAX_SECTION_NAME_LEN);
   // This check is a bit weird, assuming that the name table
   // isn't at the end of the file here.
@@ -258,10 +261,8 @@ static void get_section_name(int elf,
 }
 
 static void check_elf_hdr(const ElfHeader* header) {
-  if ((header->e_ident[0] != 0x7F) ||
-      (header->e_ident[1] != 'E')  ||
-      (header->e_ident[2] != 'L')  ||
-      (header->e_ident[3] != 'F')) {
+  if ((header->e_ident[0] != 0x7F) || (header->e_ident[1] != 'E') ||
+      (header->e_ident[2] != 'L') || (header->e_ident[3] != 'F')) {
     PRINT_EXIT("Magic bytes don't match an ELF file\n");
   }
 
@@ -278,16 +279,16 @@ static void check_elf_hdr(const ElfHeader* header) {
     PRINT_EXIT("ELF has no section table\n");
   }
 
-  DEBUG_MSG_ELF("ELF type is %s (%u)\n",
-    elf_type_tostr(header->e_type), header->e_type);
+  DEBUG_MSG_ELF("ELF type is %s (%u)\n", elf_type_tostr(header->e_type),
+                header->e_type);
 
   switch (header->e_type) {
     case ET_EXEC:
     case ET_DYN:
       break;
     default:
-      PRINT_EXIT("Unexpected ELF type %u (%s)\n",
-        header->e_type, elf_type_tostr(header->e_type));
+      PRINT_EXIT("Unexpected ELF type %u (%s)\n", header->e_type,
+                 elf_type_tostr(header->e_type));
       __builtin_unreachable();
   }
 
@@ -302,24 +303,25 @@ typedef struct {
   size_t value;
 } KernelSymbolInfo;
 static const KernelSymbolInfo kernel_symbols[] = {
-  // TODO: Binaries could just link user/thread.c directly
-  {"log_event", (size_t)log_event},
-  {"yield_next", (size_t)yield_next},
-  {"add_named_thread", (size_t)add_named_thread},
-  {"printf", (size_t)printf},
-  {"exit", (size_t)exit},
-  {"set_kernel_config", (size_t)set_kernel_config},
-  {"yield", (size_t)yield},
+    // TODO: Binaries could just link user/thread.c directly
+    {"log_event", (size_t)log_event},
+    {"yield_next", (size_t)yield_next},
+    {"add_named_thread", (size_t)add_named_thread},
+    {"printf", (size_t)printf},
+    {"exit", (size_t)exit},
+    {"set_kernel_config", (size_t)set_kernel_config},
+    {"yield", (size_t)yield},
 };
-const size_t num_kernel_symbols = sizeof(kernel_symbols)/sizeof(KernelSymbolInfo);
+const size_t num_kernel_symbols =
+    sizeof(kernel_symbols) / sizeof(KernelSymbolInfo);
 
 static size_t get_kernel_symbol_value(const char* name) {
-  for (size_t idx=0; idx < num_kernel_symbols; ++idx) {
+  for (size_t idx = 0; idx < num_kernel_symbols; ++idx) {
     // TODO: are you supposed to use the names here?
     // Maybe you can just compare indexes and name table index
     if (!strcmp(kernel_symbols[idx].name, name)) {
-      DEBUG_MSG_ELF("Resolved kernel symbol \"%s\" to value 0x%x\n",
-        name, kernel_symbols[idx].value);
+      DEBUG_MSG_ELF("Resolved kernel symbol \"%s\" to value 0x%x\n", name,
+                    kernel_symbols[idx].value);
       return kernel_symbols[idx].value;
     }
   }
@@ -327,10 +329,10 @@ static size_t get_kernel_symbol_value(const char* name) {
   __builtin_unreachable();
 }
 
-static SectionHeader get_section_header(
-    int elf, uint16_t idx, size_t section_table_offs,
-    size_t section_hdr_size) {
-  off_t hdr_pos = section_table_offs + (section_hdr_size*idx);
+static SectionHeader get_section_header(int elf, uint16_t idx,
+                                        size_t section_table_offs,
+                                        size_t section_hdr_size) {
+  off_t hdr_pos = section_table_offs + (section_hdr_size * idx);
   checked_lseek(elf, hdr_pos, SEEK_CUR);
 
   SectionHeader section_hdr;
@@ -341,35 +343,33 @@ static SectionHeader get_section_header(
   return section_hdr;
 }
 
-static SymbolInfo get_symbol_info(int elf,
-                            uint16_t table_idx, size_t sym_idx,
-                            size_t section_table_offs,
-                            size_t section_hdr_size,
-                            size_t section_name_table_offset) {
-  SectionHeader sym_table_hdr = get_section_header(
-    elf, table_idx, section_table_offs, section_hdr_size);
+static SymbolInfo get_symbol_info(int elf, uint16_t table_idx, size_t sym_idx,
+                                  size_t section_table_offs,
+                                  size_t section_hdr_size,
+                                  size_t section_name_table_offset) {
+  SectionHeader sym_table_hdr =
+      get_section_header(elf, table_idx, section_table_offs, section_hdr_size);
 
   char sym_table_name[MAX_SECTION_NAME_LEN];
-  get_section_name(elf, section_name_table_offset,
-                   sym_table_hdr.sh_name,
+  get_section_name(elf, section_name_table_offset, sym_table_hdr.sh_name,
                    table_idx, sym_table_name);
   DEBUG_MSG_ELF("Reading symbol info from \"%s\"\n", sym_table_name);
 
   SectionHeader sym_name_table_hdr = get_section_header(
-    elf, sym_table_hdr.sh_link, section_table_offs, section_hdr_size);
+      elf, sym_table_hdr.sh_link, section_table_offs, section_hdr_size);
   char sym_name_table_name[MAX_SECTION_NAME_LEN];
-  get_section_name(elf, section_name_table_offset,
-                   sym_name_table_hdr.sh_name,
+  get_section_name(elf, section_name_table_offset, sym_name_table_hdr.sh_name,
                    sym_table_hdr.sh_link, sym_name_table_name);
   DEBUG_MSG_ELF("Symbol names are in section \"%s\"\n", sym_name_table_name);
 
   if (sym_table_hdr.sh_entsize != sizeof(ELFSymbol)) {
     PRINT_EXIT("Symbol table entsize doesn't match struct size (%u vs %u)\n",
-      sym_table_hdr.sh_entsize, sizeof(ELFSymbol));
+               sym_table_hdr.sh_entsize, sizeof(ELFSymbol));
   }
 
   ELFSymbol symbol;
-  size_t symbol_offset = sym_table_hdr.sh_offset + (sym_idx*sym_table_hdr.sh_entsize);
+  size_t symbol_offset =
+      sym_table_hdr.sh_offset + (sym_idx * sym_table_hdr.sh_entsize);
   checked_lseek(elf, symbol_offset, SEEK_CUR);
   ssize_t got = k_read(elf, &symbol, sym_table_hdr.sh_entsize);
   if (got < sym_table_hdr.sh_entsize) {
@@ -378,7 +378,7 @@ static SymbolInfo get_symbol_info(int elf,
 
   SymbolInfo sym_info;
 
-  checked_lseek(elf, sym_name_table_hdr.sh_offset+symbol.st_name, SEEK_CUR);
+  checked_lseek(elf, sym_name_table_hdr.sh_offset + symbol.st_name, SEEK_CUR);
   got = k_read(elf, sym_info.name, MAX_SYMBOL_NAME_LEN);
   if (got < MAX_SYMBOL_NAME_LEN) {
     // TODO: read until null terminator function?
@@ -393,33 +393,32 @@ static SymbolInfo get_symbol_info(int elf,
 
   DEBUG_MSG_ELF("|Symbol info\n");
   DEBUG_MSG_ELF("|------------|\n");
-  DEBUG_MSG_ELF("|      Index |  %u\n",      sym_info.idx);
-  DEBUG_MSG_ELF("|       Name |  \"%s\"\n",  sym_info.name);
-  DEBUG_MSG_ELF("|Name offset |  %u\n",      sym_info.symbol.st_name);
-  DEBUG_MSG_ELF("|      Value |  0x%x\n",    sym_info.symbol.st_value);
-  DEBUG_MSG_ELF("|       Size |  %u\n",      sym_info.symbol.st_size);
-  DEBUG_MSG_ELF("|       Type |  %s (%u)\n", sym_type_tostr(sym_info.type), sym_info.type);
-  DEBUG_MSG_ELF("|       Bind |  %s (%u)\n", sym_bind_tostr(sym_info.bind), sym_info.bind);
+  DEBUG_MSG_ELF("|      Index |  %u\n", sym_info.idx);
+  DEBUG_MSG_ELF("|       Name |  \"%s\"\n", sym_info.name);
+  DEBUG_MSG_ELF("|Name offset |  %u\n", sym_info.symbol.st_name);
+  DEBUG_MSG_ELF("|      Value |  0x%x\n", sym_info.symbol.st_value);
+  DEBUG_MSG_ELF("|       Size |  %u\n", sym_info.symbol.st_size);
+  DEBUG_MSG_ELF("|       Type |  %s (%u)\n", sym_type_tostr(sym_info.type),
+                sym_info.type);
+  DEBUG_MSG_ELF("|       Bind |  %s (%u)\n", sym_bind_tostr(sym_info.bind),
+                sym_info.bind);
 
   return sym_info;
 }
 
-static void resolve_relocs(int elf, uint16_t idx,
-                         size_t section_table_offs,
-                         size_t section_hdr_size,
-                         size_t name_table_offset) {
-  SectionHeader section_hdr = get_section_header(
-      elf, idx, section_table_offs, section_hdr_size);
+static void resolve_relocs(int elf, uint16_t idx, size_t section_table_offs,
+                           size_t section_hdr_size, size_t name_table_offset) {
+  SectionHeader section_hdr =
+      get_section_header(elf, idx, section_table_offs, section_hdr_size);
 
   char name[MAX_SECTION_NAME_LEN];
-  get_section_name(elf, name_table_offset, section_hdr.sh_name,
-                   idx, name);
+  get_section_name(elf, name_table_offset, section_hdr.sh_name, idx, name);
 
-  if (section_hdr.sh_type == SHT_REL ||
-      section_hdr.sh_type == SHT_RELA) {
+  if (section_hdr.sh_type == SHT_REL || section_hdr.sh_type == SHT_RELA) {
     // Usually SHT_REL for Arm, SHT_RELA for AArch64
-    DEBUG_MSG_ELF(">>>>>>>> Section \"%s\" (%u) has relocations of type %s (%u)\n",
-      name, idx, section_type_tostr(section_hdr.sh_type), section_hdr.sh_type);
+    DEBUG_MSG_ELF(
+        ">>>>>>>> Section \"%s\" (%u) has relocations of type %s (%u)\n", name,
+        idx, section_type_tostr(section_hdr.sh_type), section_hdr.sh_type);
   } else {
     DEBUG_MSG_ELF("No relocations in section \"%s\" (%u)\n", name, idx);
     return;
@@ -432,17 +431,16 @@ static void resolve_relocs(int elf, uint16_t idx,
   if (section_hdr.sh_type == SHT_RELA) {
 #endif
     PRINT_EXIT("Unexpected reloc type %s (%u)\n",
-      section_type_tostr(section_hdr.sh_type), section_hdr.sh_type);
+               section_type_tostr(section_hdr.sh_type), section_hdr.sh_type);
   }
 
-  DEBUG_MSG_ELF("\"%s\" is linked to symbol table at section index %u\n",
-    name, section_hdr.sh_link);
+  DEBUG_MSG_ELF("\"%s\" is linked to symbol table at section index %u\n", name,
+                section_hdr.sh_link);
 
   size_t section_end = section_hdr.sh_offset + section_hdr.sh_size;
   size_t reloc_size = sizeof(ELFRelocation);
-  for (size_t offs=section_hdr.sh_offset, reloc_idx=0;
-       offs < section_end;
-       offs+=reloc_size,++reloc_idx) {
+  for (size_t offs = section_hdr.sh_offset, reloc_idx = 0; offs < section_end;
+       offs += reloc_size, ++reloc_idx) {
     checked_lseek(elf, offs, SEEK_CUR);
     ELFRelocation reloc;
     ssize_t got = k_read(elf, &reloc, reloc_size);
@@ -455,24 +453,23 @@ static void resolve_relocs(int elf, uint16_t idx,
     DEBUG_MSG_ELF(">>>> Processing relocation %u\n", reloc_idx);
     DEBUG_MSG_ELF("| Relocation Info\n");
     DEBUG_MSG_ELF("|--------------|\n");
-    DEBUG_MSG_ELF("| Type         | %s (%u)\n", reloc_type_tostr(reloc_type), reloc_type);
+    DEBUG_MSG_ELF("| Type         | %s (%u)\n", reloc_type_tostr(reloc_type),
+                  reloc_type);
     DEBUG_MSG_ELF("| Symbol Index | %u\n", reloc_sym);
     DEBUG_MSG_ELF("| Offset       | 0x%x\n", reloc.r_offset);
 
     // This is where we put the answer to the relocation's question
     size_t* reloc_result_location = (size_t*)(code_page + reloc.r_offset);
 
-    if ((reloc_type == R_ARM_RELATIVE) ||
-        (reloc_type == R_AARCH64_RELATIVE)) {
+    if ((reloc_type == R_ARM_RELATIVE) || (reloc_type == R_AARCH64_RELATIVE)) {
       if (reloc_sym != 0) {
         PRINT_EXIT("Expected no symbol with R_ARM_RELATIVE!\n");
       }
       *reloc_result_location += (size_t)code_page;
     } else {
-      SymbolInfo sym_info = get_symbol_info(elf, section_hdr.sh_link, reloc_sym,
-                      section_table_offs,
-                      section_hdr_size,
-                      name_table_offset);
+      SymbolInfo sym_info = get_symbol_info(
+          elf, section_hdr.sh_link, reloc_sym, section_table_offs,
+          section_hdr_size, name_table_offset);
 
       size_t symbol_value;
 
@@ -484,8 +481,8 @@ static void resolve_relocs(int elf, uint16_t idx,
         // Must be something in some section of this file
         // Which needs to be offset by code_page to get the final value
         symbol_value = sym_info.symbol.st_value + (size_t)code_page;
-        DEBUG_MSG_ELF("Resolved symbol \"%s\" to value 0x%x\n",
-          sym_info.name, symbol_value);
+        DEBUG_MSG_ELF("Resolved symbol \"%s\" to value 0x%x\n", sym_info.name,
+                      symbol_value);
       }
 
 #ifdef __thumb__
@@ -504,7 +501,7 @@ static void resolve_relocs(int elf, uint16_t idx,
 #endif
 
       // See Arm ELF spec for more inf
-      switch(reloc_type) {
+      switch (reloc_type) {
         case R_ARM_JUMP_SLOT:
         case R_ARM_GLOB_DAT:
           // (S + A) | T
@@ -513,7 +510,8 @@ static void resolve_relocs(int elf, uint16_t idx,
         case R_ARM_REL32:
           // ((S + A) | T) - P
           // Where P is where we are going to write the relocation result
-          *reloc_result_location = symbol_value + addend - (size_t)reloc_result_location;
+          *reloc_result_location =
+              symbol_value + addend - (size_t)reloc_result_location;
           break;
         case R_AARCH64_JUMP_SLOT:
         case R_AARCH64_GLOB_DAT:
@@ -521,29 +519,27 @@ static void resolve_relocs(int elf, uint16_t idx,
           *reloc_result_location = symbol_value + addend;
           break;
         default:
-          PRINT_EXIT("Unhandled relocation type %u (%s)\n",
-            reloc_type, reloc_type_tostr(reloc_type));
+          PRINT_EXIT("Unhandled relocation type %u (%s)\n", reloc_type,
+                     reloc_type_tostr(reloc_type));
       }
     }
 
-    DEBUG_MSG_ELF("Set final relocation value to 0x%x\n", *reloc_result_location);
+    DEBUG_MSG_ELF("Set final relocation value to 0x%x\n",
+                  *reloc_result_location);
   }
 
-  DEBUG_MSG_ELF(">>>>>>>> Finished processing relocations for section \"%s\" (%u)\n",
-    name, idx);
+  DEBUG_MSG_ELF(
+      ">>>>>>>> Finished processing relocations for section \"%s\" (%u)\n",
+      name, idx);
 }
 
-static bool load_section(int elf, uint16_t idx,
-                         size_t section_table_offs,
-                         size_t section_hdr_size,
-                         size_t name_table_offset,
-                         void* dest,
-                         bool is_shared) {
-  SectionHeader section_hdr = get_section_header(
-      elf, idx, section_table_offs, section_hdr_size);
+static bool load_section(int elf, uint16_t idx, size_t section_table_offs,
+                         size_t section_hdr_size, size_t name_table_offset,
+                         void* dest, bool is_shared) {
+  SectionHeader section_hdr =
+      get_section_header(elf, idx, section_table_offs, section_hdr_size);
 
-  checked_lseek(elf, name_table_offset+section_hdr.sh_name,
-    SEEK_CUR);
+  checked_lseek(elf, name_table_offset + section_hdr.sh_name, SEEK_CUR);
   ssize_t max_section_name_len = 80;
   char name[max_section_name_len];
   ssize_t got = k_read(elf, name, max_section_name_len);
@@ -566,23 +562,24 @@ static bool load_section(int elf, uint16_t idx,
     section_start = (void*)((size_t)section_start + (size_t)start_code_page);
   }
 
-  if (
-      (section_start < start_code_page) ||
-      (section_start >= end_code_page)) {
-    PRINT_EXIT("Section \"%s\" (%u) start address not within code page\n", name, idx);
+  if ((section_start < start_code_page) || (section_start >= end_code_page)) {
+    PRINT_EXIT("Section \"%s\" (%u) start address not within code page\n", name,
+               idx);
   }
 
   void* section_end = (void*)((size_t)(section_start) + section_hdr.sh_size);
   if (section_end >= end_code_page) {
-    PRINT_EXIT("Section \"%s\" (%u) extends off of the end of the code page\n", name, idx);
+    PRINT_EXIT("Section \"%s\" (%u) extends off of the end of the code page\n",
+               name, idx);
   }
 
   checked_lseek(elf, section_hdr.sh_offset, SEEK_CUR);
 
   // Binaries are built to run at the code page
   // so remove that offset from section addresses
-  // (PIE program addresses were offset by code_page above so safe to offset as well)
-  void* dest_addr = dest+(section_start-start_code_page);
+  // (PIE program addresses were offset by code_page above so safe to offset as
+  // well)
+  void* dest_addr = dest + (section_start - start_code_page);
 
   // Copy from ELF file to destination page
   // (which can be different from code_page)
@@ -590,8 +587,8 @@ static bool load_section(int elf, uint16_t idx,
   if (section_got != section_hdr.sh_size) {
     PRINT_EXIT("Couldn't read content for section \"%s\" (%u)\n", name, idx);
   }
-  DEBUG_MSG_ELF("Loaded %u bytes from section \"%s\" (%u)\n",
-    section_got, name, idx);
+  DEBUG_MSG_ELF("Loaded %u bytes from section \"%s\" (%u)\n", section_got, name,
+                idx);
 
   return true;
 }
@@ -615,8 +612,7 @@ void (*load_elf(const char* filename, void* dest))(void) {
   ElfHeader elf_hdr;
   ssize_t got = k_read(elf, &elf_hdr, header_size);
   if (got < header_size) {
-    PRINT_EXIT("Couldn't read complete header from %s\n",
-      filename);
+    PRINT_EXIT("Couldn't read complete header from %s\n", filename);
   }
 
   check_elf_hdr(&elf_hdr);
@@ -626,29 +622,24 @@ void (*load_elf(const char* filename, void* dest))(void) {
   }
 
   SectionHeader name_table_hdr = get_section_header(
-    elf, elf_hdr.e_shstrndx, elf_hdr.e_shoff,
-    elf_hdr.e_shentsize);
+      elf, elf_hdr.e_shstrndx, elf_hdr.e_shoff, elf_hdr.e_shentsize);
 
   DEBUG_MSG_ELF_SECTION("Loading sections into memory");
   bool loaded_something = false;
   bool is_shared = elf_hdr.e_type == ET_DYN;
-  for (uint16_t idx=0; idx < elf_hdr.e_shnum; ++idx) {
-     loaded_something |= load_section(
-            elf, idx,
-            elf_hdr.e_shoff,
-            elf_hdr.e_shentsize,
-            name_table_hdr.sh_offset,
-            dest,
-            is_shared);
+  for (uint16_t idx = 0; idx < elf_hdr.e_shnum; ++idx) {
+    loaded_something |=
+        load_section(elf, idx, elf_hdr.e_shoff, elf_hdr.e_shentsize,
+                     name_table_hdr.sh_offset, dest, is_shared);
   }
   if (!loaded_something) {
     PRINT_EXIT("Loaded no sections from \"%s\"\n", filename);
   }
 
   DEBUG_MSG_ELF_SECTION("Resolving relocations");
-  for (uint16_t idx=0; idx < elf_hdr.e_shnum; ++idx) {
-    resolve_relocs(elf, idx, elf_hdr.e_shoff,
-      elf_hdr.e_shentsize, name_table_hdr.sh_offset);
+  for (uint16_t idx = 0; idx < elf_hdr.e_shnum; ++idx) {
+    resolve_relocs(elf, idx, elf_hdr.e_shoff, elf_hdr.e_shentsize,
+                   name_table_hdr.sh_offset);
   }
   DEBUG_MSG_ELF_SECTION("Finished resolving relocations");
 

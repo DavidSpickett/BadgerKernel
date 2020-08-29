@@ -1,5 +1,5 @@
-#include "user/thread.h"
 #include "thread.h" // For struct Thread
+#include "user/thread.h"
 #include "util.h"
 #include <stddef.h>
 #include <stdint.h>
@@ -64,8 +64,7 @@ void watcher() {
 }
 
 void setup(void) {
-  set_kernel_config(KCFG_DESTROY_ON_STACK_ERR,
-    KCFG_LOG_SCHEDULER);
+  set_kernel_config(KCFG_DESTROY_ON_STACK_ERR, KCFG_LOG_SCHEDULER);
 
   add_named_thread(watcher, "watcher");
   add_named_thread(overflow, "overflow");

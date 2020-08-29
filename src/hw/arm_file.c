@@ -1,7 +1,7 @@
-#include "util.h"
-#include "semihosting.h"
 #include "file.h"
+#include "semihosting.h"
 #include "thread.h"
+#include "util.h"
 #include <stddef.h>
 #include <string.h>
 

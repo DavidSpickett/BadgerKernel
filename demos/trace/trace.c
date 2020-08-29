@@ -1,7 +1,7 @@
+#include "common/trace.h"
 #include "user/thread.h"
 #include "user/util.h"
 #include "util.h"
-#include "common/trace.h"
 
 extern void work_finished(void);
 
@@ -40,16 +40,15 @@ void tracee() {
 // Note: the original plan was to write this svc in manually
 // However this code will be in ROM so that couldn't be done.
 
-__attribute__((naked, used))
-void __work_finished(void) {
+__attribute__((naked, used)) void __work_finished(void) {
   // By defining work_finished in assembly we can be sure of it's address
-  asm volatile(
-    ".global work_finished\n\t"
-    "work_finished:\n\t"
-    "svc %0\n\t"
-    // If the tracer doesn't redirect us we'll loop forever
-    "b tracee\n\t"
-    : : "i"(svc_thread_switch));
+  asm volatile(".global work_finished\n\t"
+               "work_finished:\n\t"
+               "svc %0\n\t"
+               // If the tracer doesn't redirect us we'll loop forever
+               "b tracee\n\t"
+               :
+               : "i"(svc_thread_switch));
 }
 
 void finish_program(void) {
@@ -74,7 +73,7 @@ void tracer() {
   target_pc += 4;
 #endif
 
-  while(ctx.pc != target_pc) {
+  while (ctx.pc != target_pc) {
     yield();
     get_thread_registers(tid, &ctx);
   }

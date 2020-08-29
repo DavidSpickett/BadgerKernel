@@ -1,27 +1,24 @@
-#include <string.h>
-#include "thread.h"
-#include "generic_asm.h"
 #include "common/trace.h"
+#include "generic_asm.h"
+#include "thread.h"
+#include <string.h>
 
 extern void __signal_handler_entry(void);
 extern void __signal_handler_end(void);
 
-__attribute__((used, naked))
-static void handler_wrapper(void) {
-  asm volatile (
-    ".global __signal_handler_entry\n\t"
-    "__signal_handler_entry:\n\t"
-    // r0/x0 has the signal number
-    "  ldr "RCHR"1, =_current_thread\n\t"
-    "  ldr "RCHR"1, ["RCHR"1]\n\t"
-    "  add "RCHR"1, "RCHR"1, #2*"PTR_SIZE"\n\t"
-    "  ldr "RCHR"1, ["RCHR"1]\n\t"
-    "  "BLR" "RCHR"1\n\t"
-    "  svc %0\n\t"
-    ".global __signal_handler_end\n\t"
-    "__signal_handler_end:\n\t"
-    "  nop\n\t"
-    :: "i"(svc_thread_switch));
+__attribute__((used, naked)) static void handler_wrapper(void) {
+  asm volatile(".global __signal_handler_entry\n\t"
+               "__signal_handler_entry:\n\t"
+               // r0/x0 has the signal number
+               "  ldr " RCHR "1, =_current_thread\n\t"
+               "  ldr " RCHR "1, [" RCHR "1]\n\t"
+               "  add " RCHR "1, " RCHR "1, #2*" PTR_SIZE "\n\t"
+               "  ldr " RCHR "1, [" RCHR "1]\n\t"
+               "  " BLR " " RCHR "1\n\t"
+               "  svc %0\n\t"
+               ".global __signal_handler_end\n\t"
+               "__signal_handler_end:\n\t"
+               "  nop\n\t" ::"i"(svc_thread_switch));
 }
 
 void init_register_context(Thread* thread) {
@@ -38,7 +35,7 @@ void init_register_context(Thread* thread) {
 
 #ifdef __thumb__
   // Must run in Thumb mode
-  ctx->xpsr = (1<<24);
+  ctx->xpsr = (1 << 24);
 #elif defined __aarch64__
   // Run in EL0
   ctx->spsr_el1 = 0;
@@ -49,7 +46,7 @@ void init_register_context(Thread* thread) {
 }
 
 static void install_signal_handler(Thread* thread, uint32_t signal) {
-	init_register_context(thread);
+  init_register_context(thread);
   RegisterContext* handler_ctx = (RegisterContext*)thread->stack_ptr;
   handler_ctx->pc = (size_t)__signal_handler_entry;
 #ifdef __aarch64__
@@ -60,21 +57,20 @@ static void install_signal_handler(Thread* thread, uint32_t signal) {
 }
 
 static uint32_t next_signal(uint32_t pending_signals) {
-  for (uint32_t i=0; i<32; ++i) {
-    if (pending_signals & (1<<i)) {
+  for (uint32_t i = 0; i < 32; ++i) {
+    if (pending_signals & (1 << i)) {
       // +1 because bit 0 means signal number 1
-      return i+1;
+      return i + 1;
     }
   }
   return 0;
 }
 
 void check_signals(Thread* thread) {
-  const RegisterContext* next_ctx =
-    (const RegisterContext*)thread->stack_ptr;
+  const RegisterContext* next_ctx = (const RegisterContext*)thread->stack_ptr;
 
   // Stored PC doesn't include Thumb bit
-  if (next_ctx->pc == ((size_t)__signal_handler_end & ~1  )) {
+  if (next_ctx->pc == ((size_t)__signal_handler_end & ~1)) {
     // Remove signal handler context
     thread->stack_ptr += sizeof(RegisterContext);
   }
@@ -85,7 +81,7 @@ void check_signals(Thread* thread) {
     if (thread->signal_handler) {
       install_signal_handler(thread, signal);
       // Mark signal as handled
-      thread->pending_signals &= ~(1 << (signal-1));
+      thread->pending_signals &= ~(1 << (signal - 1));
     } else {
       // Ignore all signals if there's no handler
       thread->pending_signals = 0;

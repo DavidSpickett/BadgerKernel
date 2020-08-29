@@ -1,6 +1,6 @@
 #include "alloc.h"
-#include "util.h"
 #include "thread.h"
+#include "util.h"
 #include <stdint.h>
 #include <string.h>
 
@@ -21,7 +21,7 @@ static size_t next_tag(size_t idx) {
   if (block_tags[idx].tag) {
     // Skip runs of allocated blocks
     idx += block_tags[idx].tag;
-  } else{
+  } else {
     // One at a time over free blocks
     idx += 1;
   }
@@ -95,8 +95,7 @@ static bool can_realloc_free(void* ptr) {
       // Can't free something outside the heap
       (ptr >= (void*)heap_end) ||
       // Can't free another thread's memory
-      (block_tags[tag_idx].tid != k_get_thread_id())
-     ) {
+      (block_tags[tag_idx].tid != k_get_thread_id())) {
     return false;
   }
   return true;
@@ -150,8 +149,7 @@ void* k_realloc(void* ptr, size_t size) {
 void k_free_all(int tid) {
   size_t current_idx = 0;
   do {
-    if (block_tags[current_idx].tag &&
-        block_tags[current_idx].tid == tid) {
+    if (block_tags[current_idx].tag && block_tags[current_idx].tid == tid) {
       block_tags[current_idx].tag = 0;
     }
     current_idx = next_tag(current_idx);
@@ -159,8 +157,7 @@ void k_free_all(int tid) {
 }
 
 void k_free(void* ptr) {
-  if (k_has_no_permission(TPERM_ALLOC) ||
-      !can_realloc_free(ptr)) {
+  if (k_has_no_permission(TPERM_ALLOC) || !can_realloc_free(ptr)) {
     return;
   }
 

@@ -5,3 +5,4 @@ AllowShortLoopsOnASingleLine: 'true'
 Language: Cpp
 PointerAlignment: Left
 UseTab: Never
+IndentCaseLabels: 'true'

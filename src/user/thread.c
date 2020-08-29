@@ -14,8 +14,7 @@ void log_event(const char* event, ...) {
   char formatted_name[THREAD_NAME_SIZE + 1];
   const char* name;
   thread_name(CURRENT_THREAD, &name);
-  format_thread_name(formatted_name, get_thread_id(),
-                     name);
+  format_thread_name(formatted_name, get_thread_id(), name);
   printf("Thread %s: ", formatted_name);
 
   va_list args;
@@ -26,9 +25,9 @@ void log_event(const char* event, ...) {
   printf("\n");
 }
 
-int add_thread(const char* name, const ThreadArgs* args,
-               void* worker, uint32_t flags) {
-  ThreadArgs _args = {0,0,0,0};
+int add_thread(const char* name, const ThreadArgs* args, void* worker,
+               uint32_t flags) {
+  ThreadArgs _args = {0, 0, 0, 0};
   if (args) {
     _args = *args;
   }
@@ -44,19 +43,17 @@ int add_thread_from_worker(void (*worker)(void)) {
 }
 
 int add_thread_from_file(const char* filename) {
-  return add_thread(filename, NULL, (void*)filename,
-    THREAD_FILE);
+  return add_thread(filename, NULL, (void*)filename, THREAD_FILE);
 }
 
-int add_thread_from_file_with_args(const char* filename, const ThreadArgs* args) {
-  return add_thread(filename, args, (void*)filename,
-    THREAD_FILE);
+int add_thread_from_file_with_args(const char* filename,
+                                   const ThreadArgs* args) {
+  return add_thread(filename, args, (void*)filename, THREAD_FILE);
 }
 
-int add_named_thread_with_args(
-      void (*worker)(), const char* name, const ThreadArgs *args) {
-  return add_thread(name, args, worker,
-    THREAD_FUNC);
+int add_named_thread_with_args(void (*worker)(), const char* name,
+                               const ThreadArgs* args) {
+  return add_thread(name, args, worker, THREAD_FUNC);
 }
 
 int get_thread_id(void) {
@@ -66,14 +63,12 @@ int get_thread_id(void) {
 }
 
 bool thread_name(int tid, const char** name) {
-  bool got = get_thread_property(tid,
-    TPROP_NAME, name);
+  bool got = get_thread_property(tid, TPROP_NAME, name);
   return got;
 }
 
 bool set_thread_name(int tid, const char* name) {
-  return DO_SYSCALL_3(set_thread_property, tid,
-    TPROP_NAME, &name);
+  return DO_SYSCALL_3(set_thread_property, tid, TPROP_NAME, &name);
 }
 
 void set_kernel_config(uint32_t enable, uint32_t disable) {
@@ -85,13 +80,11 @@ uint32_t get_kernel_config(void) {
 }
 
 bool set_child(int child) {
-  return DO_SYSCALL_3(set_thread_property, -1,
-    TPROP_CHILD, &child);
+  return DO_SYSCALL_3(set_thread_property, -1, TPROP_CHILD, &child);
 }
 
 bool get_thread_state(int tid, ThreadState* state) {
-  bool got = get_thread_property(tid,
-    TPROP_STATE, state);
+  bool got = get_thread_property(tid, TPROP_STATE, state);
   return got;
 }
 
@@ -124,51 +117,40 @@ bool send_msg(int destination, int message) {
 }
 
 bool get_child(int tid, int* child) {
-  bool got = get_thread_property(tid,
-    TPROP_CHILD, child);
+  bool got = get_thread_property(tid, TPROP_CHILD, child);
   return got;
 }
 
 uint16_t permissions(uint32_t remove) {
   uint16_t to_remove = remove >> TFLAG_PERM_SHIFT;
-  set_thread_property(-1, TPROP_PERMISSIONS,
-    &to_remove);
+  set_thread_property(-1, TPROP_PERMISSIONS, &to_remove);
   uint16_t new_permissions = 0;
-  get_thread_property(-1, TPROP_PERMISSIONS,
-    &new_permissions);
+  get_thread_property(-1, TPROP_PERMISSIONS, &new_permissions);
   return new_permissions;
 }
 
-bool get_thread_registers(int tid,
-                  RegisterContext* regs) {
+bool get_thread_registers(int tid, RegisterContext* regs) {
   return get_thread_property(tid, TPROP_REGISTERS, regs);
 }
 
 bool set_thread_registers(int tid, RegisterContext regs) {
-  return set_thread_property(tid, TPROP_REGISTERS,
-    &regs);
+  return set_thread_property(tid, TPROP_REGISTERS, &regs);
 }
 
 bool thread_signal(int tid, uint32_t signal) {
-  return set_thread_property(
-    tid, TPROP_PENDING_SIGNALS, &signal);
+  return set_thread_property(tid, TPROP_PENDING_SIGNALS, &signal);
 }
 
 bool set_signal_handler(void (*handler)(uint32_t)) {
-  return set_thread_property(
-    -1, TPROP_SIGNAL_HANDLER, &handler);
+  return set_thread_property(-1, TPROP_SIGNAL_HANDLER, &handler);
 }
 
-bool get_thread_property(int tid, size_t property,
-                         void* res) {
-  return DO_SYSCALL_3(get_thread_property,
-                      tid, property, res);
+bool get_thread_property(int tid, size_t property, void* res) {
+  return DO_SYSCALL_3(get_thread_property, tid, property, res);
 }
 
-bool set_thread_property(int tid, size_t property,
-                         const void* value) {
-  return DO_SYSCALL_3(set_thread_property,
-                      tid, property, value);
+bool set_thread_property(int tid, size_t property, const void* value) {
+  return DO_SYSCALL_3(set_thread_property, tid, property, value);
 }
 
 void thread_wait(void) {

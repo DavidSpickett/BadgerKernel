@@ -2,10 +2,16 @@
 #include "user/util.h"
 #include "util.h"
 
-void worker_2() { log_event("Two!"); }
+void worker_2() {
+  log_event("Two!");
+}
 /* Three printed in worker_1 */
-void worker_4() { log_event("Four!"); }
-void worker_5() { log_event("Five!"); }
+void worker_4() {
+  log_event("Four!");
+}
+void worker_5() {
+  log_event("Five!");
+}
 
 void worker_1() {
   log_event("One!");

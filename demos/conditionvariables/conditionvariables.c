@@ -1,5 +1,5 @@
-#include "user/thread.h"
 #include "condition_variable.h"
+#include "user/thread.h"
 #include "util.h"
 
 ConditionVariable cond_var;

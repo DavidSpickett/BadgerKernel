@@ -1,5 +1,5 @@
-#include "user/thread.h"
 #include "print.h"
+#include "user/thread.h"
 
 void keep_page(int tid) {
   // Keep going back to load_again and trying find a free page
