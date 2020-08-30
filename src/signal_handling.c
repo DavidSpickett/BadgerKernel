@@ -58,7 +58,7 @@ static void install_signal_handler(Thread* thread, uint32_t signal) {
 
 static uint32_t next_signal(uint32_t pending_signals) {
   for (uint32_t i = 0; i < 32; ++i) {
-    if (pending_signals & (1 << i)) {
+    if (pending_signals & ((uint32_t)1 << i)) {
       // +1 because bit 0 means signal number 1
       return i + 1;
     }
