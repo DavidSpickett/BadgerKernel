@@ -1,5 +1,5 @@
-#ifndef SEMIHOSTING_H
-#define SEMIHOSTING_H
+#ifndef KERNEL_SEMIHOSTING_H
+#define KERNEL_SEMIHOSTING_H
 
 #include <stddef.h>
 
@@ -16,4 +16,4 @@
 
 size_t generic_semihosting_call(size_t operation, size_t* parameters);
 
-#endif /* ifdef SEMIHOSTING_H */
+#endif /* ifdef KERNEL_SEMIHOSTING_H */

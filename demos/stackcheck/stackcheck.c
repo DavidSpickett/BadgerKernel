@@ -1,4 +1,4 @@
-#include "thread.h" // For struct Thread
+#include "kernel/thread.h" // For struct Thread
 #include "user/thread.h"
 #include "util.h"
 #include <stddef.h>

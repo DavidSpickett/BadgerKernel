@@ -1,7 +1,7 @@
 #ifndef CONDITION_VARIABLE_H
 #define CONDITION_VARIABLE_H
 
-#include "thread.h"
+#include "kernel/thread.h"
 #include <stddef.h>
 
 typedef struct {

@@ -1,5 +1,5 @@
 #include "mutex.h"
-#include "thread.h"
+#include "kernel/thread.h"
 
 /* Surprise! The data is just the thread ID.
    At least it's hidden a little bit. */

@@ -1,12 +1,12 @@
-#include "thread.h"
+#include "kernel/thread.h"
 #include "common/errno.h"
 #include "common/trace.h"
 #include "common/print.h"
 #include "util.h"
 #if CODE_PAGE_SIZE
-#include "elf.h"
+#include "kernel/elf.h"
 #endif
-#include "alloc.h"
+#include "kernel/alloc.h"
 #include <stdarg.h>
 #include <string.h>
 

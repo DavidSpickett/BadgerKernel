@@ -1,5 +1,5 @@
 #include "common/print.h"
-#include "thread.h"
+#include "kernel/thread.h"
 #include "user/thread.h"
 #include "user/util.h"
 #include "util.h"

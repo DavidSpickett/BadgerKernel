@@ -1,8 +1,8 @@
-#ifndef THREAD_H
-#define THREAD_H
+#ifndef KERNEL_THREAD_H
+#define KERNEL_THREAD_H
 
 #include "common/thread.h"
-#include "thread_state.h"
+#include "kernel/thread_state.h"
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -84,4 +84,4 @@ void check_signals(Thread* thread);
 void thread_start(void);
 void init_register_context(Thread* thread);
 
-#endif /* ifdef THREAD_H */
+#endif /* ifdef KERNEL_THREAD_H */

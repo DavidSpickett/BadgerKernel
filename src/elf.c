@@ -1,7 +1,7 @@
-#include "elf.h"
-#include "file.h"
+#include "kernel/elf.h"
+#include "kernel/file.h"
 #include "common/print.h"
-#include "thread.h"
+#include "kernel/thread.h"
 #include "user/thread.h"
 #include "util.h"
 // Only for symbols, only use k_<...> functions in this file

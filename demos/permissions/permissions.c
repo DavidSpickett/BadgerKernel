@@ -1,5 +1,5 @@
 #include "common/errno.h"
-#include "file.h"
+#include "kernel/file.h"
 #include "user/alloc.h"
 #include "user/file.h"
 #include "user/thread.h"

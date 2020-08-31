@@ -3,7 +3,7 @@
 
 #include "common/thread.h"
 #include "common/trace.h"
-#include "thread_state.h"
+#include "kernel/thread_state.h"
 #include <stdint.h>
 
 int add_thread(const char* name, const ThreadArgs* args, void* worker,

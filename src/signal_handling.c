@@ -1,6 +1,6 @@
 #include "common/trace.h"
-#include "generic_asm.h"
-#include "thread.h"
+#include "kernel/generic_asm.h"
+#include "kernel/thread.h"
 #include <string.h>
 
 extern void __signal_handler_entry(void);

@@ -1,5 +1,5 @@
-#ifndef THREAD_STATE_H
-#define THREAD_STATE_H
+#ifndef KERNEL_THREAD_STATE_H
+#define KERNEL_THREAD_STATE_H
 
 #ifdef __ASSEMBLER__
 #define ENUM_START
@@ -29,4 +29,4 @@ ENUM_VALUE(svc_disable_timer, 2)
 ENUM_VALUE(svc_syscall, 21)
 ENUM_END(SVCCodes)
 
-#endif /* ifdef THREAD_STATE_H */
+#endif /* ifdef KERNEL_THREAD_STATE_H */

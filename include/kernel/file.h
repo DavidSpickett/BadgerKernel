@@ -1,5 +1,5 @@
-#ifndef FILE_H
-#define FILE_H
+#ifndef KERNEL_FILE_H
+#define KERNEL_FILE_H
 
 #include "common/file.h"
 #include <stdbool.h>
@@ -14,4 +14,4 @@ off_t k_lseek(int fd, off_t offset, int whence);
 int k_remove(const char* path);
 int k_close(int filedes);
 
-#endif /* ifdef FILE_H */
+#endif /* ifdef KERNEL_FILE_H */

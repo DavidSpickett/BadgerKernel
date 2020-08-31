@@ -1,5 +1,5 @@
-#ifndef GENERIC_ASM_H
-#define GENERIC_ASM_H
+#ifndef KERNEL_GENERIC_ASM_H
+#define KERNEL_GENERIC_ASM_H
 
 // Defines for writing inline assembly that works
 // for Arm/Thumb/AArch64
@@ -24,4 +24,4 @@
 
 #endif
 
-#endif /* ifdef GENERIC_ASM_H */
+#endif /* ifdef KERNEL_GENERIC_ASM_H */
