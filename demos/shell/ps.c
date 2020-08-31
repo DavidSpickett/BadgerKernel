@@ -1,4 +1,4 @@
-#include "print.h"
+#include "common/print.h"
 #include "user/thread.h"
 
 // TODO: move somewhere general?

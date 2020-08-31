@@ -1,7 +1,7 @@
 #ifndef UTIL_H
 #define UTIL_H
 
-#include "print.h"
+#include "common/print.h"
 #include <stdbool.h>
 
 void k_exit(int status);

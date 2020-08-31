@@ -1,5 +1,5 @@
 #include "common/syscall.h"
-#include "print.h"
+#include "common/print.h"
 #include "thread_state.h"
 #include "util.h"
 

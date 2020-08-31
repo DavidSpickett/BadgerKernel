@@ -1,6 +1,6 @@
 #include "elf.h"
 #include "file.h"
-#include "print.h"
+#include "common/print.h"
 #include "thread.h"
 #include "user/thread.h"
 #include "util.h"

@@ -1,6 +1,6 @@
 #include "user/thread.h"
 #include "common/syscall.h"
-#include "print.h"
+#include "common/print.h"
 #include <stdarg.h>
 #include <string.h>
 

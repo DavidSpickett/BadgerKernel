@@ -1,7 +1,7 @@
 #include "thread.h"
 #include "common/errno.h"
 #include "common/trace.h"
-#include "print.h"
+#include "common/print.h"
 #include "util.h"
 #if CODE_PAGE_SIZE
 #include "elf.h"

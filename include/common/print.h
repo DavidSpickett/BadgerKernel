@@ -1,5 +1,5 @@
-#ifndef PRINT_H
-#define PRINT_H
+#ifndef COMMON_PRINT_H
+#define COMMON_PRINT_H
 
 #include <stdarg.h>
 #include <stdint.h>
@@ -13,4 +13,4 @@ int sprintf(char* str, const char* fmt, ...);
 #define THREAD_NAME_SIZE 12
 void format_thread_name(char* out, int tid, const char* name);
 
-#endif /* ifdef PRINT_H */
+#endif /* ifdef COMMON_PRINT_H */

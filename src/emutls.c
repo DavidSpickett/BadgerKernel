@@ -1,4 +1,4 @@
-#include "print.h"
+#include "common/print.h"
 #include "thread.h"
 #include "user/thread.h"
 #include "user/util.h"

@@ -1,5 +1,5 @@
 #include "common/trace.h"
-#include "print.h"
+#include "common/print.h"
 
 // TODO: test these layouts somehow
 #ifdef __aarch64__
