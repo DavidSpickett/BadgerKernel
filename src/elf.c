@@ -2,14 +2,13 @@
 #include "kernel/file.h"
 #include "common/print.h"
 #include "kernel/thread.h"
-#include "user/thread.h"
-#include "util.h"
-// Only for symbols, only use k_<...> functions in this file
-#include "user/file.h"
 #include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
+// Only for symbols, only use k_<...> functions in this file
+#include "user/thread.h"
+#include "user/file.h"
 
 #ifndef CODE_PAGE_SIZE
 #error "Loading ELFs requires CODE_PAGE_SIZE"

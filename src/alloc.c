@@ -1,6 +1,5 @@
 #include "kernel/alloc.h"
 #include "kernel/thread.h"
-#include "util.h"
 #include <stdint.h>
 #include <string.h>
 

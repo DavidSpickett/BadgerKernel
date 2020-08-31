@@ -84,4 +84,7 @@ void check_signals(Thread* thread);
 void thread_start(void);
 void init_register_context(Thread* thread);
 
+// Not thread related but no better place for it
+void k_exit(int status);
+
 #endif /* ifdef KERNEL_THREAD_H */

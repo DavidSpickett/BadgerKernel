@@ -2,7 +2,6 @@
 #include "kernel/semihosting.h"
 #include "common/thread_state.h"
 #include "common/print.h"
-#include "util.h"
 // For assert's exit
 #include "user/util.h"
 #include <stddef.h>
