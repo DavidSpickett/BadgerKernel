@@ -3,7 +3,6 @@
 #include "user/file.h"
 #include "user/thread.h"
 #include "user/util.h"
-#include "util.h"
 #include <string.h>
 
 #define MAX_CMD_LINE_PARTS 20

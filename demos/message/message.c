@@ -1,6 +1,5 @@
 #include "user/thread.h"
 #include "user/util.h"
-#include "util.h"
 
 __attribute__((noreturn)) void sender() {
   while (1) {

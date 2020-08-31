@@ -1,7 +1,6 @@
 #include "common/trace.h"
 #include "user/thread.h"
 #include "user/util.h"
-#include "util.h"
 
 // Hacky way to get function range without
 // debug info.

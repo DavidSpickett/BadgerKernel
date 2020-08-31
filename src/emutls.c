@@ -2,7 +2,6 @@
 #include "kernel/thread.h"
 #include "user/thread.h"
 #include "user/util.h"
-#include "util.h"
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>

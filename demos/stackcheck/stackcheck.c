@@ -1,6 +1,5 @@
 #include "kernel/thread.h" // For struct Thread
 #include "user/thread.h"
-#include "util.h"
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>

@@ -1,7 +1,6 @@
 #include "user/timer.h"
 #include "user/thread.h"
 #include "user/util.h"
-#include "util.h"
 #include <string.h>
 
 const char* msgs[] = {
