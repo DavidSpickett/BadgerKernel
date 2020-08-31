@@ -1,4 +1,4 @@
-#include "kernel/thread_state.h"
+#include "common/thread_state.h"
 
 .set SYSTEM_MODE,     0x1f
 .set SUPERVISOR_MODE, 0x13

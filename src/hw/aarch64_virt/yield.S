@@ -1,4 +1,4 @@
-#include "kernel/thread_state.h"
+#include "common/thread_state.h"
 
 .set TIMER_AMOUNT, 100000
 

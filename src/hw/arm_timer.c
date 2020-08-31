@@ -1,4 +1,4 @@
-#include "kernel/thread_state.h"
+#include "common/thread_state.h"
 #include "timer.h"
 #include <stddef.h>
 

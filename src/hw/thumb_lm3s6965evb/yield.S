@@ -1,4 +1,4 @@
-#include "kernel/thread_state.h"
+#include "common/thread_state.h"
 
 // This allows us to use push/pop with high registers
 .syntax unified

@@ -1,6 +1,6 @@
 #include "common/syscall.h"
 #include "common/print.h"
-#include "kernel/thread_state.h"
+#include "common/thread_state.h"
 #include "util.h"
 
 // NUMREGs chosen to be callee saved
