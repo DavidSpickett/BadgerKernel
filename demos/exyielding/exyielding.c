@@ -1,5 +1,5 @@
+#include "common/assert.h"
 #include "user/thread.h"
-#include "util.h"
 
 void thread1() {
   yield_to(2);

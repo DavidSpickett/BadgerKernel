@@ -1,5 +1,5 @@
+#include "common/assert.h"
 #include "user/thread.h"
-#include "util.h"
 #include <stddef.h>
 
 void printer(int repeat, char* phrase, int sub_printer, int start) {

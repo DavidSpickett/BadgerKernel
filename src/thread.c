@@ -2,6 +2,7 @@
 #include "common/errno.h"
 #include "common/trace.h"
 #include "common/print.h"
+#include "common/assert.h"
 #include "util.h"
 #if CODE_PAGE_SIZE
 #include "kernel/elf.h"

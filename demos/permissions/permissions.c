@@ -1,8 +1,8 @@
 #include "common/errno.h"
+#include "common/assert.h"
 #include "user/alloc.h"
 #include "user/file.h"
 #include "user/thread.h"
-#include "util.h"
 
 void cannot_alloc() {
   assert(malloc(sizeof(int)) == NULL);

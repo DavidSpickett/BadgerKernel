@@ -1,4 +1,5 @@
 #include "common/print.h"
+#include "common/assert.h"
 #include "user/file.h"
 #include "user/thread.h"
 #include "user/util.h"

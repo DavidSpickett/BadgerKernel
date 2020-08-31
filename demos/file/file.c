@@ -1,9 +1,9 @@
 /* Hello file demo! */
 // This demo is for semihosting file access
-#include "user/file.h"
+#include "common/assert.h"
 #include "common/print.h"
+#include "user/file.h"
 #include "user/thread.h"
-#include "util.h"
 #include <string.h>
 
 void fail_open(void) {

@@ -1,6 +1,6 @@
 #include "condition_variable.h"
+#include "common/assert.h"
 #include "user/thread.h"
-#include "util.h"
 
 ConditionVariable cond_var;
 

@@ -1,7 +1,7 @@
 #include "common/trace.h"
 #include "user/thread.h"
 #include "user/util.h"
-#include "util.h"
+#include "common/assert.h"
 
 extern void work_finished(void);
 

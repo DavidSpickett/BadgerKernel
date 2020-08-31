@@ -1,6 +1,6 @@
+#include "common/assert.h"
 #include "user/thread.h"
 #include "user/util.h"
-#include "util.h"
 
 void worker_2() {
   log_event("Two!");

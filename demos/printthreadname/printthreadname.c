@@ -1,6 +1,6 @@
+#include "common/assert.h"
 #include "common/print.h"
 #include "user/thread.h"
-#include "util.h"
 
 void work(void) {}
 

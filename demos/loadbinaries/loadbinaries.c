@@ -1,6 +1,6 @@
 #include "common/errno.h"
+#include "common/assert.h"
 #include "user/thread.h"
-#include "util.h"
 
 void load_again() {
   // This yielding is also testing that going from

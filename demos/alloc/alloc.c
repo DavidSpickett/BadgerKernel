@@ -1,6 +1,7 @@
+#include "common/assert.h"
+#include "common/print.h"
 #include "user/alloc.h"
 #include "user/thread.h"
-#include "util.h"
 #include <stdint.h>
 
 void basic_types(void) {

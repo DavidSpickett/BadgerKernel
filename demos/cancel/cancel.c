@@ -1,5 +1,5 @@
+#include "common/assert.h"
 #include "user/thread.h"
-#include "util.h"
 
 __attribute__((noreturn)) void work() {
   for (int num = 0; num < 3; ++num) {

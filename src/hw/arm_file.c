@@ -1,7 +1,8 @@
 #include "kernel/file.h"
 #include "kernel/semihosting.h"
 #include "kernel/thread.h"
-#include "util.h"
+#include "common/assert.h"
+#include "common/print.h"
 #include <stddef.h>
 #include <string.h>
 
