@@ -116,7 +116,7 @@ set( KERNEL_SOURCES
 )
 
 if(NOT BP_LOWER STREQUAL "aarch64")
-  set( KERNEL_SOURCES ${KERNEL_SOURCES} src/emutls.c)
+  set( KERNEL_SOURCES ${KERNEL_SOURCES} src/user/emutls.c)
 endif()
 
 if(BP_LOWER STREQUAL "thumb" )
