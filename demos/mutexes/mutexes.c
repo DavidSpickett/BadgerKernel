@@ -1,4 +1,4 @@
-#include "mutex.h"
+#include "user/mutex.h"
 #include "user/thread.h"
 #include "common/assert.h"
 #include <string.h>

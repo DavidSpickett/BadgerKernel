@@ -100,6 +100,7 @@ set( KERNEL_SOURCES
   src/user/file.c
   src/user/util.c
   src/user/alloc.c
+  src/user/mutex.c
   src/hw/${PLATFORM_SRC}/vectors.s
   src/hw/${PLATFORM_SRC}/startup.s
   src/hw/${PLATFORM_SRC}/yield.S

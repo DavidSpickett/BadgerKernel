@@ -1,4 +1,4 @@
-#include "mutex.h"
+#include "kernel/mutex.h"
 #include "kernel/thread.h"
 
 /* Surprise! The data is just the thread ID.
@@ -6,11 +6,26 @@
 #define ID(x)   (int)(x)
 #define DATA(x) (size_t)(x)
 
-void init_mutex(Mutex* mut) {
+bool k_mutex(unsigned op, Mutex * m) {
+  switch (op) {
+    case MUTEX_INIT:
+      k_init_mutex(m);
+      return true;
+    case MUTEX_LOCK:
+      return k_lock_mutex(m);
+    case MUTEX_UNLOCK:
+      return k_unlock_mutex(m);
+    default:
+      // TODO: E_INVALID_ARGS
+      return false;
+  }
+}
+
+void k_init_mutex(Mutex* mut) {
   mut->data = DATA(-1);
 }
 
-bool unlock_mutex(Mutex* m) {
+bool k_unlock_mutex(Mutex* m) {
   // TODO: does this take place in kernel or not?
   int id = k_get_thread_id();
 
@@ -22,7 +37,7 @@ bool unlock_mutex(Mutex* m) {
   return false;
 }
 
-bool lock_mutex(Mutex* m) {
+bool k_lock_mutex(Mutex* m) {
   // TODO: kernel or user?
   int id = k_get_thread_id();
 

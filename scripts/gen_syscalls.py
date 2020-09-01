@@ -14,6 +14,7 @@ send_msg
 thread_wait
 thread_wake
 thread_cancel
+mutex
 open
 read
 write
