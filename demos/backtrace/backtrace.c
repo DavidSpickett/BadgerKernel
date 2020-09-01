@@ -76,6 +76,8 @@ void branch(void) {
   // the frame info for the old frames will have
   // been overwritten by you calling the backtrace
   // function.
+  // branch - get_thread_registers - generic_syscall
+  // branch - print_backtrace (overwriting the frame)
 
   leaf();
 

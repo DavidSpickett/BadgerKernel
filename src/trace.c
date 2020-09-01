@@ -61,6 +61,9 @@ typedef struct {
 
 static const char* find_symbol(const Symbol* symbols, size_t num_symbols,
                                void* address) {
+  if (!symbols) {
+    return "???";
+  }
   if (address == 0) {
     // All threads start with lr zeroed
     return "<init>";
