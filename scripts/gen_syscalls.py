@@ -60,20 +60,8 @@ for call in rest:
 
 print(dedent("""\
   syscall_eol,
-} Syscall;
-
-size_t generic_syscall(Syscall num, size_t arg1, size_t arg2,
-                       size_t arg3, size_t arg4);
-"""))
-
-for i in range(5):
-    # +1s to start from ARG1 not ARG0
-    args = "".join([", ARG{}".format(j+1) for j in range(i)])
-    print("#define DO_SYSCALL_{}(NAME{}) \\".format(i, args))
-    args = ["(size_t)(ARG{})".format(j+1) for j in range(i)]
-    args.extend(["0"]*(4-i))
-    args = ", ".join(args)
-    print("  generic_syscall(syscall_##NAME, {})".format(args))
+} Syscall;"""))
+print()
 
 print(dedent("""
       #endif /* ifdef __ASSEMBLER__ */

@@ -103,7 +103,6 @@ set( KERNEL_SOURCES
 
   src/print.c
   src/trace.c
-  src/syscall.c
 
   # /user files here for threads within the same binary
   src/user/errno.c
@@ -113,6 +112,7 @@ set( KERNEL_SOURCES
   src/user/alloc.c
   src/user/mutex.c
   src/user/condition_variable.c
+  src/user/syscall.c
 )
 
 if(NOT BP_LOWER STREQUAL "aarch64")

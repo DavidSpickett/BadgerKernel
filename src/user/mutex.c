@@ -1,5 +1,5 @@
 #include "user/mutex.h"
-#include "common/syscall.h"
+#include "user/syscall.h"
 
 void init_mutex(Mutex* m) {
   DO_SYSCALL_2(mutex, MUTEX_INIT, m);

@@ -1,4 +1,4 @@
-#include "common/syscall.h"
+#include "user/syscall.h"
 #include "user/condition_variable.h"
 
 void init_condition_variable(ConditionVariable* cv) {
