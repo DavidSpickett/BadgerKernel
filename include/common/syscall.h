@@ -21,6 +21,7 @@
   FNADDR k_thread_wake
   FNADDR k_thread_cancel
   FNADDR k_mutex
+  FNADDR k_condition_variable
   FNADDR k_open
   FNADDR k_read
   FNADDR k_write
@@ -53,6 +54,7 @@ typedef enum {
   syscall_thread_wake,
   syscall_thread_cancel,
   syscall_mutex,
+  syscall_condition_variable,
   syscall_open,
   syscall_read,
   syscall_write,

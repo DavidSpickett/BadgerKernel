@@ -15,6 +15,7 @@ thread_wait
 thread_wake
 thread_cancel
 mutex
+condition_variable
 open
 read
 write

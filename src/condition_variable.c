@@ -1,34 +1,51 @@
-#include "condition_variable.h"
-#include "user/thread.h"
+#include "kernel/condition_variable.h"
+#include "kernel/thread.h"
 
-void init_condition_variable(ConditionVariable* cond_var) {
-  cond_var->first = 0;
-  cond_var->last = 0;
-  cond_var->full = false;
+static void k_init_condition_variable(ConditionVariable* cv) {
+  cv->first = 0;
+  cv->last = 0;
+  cv->full = false;
 }
 
-bool signal(ConditionVariable* cond_var) {
-  if (cond_var->first != cond_var->last || cond_var->full) {
-    thread_wake(cond_var->waiting[cond_var->first]);
-    cond_var->first = (cond_var->first + 1) % MAX_THREADS;
-    cond_var->full = false;
+static bool k_signal(ConditionVariable* cv) {
+  if (cv->first != cv->last || cv->full) {
+    k_thread_wake(cv->waiting[cv->first]);
+    cv->first = (cv->first + 1) % MAX_THREADS;
+    cv->full = false;
     return true;
   }
   return false;
 }
 
-void broadcast(ConditionVariable* cond_var) {
+static void k_broadcast(ConditionVariable* cv) {
   bool signalled = false;
   do {
-    signalled = signal(cond_var);
+    signalled = k_signal(cv);
   } while (signalled);
 }
 
-void wait(ConditionVariable* cond_var) {
-  // TODO: kernel or user?
-  cond_var->waiting[cond_var->last] = k_get_thread_id();
-  cond_var->last = (cond_var->last + 1) % MAX_THREADS;
-  cond_var->full = cond_var->first == cond_var->last;
-  // TODO: kernel or user?
-  thread_wait();
+static void k_wait(ConditionVariable* cv) {
+  cv->waiting[cv->last] = k_get_thread_id();
+  cv->last = (cv->last + 1) % MAX_THREADS;
+  cv->full = cv->first == cv->last;
+  k_thread_wait();
+}
+
+bool k_condition_variable(unsigned op, ConditionVariable* cv) {
+  switch (op) {
+    case CONDITION_VARIABLE_INIT:
+      k_init_condition_variable(cv);
+      return true;
+    case CONDITION_VARIABLE_SIGNAL:
+      return k_signal(cv);
+    case CONDITION_VARIABLE_BROADCAST:
+      k_broadcast(cv);
+      return true;
+    case CONDITION_VARIABLE_WAIT:
+      k_wait(cv);
+      return true;
+    default:
+      // TODO: E_INVALID_ARGS
+      return false;
+  }
 }
