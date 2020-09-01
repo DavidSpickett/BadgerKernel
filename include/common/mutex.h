@@ -3,9 +3,7 @@
 
 #include <stddef.h>
 
-typedef struct {
-  size_t data;
-} Mutex;
+typedef int Mutex;
 
 #define MUTEX_INIT   0
 #define MUTEX_LOCK   1
