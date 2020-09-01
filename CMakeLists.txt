@@ -88,28 +88,31 @@ set( CMAKE_C_FLAGS "${PLATFORM} ${CFLAGS}" )
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 set( KERNEL_SOURCES
-  src/thread.c
-  src/mutex.c
-  src/condition_variable.c
-  src/syscall.c
-  src/errno.c
-  src/signal_handling.c
+  src/kernel/thread.c
+  src/kernel/mutex.c
+  src/kernel/condition_variable.c
+  src/kernel/signal_handling.c
+  src/kernel/alloc.c
+
   src/hw/arm_file.c
+
+  src/hw/${PLATFORM_SRC}/vectors.s
+  src/hw/${PLATFORM_SRC}/startup.s
+  src/hw/${PLATFORM_SRC}/yield.S
+  src/hw/arm_util.c
+
+  src/print.c
+  src/trace.c
+  src/syscall.c
+
   # /user files here for threads within the same binary
+  src/user/errno.c
   src/user/thread.c
   src/user/file.c
   src/user/util.c
   src/user/alloc.c
   src/user/mutex.c
   src/user/condition_variable.c
-  src/hw/${PLATFORM_SRC}/vectors.s
-  src/hw/${PLATFORM_SRC}/startup.s
-  src/hw/${PLATFORM_SRC}/yield.S
-  src/hw/arm_util.c
-  src/print.c
-  src/trace.c
-  src/alloc.c
-  src/syscall.c
 )
 
 if(NOT BP_LOWER STREQUAL "aarch64")

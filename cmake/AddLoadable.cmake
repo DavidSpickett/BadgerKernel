@@ -28,7 +28,7 @@ function(__add_loadable PARENT NAME PIE TEST)
   # Use semihosting to load binary
   target_sources(${PARENT} PRIVATE src/hw/arm_file.c)
   # Need elf parser
-  target_sources(${PARENT} PRIVATE src/elf.c)
+  target_sources(${PARENT} PRIVATE src/kernel/elf.c)
 
   add_executable(${NAME} demos/${PARENT}/${NAME}.c)
   add_dependencies(${NAME} ${PARENT})
