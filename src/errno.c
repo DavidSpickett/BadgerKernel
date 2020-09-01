@@ -1,4 +1,4 @@
-#include "common/errno.h"
+#include "user/errno.h"
 #include "user/thread.h"
 
 int* __get_errno(void) {

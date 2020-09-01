@@ -1,4 +1,4 @@
-#include "common/errno.h"
+#include "user/errno.h"
 #include "common/assert.h"
 #include "user/alloc.h"
 #include "user/file.h"

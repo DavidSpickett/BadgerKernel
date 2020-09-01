@@ -1,7 +1,6 @@
 #include "common/assert.h"
-#include "common/errno.h"
+#include "user/errno.h"
 #include "user/thread.h"
-#include <limits.h>
 
 const char* filename = "binary";
 void load_again() {
