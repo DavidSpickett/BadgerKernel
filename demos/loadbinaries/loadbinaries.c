@@ -34,7 +34,7 @@ void setup(void) {
   add_named_thread(load_again, "load_again");
 
   // This file doesn't exist
-  assert(add_thread_from_file("/?/:/;") == -1);
+  assert(add_thread_from_file("/?/:/;") == INVALID_THREAD);
   assert(errno == E_NOT_FOUND);
 
   add_thread_from_file(filename);

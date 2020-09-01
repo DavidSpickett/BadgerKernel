@@ -30,7 +30,7 @@ void cannot_file() {
 }
 
 void cannot_create() {
-  assert(add_thread_from_worker(cannot_create) == -1);
+  assert(add_thread_from_worker(cannot_create) == INVALID_THREAD);
 }
 
 void cannot_kconfig() {
@@ -41,7 +41,7 @@ void cannot_kconfig() {
 
 void cannot_tconfig() {
   // Can't config self
-  assert(!set_thread_name(-1, "won't see this!"));
+  assert(!set_thread_name(CURRENT_THREAD, "won't see this!"));
   // Can config other
   assert(set_thread_name(0, "runner"));
 }
@@ -60,18 +60,18 @@ void cannot_mutli() {
   assert(malloc(sizeof(int)) == NULL);
   set_kernel_config(KCFG_LOG_SCHEDULER, 0);
   // This one we are allowed to do
-  assert(set_thread_name(-1, "new_name"));
+  assert(set_thread_name(CURRENT_THREAD, "new_name"));
 }
 
 void same_permissions() {
   errno = 0;
-  assert(set_thread_name(-1, "SAME"));
+  assert(set_thread_name(CURRENT_THREAD, "SAME"));
   assert(errno == 0);
 }
 
 void reduced_permissions() {
   errno = 0;
-  assert(!set_thread_name(-1, "REDUCED"));
+  assert(!set_thread_name(CURRENT_THREAD, "REDUCED"));
   assert(errno == E_PERM);
 }
 
@@ -132,15 +132,15 @@ void cleanup() {
 
 #define RUN_TEST_THREAD(NAME, FN, FLAGS)                                       \
   tid = add_thread(NAME, NULL, FN, FLAGS);                                     \
-  assert(tid != -1);                                                           \
+  assert(tid != INVALID_THREAD);                                               \
   set_child(tid);                                                              \
   yield();
 
 // Use this to run one by one so we aren't limited
 // by MAX_THREADS
 void setup(void) {
-  int tid = -1;
-  set_thread_name(-1, "runner");
+  int tid = INVALID_THREAD;
+  set_thread_name(CURRENT_THREAD, "runner");
 
   RUN_TEST_THREAD("noalloc", cannot_alloc, THREAD_FUNC | TPERM_NO_ALLOC);
 

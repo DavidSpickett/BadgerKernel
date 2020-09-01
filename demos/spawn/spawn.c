@@ -16,7 +16,7 @@ void work() {
 }
 
 void spawner() {
-  set_thread_name(-1, "spawner");
+  set_thread_name(CURRENT_THREAD, "spawner");
 
   const char* demons[] = {
       "Morgoth",

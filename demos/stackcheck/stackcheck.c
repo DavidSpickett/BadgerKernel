@@ -19,7 +19,7 @@ __attribute__((noinline)) void recurse(int repeat) {
 }
 
 void underflow() {
-  set_thread_name(-1, "underflow");
+  set_thread_name(CURRENT_THREAD, "underflow");
 
   char dummy;
   size_t distance = (void*)(&dummy) - (void*)_current_thread;

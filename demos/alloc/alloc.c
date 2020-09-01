@@ -311,7 +311,7 @@ void free_cancel() {
   thread_join(tid, &state);
 
 void setup(void) {
-  set_thread_name(-1, "dispatcher");
+  set_thread_name(CURRENT_THREAD, "dispatcher");
 
   // Single thread to send and wait on threads
   // so that we don't have to have MAX_THREADS = number of tests

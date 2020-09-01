@@ -49,6 +49,6 @@ void setup(void) {
     add_thread_from_worker(waiter);
   }
 
-  set_thread_name(-1, "signaller");
+  set_thread_name(CURRENT_THREAD, "signaller");
   signaller();
 }

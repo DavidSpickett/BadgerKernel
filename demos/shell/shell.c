@@ -267,6 +267,6 @@ void run_shell() {
 
 void setup(void) {
   set_kernel_config(0, KCFG_LOG_SCHEDULER | KCFG_LOG_THREADS);
-  set_thread_name(-1, "shell");
+  set_thread_name(CURRENT_THREAD, "shell");
   run_shell();
 }

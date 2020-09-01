@@ -79,13 +79,11 @@ void branch(void) {
 
   leaf();
 
-  // TODO: Can't backtrace yourself because thread
-  // registers aren't fully saved on syscalls
   END_SYMBOL("branch");
 }
 
 void setup(void) {
-  set_thread_name(-1, "tracee");
+  set_thread_name(CURRENT_THREAD, "tracee");
   add_named_thread(backtracer, "backtracer");
   aaa();
   END_SYMBOL("setup");

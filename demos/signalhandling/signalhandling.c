@@ -21,7 +21,7 @@ void worker() {
 }
 
 void setup(void) {
-  set_thread_name(-1, "signaller");
+  set_thread_name(CURRENT_THREAD, "signaller");
   int tid = add_named_thread(worker, "receiver");
 
   // You'd probably never do this but just to prove

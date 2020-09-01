@@ -625,7 +625,7 @@ int k_add_thread_from_file_with_args(const char* filename,
 int k_add_thread(const char* name, const ThreadArgs* args, void* worker,
                  uint32_t flags) {
   if (k_has_no_permission(TPERM_CREATE)) {
-    return -1;
+    return INVALID_THREAD;
   }
 
   ThreadArgs dummy_args = {0, 0, 0, 0};

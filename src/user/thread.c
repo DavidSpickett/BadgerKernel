@@ -58,7 +58,7 @@ int add_named_thread_with_args(void (*worker)(), const char* name,
 
 int get_thread_id(void) {
   int ret = 0;
-  get_thread_property(-1, TPROP_ID, &ret);
+  get_thread_property(CURRENT_THREAD, TPROP_ID, &ret);
   return ret;
 }
 
@@ -80,7 +80,7 @@ uint32_t get_kernel_config(void) {
 }
 
 bool set_child(int child) {
-  return DO_SYSCALL_3(set_thread_property, -1, TPROP_CHILD, &child);
+  return DO_SYSCALL_3(set_thread_property, CURRENT_THREAD, TPROP_CHILD, &child);
 }
 
 bool get_thread_state(int tid, ThreadState* state) {
@@ -123,9 +123,9 @@ bool get_child(int tid, int* child) {
 
 uint16_t permissions(uint32_t remove) {
   uint16_t to_remove = remove >> TFLAG_PERM_SHIFT;
-  set_thread_property(-1, TPROP_PERMISSIONS, &to_remove);
+  set_thread_property(CURRENT_THREAD, TPROP_PERMISSIONS, &to_remove);
   uint16_t new_permissions = 0;
-  get_thread_property(-1, TPROP_PERMISSIONS, &new_permissions);
+  get_thread_property(CURRENT_THREAD, TPROP_PERMISSIONS, &new_permissions);
   return new_permissions;
 }
 
@@ -142,7 +142,7 @@ bool thread_signal(int tid, uint32_t signal) {
 }
 
 bool set_signal_handler(void (*handler)(uint32_t)) {
-  return set_thread_property(-1, TPROP_SIGNAL_HANDLER, &handler);
+  return set_thread_property(CURRENT_THREAD, TPROP_SIGNAL_HANDLER, &handler);
 }
 
 bool get_thread_property(int tid, size_t property, void* res) {
