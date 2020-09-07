@@ -25,8 +25,6 @@ function(__add_loadable PARENT NAME PIE TEST)
   endif()
 
   target_compile_definitions(${PARENT} PRIVATE CODE_PAGE_SIZE=${CODE_PAGE_SIZE})
-  # Use semihosting to load binary
-  target_sources(${PARENT} PRIVATE src/hw/arm_file.c)
   # Need elf parser
   target_sources(${PARENT} PRIVATE src/kernel/elf.c)
 

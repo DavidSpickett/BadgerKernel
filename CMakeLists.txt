@@ -94,12 +94,12 @@ set( KERNEL_SOURCES
   src/kernel/signal_handling.c
   src/kernel/alloc.c
 
-  src/hw/arm_file.c
+  src/hw/arm_common/file.c
+  src/hw/arm_common/util.c
 
   src/hw/${PLATFORM_SRC}/vectors.s
   src/hw/${PLATFORM_SRC}/startup.s
   src/hw/${PLATFORM_SRC}/yield.S
-  src/hw/arm_util.c
 
   src/print.c
   src/trace.c
@@ -122,7 +122,7 @@ endif()
 if(BP_LOWER STREQUAL "thumb" )
   set( KERNEL_SOURCES ${KERNEL_SOURCES} src/hw/${PLATFORM_SRC}/timer.c)
 else()
-  set( KERNEL_SOURCES ${KERNEL_SOURCES} src/hw/arm_timer.c)
+  set( KERNEL_SOURCES ${KERNEL_SOURCES} src/hw/arm_common/timer.c)
 endif()
 
 set_property(SOURCE src/hw/${PLATFORM_SRC}/startup.s PROPERTY LANGUAGE C)
@@ -134,7 +134,7 @@ if(SANITIZERS)
 endif()
 
 if(NOT BP_LOWER STREQUAL "thumb")
-  set( KERNEL_SOURCES ${KERNEL_SOURCES} src/hw/arm_gic.c )
+  set( KERNEL_SOURCES ${KERNEL_SOURCES} src/hw/arm_common/gic.c )
 endif()
 
 # Convenient build target for CI
