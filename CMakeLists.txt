@@ -101,8 +101,8 @@ set( KERNEL_SOURCES
   src/hw/${PLATFORM_SRC}/startup.s
   src/hw/${PLATFORM_SRC}/yield.S
 
-  src/print.c
-  src/trace.c
+  src/common/print.c
+  src/common/trace.c
 
   # /user files here for threads within the same binary
   src/user/errno.c
@@ -130,7 +130,7 @@ set_property(SOURCE src/hw/${PLATFORM_SRC}/yield.S   PROPERTY LANGUAGE C)
 set_property(SOURCE src/hw/${PLATFORM_SRC}/vectors.s PROPERTY LANGUAGE C)
 
 if(SANITIZERS)
-  set( KERNEL_SOURCES ${KERNEL_SOURCES} src/ubsan.c )
+  set( KERNEL_SOURCES ${KERNEL_SOURCES} src/common/ubsan.c )
 endif()
 
 if(NOT BP_LOWER STREQUAL "thumb")
