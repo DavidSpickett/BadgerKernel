@@ -67,7 +67,6 @@ void tracer() {
   // +2 for next instr
   target_pc += 2;
   // Stored PC doesn't include mode bit so remove it
-  // TODO: why is that?
   target_pc &= ~1;
 #else
   target_pc += 4;
