@@ -61,9 +61,7 @@ endif()
 
 set( CMAKE_C_COMPILER "${PREFIX}gcc" )
 
-# Ignore attr error so that we can use "naked" which
-# is ignored on AArch64
-set( CFLAGS "-DSTACK_SIZE=${STACK_SIZE} -g3 -O${OPT_LEVEL} -Wall -Werror -Wno-error=attributes -std=gnu11")
+set( CFLAGS "-DSTACK_SIZE=${STACK_SIZE} -g3 -O${OPT_LEVEL} -Wall -Werror -std=gnu11")
 
 # Ignore lto type mismatch error which triggers at O0 for UBSAN handlers
 # I *think*, due to https://gcc.gnu.org/bugzilla/show_bug.cgi?id=78562#c6

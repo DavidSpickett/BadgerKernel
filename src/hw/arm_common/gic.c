@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include "common/attribute.h"
 
 /*
   Although I'm sure there are differences between the
@@ -23,9 +24,7 @@
 #define DIST_ITARGETSR(n)  PTR(GICD_BASE + 0x800 + (n * 4)) // Processor targets
 
 // On AArch64 we have to be careful about how we call it
-#if __ARM_ARCH_7A__
-__attribute__((naked))
-#endif
+ATTR_NAKED
 void gic_init(unsigned irq_no)
 {
   /* CPU Interface */

@@ -1,3 +1,4 @@
+#include "common/attribute.h"
 #include "common/trace.h"
 #include "kernel/generic_asm.h"
 #include "kernel/thread.h"
@@ -6,7 +7,7 @@
 extern void __signal_handler_entry(void);
 extern void __signal_handler_end(void);
 
-__attribute__((used, naked)) static void handler_wrapper(void) {
+ATTR_NAKED __attribute__((used)) static void handler_wrapper(void) {
   asm volatile(".global __signal_handler_entry\n\t"
                "__signal_handler_entry:\n\t"
                // r0/x0 has the signal number
