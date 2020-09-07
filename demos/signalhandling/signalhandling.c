@@ -16,8 +16,6 @@ void worker() {
   log_event("removing handler");
   set_signal_handler(NULL);
   yield();
-
-  // TODO: does this work with self yield?
 }
 
 void setup(void) {
