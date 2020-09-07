@@ -94,6 +94,7 @@ set( KERNEL_SOURCES
 
   src/hw/arm_common/file.c
   src/hw/arm_common/util.c
+  src/hw/arm_common/syscall.c
 
   src/hw/${PLATFORM_SRC}/vectors.s
   src/hw/${PLATFORM_SRC}/startup.s
@@ -110,7 +111,6 @@ set( KERNEL_SOURCES
   src/user/alloc.c
   src/user/mutex.c
   src/user/condition_variable.c
-  src/user/syscall.c
 )
 
 if(NOT BP_LOWER STREQUAL "aarch64")

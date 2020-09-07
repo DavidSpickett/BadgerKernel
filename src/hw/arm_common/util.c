@@ -1,5 +1,5 @@
-#include "kernel/generic_asm.h"
 #include "kernel/semihosting.h"
+#include "common/generic_asm.h"
 #include "common/thread_state.h"
 #include "common/print.h"
 // For assert's exit

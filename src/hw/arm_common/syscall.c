@@ -1,15 +1,7 @@
 #include "common/print.h"
+#include "common/generic_asm.h"
 #include "common/thread_state.h"
 #include "user/syscall.h"
-
-// NUMREGs chosen to be callee saved
-#ifdef __aarch64__
-#define RCHR   "x"
-#define NUMREG "20"
-#else
-#define RCHR   "r"
-#define NUMREG "8"
-#endif
 
 size_t generic_syscall(Syscall num, size_t arg1, size_t arg2, size_t arg3,
                        size_t arg4) {
@@ -25,13 +17,13 @@ size_t generic_syscall(Syscall num, size_t arg1, size_t arg2, size_t arg3,
      when LTO is enabled.
      r8 is used as r7 is the frame pointer on Thumb.
   */
-  asm volatile("mov " RCHR "" NUMREG ", %[num]\n\t"
+  asm volatile("mov " RCHR "" SYSCALL_REG ", %[num]\n\t"
                "svc %[svc_syscall]\n\t"
                : "=r"(reg0)
                : "r"(reg0), "r"(reg1), "r"(reg2), "r"(reg3),
                  [ svc_syscall ] "i"(svc_syscall), [ num ] "r"((size_t)num)
                /* Clobbers the callee saved reg for num.
                   Kernel saves the rest for us. */
-               : RCHR "" NUMREG, "memory");
+               : RCHR "" SYSCALL_REG, "memory");
   return reg0;
 }
