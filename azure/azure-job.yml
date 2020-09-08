@@ -17,7 +17,7 @@ jobs:
 
       - script: |
           sudo apt-get update
-          sudo apt-get install -y python3-pip ccache expect qemu-system-arm
+          sudo apt-get install -y python3-pip ccache expect qemu-system-arm ninja-build
         displayName: apt-installs
 
       - ${{ if in(build_platform, 'ARM', 'THUMB') }}:
@@ -51,9 +51,9 @@ jobs:
                 rm -f CMakeCache.txt
                 export CCACHE_DIR=$(pwd)/.ccache
                 ccache -z
-                cmake . -DBUILD_PLATFORM=${{build_platform}} -DOPT_LEVEL=${{opt_level}} -DSANITIZERS=${{sanitizers}} -DLTO=${{lto}}
-                make clean
-                make -j2 make_demos
+                cmake . -DBUILD_PLATFORM=${{build_platform}} -DOPT_LEVEL=${{opt_level}} -DSANITIZERS=${{sanitizers}} -DLTO=${{lto}} -G Ninja
+                ninja clean
+                ninja make_demos
                 ccache -s
               workingDirectory: $(Agent.BuildDirectory)
               displayName: build-O${{opt_level}}_SANITIZERS_${{sanitizers}}_LTO_${{lto}}
