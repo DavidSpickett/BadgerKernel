@@ -83,13 +83,13 @@ static size_t pow(size_t base, size_t power) {
 }
 
 static size_t consume_uint(const char** in) {
-  if (!isdigit(**in)) {
+  if (!isdigit((unsigned char)**in)) {
     return (size_t)-1;
   }
 
   // Find end of number
   const char* end_ptr = (*in) + 1;
-  while (isdigit(*end_ptr)) {
+  while (isdigit((unsigned char)*end_ptr)) {
     ++end_ptr;
   }
 
