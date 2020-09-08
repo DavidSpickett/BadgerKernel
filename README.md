@@ -8,7 +8,7 @@ All bare metal platforms use exceptions for switching threads. Either by yieldin
 
 ## Building
 
-Install cmake, Ninja and an arm-none-eabi or aarch64-elf toolchain. (Linaro releases are the easiest way to get these)
+Install cmake and an arm-none-eabi or aarch64-elf toolchain. (Linaro releases are the easiest way to get these)
 
 Install QEMU with Arm support (this will get you aarch64 too):
 ```
@@ -17,8 +17,14 @@ sudo apt-get install qemu-system-arm
 
 Then configure according to which toolchain you installed, and build:
 ```
-cmake . -DBUILD_PLATFORM=<one of aarch64/thumb/arm> -G Ninja
-ninja
+cmake . -DBUILD_PLATFORM=arm
+make
+
+cmake . -DBUILD_PLATFORM=aarch64
+make
+
+cmake . -DBUILD_PLATFORM=thumb
+make
 ```
 
 ## Demos
@@ -48,7 +54,7 @@ ninja
 | signalhandling                    | Installing and invoking signal handlers.                                           |
 | backtrace                         | Show callstack of user threads. (only tested on Arm -O0)                           |
 
-Each demo has 'run_<demo>', 'debug_<demo>' and 'test_<demo>' targets. To test all demos use lit. (best done in a virtualenv)
+Each demo has 'run_<demo>', 'debug_<demo>' and 'test_<demo>' make targets. To test all demos use lit. (best done in a virtualenv)
 
 ```
 pip install lit

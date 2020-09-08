@@ -16,6 +16,9 @@ function(__add_demo NAME TEST_TYPE MAX_THREADS)
 
   target_link_libraries(${NAME} PRIVATE "-Wl,-T,linker/kernel.ld,-defsym=ram_start=${RAM_START},-defsym=ram_size=${RAM_SIZE},-lgcc,-lc,-N,--build-id=none")
 
+  add_custom_command(TARGET ${NAME} PRE_BUILD
+    COMMAND eval "${CMAKE_C_COMPILER} --version | head -n 1"
+    VERBATIM)
   add_dependencies(make_demos ${NAME})
 
   add_custom_target(run_${NAME})
@@ -23,9 +26,7 @@ function(__add_demo NAME TEST_TYPE MAX_THREADS)
 
   add_custom_command(TARGET run_${NAME} POST_BUILD
     COMMAND eval "${QEMU} ${NAME}"
-   VERBATIM
-   # Allow interaction with demos like shell when using Ninja
-   USES_TERMINAL)
+   VERBATIM)
 
   add_custom_target(debug_${NAME})
   add_dependencies(debug_${NAME} ${NAME})
