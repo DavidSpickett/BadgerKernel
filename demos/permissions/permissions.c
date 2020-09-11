@@ -120,7 +120,7 @@ void errno_checks() {
   assert(!set_thread_name(-99, "food"));
   assert(errno == E_INVALID_ID);
   errno = 0;
-  char tname[THREAD_NAME_SIZE+1];
+  char tname[THREAD_NAME_SIZE];
   assert(!thread_name(-99, tname));
   assert(errno == E_INVALID_ID);
 }

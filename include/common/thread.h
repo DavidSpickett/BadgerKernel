@@ -10,7 +10,9 @@
 // For the set/get property API
 #define CURRENT_THREAD INVALID_THREAD
 
-#define THREAD_NAME_SIZE 12
+// Including null terminator
+// So use this as the size of any buffer to hold a thread name
+#define THREAD_NAME_SIZE 13
 
 #define KCFG_DESTROY_ON_STACK_ERR 1 << 0
 #define KCFG_LOG_SCHEDULER        1 << 1

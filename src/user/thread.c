@@ -11,8 +11,8 @@ void log_event(const char* event, ...) {
     return;
   }
 
-  char formatted_name[THREAD_NAME_SIZE + 1];
-  char name[THREAD_NAME_SIZE+1];
+  char formatted_name[THREAD_NAME_SIZE];
+  char name[THREAD_NAME_SIZE];
   thread_name(CURRENT_THREAD, name);
   format_thread_name(formatted_name, get_thread_id(), name);
   printf("Thread %s: ", formatted_name);

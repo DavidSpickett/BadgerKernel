@@ -24,7 +24,7 @@ typedef struct {
   void (*signal_handler)(uint32_t);
   uint32_t pending_signals;
   int id;
-  char name[THREAD_NAME_SIZE+1];
+  char name[THREAD_NAME_SIZE];
   // Deliberately not (void)
   void (*work)();
   ThreadArgs args;

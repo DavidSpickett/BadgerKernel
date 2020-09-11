@@ -30,7 +30,7 @@ void worker(int argc, char* argv[]) {
 
   for (int tid = 0;; ++tid) {
     ThreadState state;
-    char name[THREAD_NAME_SIZE+1];
+    char name[THREAD_NAME_SIZE];
     bool valid = thread_name(tid, name);
     // Must have hit max threads
     if (!valid) {
@@ -43,7 +43,7 @@ void worker(int argc, char* argv[]) {
 
     int child_tid = INVALID_THREAD;
     get_child(tid, &child_tid);
-    char child_name[THREAD_NAME_SIZE+1];
+    char child_name[THREAD_NAME_SIZE];
     if (child_tid != INVALID_THREAD) {
       thread_name(child_tid, child_name);
     }
