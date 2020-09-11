@@ -74,10 +74,9 @@ int k_get_thread_id(void) {
 
 static void k_set_thread_name(Thread* thread, const char* name) {
   if (name) {
+    // Will null pad if name is smaller than buffer
     strncpy(thread->name, name, THREAD_NAME_SIZE);
-    size_t name_len = strlen(name);
-    size_t null_terminator = strlen(name) > THREAD_NAME_SIZE ? THREAD_NAME_SIZE : name_len;
-    thread->name[null_terminator] = '\0';
+    thread->name[THREAD_NAME_SIZE] = '\0';
   } else {
     thread->name[0] = '\0';
   }
