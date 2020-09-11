@@ -78,26 +78,19 @@ const size_t num_builtins = sizeof(builtins) / sizeof(BuiltinCommand);
 const char* programs[] = {"echo", "ps", "ls"};
 const size_t num_programs = sizeof(programs) / sizeof(const char*);
 
-// TODO: thread names are pointers so some time after
-// run() finishes the pointer to the name on the stack is invalid
-// So after you run a few more commands you'll see that the name
-// of the program's thread has gone. (which is lucky because it
-// could point to some non string)
-// Again, this workaround breaks if we have background processes
 char run_progname[256];
 static void run(int argc, char* argv[]) {
   if (argc < 2) {
     printf("run expects at least 1 argument, the program name\n");
     return;
   }
-  strcpy(run_progname, argv[1]);
 
   // Pass on rest of arguments, +/- 1 to skip "run"
   // The program will still expect argv[0] to be its name
   const ThreadArgs args = make_args(argc - 1, argv + 1, 0, 0);
-  int tid = add_thread_from_file_with_args(run_progname, &args);
+  int tid = add_thread_from_file_with_args(argv[1], &args);
   if (tid == INVALID_THREAD) {
-    printf("Couldn't load \"%s\"\n", run_progname);
+    printf("Couldn't load \"%s\"\n", argv[1]);
   } else {
     // Set it as our child so we come back here when done
     set_child(tid);

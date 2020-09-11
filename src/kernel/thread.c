@@ -72,6 +72,15 @@ int k_get_thread_id(void) {
   return _current_thread ? _current_thread->id : INVALID_THREAD;
 }
 
+static void k_set_thread_name(Thread* thread, const char* name) {
+  if (name) {
+    strncpy(thread->name, name, THREAD_NAME_SIZE);
+    thread->name[THREAD_NAME_SIZE] = '\0';
+  } else {
+    thread->name[0] = '\0';
+  }
+}
+
 bool k_set_thread_property(int tid, size_t property, const void* value) {
   if (((tid == CURRENT_THREAD) && k_has_no_permission(TPERM_TCONFIG)) ||
       ((tid != CURRENT_THREAD) && k_has_no_permission(TPERM_TCONFIG_OTHER))) {
@@ -99,7 +108,7 @@ bool k_set_thread_property(int tid, size_t property, const void* value) {
       break;
     }
     case TPROP_NAME:
-      thread->name = *(const char**)value;
+      k_set_thread_name(thread, *(const char**)value);
       break;
     case TPROP_PERMISSIONS:
       thread->permissions &= ~(*(uint16_t*)value);
@@ -146,6 +155,7 @@ bool k_get_thread_property(int tid, size_t property, void* res) {
       *(int*)res = thread->id;
       break;
     case TPROP_NAME:
+      // TODO: returning a ptr to kernel data isn't great
       *(const char**)res = thread->name;
       break;
     case TPROP_CHILD:
@@ -183,14 +193,14 @@ void init_thread(Thread* thread, int tid, const char* name,
   thread->signal_handler = NULL;
   thread->state = init;
   thread->pending_signals = 0;
-
   thread->id = tid;
-  thread->name = name;
   thread->args = *args;
   thread->parent = INVALID_THREAD;
   thread->child = INVALID_THREAD;
   thread->permissions = permissions;
   thread->err_no = 0;
+
+  k_set_thread_name(thread, name);
 
   // Start message buffer empty
   thread->next_msg = &(thread->messages[0]);
@@ -676,7 +686,7 @@ void check_stack(void) {
   if (underflow || overflow) {
     // Don't schedule this again, or rely on its ID
     _current_thread->id = INVALID_THREAD;
-    _current_thread->name = NULL;
+    _current_thread->name[0] = '\0';
 
     if (underflow) {
       k_log_event("Stack underflow!");

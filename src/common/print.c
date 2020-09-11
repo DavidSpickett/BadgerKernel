@@ -221,7 +221,7 @@ void format_thread_name(char* out, int tid, const char* name) {
     out[idx] = ' ';
   }
 
-  if (name == NULL) {
+  if (!name || !strlen(name)) {
     // If the thread had a stack issue
     if (tid == INVALID_THREAD) {
       const char* hidden = "<HIDDEN>";
