@@ -217,7 +217,7 @@ int sprintf(char* str, const char* fmt, ...) {
 
 void format_thread_name(char* out, int tid, const char* name) {
   // fill with spaces (skip last, null terminator done later)
-  for (size_t idx = 0; idx < THREAD_NAME_LEN; ++idx) {
+  for (size_t idx = 0; idx < THREAD_NAME_MAX_LEN; ++idx) {
     out[idx] = ' ';
   }
 
@@ -226,25 +226,25 @@ void format_thread_name(char* out, int tid, const char* name) {
     if (tid == INVALID_THREAD) {
       const char* hidden = "<HIDDEN>";
       size_t h_len = strlen(hidden);
-      size_t padding = THREAD_NAME_LEN - h_len;
+      size_t padding = THREAD_NAME_MAX_LEN - h_len;
       strncpy(&out[padding], hidden, h_len);
     } else {
       // Just show the ID number (assume max 999 threads)
       char idstr[4];
       int len = sprintf(idstr, "%u", tid);
-      strcpy(&out[THREAD_NAME_LEN - len], idstr);
+      strcpy(&out[THREAD_NAME_MAX_LEN - len], idstr);
     }
   } else {
     size_t name_len = strlen(name);
 
     // cut off long names
-    if (name_len > THREAD_NAME_LEN) {
-      name_len = THREAD_NAME_LEN;
+    if (name_len > THREAD_NAME_MAX_LEN) {
+      name_len = THREAD_NAME_MAX_LEN;
     }
 
-    size_t padding = THREAD_NAME_LEN - name_len;
+    size_t padding = THREAD_NAME_MAX_LEN - name_len;
     strncpy(&out[padding], name, name_len);
   }
 
-  out[THREAD_NAME_LEN] = '\0';
+  out[THREAD_NAME_MAX_LEN] = '\0';
 }

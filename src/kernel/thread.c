@@ -75,8 +75,8 @@ int k_get_thread_id(void) {
 static void k_set_thread_name(Thread* thread, const char* name) {
   if (name) {
     // Will null pad if name is smaller than buffer
-    strncpy(thread->name, name, THREAD_NAME_LEN);
-    thread->name[THREAD_NAME_LEN] = '\0';
+    strncpy(thread->name, name, THREAD_NAME_MAX_LEN);
+    thread->name[THREAD_NAME_MAX_LEN] = '\0';
   } else {
     thread->name[0] = '\0';
   }
@@ -158,7 +158,7 @@ bool k_get_thread_property(int tid, size_t property, void* res) {
     case TPROP_NAME: {
       char* dest = (char*)res;
       if (dest) {
-        strncpy(dest, thread->name, THREAD_NAME_LEN);
+        strncpy(dest, thread->name, THREAD_NAME_MAX_LEN);
         dest[strlen(thread->name)] = '\0';
       }
       break;
