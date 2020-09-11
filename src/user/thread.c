@@ -12,8 +12,8 @@ void log_event(const char* event, ...) {
   }
 
   char formatted_name[THREAD_NAME_SIZE + 1];
-  const char* name;
-  thread_name(CURRENT_THREAD, &name);
+  char name[THREAD_NAME_SIZE+1];
+  thread_name(CURRENT_THREAD, name);
   format_thread_name(formatted_name, get_thread_id(), name);
   printf("Thread %s: ", formatted_name);
 
@@ -62,7 +62,7 @@ int get_thread_id(void) {
   return ret;
 }
 
-bool thread_name(int tid, const char** name) {
+bool thread_name(int tid, char* name) {
   bool got = get_thread_property(tid, TPROP_NAME, name);
   return got;
 }

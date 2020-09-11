@@ -120,8 +120,8 @@ void errno_checks() {
   assert(!set_thread_name(-99, "food"));
   assert(errno == E_INVALID_ID);
   errno = 0;
-  const char* tname = NULL;
-  assert(!thread_name(-99, &tname));
+  char tname[THREAD_NAME_SIZE+1];
+  assert(!thread_name(-99, tname));
   assert(errno == E_INVALID_ID);
 }
 

@@ -29,11 +29,9 @@ void worker(int argc, char* argv[]) {
   }
 
   for (int tid = 0;; ++tid) {
-    const char* name;
     ThreadState state;
-    // Already checked if valid thread
-    bool valid = thread_name(tid, &name);
-
+    char name[THREAD_NAME_SIZE+1];
+    bool valid = thread_name(tid, name);
     // Must have hit max threads
     if (!valid) {
       break;
@@ -43,22 +41,24 @@ void worker(int argc, char* argv[]) {
     get_thread_state(tid, &state);
     const char* state_name = thread_state_to_str(state);
 
-    int child_tid;
+    int child_tid = INVALID_THREAD;
     get_child(tid, &child_tid);
-    const char* child_name = NULL;
+    char child_name[THREAD_NAME_SIZE+1];
     if (child_tid != INVALID_THREAD) {
-      thread_name(child_tid, &child_name);
+      thread_name(child_tid, child_name);
     }
 
     printf("|-----------|\n");
     printf("| Thread %u\n", tid);
     printf("|-----------|\n");
-    if (name) {
+    if (strlen(name)) {
       printf("| Name      | %s\n", name);
     }
     printf("| State     | %s (%u)\n", state_name, state);
-    if (child_name) {
-      printf("| Child     | %s (%u)\n", child_name, child_tid);
+    // TODO: handle unnamed threads
+    if ((child_tid != INVALID_THREAD) &&
+        strlen(child_name)) {
+      printf("| Child     | %s (%i)\n", child_name, child_tid);
     }
     printf("|-----------|\n");
   }

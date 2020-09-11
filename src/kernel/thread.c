@@ -75,7 +75,9 @@ int k_get_thread_id(void) {
 static void k_set_thread_name(Thread* thread, const char* name) {
   if (name) {
     strncpy(thread->name, name, THREAD_NAME_SIZE);
-    thread->name[THREAD_NAME_SIZE] = '\0';
+    size_t name_len = strlen(name);
+    size_t null_terminator = strlen(name) > THREAD_NAME_SIZE ? THREAD_NAME_SIZE : name_len;
+    thread->name[null_terminator] = '\0';
   } else {
     thread->name[0] = '\0';
   }
@@ -154,10 +156,14 @@ bool k_get_thread_property(int tid, size_t property, void* res) {
     case TPROP_ID:
       *(int*)res = thread->id;
       break;
-    case TPROP_NAME:
-      // TODO: returning a ptr to kernel data isn't great
-      *(const char**)res = thread->name;
+    case TPROP_NAME: {
+      char* dest = (char*)res;
+      if (dest) {
+        strncpy(dest, thread->name, THREAD_NAME_SIZE);
+        dest[strlen(thread->name)] = '\0';
+      }
       break;
+    }
     case TPROP_CHILD:
       *(int*)res = thread->child;
       break;

@@ -10,8 +10,6 @@
 // MAX_THREADS is defined by CMake
 #define THREAD_STACK_SIZE 1024 * STACK_SIZE
 #define STACK_CANARY      0xcafebeefdeadf00d
-
-#define THREAD_NAME_SIZE      12
 #define THREAD_MSG_QUEUE_SIZE 5
 
 typedef struct {

@@ -31,7 +31,7 @@ bool set_thread_registers(int tid, RegisterContext regs);
 
 // As in, the current ID
 int get_thread_id(void);
-bool thread_name(int tid, const char** name);
+bool thread_name(int tid, char* name);
 bool set_thread_name(int tid, const char* name);
 
 void yield(void);

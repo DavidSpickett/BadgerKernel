@@ -10,7 +10,6 @@ int printf(const char* fmt, ...);
 int putchar(int chr);
 int sprintf(char* str, const char* fmt, ...);
 
-#define THREAD_NAME_SIZE 12
 void format_thread_name(char* out, int tid, const char* name);
 
 #endif /* ifdef COMMON_PRINT_H */

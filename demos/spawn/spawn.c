@@ -10,8 +10,8 @@ void work() {
     yield();
   }
 
-  const char* tname;
-  thread_name(CURRENT_THREAD, &tname);
+  char tname[THREAD_NAME_SIZE+1];
+  thread_name(CURRENT_THREAD, tname);
   log_event("Hello my name is %s", tname);
 }
 
