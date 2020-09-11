@@ -13,6 +13,8 @@
 // Including null terminator
 // So use this as the size of any buffer to hold a thread name
 #define THREAD_NAME_SIZE 13
+// Max strlen() of a thread name
+#define THREAD_NAME_LEN  (THREAD_NAME_SIZE-1)
 
 #define KCFG_DESTROY_ON_STACK_ERR 1 << 0
 #define KCFG_LOG_SCHEDULER        1 << 1
