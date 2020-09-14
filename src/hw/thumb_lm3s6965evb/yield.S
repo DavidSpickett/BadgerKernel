@@ -136,12 +136,10 @@ generic_syscall:
   ldr r5, =stack_top // Use kernel stack
   mov sp, r5
 
-  push {lr}
   // Operation number passed on stack as argument 5
-  push {r8} // Note that this comes *after* the lr push
+  push {r8, lr}
   bl k_handle_syscall // call handler
-  pop {r8}  // Just to get back to lr
-  pop {lr}
+  pop {r8, lr}
   str r0, [r6, #8*4]  // Store result back in context
 
   // If next_thread is NULL set it to current to resume current thread
