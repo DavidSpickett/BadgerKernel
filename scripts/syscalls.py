@@ -1,0 +1,25 @@
+syscalls = """\
+add_thread
+get_thread_property
+set_thread_property
+get_kernel_config
+set_kernel_config
+yield
+get_msg
+send_msg
+thread_wait
+thread_wake
+thread_cancel
+mutex
+condition_variable
+open
+read
+write
+lseek
+remove
+close
+exit
+malloc
+realloc
+free
+list_dir""".split()

@@ -19,7 +19,7 @@ size_t k_handle_syscall(size_t arg1, size_t arg2, size_t arg3, size_t arg4, size
 
   /* [[[cog
   import cog
-  from scripts.gen_syscalls import syscalls
+  from scripts.syscalls import syscalls
   cog.outl("switch (num) {")
   for syscall in syscalls:
     cog.outl("  case syscall_{}:".format(syscall))
@@ -99,7 +99,7 @@ size_t k_handle_syscall(size_t arg1, size_t arg2, size_t arg3, size_t arg4, size
     case syscall_list_dir:
       syscall_fn = (SyscallFn)k_list_dir;
       break;
-/* [[[end]]] */
+    /* [[[end]]] */
     case syscall_eol:
     default:
       k_invalid_syscall(arg1, arg2, arg3, arg4, num);

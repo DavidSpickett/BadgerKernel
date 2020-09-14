@@ -6,6 +6,12 @@
 #include <stddef.h>
 
 typedef enum {
+  /* [[[cog
+  import cog
+  from scripts.syscalls import syscalls
+  for n, syscall in enumerate(syscalls):
+    cog.outl("syscall_{} = {},".format(syscall, n))
+  ]]] */
   syscall_add_thread = 0,
   syscall_get_thread_property = 1,
   syscall_set_thread_property = 2,
@@ -30,6 +36,7 @@ typedef enum {
   syscall_realloc = 21,
   syscall_free = 22,
   syscall_list_dir = 23,
+  /* [[[end]]] */
   syscall_eol,
 } Syscall;
 
