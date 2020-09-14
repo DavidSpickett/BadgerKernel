@@ -32,13 +32,31 @@ jobs:
       - script: |
           # Required for distlib, used by virtualenv
           pip3 install setuptools wheel
-          # Running it in a venv is the best way to be able to just run 'lit', not some random path or "python -c" invocation.
+          # Running lit from a venv is the best way to be able to just run 'lit', not some random path or "python -c" invocation.
           pip3 install virtualenv
           python3 -m virtualenv testenv
           source testenv/bin/activate
-          pip3 install lit
+          pip3 install lit cogapp
         workingDirectory: $(Agent.BuildDirectory)
-        displayName: install-lit
+        displayName: install-lit-cog
+
+      - script: |
+          # Check that we re-ran cog as needed
+          set -ex
+          source testenv/bin/activate
+          cd ARMMultiTasking
+          export PYTHONPATH=.
+          cog -r include/common/syscall.h src/kernel/syscall.c
+          # See if anything changed
+          git diff > /tmp/cog.diff
+          cat /tmp/cog.diff
+          # Continue to build anyway
+          git checkout .
+          # Fail the stage so we know to re-run cog
+          ! test -s /tmp/cog.diff
+        continueOnError: true
+        workingDirectory: $(Agent.BuildDirectory)
+        displayName: check-cog
 
       - ${{ each opt_level in parameters.opt_level }}:
         - ${{ each lto in parameters.lto }}:
