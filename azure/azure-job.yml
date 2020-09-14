@@ -61,32 +61,34 @@ jobs:
       - ${{ each opt_level in parameters.opt_level }}:
         - ${{ each lto in parameters.lto }}:
           - ${{ each sanitizers in parameters.sanitizers }}:
-            - script: |
-                set -ex
-                # Each script has its own environment so we need to do this here
-                export PATH=$(pwd)/toolchain/bin/:$PATH
-                cd ARMMultiTasking
-                rm -f CMakeCache.txt
-                export CCACHE_DIR=$(pwd)/.ccache
-                ccache -z
-                cmake . -DBUILD_PLATFORM=${{build_platform}} -DOPT_LEVEL=${{opt_level}} -DSANITIZERS=${{sanitizers}} -DLTO=${{lto}}
-                make clean
-                make -j2 make_demos
-                ccache -s
-              workingDirectory: $(Agent.BuildDirectory)
-              displayName: build-O${{opt_level}}_SANITIZERS_${{sanitizers}}_LTO_${{lto}}
+            # Skip O0 LTO, it's the same as O0
+            - ${{ if not(and(eq(opt_level, '0'), eq(lto, 'ON'))) }}:
+              - script: |
+                  set -ex
+                  # Each script has its own environment so we need to do this here
+                  export PATH=$(pwd)/toolchain/bin/:$PATH
+                  cd ARMMultiTasking
+                  rm -f CMakeCache.txt
+                  export CCACHE_DIR=$(pwd)/.ccache
+                  ccache -z
+                  cmake . -DBUILD_PLATFORM=${{build_platform}} -DOPT_LEVEL=${{opt_level}} -DSANITIZERS=${{sanitizers}} -DLTO=${{lto}}
+                  make clean
+                  make -j2 make_demos
+                  ccache -s
+                workingDirectory: $(Agent.BuildDirectory)
+                displayName: build-O${{opt_level}}_SANITIZERS_${{sanitizers}}_LTO_${{lto}}
 
-            - script: |
-                source testenv/bin/activate
-                # Need the toolchain to build loadable programs
-                export PATH=$(pwd)/toolchain/bin/:$PATH
-                cd ARMMultiTasking
-                # Don't be fooled, this is actually JUnit format
-                lit demos --xunit-xml-output ${{build_platform}}_O${{opt_level}}_SANITIZERS_${{sanitizers}}_LTO_${{lto}}_results.xml -a
-              workingDirectory: $(Agent.BuildDirectory)
-              displayName: test-O${{opt_level}}_SANITIZERS_${{sanitizers}}_LTO_${{lto}}
-              # So we'll get a failed build when tests fail
-              continueOnError: true
+              - script: |
+                  source testenv/bin/activate
+                  # Need the toolchain to build loadable programs
+                  export PATH=$(pwd)/toolchain/bin/:$PATH
+                  cd ARMMultiTasking
+                  # Don't be fooled, this is actually JUnit format
+                  lit demos --xunit-xml-output ${{build_platform}}_O${{opt_level}}_SANITIZERS_${{sanitizers}}_LTO_${{lto}}_results.xml -a
+                workingDirectory: $(Agent.BuildDirectory)
+                displayName: test-O${{opt_level}}_SANITIZERS_${{sanitizers}}_LTO_${{lto}}
+                # So we'll get a failed build when tests fail
+                continueOnError: true
 
       - task: PublishTestResults@2
         inputs:
