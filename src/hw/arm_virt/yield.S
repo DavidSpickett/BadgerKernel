@@ -100,14 +100,12 @@ generic_syscall:
   ldr r1, [sp, #4]
   ldr r2, [sp, #8]
   ldr r3, [sp, #12]
+  // r8 = operation number
   ldr r8, [sp, #32]
 
-  // r8 = operation number
-  ldr r4, =syscall_handlers
-  ldr r8, [r4, r8, LSL#2] // Shift 2 = *4, 4 bytes per address
-
   cps SUPERVISOR_MODE // Use kernel's stack
-  blx r8              // Call handler
+  str r8, [sp]        // Operation number as argument 5 on the stack
+  bl k_handle_syscall // Call handler
   cps SYSTEM_MODE     // Result is in r0
   str r0, [sp]        // Patch it back into user regs
   // TODO: dedupe a lot of these mode switches
@@ -122,9 +120,6 @@ generic_syscall:
   NEXT_EQUAL_CURRENT
 use_next_thread:
   b load_next_thread
-
-syscall_handlers:
-#include "common/syscall.h"
 
 enable_timer:
   ldr r0, =1000
