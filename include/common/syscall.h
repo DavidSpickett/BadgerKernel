@@ -3,72 +3,34 @@
 #ifndef COMMON_SYSCALL_H
 #define COMMON_SYSCALL_H
 
-#ifdef __ASSEMBLER__
-#ifdef __aarch64__
-#define FNADDR .quad
-#else
-#define FNADDR .word
-#endif
-  FNADDR k_add_thread
-  FNADDR k_get_thread_property
-  FNADDR k_set_thread_property
-  FNADDR k_get_kernel_config
-  FNADDR k_set_kernel_config
-  FNADDR k_yield
-  FNADDR k_get_msg
-  FNADDR k_send_msg
-  FNADDR k_thread_wait
-  FNADDR k_thread_wake
-  FNADDR k_thread_cancel
-  FNADDR k_mutex
-  FNADDR k_condition_variable
-  FNADDR k_open
-  FNADDR k_read
-  FNADDR k_write
-  FNADDR k_lseek
-  FNADDR k_remove
-  FNADDR k_close
-  FNADDR k_exit
-  FNADDR k_malloc
-  FNADDR k_realloc
-  FNADDR k_free
-  FNADDR k_list_dir
-  FNADDR k_invalid_syscall
-  FNADDR k_invalid_syscall
-  FNADDR k_invalid_syscall
-  FNADDR k_invalid_syscall
-#else
-
 #include <stddef.h>
 
 typedef enum {
   syscall_add_thread = 0,
-  syscall_get_thread_property,
-  syscall_set_thread_property,
-  syscall_get_kernel_config,
-  syscall_set_kernel_config,
-  syscall_yield,
-  syscall_get_msg,
-  syscall_send_msg,
-  syscall_thread_wait,
-  syscall_thread_wake,
-  syscall_thread_cancel,
-  syscall_mutex,
-  syscall_condition_variable,
-  syscall_open,
-  syscall_read,
-  syscall_write,
-  syscall_lseek,
-  syscall_remove,
-  syscall_close,
-  syscall_exit,
-  syscall_malloc,
-  syscall_realloc,
-  syscall_free,
-  syscall_list_dir,
+  syscall_get_thread_property = 1,
+  syscall_set_thread_property = 2,
+  syscall_get_kernel_config = 3,
+  syscall_set_kernel_config = 4,
+  syscall_yield = 5,
+  syscall_get_msg = 6,
+  syscall_send_msg = 7,
+  syscall_thread_wait = 8,
+  syscall_thread_wake = 9,
+  syscall_thread_cancel = 10,
+  syscall_mutex = 11,
+  syscall_condition_variable = 12,
+  syscall_open = 13,
+  syscall_read = 14,
+  syscall_write = 15,
+  syscall_lseek = 16,
+  syscall_remove = 17,
+  syscall_close = 18,
+  syscall_exit = 19,
+  syscall_malloc = 20,
+  syscall_realloc = 21,
+  syscall_free = 22,
+  syscall_list_dir = 23,
   syscall_eol,
 } Syscall;
 
-
-#endif /* ifdef __ASSEMBLER__ */
 #endif /* ifdef COMMON_SYSCALL_H */

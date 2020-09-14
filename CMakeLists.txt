@@ -91,6 +91,7 @@ set( KERNEL_SOURCES
   src/kernel/condition_variable.c
   src/kernel/signal_handling.c
   src/kernel/alloc.c
+  src/kernel/syscall.c
 
   src/hw/arm_common/file.c
   src/hw/arm_common/util.c

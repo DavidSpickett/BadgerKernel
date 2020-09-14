@@ -33,36 +33,18 @@ print(dedent("""\
 // clang-format off
 #ifndef COMMON_SYSCALL_H
 #define COMMON_SYSCALL_H
-
-#ifdef __ASSEMBLER__
-#ifdef __aarch64__
-#define FNADDR .quad
-#else
-#define FNADDR .word
-#endif"""))
-
-for call in syscalls:
-    print("  FNADDR k_{}".format(call))
-# Some padding to catch off by something errors (only for asm)
-for i in range(4):
-    print("  FNADDR k_invalid_syscall")
+"""))
 
 print(dedent("""\
-#else
-
 #include <stddef.h>
 
 typedef enum {"""))
-first, rest = syscalls[0], syscalls[1:]
-print("  syscall_{} = 0,".format(first))
-for call in rest:
-    print("  syscall_{},".format(call))
+for n, call in enumerate(syscalls):
+    print("  syscall_{} = {},".format(call, n))
 
 print(dedent("""\
   syscall_eol,
 } Syscall;"""))
 print()
 
-print(dedent("""
-      #endif /* ifdef __ASSEMBLER__ */
-      #endif /* ifdef COMMON_SYSCALL_H */"""))
+print(dedent("""#endif /* ifdef COMMON_SYSCALL_H */"""))

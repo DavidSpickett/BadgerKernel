@@ -118,17 +118,12 @@ generic_syscall:
   ldr x1,  [sp, #33*8]
   ldr x2,  [sp, #29*8]
   ldr x3,  [sp, #26*8]
-  ldr x20, [sp, #11*8]
+  // Syscall num is last argument to kernel handler
+  ldr x4,  [sp, #11*8]
 
-  // x20 = operation number
-  ldr x4, =syscall_handlers
-  lsl x20, x20, #3 // Shift 3 = *8, 8 bytes per address
-  add x20, x20, x4
-  ldr x20, [x20]
-
-  msr SPSel, #1       // Use kernel's stack
-  blr x20             // Call handler
-  msr SPSel, #0       // Store result in saved thread
+  msr SPSel, #1        // Use kernel's stack
+  bl  k_handle_syscall // Call handler
+  msr SPSel, #0        // Store result in saved thread
   str x0, [sp, #32*8]
 
   // If next thread is NULL, just resume current thread
@@ -140,9 +135,6 @@ generic_syscall:
   NEXT_EQUAL_CURRENT
 1:
   b load_next_thread
-
-syscall_handlers:
-#include "common/syscall.h"
 
 enable_timer:
   mrs x0, CNTVCT_EL0     // Get current count

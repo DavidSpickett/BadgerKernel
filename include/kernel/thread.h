@@ -74,8 +74,6 @@ uint32_t k_get_kernel_config(void);
 
 bool k_yield(int tid, int kind);
 
-void k_invalid_syscall(size_t arg1, size_t arg2, size_t arg3, size_t arg4);
-
 bool k_has_no_permission(uint16_t permission);
 
 void check_signals(Thread* thread);

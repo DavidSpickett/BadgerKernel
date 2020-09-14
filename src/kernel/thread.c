@@ -62,12 +62,6 @@ static bool can_schedule_thread(int tid) {
 
 Thread* current_thread(void);
 
-void k_invalid_syscall(size_t arg1, size_t arg2, size_t arg3, size_t arg4) {
-  printf("Unknown syscall invoked!\n");
-  printf("arg1: %u, arg2: %u, arg3: %u, arg4: %u\n", arg1, arg2, arg3, arg4);
-  k_exit(1);
-}
-
 int k_get_thread_id(void) {
   return _current_thread ? _current_thread->id : INVALID_THREAD;
 }
