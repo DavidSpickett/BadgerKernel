@@ -51,7 +51,7 @@ jobs:
         ! test -s /tmp/clang-format.diff
       continueOnError: true
       workingDirectory: $(Agent.BuildDirectory)
-      displayName: check-cog
+      displayName: check-clang-format
 
     - script: |
         set -ex
