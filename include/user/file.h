@@ -12,6 +12,5 @@ ssize_t write(int filedes, const void* buf, size_t nbyte);
 off_t lseek(int fd, off_t offset, int whence);
 int remove(const char* path);
 int close(int filedes);
-void exit(int status);
 
 #endif /* ifdef USER_FILE_H */

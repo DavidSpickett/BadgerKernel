@@ -9,6 +9,7 @@
 // Only for symbols, only use k_<...> functions in this file
 #include "user/thread.h"
 #include "user/file.h"
+#include "user/util.h"
 
 #ifndef CODE_PAGE_SIZE
 #error "Loading ELFs requires CODE_PAGE_SIZE"
