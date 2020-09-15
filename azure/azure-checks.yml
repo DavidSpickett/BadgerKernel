@@ -1,0 +1,34 @@
+jobs:
+- job: "linting_checks"
+  pool:
+    vmImage: 'ubuntu-18.04'
+  steps:
+    - checkout: self
+      path: 'ARMMultiTasking'
+
+    - script: |
+        sudo apt-get update
+        sudo apt-get install -y python3 python3-pip
+      displayName: apt-installs
+
+    - script: |
+        pip3 install cogapp
+      workingDirectory: $(Agent.BuildDirectory)
+      displayName: install-cog
+
+    - script: |
+        # Check that we re-ran cog as needed
+        set -ex
+        cd ARMMultiTasking
+        export PYTHONPATH=.
+        cog -r include/common/syscall.h src/kernel/syscall.c
+        # See if anything changed
+        git diff > /tmp/cog.diff
+        cat /tmp/cog.diff
+        # Continue to build anyway
+        git checkout .
+        # Fail the stage so we know to re-run cog
+        ! test -s /tmp/cog.diff
+      continueOnError: true
+      workingDirectory: $(Agent.BuildDirectory)
+      displayName: check-cog

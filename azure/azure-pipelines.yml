@@ -15,3 +15,4 @@ jobs:
       opt_level: [0, s, 3]
       sanitizers: [OFF, ON]
       lto: [OFF, ON]
+  - template: azure-checks.yml

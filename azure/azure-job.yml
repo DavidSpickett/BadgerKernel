@@ -36,27 +36,9 @@ jobs:
           pip3 install virtualenv
           python3 -m virtualenv testenv
           source testenv/bin/activate
-          pip3 install lit cogapp
+          pip3 install lit
         workingDirectory: $(Agent.BuildDirectory)
-        displayName: install-lit-cog
-
-      - script: |
-          # Check that we re-ran cog as needed
-          set -ex
-          source testenv/bin/activate
-          cd ARMMultiTasking
-          export PYTHONPATH=.
-          cog -r include/common/syscall.h src/kernel/syscall.c
-          # See if anything changed
-          git diff > /tmp/cog.diff
-          cat /tmp/cog.diff
-          # Continue to build anyway
-          git checkout .
-          # Fail the stage so we know to re-run cog
-          ! test -s /tmp/cog.diff
-        continueOnError: true
-        workingDirectory: $(Agent.BuildDirectory)
-        displayName: check-cog
+        displayName: install-lit
 
       - ${{ each opt_level in parameters.opt_level }}:
         - ${{ each lto in parameters.lto }}:
