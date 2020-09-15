@@ -12,7 +12,8 @@ syscalls = (
     ("thread_wake",         True),
     ("thread_cancel",       True),
     ("mutex",               True),
-    # One of the ops does return void but we return true from kernel for that anyway
+    # One of the ops does return void but we return
+    # true from kernel for that anyway
     ("condition_variable",  True),
     ("open",                True),
     ("read",                True),
