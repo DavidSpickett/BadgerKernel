@@ -40,6 +40,20 @@ jobs:
       displayName: check-cog
 
     - script: |
+        # Check that we ran clang-format
+        set -ex
+        cd ARMMultiTasking
+        clang-format -i `find -name "*.c"` `find -name "*.h"`
+        # See if anything changed
+        git diff > /tmp/clang-format.diff
+        cat /tmp/clang-format.diff
+        git checkout .
+        ! test -s /tmp/clang-format.diff
+      continueOnError: true
+      workingDirectory: $(Agent.BuildDirectory)
+      displayName: check-cog
+
+    - script: |
         set -ex
         source checkenv/bin/activate
         cd ARMMultiTasking
