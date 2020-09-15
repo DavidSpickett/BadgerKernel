@@ -17,9 +17,9 @@ jobs:
         pip3 install virtualenv
         python3 -m virtualenv checkenv
         source checkenv/bin/activate
-        pip3 install cogapp
+        pip3 install cogapp pycodestyle
       workingDirectory: $(Agent.BuildDirectory)
-      displayName: install-cog
+      displayName: pip-install
 
     - script: |
         # Check that we re-ran cog as needed
@@ -41,6 +41,16 @@ jobs:
 
     - script: |
         set -ex
+        source checkenv/bin/activate
+        cd ARMMultiTasking
+        pycodestyle `find -name "*.py"`
+      continueOnError: true
+      workingDirectory: $(Agent.BuildDirectory)
+      displayName: pycodestyle
+
+    - script: |
+        set -ex
+        cd ARMMultiTasking
         shellcheck `find -name "*.sh"`
       continueOnError: true
       workingDirectory: $(Agent.BuildDirectory)
