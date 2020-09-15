@@ -8,7 +8,7 @@ jobs:
 
     - script: |
         sudo apt-get update
-        sudo apt-get install -y python3 python3-pip
+        sudo apt-get install -y python3 python3-pip shellcheck
       displayName: apt-installs
 
     - script: |
@@ -38,3 +38,10 @@ jobs:
       continueOnError: true
       workingDirectory: $(Agent.BuildDirectory)
       displayName: check-cog
+
+    - script: |
+        set -ex
+        shellcheck `find -name "*.sh"`
+      continueOnError: true
+      workingDirectory: $(Agent.BuildDirectory)
+      displayName: shellcheck
