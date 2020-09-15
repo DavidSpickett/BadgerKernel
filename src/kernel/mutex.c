@@ -22,7 +22,7 @@ static bool k_lock_mutex(Mutex* m) {
   return false;
 }
 
-bool k_mutex(unsigned op, Mutex * m) {
+bool k_mutex(unsigned op, Mutex* m) {
   switch (op) {
     case MUTEX_INIT:
       k_init_mutex(m);

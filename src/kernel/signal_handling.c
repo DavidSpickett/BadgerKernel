@@ -1,6 +1,6 @@
 #include "common/attribute.h"
-#include "common/trace.h"
 #include "common/generic_asm.h"
+#include "common/trace.h"
 #include "kernel/thread.h"
 #include <string.h>
 

@@ -2,8 +2,8 @@
 #define USER_THREAD_H
 
 #include "common/thread.h"
-#include "common/trace.h"
 #include "common/thread_state.h"
+#include "common/trace.h"
 #include <stdint.h>
 
 int add_thread(const char* name, const ThreadArgs* args, void* worker,

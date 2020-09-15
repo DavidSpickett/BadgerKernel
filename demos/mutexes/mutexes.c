@@ -1,6 +1,6 @@
+#include "common/assert.h"
 #include "user/mutex.h"
 #include "user/thread.h"
-#include "common/assert.h"
 #include <string.h>
 
 Mutex buffer_mutex;

@@ -1,7 +1,7 @@
-#include "common/print.h"
-#include "common/generic_asm.h"
-#include "common/thread_state.h"
 #include "user/syscall.h"
+#include "common/generic_asm.h"
+#include "common/print.h"
+#include "common/thread_state.h"
 
 size_t generic_syscall(Syscall num, size_t arg1, size_t arg2, size_t arg3,
                        size_t arg4) {

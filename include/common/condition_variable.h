@@ -1,8 +1,8 @@
 #ifndef COMMON_CONDITION_VARIABLE_H
 #define COMMON_CONDITION_VARIABLE_H
 
-#include <stddef.h>
 #include <stdbool.h>
+#include <stddef.h>
 
 typedef struct {
   int waiting[MAX_THREADS];

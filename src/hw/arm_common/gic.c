@@ -1,5 +1,5 @@
-#include <stdint.h>
 #include "common/attribute.h"
+#include <stdint.h>
 
 /*
   Although I'm sure there are differences between the
@@ -25,8 +25,7 @@
 
 // On AArch64 we have to be careful about how we call it
 ATTR_NAKED
-void gic_init(unsigned irq_no)
-{
+void gic_init(unsigned irq_no) {
   /* CPU Interface */
 
   // Disable

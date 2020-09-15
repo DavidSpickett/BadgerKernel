@@ -1,14 +1,14 @@
 #include "kernel/elf.h"
-#include "kernel/file.h"
 #include "common/print.h"
+#include "kernel/file.h"
 #include "kernel/thread.h"
 #include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
 // Only for symbols, only use k_<...> functions in this file
-#include "user/thread.h"
 #include "user/file.h"
+#include "user/thread.h"
 #include "user/util.h"
 
 #ifndef CODE_PAGE_SIZE

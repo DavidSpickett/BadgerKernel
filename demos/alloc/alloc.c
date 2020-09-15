@@ -1,6 +1,6 @@
+#include "user/alloc.h"
 #include "common/assert.h"
 #include "common/print.h"
-#include "user/alloc.h"
 #include "user/thread.h"
 #include <stdint.h>
 

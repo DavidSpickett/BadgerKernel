@@ -1,6 +1,6 @@
+#include "common/trace.h"
 #include "common/assert.h"
 #include "common/attribute.h"
-#include "common/trace.h"
 #include "user/thread.h"
 #include "user/util.h"
 

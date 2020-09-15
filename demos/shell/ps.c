@@ -56,8 +56,7 @@ void worker(int argc, char* argv[]) {
     }
     printf("| State     | %s (%u)\n", state_name, state);
     // TODO: handle unnamed threads
-    if ((child_tid != INVALID_THREAD) &&
-        strlen(child_name)) {
+    if ((child_tid != INVALID_THREAD) && strlen(child_name)) {
       printf("| Child     | %s (%i)\n", child_name, child_tid);
     }
     printf("|-----------|\n");

@@ -1,8 +1,8 @@
 #ifndef USER_MUTEX_H
 #define USER_MUTEX_H
 
-#include <stdbool.h>
 #include "common/mutex.h"
+#include <stdbool.h>
 
 void init_mutex(Mutex* m);
 bool unlock_mutex(Mutex* m);

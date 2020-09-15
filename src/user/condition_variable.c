@@ -1,5 +1,5 @@
-#include "user/syscall.h"
 #include "user/condition_variable.h"
+#include "user/syscall.h"
 
 void init_condition_variable(ConditionVariable* cv) {
   DO_SYSCALL_2(condition_variable, CONDITION_VARIABLE_INIT, cv);

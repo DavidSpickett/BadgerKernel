@@ -1,20 +1,22 @@
 #include "common/syscall.h"
 #include "common/print.h"
-#include "kernel/thread.h"
-#include "kernel/mutex.h"
 #include "kernel/alloc.h"
-#include "kernel/file.h"
 #include "kernel/condition_variable.h"
+#include "kernel/file.h"
+#include "kernel/mutex.h"
+#include "kernel/thread.h"
 #include <stddef.h>
 
-static void k_invalid_syscall(size_t arg1, size_t arg2, size_t arg3, size_t arg4, size_t num) {
+static void k_invalid_syscall(size_t arg1, size_t arg2, size_t arg3,
+                              size_t arg4, size_t num) {
   printf("Unknown syscall %u invoked!\n", num);
   printf("arg1: %u, arg2: %u, arg3: %u, arg4: %u\n", arg1, arg2, arg3, arg4);
   k_exit(1);
 }
 
 typedef size_t (*SyscallFn)();
-size_t k_handle_syscall(size_t arg1, size_t arg2, size_t arg3, size_t arg4, size_t num) {
+size_t k_handle_syscall(size_t arg1, size_t arg2, size_t arg3, size_t arg4,
+                        size_t num) {
   SyscallFn syscall_fn = NULL;
   bool has_result = true;
   size_t result = 0;

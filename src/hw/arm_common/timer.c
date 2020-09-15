@@ -1,5 +1,5 @@
-#include "common/thread_state.h"
 #include "user/timer.h"
+#include "common/thread_state.h"
 #include <stddef.h>
 
 void enable_timer() {
