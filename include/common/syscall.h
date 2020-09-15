@@ -9,7 +9,8 @@ typedef enum {
   /* [[[cog
   import cog
   from scripts.syscalls import syscalls
-  for n, syscall in enumerate(syscalls):
+  for n, syscall_info in enumerate(syscalls):
+    syscall, _ = syscall_info
     cog.outl("syscall_{} = {},".format(syscall, n))
   ]]] */
   syscall_add_thread = 0,
