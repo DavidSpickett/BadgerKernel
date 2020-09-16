@@ -1,7 +1,7 @@
 #ifndef COMMON_TRACE_H
 #define COMMON_TRACE_H
 
-#include "kernel/thread.h"
+#include <stddef.h>
 #include <stdint.h>
 
 typedef struct {

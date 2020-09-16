@@ -3,6 +3,7 @@
 #include "kernel/alloc.h"
 #include "kernel/condition_variable.h"
 #include "kernel/file.h"
+#include "kernel/message.h"
 #include "kernel/mutex.h"
 #include "kernel/thread.h"
 #include <stddef.h>

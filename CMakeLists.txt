@@ -92,6 +92,7 @@ set( KERNEL_SOURCES
   src/kernel/signal_handling.c
   src/kernel/alloc.c
   src/kernel/syscall.c
+  src/kernel/message.c
 
   src/hw/arm_common/file.c
   src/hw/arm_common/util.c
