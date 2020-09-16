@@ -27,6 +27,14 @@ uint8_t code_page_backing[CODE_BACKING_PAGES][CODE_PAGE_SIZE];
 #endif
 #endif /* CODE_PAGE_SIZE */
 
+Thread* current_thread(void);
+extern void setup(void);
+extern void load_first_thread(void);
+void check_stack(void);
+#ifdef __thumb__
+extern void thread_switch_from_kernel_mode(void);
+#endif
+
 bool k_has_no_permission(uint16_t permission) {
   if (!_current_thread) {
     // Must be kernel (famous last words)
@@ -59,8 +67,6 @@ static bool can_schedule_thread(int tid) {
          (all_threads[tid].state == suspended ||
           all_threads[tid].state == init || all_threads[tid].state == running);
 }
-
-Thread* current_thread(void);
 
 int k_get_thread_id(void) {
   return _current_thread ? _current_thread->id : INVALID_THREAD;
@@ -224,9 +230,6 @@ void init_thread(Thread* thread, int tid, const char* name,
   init_register_context(thread);
 }
 
-extern void setup(void);
-extern void load_first_thread(void);
-// TODO: collect all these forward declarations
 static int k_add_named_thread_with_args(void (*worker)(), const char* name,
                                         const ThreadArgs* args,
                                         uint16_t remove_permissions);
@@ -456,7 +459,6 @@ static void thread_switch(void) {
   asm volatile("svc %0" : : "i"(svc_thread_switch));
 }
 
-void check_stack(void);
 static bool k_do_yield(Thread* to) {
   check_stack();
 
@@ -675,9 +677,6 @@ void k_thread_wait(void) {
 __attribute__((section(".thread_vars"))) size_t thread_stack_offset =
     offsetof(Thread, stack);
 
-#ifdef __thumb__
-extern void thread_switch_from_kernel_mode(void);
-#endif
 void check_stack(void) {
   bool underflow = _current_thread->bottom_canary != STACK_CANARY;
   bool overflow = _current_thread->top_canary != STACK_CANARY;
