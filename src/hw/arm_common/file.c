@@ -33,6 +33,8 @@ int k_list_dir(const char* path, char* out, size_t outsz) {
   assert(ls_sz < outsz);
   // Read whole file back
   k_read(ls_fd, out, ls_sz);
+  // Null terminate
+  out[ls_sz] = '\0';
   k_close(ls_fd);
 
   return 0;
