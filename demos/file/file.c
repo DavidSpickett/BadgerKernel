@@ -13,7 +13,7 @@ void fail_open(void) {
 
 void read_file(void) {
   log_event("Reading demo src");
-  const char* path = "demos/file/file.c";
+  const char* path = SRC_ROOT "/demos/file/file.c";
   int file = open(path, O_RDONLY);
   assert(file != -1);
 
@@ -33,7 +33,7 @@ void read_file(void) {
   assert(!closed);
 }
 
-const char* temp_file = "demos/file/file_demo_temp_file";
+const char* temp_file = "file_demo_temp_file";
 const char* temp_contents = "new file for file demo!\n";
 void write_new(void) {
   log_event("Writing temp file");

@@ -17,7 +17,7 @@ int write_fd;
 
 void cannot_file() {
   // Some file that should always be there
-  assert(open("README.md", O_RDONLY) == -1);
+  assert(open(SRC_ROOT "/README.md", O_RDONLY) == -1);
   assert(list_dir(".", NULL, 0) == -1);
   // nbyte must be non zero so that zero isn't
   // an expected return value
@@ -145,8 +145,10 @@ void setup(void) {
   RUN_TEST_THREAD("noalloc", cannot_alloc, THREAD_FUNC | TPERM_NO_ALLOC);
 
   // Since cannot_file obviously can't make these
-  read_fd = open("CMakeLists.txt", O_RDONLY);
+  read_fd = open(SRC_ROOT "/CMakeLists.txt", O_RDONLY);
+  assert(read_fd != -1);
   write_fd = open("__perm_demo", O_WRONLY);
+  assert(write_fd != -1);
 
   RUN_TEST_THREAD("nofile", cannot_file, THREAD_FUNC | TPERM_NO_FILE);
   RUN_TEST_THREAD("nocreate", cannot_create, THREAD_FUNC | TPERM_NO_CREATE);

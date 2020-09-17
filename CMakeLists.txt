@@ -71,7 +71,8 @@ endif()
 
 # Note that the thumb board ignores -M
 set( QEMU "${QEMU_CMD} -m 1M -nographic -semihosting -kernel" )
-set( CFLAGS "${CFLAGS} -ffreestanding -nostdlib -DUART_BASE=${UART_BASE}" )
+set( CFLAGS "${CFLAGS} -ffreestanding -nostdlib" )
+add_definitions(-DUART_BASE=${UART_BASE} -DSRC_ROOT=\"${CMAKE_SOURCE_DIR}\" )
 
 if(LTO)
   set( CFLAGS "${CFLAGS} -flto -ffunction-sections" )
