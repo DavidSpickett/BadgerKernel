@@ -55,7 +55,7 @@ jobs:
                   cd build_${{opt_level}}_${{sanitizers}}_${{lto}}
                   ccache -z
                   cmake -DBUILD_PLATFORM=${{build_platform}} -DOPT_LEVEL=${{opt_level}} -DSANITIZERS=${{sanitizers}} -DLTO=${{lto}} ../ARMMultiTasking/
-                  make -j2 make_demos
+                  make -j$(nproc) make_demos
                   ccache -s
                 workingDirectory: $(Agent.BuildDirectory)
                 displayName: build-O${{opt_level}}_SANITIZERS_${{sanitizers}}_LTO_${{lto}}
