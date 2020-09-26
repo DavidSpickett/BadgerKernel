@@ -32,9 +32,6 @@ Thread* current_thread(void);
 extern void setup(void);
 extern void load_first_thread(void);
 void check_stack(void);
-#ifdef __thumb__
-extern void thread_switch_from_kernel_mode(void);
-#endif
 
 bool k_has_no_permission(uint16_t permission) {
   if (!_current_thread) {
@@ -634,6 +631,7 @@ void k_thread_wait(void) {
 __attribute__((section(".thread_vars"))) size_t thread_stack_offset =
     offsetof(Thread, stack);
 
+extern void load_next_thread(void);
 void check_stack(void) {
   bool underflow = _current_thread->bottom_canary != STACK_CANARY;
   bool overflow = _current_thread->top_canary != STACK_CANARY;
@@ -661,12 +659,9 @@ void check_stack(void) {
       // Aka don't save any state, just load the scheduler
       // TODO: this isn't actually checked by the assembly
       _current_thread->state = init;
-#ifdef __thumb__
-      // thumb doesn't like SVC in kernel mode
-      thread_switch_from_kernel_mode();
-#else
-      thread_switch();
-#endif
+      // TODO: we're probably losing kernel stack space every time we do this.
+      // (on arches with banked stack pointers)
+      load_next_thread();
     } else {
       k_exit(1);
     }

@@ -139,6 +139,7 @@ load_first_thread:
   // No saving temps here since we came from the kernel
   b load_next_thread
 
+.global load_next_thread
 load_next_thread:
   CURRENT_IN_R10_NEXT_IN_R11
 

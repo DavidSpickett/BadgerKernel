@@ -71,11 +71,6 @@
   pop {r4-r11}
 .endm
 
-.global thread_switch_from_kernel_mode
-thread_switch_from_kernel_mode:
-  mov lr, #0xFFFFFFFD  // Special return to user lr value
-  b load_next_thread
-
 .global handle_exception
 .thumb_func
 handle_exception:
@@ -172,7 +167,13 @@ load_first_thread:
   ldr lr, =thread_start
   bx lr
 
+.global load_next_thread
 load_next_thread:
+  // When a stack check for the current thread fails,
+  // this is called from a kernel function. Meaning
+  // that the magic lr value has been trashed.
+  // So always reload to cover that case.
+  mov lr, #0xFFFFFFFD  // Special return to user lr value
   ldr r0, =stack_top       // Back to kernel stack
   mov sp, r0
 

@@ -155,6 +155,7 @@ load_first_thread:
   // Kernel calls this so no current thread to save
   b load_next_thread
 
+.global load_next_thread
 load_next_thread:
   CURRENT_IN_X20_NEXT_IN_X21
   // If next_thread is null then we need to run the scheduler
