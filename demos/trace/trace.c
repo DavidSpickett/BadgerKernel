@@ -38,13 +38,14 @@ void jump_self() {
 
 ATTR_NAKED __attribute__((used)) void work_finished(void) {
   // By defining work_finished in assembly we can be sure of it's address
-  asm volatile("svc %0\n\t"
-               // If the tracer doesn't redirect us we'll loop forever
-               ".global __work_finished\n\t"
-               "__work_finished:\n\t"
-               "b tracee\n\t"
-               :
-               : "i"(svc_thread_switch));
+  YIELD_ASM;
+  asm volatile(
+      // If the tracer doesn't redirect us we'll loop forever
+      ".global __work_finished\n\t"
+      "__work_finished:\n\t"
+      "b tracee\n\t"
+      :
+      : "i"(svc_thread_switch));
 }
 
 void tracee() {
