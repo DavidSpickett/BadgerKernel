@@ -18,12 +18,15 @@
 #define BLR              "blx"
 #define SYSCALL_REG      "8"
 
-#else /* Arm */
+#elif defined __arm__
 #define RCHR             "r"
 #define SEMIHOSTING_CALL "svc 0x123456"
 #define PTR_SIZE         "4"
 #define BLR              "blx"
 #define SYSCALL_REG      "8"
+
+#else
+#error Unknown architecture!
 
 #endif
 

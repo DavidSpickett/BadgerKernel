@@ -147,8 +147,10 @@ typedef struct {
 
 #ifdef __aarch64__
 #define EXPECTED_MACHINE 183
-#else
+#elif defined __thumb__ || defined __arm__
 #define EXPECTED_MACHINE 40
+#else
+#error Unknown architecture!
 #endif
 
 #define SHF_ALLOC 1 << 1
