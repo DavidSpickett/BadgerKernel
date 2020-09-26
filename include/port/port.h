@@ -2,10 +2,9 @@
 #define PORT_PORT_H
 
 #ifdef __aarch64__
-// TODO: later these headers will diverge
-#include "arm.h"
+#include "aarch64.h"
 #elif defined __thumb__
-#include "arm.h"
+#include "thumb.h"
 #elif defined __arm__
 #include "arm.h"
 #else
