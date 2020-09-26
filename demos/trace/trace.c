@@ -3,6 +3,7 @@
 #include "common/attribute.h"
 #include "user/thread.h"
 #include "user/util.h"
+#include "port/port.h"
 
 extern void work_finished(void);
 
@@ -10,7 +11,7 @@ static void set_thread_pc(int tid, void* pc) {
   RegisterContext ctx;
   get_thread_registers(tid, (RegisterContext*)&ctx);
   // Remove bottom bit for thumb
-  ctx.generic_regs.pc = ((size_t)pc) & ~1;
+  ctx.generic_regs.pc = PC_REMOVE_MODE((size_t)pc);
   set_thread_registers(tid, ctx);
 }
 
@@ -64,14 +65,8 @@ void tracer() {
   RegisterContext ctx;
 
   size_t target_pc = (size_t)work_finished;
-#ifdef __thumb__
-  // +2 for next instr
-  target_pc += 2;
-  // Stored PC doesn't include mode bit so remove it
-  target_pc &= ~1;
-#else
-  target_pc += 4;
-#endif
+  // Stored PC doesn't include mode bit
+  target_pc = PC_REMOVE_MODE(NEXT_INSTR(target_pc));
 
   while (ctx.generic_regs.pc != target_pc) {
     yield();

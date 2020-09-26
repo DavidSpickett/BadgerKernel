@@ -44,4 +44,8 @@ typedef struct {
   size_t _p10_;
 } __attribute__((packed)) GenericRegs;
 
+#define NEXT_INSTR(pc) (pc + 4)
+#define PC_ADD_MODE(pc) (pc)
+#define PC_REMOVE_MODE(pc) (pc)
+
 #endif /* ifdef PORT_ARM_H */

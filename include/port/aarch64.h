@@ -78,4 +78,8 @@ typedef struct {
   size_t arg1;
 } __attribute__((packed)) GenericRegs;
 
+#define NEXT_INSTR(pc) (pc + 4)
+#define PC_ADD_MODE(pc) (pc)
+#define PC_REMOVE_MODE(pc) (pc)
+
 #endif /* ifdef PORT_AARCH64_H */

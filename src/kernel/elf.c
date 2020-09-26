@@ -2,6 +2,7 @@
 #include "common/print.h"
 #include "kernel/file.h"
 #include "kernel/thread.h"
+#include "port/port.h"
 #include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -485,12 +486,10 @@ static void resolve_relocs(int elf, uint16_t idx, size_t section_table_offs,
                       symbol_value);
       }
 
-#ifdef __thumb__
-      // Going to ignore Thumb on Arm, assume matching kernel and program
       if (sym_info.type == SYM_TYPE_FUNC) {
-        symbol_value |= 1;
+        // Going to ignore Thumb on Arm, assume matching kernel and program
+        symbol_value = PC_ADD_MODE(symbol_value);
       }
-#endif
 
 #ifdef __aarch64__
       // Using RelA here
