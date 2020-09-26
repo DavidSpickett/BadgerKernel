@@ -5,8 +5,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-void print_register_context(RegisterContext ctx);
-
 typedef struct {
   const char* name;
   void* start;
