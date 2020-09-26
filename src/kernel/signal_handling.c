@@ -32,17 +32,17 @@ void init_register_context(Thread* thread) {
   RegisterContext* ctx = (RegisterContext*)thread->stack_ptr;
   memset(ctx, 0, sizeof(RegisterContext));
 
-  ctx->generic_regs.pc = (size_t)thread_start;
+  ctx->pc = (size_t)thread_start;
 
   // Set arch specific settings registers
-  platform_init_register_context(&ctx->platform_regs);
+  platform_init_register_context(ctx);
 }
 
 static void install_signal_handler(Thread* thread, uint32_t signal) {
   init_register_context(thread);
   RegisterContext* handler_ctx = (RegisterContext*)thread->stack_ptr;
-  handler_ctx->generic_regs.pc = (size_t)__signal_handler_entry;
-  handler_ctx->generic_regs.arg0 = signal;
+  handler_ctx->pc = (size_t)__signal_handler_entry;
+  handler_ctx->arg0 = signal;
 }
 
 static uint32_t next_signal(uint32_t pending_signals) {
@@ -59,7 +59,7 @@ void check_signals(Thread* thread) {
   const RegisterContext* next_ctx = (const RegisterContext*)thread->stack_ptr;
 
   // Stored thread PC doesn't include Thumb bit
-  if (next_ctx->generic_regs.pc == ((size_t)__signal_handler_end & ~1)) {
+  if (next_ctx->pc == ((size_t)__signal_handler_end & ~1)) {
     // Remove signal handler context
     thread->stack_ptr += sizeof(RegisterContext);
   }

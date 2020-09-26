@@ -11,11 +11,6 @@
 #error Unknown architecture!
 #endif
 
-typedef union {
-  PlatformRegs platform_regs;
-  GenericRegs generic_regs;
-} RegisterContext;
-
-void platform_init_register_context(PlatformRegs* ctx);
+void platform_init_register_context(RegisterContext* regs);
 
 #endif /* ifdef PORT_PORT_H */

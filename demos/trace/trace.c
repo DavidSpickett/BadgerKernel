@@ -11,7 +11,7 @@ static void set_thread_pc(int tid, void* pc) {
   RegisterContext ctx;
   get_thread_registers(tid, (RegisterContext*)&ctx);
   // Remove bottom bit for thumb
-  ctx.generic_regs.pc = PC_REMOVE_MODE((size_t)pc);
+  ctx.pc = PC_REMOVE_MODE((size_t)pc);
   set_thread_registers(tid, ctx);
 }
 
@@ -68,14 +68,14 @@ void tracer() {
   // Stored PC doesn't include mode bit
   target_pc = PC_REMOVE_MODE(NEXT_INSTR(target_pc));
 
-  while (ctx.generic_regs.pc != target_pc) {
+  while (ctx.pc != target_pc) {
     yield();
     get_thread_registers(tid, &ctx);
   }
   log_event("Hit work_finished!");
 
   // Now redirect to prevent infinite loop
-  ctx.generic_regs.pc = (size_t)finish_program;
+  ctx.pc = (size_t)finish_program;
   assert(set_thread_registers(tid, ctx));
   log_event("Redirected tracee");
   yield();
