@@ -1,9 +1,9 @@
 #include "common/trace.h"
 #include "common/assert.h"
 #include "common/attribute.h"
+#include "port/port.h"
 #include "user/thread.h"
 #include "user/util.h"
-#include "port/port.h"
 
 extern void work_finished(void);
 

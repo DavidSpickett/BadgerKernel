@@ -1,9 +1,9 @@
 #include "kernel/thread.h"
-#include "port/port.h"
 #include "common/assert.h"
 #include "common/errno.h"
 #include "common/print.h"
 #include "common/trace.h"
+#include "port/port.h"
 #if CODE_PAGE_SIZE
 #include "kernel/elf.h"
 #endif

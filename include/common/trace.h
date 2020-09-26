@@ -1,9 +1,9 @@
 #ifndef COMMON_TRACE_H
 #define COMMON_TRACE_H
 
+#include "port/port.h"
 #include <stddef.h>
 #include <stdint.h>
-#include "port/port.h"
 
 void print_register_context(RegisterContext ctx);
 
