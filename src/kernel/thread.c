@@ -412,7 +412,7 @@ bool k_thread_cancel(int tid) {
 }
 
 static void thread_switch(void) {
-  asm volatile("svc %0" : : "i"(svc_thread_switch));
+  asm volatile("svc %0" : : "i"(svc_thread_switch) : "memory");
 }
 
 static bool k_do_yield(Thread* to) {
