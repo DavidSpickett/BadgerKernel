@@ -2,25 +2,8 @@
 #include "common/generic_asm.h"
 #include "common/trace.h"
 #include "kernel/thread.h"
+#include "port/port.h"
 #include <string.h>
-
-extern void __signal_handler_entry(void);
-extern void __signal_handler_end(void);
-
-ATTR_NAKED __attribute__((used)) static void handler_wrapper(void) {
-  asm volatile(".global __signal_handler_entry\n\t"
-               "__signal_handler_entry:\n\t"
-               // r0/x0 has the signal number
-               "  ldr " RCHR "1, =_current_thread\n\t"
-               "  ldr " RCHR "1, [" RCHR "1]\n\t"
-               "  add " RCHR "1, " RCHR "1, #2*" PTR_SIZE "\n\t"
-               "  ldr " RCHR "1, [" RCHR "1]\n\t"
-               "  " BLR " " RCHR "1\n\t"
-               "  svc %0\n\t"
-               ".global __signal_handler_end\n\t"
-               "__signal_handler_end:\n\t"
-               "  nop\n\t" ::"i"(svc_thread_switch));
-}
 
 void init_register_context(Thread* thread) {
   // This sets up the initial entry state of a thread
@@ -41,8 +24,9 @@ void init_register_context(Thread* thread) {
 static void install_signal_handler(Thread* thread, uint32_t signal) {
   init_register_context(thread);
   RegisterContext* handler_ctx = (RegisterContext*)thread->stack_ptr;
-  handler_ctx->pc = (size_t)__signal_handler_entry;
+  handler_ctx->pc = (size_t)signal_handler_wrapper;
   handler_ctx->arg0 = signal;
+  handler_ctx->arg1 = (size_t)thread->signal_handler;
 }
 
 static uint32_t next_signal(uint32_t pending_signals) {
@@ -58,8 +42,7 @@ static uint32_t next_signal(uint32_t pending_signals) {
 void check_signals(Thread* thread) {
   const RegisterContext* next_ctx = (const RegisterContext*)thread->stack_ptr;
 
-  // Stored thread PC doesn't include Thumb bit
-  if (next_ctx->pc == ((size_t)__signal_handler_end & ~1)) {
+  if (next_ctx->pc == PC_REMOVE_MODE((size_t)signal_handler_wrapper_end)) {
     // Remove signal handler context
     thread->stack_ptr += sizeof(RegisterContext);
   }

@@ -170,3 +170,12 @@ actually_load_thread:
   pop {r0-r12, r14}     // restore our own regs (no sp/pc)
 
   rfeia sp! // restore CPSR and lr then eret
+
+.global signal_handler_wrapper
+signal_handler_wrapper:
+  // r0 = signal, r1 = handler
+  blx r1
+  svc svc_thread_switch
+.global signal_handler_wrapper_end
+signal_handler_wrapper_end:
+  nop

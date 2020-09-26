@@ -215,3 +215,12 @@ actually_load_thread:
   ldp x0, x1, [sp], #16
 
   eret
+
+.global signal_handler_wrapper
+signal_handler_wrapper:
+  // x0 = signal, x1 = handler
+  blr x1
+  svc svc_thread_switch
+.global signal_handler_wrapper_end
+signal_handler_wrapper_end:
+  nop

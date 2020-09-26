@@ -66,6 +66,7 @@ void tracer() {
 
   size_t target_pc = (size_t)work_finished;
   // Stored PC doesn't include mode bit
+  // TODO: put target label after svc, then we don't need this macro
   target_pc = PC_REMOVE_MODE(NEXT_INSTR(target_pc));
 
   while (ctx.pc != target_pc) {
