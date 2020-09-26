@@ -32,29 +32,26 @@ void init_register_context(Thread* thread) {
   RegisterContext* ctx = (RegisterContext*)thread->stack_ptr;
   memset(ctx, 0, sizeof(RegisterContext));
 
-  ctx->pc = (size_t)thread_start;
+  ctx->generic_regs.pc = (size_t)thread_start;
 
 #ifdef __thumb__
   // Must run in Thumb mode
-  ctx->xpsr = (1 << 24);
+  ctx->platform_regs.xpsr = (1 << 24);
 #elif defined __aarch64__
   // Run in EL0
-  ctx->spsr_el1 = 0;
+  ctx->platform_regs.spsr_el1 = 0;
+// TODO: later these headers will diverge
 #else
   // Run in user mode
-  ctx->cpsr = 0x10;
+  ctx->platform_regs.cpsr = 0x10;
 #endif
 }
 
 static void install_signal_handler(Thread* thread, uint32_t signal) {
   init_register_context(thread);
   RegisterContext* handler_ctx = (RegisterContext*)thread->stack_ptr;
-  handler_ctx->pc = (size_t)__signal_handler_entry;
-#ifdef __aarch64__
-  handler_ctx->x0 = signal;
-#else
-  handler_ctx->r0 = signal;
-#endif
+  handler_ctx->generic_regs.pc = (size_t)__signal_handler_entry;
+  handler_ctx->generic_regs.arg0 = signal;
 }
 
 static uint32_t next_signal(uint32_t pending_signals) {
@@ -70,8 +67,8 @@ static uint32_t next_signal(uint32_t pending_signals) {
 void check_signals(Thread* thread) {
   const RegisterContext* next_ctx = (const RegisterContext*)thread->stack_ptr;
 
-  // Stored PC doesn't include Thumb bit
-  if (next_ctx->pc == ((size_t)__signal_handler_end & ~1)) {
+  // Stored thread PC doesn't include Thumb bit
+  if (next_ctx->generic_regs.pc == ((size_t)__signal_handler_end & ~1)) {
     // Remove signal handler context
     thread->stack_ptr += sizeof(RegisterContext);
   }

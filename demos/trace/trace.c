@@ -10,7 +10,7 @@ static void set_thread_pc(int tid, void* pc) {
   RegisterContext ctx;
   get_thread_registers(tid, (RegisterContext*)&ctx);
   // Remove bottom bit for thumb
-  ctx.pc = ((size_t)pc) & ~1;
+  ctx.generic_regs.pc = ((size_t)pc) & ~1;
   set_thread_registers(tid, ctx);
 }
 
@@ -73,14 +73,14 @@ void tracer() {
   target_pc += 4;
 #endif
 
-  while (ctx.pc != target_pc) {
+  while (ctx.generic_regs.pc != target_pc) {
     yield();
     get_thread_registers(tid, &ctx);
   }
   log_event("Hit work_finished!");
 
   // Now redirect to prevent infinite loop
-  ctx.pc = (size_t)finish_program;
+  ctx.generic_regs.pc = (size_t)finish_program;
   assert(set_thread_registers(tid, ctx));
   log_event("Redirected tracee");
   yield();

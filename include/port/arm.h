@@ -23,10 +23,25 @@ typedef struct {
   /* aka the exception mode lr */
   size_t pc;
   size_t cpsr;
-  /* stack pointer is in thread struct
-     We don't provide it here because modifying it
-     would prevent the thread from resuming correctly.
-  */
-} __attribute__((packed)) RegisterContext;
+} __attribute__((packed)) PlatformRegs;
+
+typedef struct {
+  size_t arg0;
+  size_t arg1;
+  size_t arg2;
+  size_t arg3;
+  size_t _p0_;
+  size_t _p1_;
+  size_t _p2_;
+  size_t _p3_;
+  size_t _p4_;
+  size_t _p5_;
+  size_t _p6_;
+  size_t _p7_;
+  size_t _p8_;
+  size_t _p9_;
+  size_t pc;
+  size_t _p10_;
+} __attribute__((packed)) GenericRegs;
 
 #endif /* ifdef PORT_ARM_H */
