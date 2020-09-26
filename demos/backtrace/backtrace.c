@@ -63,7 +63,7 @@ void backtracer() {
 
 void leaf(void) {
   // Use direct yield here so that it remains a leaf function
-  asm volatile("svc %0" : : "i"(svc_thread_switch) : "memory");
+  YIELD_ASM;
   END_SYMBOL("leaf");
 }
 
