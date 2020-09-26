@@ -1,4 +1,5 @@
 #include "kernel/thread.h"
+#include "port/port.h"
 #include "common/assert.h"
 #include "common/errno.h"
 #include "common/print.h"
@@ -412,7 +413,7 @@ bool k_thread_cancel(int tid) {
 }
 
 static void thread_switch(void) {
-  asm volatile("svc %0" : : "i"(svc_thread_switch) : "memory");
+  YIELD_ASM;
 }
 
 static bool k_do_yield(Thread* to) {

@@ -1,3 +1,4 @@
+#include "port/port.h"
 #include "user/thread.h"
 
 /*
@@ -9,9 +10,8 @@
 void log_things() {
   log_event("one");
 
-  // Manual thread switch (current=this thread, next=this thread)
-  // Simulates an interrupt
-  asm volatile("svc %0" : : "i"(svc_thread_switch) : "memory");
+  // Manual thread switch which simulates an interrupt
+  YIELD_ASM;
 
   log_event("two");
 }
