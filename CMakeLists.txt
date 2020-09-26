@@ -102,6 +102,7 @@ set( KERNEL_SOURCES
   src/hw/${PLATFORM_SRC}/vectors.s
   src/hw/${PLATFORM_SRC}/startup.s
   src/hw/${PLATFORM_SRC}/yield.S
+  src/hw/${PLATFORM_SRC}/port.c
 
   src/common/print.c
   src/common/trace.c

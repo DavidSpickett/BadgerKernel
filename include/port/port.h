@@ -16,4 +16,6 @@ typedef union {
   GenericRegs generic_regs;
 } RegisterContext;
 
+void platform_init_register_context(PlatformRegs* ctx);
+
 #endif /* ifdef PORT_PORT_H */

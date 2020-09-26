@@ -34,17 +34,8 @@ void init_register_context(Thread* thread) {
 
   ctx->generic_regs.pc = (size_t)thread_start;
 
-#ifdef __thumb__
-  // Must run in Thumb mode
-  ctx->platform_regs.xpsr = (1 << 24);
-#elif defined __aarch64__
-  // Run in EL0
-  ctx->platform_regs.spsr_el1 = 0;
-// TODO: later these headers will diverge
-#else
-  // Run in user mode
-  ctx->platform_regs.cpsr = 0x10;
-#endif
+  // Set arch specific settings registers
+  platform_init_register_context(&ctx->platform_regs);
 }
 
 static void install_signal_handler(Thread* thread, uint32_t signal) {
