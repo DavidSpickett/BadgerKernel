@@ -36,7 +36,7 @@ void jump_self() {
 // Note: the original plan was to write this svc in manually
 // However this code will be in ROM so that couldn't be done.
 
-ATTR_NAKED __attribute__((used)) void work_finished(void) {
+ATTR_NAKED __attribute__((used, noinline)) void work_finished(void) {
   // By defining work_finished in assembly we can be sure of it's address
   YIELD_ASM;
   asm volatile(
