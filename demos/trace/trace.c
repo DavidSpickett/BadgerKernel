@@ -5,7 +5,7 @@
 #include "user/thread.h"
 #include "user/util.h"
 
-extern void work_finished(void);
+extern void __work_finished(void);
 
 static void set_thread_pc(int tid, void* pc) {
   RegisterContext ctx;
@@ -33,24 +33,24 @@ void jump_self() {
   __builtin_unreachable();
 }
 
+// Note: the original plan was to write this svc in manually
+// However this code will be in ROM so that couldn't be done.
+
+ATTR_NAKED __attribute__((used)) void work_finished(void) {
+  // By defining work_finished in assembly we can be sure of it's address
+  asm volatile("svc %0\n\t"
+               // If the tracer doesn't redirect us we'll loop forever
+               ".global __work_finished\n\t"
+               "__work_finished:\n\t"
+               "b tracee\n\t"
+               :
+               : "i"(svc_thread_switch));
+}
+
 void tracee() {
   log_event("Working...");
   yield();
   work_finished();
-}
-
-// Note: the original plan was to write this svc in manually
-// However this code will be in ROM so that couldn't be done.
-
-ATTR_NAKED __attribute__((used)) void __work_finished(void) {
-  // By defining work_finished in assembly we can be sure of it's address
-  asm volatile(".global work_finished\n\t"
-               "work_finished:\n\t"
-               "svc %0\n\t"
-               // If the tracer doesn't redirect us we'll loop forever
-               "b tracee\n\t"
-               :
-               : "i"(svc_thread_switch));
 }
 
 void finish_program(void) {
@@ -64,16 +64,14 @@ void tracer() {
 
   RegisterContext ctx;
 
-  size_t target_pc = (size_t)work_finished;
   // Stored PC doesn't include mode bit
-  // TODO: put target label after svc, then we don't need this macro
-  target_pc = PC_REMOVE_MODE(NEXT_INSTR(target_pc));
+  size_t target_pc = PC_REMOVE_MODE((size_t)__work_finished);
 
   while (ctx.pc != target_pc) {
     yield();
     get_thread_registers(tid, &ctx);
   }
-  log_event("Hit work_finished!");
+  log_event("Hit __work_finished!");
 
   // Now redirect to prevent infinite loop
   ctx.pc = (size_t)finish_program;

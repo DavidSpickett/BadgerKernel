@@ -37,7 +37,6 @@ typedef struct {
   size_t cpsr;
 } __attribute__((packed)) RegisterContext;
 
-#define NEXT_INSTR(pc)     ((pc) + 4)
 #define PC_ADD_MODE(pc)    (pc)
 #define PC_REMOVE_MODE(pc) (pc)
 
