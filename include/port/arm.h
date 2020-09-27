@@ -4,6 +4,10 @@
 #include "port/arm_common.h"
 #include <stddef.h>
 
+/* [[[cog
+from scripts.registers import generate_context
+generate_context("arm")
+]]] */
 typedef struct {
   union {
     size_t r0;
@@ -30,12 +34,11 @@ typedef struct {
   size_t r10;
   size_t r11;
   size_t r12;
-  /* stack pointer is in the thread struct */
   size_t lr;
-  /* aka the exception mode lr */
-  size_t pc;
+  size_t pc; // aka the exception mode lr
   size_t cpsr;
 } __attribute__((packed)) RegisterContext;
+/* [[[end]]] */
 
 #define PC_ADD_MODE(pc)    (pc)
 #define PC_REMOVE_MODE(pc) (pc)

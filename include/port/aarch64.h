@@ -4,6 +4,10 @@
 #include "port/arm_common.h"
 #include <stddef.h>
 
+/* [[[cog
+from scripts.registers import generate_context
+generate_context("aarch64")
+]]] */
 typedef struct {
   size_t x29;
   size_t x30; // aka lr
@@ -52,6 +56,7 @@ typedef struct {
     size_t arg1;
   };
 } __attribute__((packed)) RegisterContext;
+/* [[[end]]] */
 
 #define PC_ADD_MODE(pc)    (pc)
 #define PC_REMOVE_MODE(pc) (pc)
