@@ -13,6 +13,13 @@
 #error Unknown architecture!
 #endif
 
+#ifndef PC_ADD_MODE
+#error Must define PC_ADD_MODE!
+#endif
+#ifndef PC_REMOVE_MODE
+#error Must define PC_REMOVE_MODE!
+#endif
+
 void platform_init_register_context(RegisterContext* regs);
 void print_register_context(const RegisterContext* ctx);
 
