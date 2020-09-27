@@ -1,10 +1,10 @@
 #ifndef PORT_PORT_H
 #define PORT_PORT_H
 
-#include "common/thread_state.h"
 #include "common/syscall.h"
-#include <stdint.h>
+#include "common/thread_state.h"
 #include <stddef.h>
+#include <stdint.h>
 
 #ifdef __aarch64__
 #include "aarch64.h"
@@ -38,6 +38,7 @@ void signal_handler_wrapper_end(void);
 void do_svc(SVCCode code);
 
 size_t generic_semihosting_call(size_t operation, size_t* parameters);
-size_t generic_syscall(Syscall num, size_t arg1, size_t arg2, size_t arg3, size_t arg4);
+size_t generic_syscall(Syscall num, size_t arg1, size_t arg2, size_t arg3,
+                       size_t arg4);
 
 #endif /* ifdef PORT_PORT_H */
