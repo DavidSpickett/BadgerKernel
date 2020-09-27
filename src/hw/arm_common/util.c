@@ -57,10 +57,6 @@ void k_exit(int status) {
   __builtin_unreachable();
 }
 
-/* Note: the file operations are in src/hw/arm_file.c
-   so we can choose at build time whether to use those
-   or the in memory file system. */
-
 __attribute__((noreturn)) void __assert_fail(const char* __assertion,
                                              const char* __file,
                                              unsigned int __line,
