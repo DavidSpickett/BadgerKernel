@@ -43,9 +43,7 @@ ATTR_NAKED __attribute__((used, noinline)) void work_finished(void) {
       // If the tracer doesn't redirect us we'll loop forever
       ".global __work_finished\n\t"
       "__work_finished:\n\t"
-      BRANCH_INSTR " tracee\n\t"
-      :
-      : "i"(svc_thread_switch));
+      "" BRANCH_INSTR " tracee\n\t");
 }
 
 void tracee() {
