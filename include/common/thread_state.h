@@ -27,6 +27,6 @@ ENUM_VALUE(svc_thread_switch, 0)
 ENUM_VALUE(svc_enable_timer, 1)
 ENUM_VALUE(svc_disable_timer, 2)
 ENUM_VALUE(svc_syscall, 21)
-ENUM_END(SVCCodes)
+ENUM_END(SVCCode)
 
 #endif /* ifdef COMMON_THREAD_STATE_H */

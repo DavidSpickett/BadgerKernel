@@ -98,6 +98,7 @@ set( KERNEL_SOURCES
   src/hw/arm_common/file.c
   src/hw/arm_common/util.c
   src/hw/arm_common/syscall.c
+  src/hw/arm_common/port.c
 
   src/hw/${PLATFORM_SRC}/vectors.s
   src/hw/${PLATFORM_SRC}/startup.s
@@ -115,6 +116,7 @@ set( KERNEL_SOURCES
   src/user/alloc.c
   src/user/mutex.c
   src/user/condition_variable.c
+  src/user/timer.c
 )
 
 if(NOT BP_LOWER STREQUAL "aarch64")
@@ -123,8 +125,6 @@ endif()
 
 if(BP_LOWER STREQUAL "thumb" )
   set( KERNEL_SOURCES ${KERNEL_SOURCES} src/hw/${PLATFORM_SRC}/timer.c)
-else()
-  set( KERNEL_SOURCES ${KERNEL_SOURCES} src/hw/arm_common/timer.c)
 endif()
 
 set_property(SOURCE src/hw/${PLATFORM_SRC}/startup.s PROPERTY LANGUAGE C)

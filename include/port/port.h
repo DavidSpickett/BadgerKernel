@@ -1,6 +1,7 @@
 #ifndef PORT_PORT_H
 #define PORT_PORT_H
 
+#include "common/thread_state.h"
 #include <stdint.h>
 
 #ifdef __aarch64__
@@ -31,5 +32,7 @@ void print_register_context(const RegisterContext* ctx);
 
 void signal_handler_wrapper(uint32_t signal, void (*handler)(uint32_t));
 void signal_handler_wrapper_end(void);
+
+void do_svc(SVCCode code);
 
 #endif /* ifdef PORT_PORT_H */
