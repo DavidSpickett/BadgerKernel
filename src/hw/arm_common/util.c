@@ -37,13 +37,6 @@ size_t generic_semihosting_call(size_t operation, size_t* parameters) {
   return ret;
 }
 
-/* All parameters are declared voaltile to make
-   sure that they are initialised even though
-   we only use the address of them in these functions.
-   generic_semihosting_call relies on their
-   contents.
-*/
-
 void k_exit(int status) {
   size_t event = get_semihosting_event(status);
 #ifdef __aarch64__
