@@ -97,7 +97,6 @@ set( KERNEL_SOURCES
   src/kernel/semihosting.c
 
   src/hw/arm_common/file.c
-  src/hw/arm_common/syscall.c
   src/hw/arm_common/port.c
 
   src/hw/${PLATFORM_SRC}/vectors.s

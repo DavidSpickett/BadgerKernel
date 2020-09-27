@@ -2,6 +2,7 @@
 #define USER_SYSCALL_H
 
 #include "common/syscall.h"
+#include "port/port.h"
 #include <stddef.h>
 
 size_t generic_syscall(Syscall num, size_t arg1, size_t arg2, size_t arg3,
