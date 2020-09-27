@@ -18,20 +18,14 @@ void do_svc(SVCCode code) {
 
 size_t generic_semihosting_call(size_t operation, size_t* parameters) {
   size_t ret;
-  // clang-format off
   // We assume that we're already in kernel mode by this point
-  asm volatile (
-    "mov "RCHR"0, %[operation]\n\t"
-    "mov "RCHR"1, %[parameters]\n\t"
-    SEMIHOSTING_CALL"\n\t"
-    "mov %[ret], "RCHR"0\n\t"
-    :[ret]"=r"(ret)
-    :[parameters]"r"(parameters),
-     [operation]"r"(operation)
-    :RCHR"0", RCHR"1", "memory"
-  );
-  // clang-format on
-
+  asm volatile("mov " RCHR "0, %[operation]\n\t"
+               "mov " RCHR "1, %[parameters]\n\t"
+               "" SEMIHOSTING_CALL "\n\t"
+               "mov %[ret], " RCHR "0\n\t"
+               : [ ret ] "=r"(ret)
+               : [ parameters ] "r"(parameters), [ operation ] "r"(operation)
+               : RCHR "0", RCHR "1", "memory");
   return ret;
 }
 
