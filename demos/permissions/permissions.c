@@ -54,7 +54,7 @@ void cannot_tconfig_other() {
 }
 
 void cannot_mutli() {
-  // Grab back just to check we handle mutiple
+  // Grab back just to check we handle multiple
   // permissions being removed
   assert(close(read_fd) == -1);
   assert(malloc(sizeof(int)) == NULL);
