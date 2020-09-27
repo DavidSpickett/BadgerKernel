@@ -71,6 +71,14 @@
   pop {r4-r11}
 .endm
 
+.macro CALL_KERNEL function
+  ldr r5, =stack_top // Use kernel stack
+  mov sp, r5
+  push {lr}
+  bl \function
+  pop {lr}
+.endm
+
 .global handle_exception
 .thumb_func
 handle_exception:
@@ -114,16 +122,12 @@ handle_svc:
 
   CHECK_SVC svc_thread_switch, load_next_thread
   CHECK_SVC svc_syscall,       generic_syscall
-  // no disable_timer - done from user mode
-  // no enable_timer - done from user mode
+  CHECK_SVC svc_disable_timer, disable_timer
+  CHECK_SVC svc_enable_timer, enable_timer
   b . // unknown svc
 
 generic_syscall:
-  ldr r5, =stack_top // Use kernel stack
-  mov sp, r5
-  push {lr}
-  bl k_handle_syscall // call handler
-  pop {lr}
+  CALL_KERNEL k_handle_syscall
 
   // If next_thread is NULL set it to current to resume current thread
   mov r0, #0
@@ -133,6 +137,15 @@ generic_syscall:
   bne 1f
   NEXT_EQUAL_CURRENT
 1:
+  b load_next_thread
+
+enable_timer:
+  CALL_KERNEL k_enable_timer
+  b finalise_timer
+disable_timer:
+  CALL_KERNEL k_disable_timer
+finalise_timer:
+  NEXT_EQUAL_CURRENT
   b load_next_thread
 
 .global load_first_thread

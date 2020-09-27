@@ -51,6 +51,11 @@
   mcr p15, 0, r0, c14, c2, 1 // CNTP_CTL
 .endm
 
+.macro CALL_KERNEL function
+ cps SUPERVISOR_MODE
+ bl \function
+.endm
+
 .global handle_timer
 handle_timer:
   /* lr points to instruction *after* the interrupted
@@ -94,8 +99,7 @@ handle_exception:
   b . // unknown svc
 
 generic_syscall:
-  cps SUPERVISOR_MODE // Use kernel's stack
-  bl k_handle_syscall // Call handler
+  CALL_KERNEL k_handle_syscall
 
   // If next_thread is NULL by now, just return normally to same thread
   mov r0, #0
@@ -136,9 +140,8 @@ load_next_thread:
   cmp r0, r1
   ldr r4, [r11]            // r4 = *(&next_thread)
   bne actually_load_thread
-  cps #SUPERVISOR_MODE     // Use kernel's stack
   // Note that r10/r11 are callee saved so we can still use them after this
-  bl do_scheduler          // This will set next_thread
+  CALL_KERNEL do_scheduler // This will set next_thread
   ldr r4, [r11]            // Get new next_thread
 
 actually_load_thread:

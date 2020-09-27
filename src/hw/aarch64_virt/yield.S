@@ -71,6 +71,11 @@
   msr CNTV_CTL_EL0, x0
 .endm
 
+.macro CALL_KERNEL function
+  msr SPSel, #1        // Use kernel's stack
+  bl  \function
+.endm
+
 /* Having this as a seperate handler is easier than
    finding the exact right register to read.
    Since I'm not sure what would happen if there
@@ -113,8 +118,7 @@ check_svc:
   b .                // unknown SVC
 
 generic_syscall:
-  msr SPSel, #1        // Use kernel's stack
-  bl  k_handle_syscall // Call handler
+  CALL_KERNEL k_handle_syscall
 
   // If next thread is NULL, just resume current thread
   mov x0, #0
@@ -155,8 +159,7 @@ load_next_thread:
   bne actually_load_thread
 
   // Otherwise pick a new thread and do housekeeping
-  msr SPSel, #1              // Use kernel's stack
-  bl do_scheduler            // This will set next_thread
+  CALL_KERNEL do_scheduler   // This will set next_thread
   ldr x6, [x21]              // Get new next_thread
 
 actually_load_thread:
