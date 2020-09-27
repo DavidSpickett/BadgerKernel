@@ -94,9 +94,9 @@ set( KERNEL_SOURCES
   src/kernel/alloc.c
   src/kernel/syscall.c
   src/kernel/message.c
+  src/kernel/semihosting.c
 
   src/hw/arm_common/file.c
-  src/hw/arm_common/util.c
   src/hw/arm_common/syscall.c
   src/hw/arm_common/port.c
 

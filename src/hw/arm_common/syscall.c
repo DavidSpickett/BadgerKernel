@@ -1,5 +1,5 @@
 #include "user/syscall.h"
-#include "common/generic_asm.h"
+#include "common/arm_generic_asm.h"
 #include "common/print.h"
 #include "common/thread_state.h"
 

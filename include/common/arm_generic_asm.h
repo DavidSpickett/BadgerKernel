@@ -1,5 +1,5 @@
-#ifndef COMMON_GENERIC_ASM_H
-#define COMMON_GENERIC_ASM_H
+#ifndef COMMON_ARM_GENERIC_ASM_H
+#define COMMON_ARM_GENERIC_ASM_H
 
 // Defines for writing inline assembly that works
 // for Arm/Thumb/AArch64
@@ -30,4 +30,4 @@
 
 #endif
 
-#endif /* ifdef COMMON_GENERIC_ASM_H */
+#endif /* ifdef COMMON_ARM_GENERIC_ASM_H */

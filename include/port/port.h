@@ -35,4 +35,6 @@ void signal_handler_wrapper_end(void);
 
 void do_svc(SVCCode code);
 
+size_t generic_semihosting_call(size_t operation, size_t* parameters);
+
 #endif /* ifdef PORT_PORT_H */
