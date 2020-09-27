@@ -107,6 +107,7 @@ set( KERNEL_SOURCES
 
   src/common/print.c
   src/common/trace.c
+  src/common/assert.c
 
   # /user files here for threads within the same binary
   src/user/errno.c

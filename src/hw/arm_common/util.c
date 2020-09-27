@@ -56,12 +56,3 @@ void k_exit(int status) {
   generic_semihosting_call(SYS_EXIT, parameters);
   __builtin_unreachable();
 }
-
-__attribute__((noreturn)) void __assert_fail(const char* __assertion,
-                                             const char* __file,
-                                             unsigned int __line,
-                                             const char* __function) {
-  printf("%s:%u (%s) Expected: %s\n", __file, __line, __function, __assertion);
-  exit(1);
-  __builtin_unreachable();
-}
