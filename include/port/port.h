@@ -19,6 +19,12 @@
 #ifndef PC_REMOVE_MODE
 #error Must define PC_REMOVE_MODE!
 #endif
+#ifndef YIELD_ASM
+#error Must define YIELD_ASM!
+#endif
+#ifndef BRANCH_INSTR
+#error Must define BRANCH_INSTR!
+#endif
 
 void platform_init_register_context(RegisterContext* regs);
 void print_register_context(const RegisterContext* ctx);
