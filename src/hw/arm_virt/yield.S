@@ -94,22 +94,8 @@ handle_exception:
   b . // unknown svc
 
 generic_syscall:
-  cps SYSTEM_MODE
-  // Get back arguments and operation number
-  ldr r0, [sp, #0]
-  ldr r1, [sp, #4]
-  ldr r2, [sp, #8]
-  ldr r3, [sp, #12]
-  // r8 = operation number
-  ldr r8, [sp, #32]
-
   cps SUPERVISOR_MODE // Use kernel's stack
-  str r8, [sp]        // Operation number as argument 5 on the stack
   bl k_handle_syscall // Call handler
-  cps SYSTEM_MODE     // Result is in r0
-  str r0, [sp]        // Patch it back into user regs
-  // TODO: dedupe a lot of these mode switches
-  cps SUPERVISOR_MODE // Use kernel's stack
 
   // If next_thread is NULL by now, just return normally to same thread
   mov r0, #0

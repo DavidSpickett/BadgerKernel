@@ -20,7 +20,10 @@ typedef struct {
   size_t x21;
   size_t x22;
   size_t x19;
-  size_t x20;
+  union {
+    size_t x20;
+    size_t syscall_num;
+  };
   size_t x17;
   size_t x18;
   size_t x15;

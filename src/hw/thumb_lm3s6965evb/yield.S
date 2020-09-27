@@ -119,23 +119,11 @@ handle_svc:
   b . // unknown svc
 
 generic_syscall:
-  // Get back arguments and operation number
-  ldr r0, [sp, #8*4]
-  ldr r1, [sp, #9*4]
-  ldr r2, [sp, #10*4]
-  ldr r3, [sp, #11*4]
-  // r8 = operation number
-  ldr r8, [sp, #4*4]
-
-  mov r6, sp        // Save current sp for after call (callee saved)
   ldr r5, =stack_top // Use kernel stack
   mov sp, r5
-
-  // Operation number passed on stack as argument 5
-  push {r8, lr}
+  push {lr}
   bl k_handle_syscall // call handler
-  pop {r8, lr}
-  str r0, [r6, #8*4]  // Store result back in context
+  pop {lr}
 
   // If next_thread is NULL set it to current to resume current thread
   mov r0, #0

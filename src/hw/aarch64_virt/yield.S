@@ -113,18 +113,8 @@ check_svc:
   b .                // unknown SVC
 
 generic_syscall:
-  // Get back arguments and syscall number
-  ldr x0,  [sp, #32*8]
-  ldr x1,  [sp, #33*8]
-  ldr x2,  [sp, #29*8]
-  ldr x3,  [sp, #26*8]
-  // Syscall num is last argument to kernel handler
-  ldr x4,  [sp, #11*8]
-
   msr SPSel, #1        // Use kernel's stack
   bl  k_handle_syscall // Call handler
-  msr SPSel, #0        // Store result in saved thread
-  str x0, [sp, #32*8]
 
   // If next thread is NULL, just resume current thread
   mov x0, #0

@@ -29,7 +29,10 @@ typedef struct {
   size_t r5;
   size_t r6;
   size_t r7;
-  size_t r8;
+  union {
+    size_t r8;
+    size_t syscall_num;
+  };
   size_t r9;
   size_t r10;
   size_t r11;

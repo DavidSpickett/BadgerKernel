@@ -6,6 +6,7 @@
 #include "kernel/message.h"
 #include "kernel/mutex.h"
 #include "kernel/thread.h"
+#include "port/port.h"
 #include <stddef.h>
 
 static void k_invalid_syscall(size_t arg1, size_t arg2, size_t arg3,
@@ -16,8 +17,9 @@ static void k_invalid_syscall(size_t arg1, size_t arg2, size_t arg3,
 }
 
 typedef size_t (*SyscallFn)();
-size_t k_handle_syscall(size_t arg1, size_t arg2, size_t arg3, size_t arg4,
-                        size_t num) {
+void k_handle_syscall(void) {
+  RegisterContext* ctx = (RegisterContext*)_current_thread->stack_ptr;
+
   SyscallFn syscall_fn = NULL;
   bool has_result = true;
   size_t result = 0;
@@ -25,14 +27,14 @@ size_t k_handle_syscall(size_t arg1, size_t arg2, size_t arg3, size_t arg4,
   /* [[[cog
   import cog
   from scripts.syscalls import syscalls
-  cog.outl("switch (num) {")
+  cog.outl("switch (ctx->syscall_num) {")
   for syscall, has_result in syscalls:
     cog.outl("  case syscall_{}:".format(syscall))
     cog.outl("    syscall_fn = (SyscallFn)k_{};".format(syscall))
     cog.outl("    has_result = {};".format("true" if has_result else "false"))
     cog.outl("    break;")
   ]]] */
-  switch (num) {
+  switch (ctx->syscall_num) {
     case syscall_add_thread:
       syscall_fn = (SyscallFn)k_add_thread;
       has_result = true;
@@ -132,12 +134,16 @@ size_t k_handle_syscall(size_t arg1, size_t arg2, size_t arg3, size_t arg4,
     /* [[[end]]] */
     case syscall_eol:
     default:
-      k_invalid_syscall(arg1, arg2, arg3, arg4, num);
+      k_invalid_syscall(ctx->arg0, ctx->arg1, ctx->arg2, ctx->arg3,
+                        ctx->syscall_num);
       break;
   }
 
-  result = syscall_fn(arg1, arg2, arg3, arg4);
+  result = syscall_fn(ctx->arg0, ctx->arg1, ctx->arg2, ctx->arg3);
   // Make sure we zero out the result if the syscall returned void
   // So we don't leak some in kernel address
-  return has_result ? result : 0;
+  if (!has_result) {
+    result = 0;
+  }
+  ctx->arg0 = result;
 }
