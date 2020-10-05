@@ -217,3 +217,73 @@ signal_handler_wrapper:
 .global signal_handler_wrapper_end
 signal_handler_wrapper_end:
   nop
+
+.global get_context
+get_context:
+  // x0 = destination pointer
+  stp x19, x20, [x0], #16
+  stp x21, x22, [x0], #16
+  stp x23, x24, [x0], #16
+  stp x25, x26, [x0], #16
+  stp x27, x28, [x0], #16
+  stp x29, x30, [x0], #16
+  mov x1, sp
+  // Default pc is current lr
+  stp x1, x30, [x0], #16
+  ret
+
+.global set_context
+set_context:
+  // x0 = source pointer
+  ldp x19, x20, [x0], #16
+  ldp x21, x22, [x0], #16
+  ldp x23, x24, [x0], #16
+  ldp x25, x26, [x0], #16
+  ldp x27, x28, [x0], #16
+  ldp x29, x30, [x0], #16
+  // pc and sp
+  ldp x1,  x2,  [x0], #16
+  mov sp, x1
+  br x2
+
+.global set_context_from_stack_address
+set_context_from_stack_address:
+  ldp x0, x1, [sp], #16
+  b set_context
+
+.macro SWAP reg1, reg2
+  ldp x1, x2, [x0]
+  stp \reg1, \reg2, [x0], #16
+  mov \reg1, x1
+  mov \reg2, x2
+.endm
+
+.global swap_context
+swap_context:
+  // x0 = location of ctx to swap to
+  SWAP x19, x20
+  SWAP x21, x22
+  SWAP x23, x24
+  SWAP x25, x26
+  SWAP x27, x28
+
+  // Load x29, x30/lr
+  ldp x3, x4, [x0]
+  // Store current
+  stp x29, x30, [x0], #16
+  mov x29, x3
+  // Don't move new lr just yet
+
+  // Load new sp/pc
+  ldp x1, x2, [x0]
+  mov x3, sp
+  // Store current sp/lr (used as the new pc)
+  stp x3, x30, [x0], #16
+  // Now we can set the new lr
+  mov x30, x4
+  // Set new sp
+  mov sp, x1
+
+  // Reset x0 to be arg1 of new function
+  sub x0, x0, #14*8
+  br x2

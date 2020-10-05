@@ -1,0 +1,11 @@
+Thread            0: Hello fibres!
+Thread            0: Hello fibres again!
+Thread            0: ABCD
+Thread            0: EFGH
+Thread            0: HIJK
+Thread            0: LMNO
+Thread            0: PQRS
+Thread            0: TUVW
+Thread            0: XYZ!
+Thread            0: exiting
+Thread  <scheduler>: all threads finished

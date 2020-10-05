@@ -28,6 +28,9 @@
 #ifndef BRANCH_INSTR
 #error Must define BRANCH_INSTR!
 #endif
+#ifndef ALIGN_STACK_PTR
+#error Must define ALIGN_STACK_PTR!
+#endif
 
 void platform_init_register_context(RegisterContext* regs);
 void print_register_context(const RegisterContext* ctx);

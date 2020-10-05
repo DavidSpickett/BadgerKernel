@@ -117,6 +117,7 @@ set( KERNEL_SOURCES
   src/user/mutex.c
   src/user/condition_variable.c
   src/user/timer.c
+  src/user/fibre.c
 )
 
 if(NOT BP_LOWER STREQUAL "aarch64")
@@ -170,4 +171,5 @@ include(demos/permissions/CMakeLists.txt)
 include(demos/trace/CMakeLists.txt)
 include(demos/signalhandling/CMakeLists.txt)
 include(demos/backtrace/CMakeLists.txt)
+include(demos/fibres/CMakeLists.txt)
 include(demos/shell/CMakeLists.txt)

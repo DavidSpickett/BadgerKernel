@@ -43,7 +43,8 @@ typedef struct {
 } __attribute__((packed)) RegisterContext;
 /* [[[end]]] */
 
-#define PC_ADD_MODE(pc)    ((pc) | 1)
-#define PC_REMOVE_MODE(pc) ((pc) & ~1)
+#define PC_ADD_MODE(pc)      ((pc) | 1)
+#define PC_REMOVE_MODE(pc)   ((pc) & ~1)
+#define ALIGN_STACK_PTR(ptr) (ptr)
 
 #endif /* ifdef PORT_THUMB_H */

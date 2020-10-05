@@ -43,7 +43,22 @@ typedef struct {
 } __attribute__((packed)) RegisterContext;
 /* [[[end]]] */
 
-#define PC_ADD_MODE(pc)    (pc)
-#define PC_REMOVE_MODE(pc) (pc)
+typedef struct {
+  size_t r4;
+  size_t r5;
+  size_t r6;
+  size_t r7;
+  size_t r8;
+  size_t r9;
+  size_t r10;
+  size_t r11;
+  size_t sp;
+  size_t lr;
+  size_t pc;
+} __attribute__((packed)) UserContext;
+
+#define PC_ADD_MODE(pc)      (pc)
+#define PC_REMOVE_MODE(pc)   (pc)
+#define ALIGN_STACK_PTR(ptr) (ptr)
 
 #endif /* ifdef PORT_ARM_H */

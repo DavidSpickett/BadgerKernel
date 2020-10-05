@@ -61,7 +61,25 @@ typedef struct {
 } __attribute__((packed)) RegisterContext;
 /* [[[end]]] */
 
-#define PC_ADD_MODE(pc)    (pc)
-#define PC_REMOVE_MODE(pc) (pc)
+typedef struct {
+  size_t x19;
+  size_t x20;
+  size_t x21;
+  size_t x22;
+  size_t x23;
+  size_t x24;
+  size_t x25;
+  size_t x26;
+  size_t x27;
+  size_t x28;
+  size_t x29;
+  size_t lr; // aka x30
+  size_t sp;
+  size_t pc;
+} __attribute__((packed)) UserContext;
+
+#define PC_ADD_MODE(pc)      (pc)
+#define PC_REMOVE_MODE(pc)   (pc)
+#define ALIGN_STACK_PTR(ptr) ((ptr) & ~0xF)
 
 #endif /* ifdef PORT_AARCH64_H */

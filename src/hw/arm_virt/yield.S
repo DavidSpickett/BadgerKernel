@@ -168,3 +168,68 @@ signal_handler_wrapper:
 .global signal_handler_wrapper_end
 signal_handler_wrapper_end:
   nop
+
+.global get_context
+get_context:
+  // r0 = destination pointer
+  str r4,  [r0], #4
+  str r5,  [r0], #4
+  str r6,  [r0], #4
+  str r7,  [r0], #4
+  str r8,  [r0], #4
+  str r9,  [r0], #4
+  str r10, [r0], #4
+  str r11, [r0], #4
+  str sp,  [r0], #4
+  str lr,  [r0], #4
+  str lr,  [r0], #4 // Default new PC to immediatley after get_context call
+  bx lr
+
+.global set_context
+set_context:
+  // r0 = source pointer
+  ldr r4,  [r0], #4
+  ldr r5,  [r0], #4
+  ldr r6,  [r0], #4
+  ldr r7,  [r0], #4
+  ldr r8,  [r0], #4
+  ldr r9,  [r0], #4
+  ldr r10, [r0], #4
+  ldr r11, [r0], #4
+  ldr sp,  [r0], #4
+  ldr lr,  [r0], #4
+  ldr r1,  [r0], #4 // Our new PC
+  bx r1
+
+// Used to catch fibres returning normally
+.global set_context_from_stack_address
+set_context_from_stack_address:
+  ldr r0, [sp], #4
+  b set_context
+
+.macro SWAP reg
+  ldr r1,   [r0]
+  str \reg, [r0], #4
+  mov \reg, r1
+.endm
+
+.global swap_context
+swap_context:
+  // r0 = location of ctx to swap into/save to
+  SWAP r4
+  SWAP r5
+  SWAP r6
+  SWAP r7
+  SWAP r8
+  SWAP r9
+  SWAP r10
+  SWAP r11
+  SWAP sp
+  ldr r1, [r0]     // Load new lr
+  str lr, [r0], #4 // Store current lr
+  ldr r2, [r0]     // Load new pc
+  str lr, [r0], #4 // Store pc (the lr of this fn)
+  mov lr, r1       // Set new lr
+  mov r1, r2       // New pc to branch to
+  sub r0, #11*4    // Reset r0 to be arg1 of the new function
+  bx r1
