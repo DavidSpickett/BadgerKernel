@@ -13,7 +13,7 @@ void make_context(UserContext* ctx, void (*function)(UserContext*), uint8_t* sta
 
   // Align to 16 bytes for AArch64
   ctx->sp = ALIGN_STACK_PTR((size_t)stack_ptr);
-  ctx->pc = PC_REMOVE_MODE((size_t)function);
+  ctx->pc = (size_t)function;
 
   // In case the function returns normally, we'll catch it
   ctx->lr = (size_t)set_context_from_stack_address;
