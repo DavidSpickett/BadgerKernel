@@ -53,6 +53,7 @@ make
 | trace                             | Redirecting another thread by writing to its PC.                                   |
 | signalhandling                    | Installing and invoking signal handlers.                                           |
 | backtrace                         | Show callstack of user threads. (only tested on Arm -O0)                           |
+| fibres                            | User space threading.                                                              |
 
 Each demo has 'run_<demo>', 'debug_<demo>' and 'test_<demo>' make targets. To test all demos use lit. (best done in a virtualenv)
 

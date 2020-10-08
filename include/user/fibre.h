@@ -3,10 +3,11 @@
 
 #include "port/port.h"
 
-void make_context(UserContext* ctx, void (*function)(UserContext*), uint8_t* stack_ptr);
+void make_context(FibreContext* ctx, void (*function)(FibreContext*),
+                  uint8_t* stack_ptr);
 
-void swap_context(UserContext* to);
-void get_context(UserContext* ctx);
-void set_context(const UserContext* ctx);
+void swap_context(FibreContext* to);
+void get_context(FibreContext* ctx);
+void set_context(const FibreContext* ctx);
 
 #endif /* ifdef USER_FIBRE_H */
