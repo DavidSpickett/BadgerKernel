@@ -574,7 +574,7 @@ int k_add_thread_from_file_with_args(const char* filename,
 
   uint8_t* dest = code_page;
 #if CODE_BACKING_PAGES
-  dest = &code_page_backing[free_page][0];
+  dest = code_page_backing[free_page];
 #endif
 
   void (*entry)() = load_elf(filename, dest);
