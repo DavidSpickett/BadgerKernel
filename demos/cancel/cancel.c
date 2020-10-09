@@ -41,7 +41,16 @@ void canceller() {
   assert(thread_cancel(0));
 }
 
+void cancel_self(void) {
+  log_event("The Castle of Aarrgghh...");
+  thread_cancel(CURRENT_THREAD);
+  __builtin_unreachable();
+}
+
 void setup(void) {
+  add_named_thread(cancel_self, "cancel_self");
+  yield();
+
   add_thread_from_worker(work);
   add_thread_from_worker(canceller);
   add_thread_from_worker(work);

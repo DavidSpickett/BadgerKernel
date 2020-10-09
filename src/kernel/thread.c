@@ -402,9 +402,19 @@ static void cleanup_thread(Thread* thread) {
 }
 
 bool k_thread_cancel(int tid) {
+  if (tid == CURRENT_THREAD) {
+    tid = _current_thread->id;
+  }
+
   bool set = set_thread_state(tid, cancelled);
   if (set) {
     cleanup_thread(&all_threads[tid]);
+
+    if (tid == _current_thread->id) {
+      // Thread cancelled itself, choose another
+      do_scheduler();
+      return true;
+    }
   }
   return set;
 }
