@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <string.h>
 
-extern Thread* _current_thread;
+extern Thread* current_thread;
 
 #define ALLOC_SIZE 500
 __attribute__((noinline)) void recurse(int repeat) {
@@ -22,19 +22,19 @@ void underflow() {
   set_thread_name(CURRENT_THREAD, "underflow");
 
   char dummy;
-  size_t distance = (void*)(&dummy) - (void*)_current_thread;
+  size_t distance = (void*)(&dummy) - (void*)current_thread;
   log_event("recursing");
   recurse(distance / ALLOC_SIZE);
   // Reset the name so we have consistent test output
   // To do this we need a correct thread ID
-  _current_thread->id = 0;
+  current_thread->id = 0;
   set_thread_name(CURRENT_THREAD, "underflowed");
   yield();
 }
 
 void overflow() {
   char dummy;
-  size_t distance = (void*)(&dummy) - (void*)_current_thread;
+  size_t distance = (void*)(&dummy) - (void*)current_thread;
   log_event("overflowing");
   /* We're probably very close to top of stack
      so this is overkill. At least we can be sure that:

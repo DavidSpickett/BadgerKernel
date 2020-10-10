@@ -10,14 +10,14 @@
 
 .macro CURRENT_IN_X20_NEXT_IN_X21
   // Deliberatley callee saved so we can call the scheduler easily
-  ldr x20, =_current_thread
+  ldr x20, =current_thread
   ldr x21, =next_thread
 .endm
 
 .macro NEXT_EQUAL_CURRENT
   CURRENT_IN_X20_NEXT_IN_X21
   ldr x20, [x20]
-  str x20, [x21] // next_thread = _current_thread
+  str x20, [x21] // next_thread = current_thread
 .endm
 
 .macro SAVE_CURRENT_THREAD
@@ -52,17 +52,17 @@
   CURRENT_IN_X20_NEXT_IN_X21
 
   /* Save stack pointer */
-  ldr x1, [x20]        // x1 = _current_thread
+  ldr x1, [x20]        // x1 = current_thread
   mov x3, sp
-  str x3, [x1], #8     // _current_thread->stack_ptr=sp
+  str x3, [x1], #8     // current_thread->stack_ptr=sp
 
   /* Update state */
-  ldr x2, [x1]         // x2 = _current_thread->state
+  ldr x2, [x1]         // x2 = current_thread->state
   mov x3, #running
   cmp x2, x3           // if we're something other than running, leave it as it is
   bne 1f
   mov x2, #suspended   // otherwise move to suspended
-  str x2, [x1]         // _current_thread->state = suspended
+  str x2, [x1]         // current_thread->state = suspended
 1:
 .endm
 
@@ -166,15 +166,15 @@ actually_load_thread:
   /* Either we ran the code above, or kernel jumped here
      to run setup_thread. Either way we want to set EL0_SP */
   msr SPSel, #0            // Back to user stack
-  str x6, [x20]            // _current_thread = next_thread
+  str x6, [x20]            // current_thread = next_thread
   mov x12, #0              // Set next to null for next switch to call scheduler
   str x12, [x21]           // next_thread = NULL
-  ldr x20, [x20]           // x20 = _current_thread
-  ldr x3, [x20], #8        // x3 = _current_thread->stack_ptr
+  ldr x20, [x20]           // x20 = current_thread
+  ldr x3, [x20], #8        // x3 = current_thread->stack_ptr
   mov sp, x3
 
   mov x4, #running         // start running
-  str x4, [x20]            // _current_thread->state = running
+  str x4, [x20]            // current_thread->state = running
 
   /* Restore all registers of the new thread
      (even init state threads have a blank context

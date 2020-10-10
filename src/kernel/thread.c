@@ -11,7 +11,7 @@
 #include <stdarg.h>
 #include <string.h>
 
-__attribute__((section(".thread_vars"))) Thread* _current_thread;
+__attribute__((section(".thread_vars"))) Thread* current_thread;
 
 __attribute__((section(".thread_structs"))) Thread all_threads[MAX_THREADS];
 __attribute__((section(".thread_vars"))) Thread* next_thread;
@@ -33,11 +33,11 @@ extern void load_first_thread(void);
 void check_stack(void);
 
 bool k_has_no_permission(uint16_t permission) {
-  if (!_current_thread) {
+  if (!current_thread) {
     // Must be kernel (famous last words)
     return false;
   }
-  uint16_t has = _current_thread->permissions;
+  uint16_t has = current_thread->permissions;
   return (has & permission) == 0;
 }
 
@@ -66,7 +66,7 @@ static bool can_schedule_thread(int tid) {
 }
 
 int k_get_thread_id(void) {
-  return _current_thread ? _current_thread->id : INVALID_THREAD;
+  return current_thread ? current_thread->id : INVALID_THREAD;
 }
 
 static void k_set_thread_name(Thread* thread, const char* name) {
@@ -82,7 +82,7 @@ static void k_set_thread_name(Thread* thread, const char* name) {
 bool k_set_thread_property(int tid, size_t property, const void* value) {
   if (((tid == CURRENT_THREAD) && k_has_no_permission(TPERM_TCONFIG)) ||
       ((tid != CURRENT_THREAD) && k_has_no_permission(TPERM_TCONFIG_OTHER))) {
-    _current_thread->err_no = E_PERM;
+    current_thread->err_no = E_PERM;
     return false;
   }
 
@@ -90,7 +90,7 @@ bool k_set_thread_property(int tid, size_t property, const void* value) {
     tid = k_get_thread_id();
   }
   if (!is_valid_thread(tid)) {
-    _current_thread->err_no = E_INVALID_ID;
+    current_thread->err_no = E_INVALID_ID;
     return false;
   }
 
@@ -141,7 +141,7 @@ bool k_get_thread_property(int tid, size_t property, void* res) {
     tid = k_get_thread_id();
   }
   if (!is_valid_thread(tid)) {
-    _current_thread->err_no = E_INVALID_ID;
+    current_thread->err_no = E_INVALID_ID;
     return false;
   }
 
@@ -177,7 +177,7 @@ bool k_get_thread_property(int tid, size_t property, void* res) {
       break;
     }
     case TPROP_ERRNO_PTR:
-      *(int**)res = &_current_thread->err_no;
+      *(int**)res = &current_thread->err_no;
       break;
     default:
       assert(0);
@@ -269,8 +269,8 @@ void k_log_event(const char* event, ...) {
 
   char thread_name[THREAD_NAME_SIZE];
   const char* name = NULL;
-  if (_current_thread) {
-    name = _current_thread->name;
+  if (current_thread) {
+    name = current_thread->name;
   }
   format_thread_name(thread_name, k_get_thread_id(), name);
   printf("Thread %s: ", thread_name);
@@ -329,12 +329,12 @@ void do_scheduler(void) {
   // otherwise just do required housekeeping to switch
   if (next_thread != NULL) {
 #if CODE_BACKING_PAGES
-    swap_paged_threads(_current_thread, next_thread);
+    swap_paged_threads(current_thread, next_thread);
 #endif
     return;
   }
 
-  size_t start_thread_idx = next_possible_thread_idx(_current_thread);
+  size_t start_thread_idx = next_possible_thread_idx(current_thread);
 
   size_t max_thread_idx = start_thread_idx + MAX_THREADS;
   for (size_t idx = start_thread_idx; idx < max_thread_idx; ++idx) {
@@ -357,7 +357,7 @@ void do_scheduler(void) {
     next_thread = &all_threads[_idx];
 
 #if CODE_BACKING_PAGES
-    swap_paged_threads(_current_thread, next_thread);
+    swap_paged_threads(current_thread, next_thread);
 #endif
 
     check_signals(next_thread);
@@ -367,7 +367,7 @@ void do_scheduler(void) {
 
   // If the current thread is the last one, just return to it
   if (can_schedule_thread(k_get_thread_id())) {
-    next_thread = _current_thread;
+    next_thread = current_thread;
   } else {
     log_scheduler_event("all threads finished");
     k_exit(0);
@@ -402,14 +402,14 @@ static void cleanup_thread(Thread* thread) {
 
 bool k_thread_cancel(int tid) {
   if (tid == CURRENT_THREAD) {
-    tid = _current_thread->id;
+    tid = current_thread->id;
   }
 
   bool set = set_thread_state(tid, cancelled);
   if (set) {
     cleanup_thread(&all_threads[tid]);
 
-    if (tid == _current_thread->id) {
+    if (tid == current_thread->id) {
       // Thread cancelled itself, choose another
       do_scheduler();
       return true;
@@ -509,7 +509,7 @@ static size_t find_free_backing_page(void) {
 
 #if CODE_PAGE_SIZE
 static void setup_code_page(size_t idx) {
-  Thread* curr = _current_thread;
+  Thread* curr = current_thread;
 #if CODE_BACKING_PAGES
   if (curr) {
     size_t page = curr->code_backing_page;
@@ -538,8 +538,8 @@ static int k_add_named_thread_with_args(void (*worker)(), const char* name,
       // New thread's permissions is the current thread's
       // minus any it wants to remove
       uint16_t permissions = TPERM_ALL;
-      if (_current_thread) {
-        permissions = _current_thread->permissions;
+      if (current_thread) {
+        permissions = current_thread->permissions;
       }
       permissions &= ~remove_permissions;
 
@@ -565,8 +565,8 @@ int k_add_thread_from_file_with_args(const char* filename,
 #else
   if (code_page_in_use_by() != INVALID_THREAD) {
 #endif
-    if (_current_thread) {
-      _current_thread->err_no = E_NO_PAGE;
+    if (current_thread) {
+      current_thread->err_no = E_NO_PAGE;
     }
     return INVALID_THREAD;
   }
@@ -579,8 +579,8 @@ int k_add_thread_from_file_with_args(const char* filename,
   void (*entry)() = load_elf(filename, dest);
   if (!entry) {
     // Startup may call this to load STARTUP_PROG
-    if (_current_thread) {
-      _current_thread->err_no = E_NOT_FOUND;
+    if (current_thread) {
+      current_thread->err_no = E_NOT_FOUND;
     }
     return INVALID_THREAD;
   }
@@ -629,7 +629,7 @@ int k_add_thread(const char* name, const ThreadArgs* args, void* worker,
 }
 
 void k_thread_wait(void) {
-  _current_thread->state = waiting;
+  current_thread->state = waiting;
   // Manually move to next thread
   do_scheduler();
 }
@@ -642,13 +642,13 @@ __attribute__((section(".thread_vars"))) size_t thread_stack_offset =
 
 extern void load_next_thread(void);
 void check_stack(void) {
-  bool underflow = _current_thread->bottom_canary != STACK_CANARY;
-  bool overflow = _current_thread->top_canary != STACK_CANARY;
+  bool underflow = current_thread->bottom_canary != STACK_CANARY;
+  bool overflow = current_thread->top_canary != STACK_CANARY;
 
   if (underflow || overflow) {
     // Don't schedule this again, or rely on its ID
-    _current_thread->id = INVALID_THREAD;
-    _current_thread->name[0] = '\0';
+    current_thread->id = INVALID_THREAD;
+    current_thread->name[0] = '\0';
 
     if (underflow) {
       k_log_event("Stack underflow!");
@@ -661,13 +661,13 @@ void check_stack(void) {
       /* Setting INVALID_THREAD here, instead of state=finished is fine,
           because A: the thread didn't actually finish
                   B: the thread struct is actually invalid */
-      _current_thread->id = INVALID_THREAD;
+      current_thread->id = INVALID_THREAD;
 
       // Would clear heap allocs here but we can't trust the thread ID
 
       // Aka don't save any state, just load the scheduler
       // TODO: this isn't actually checked by the assembly
-      _current_thread->state = init;
+      current_thread->state = init;
       // TODO: we're probably losing kernel stack space every time we do this.
       // (on arches with banked stack pointers)
       load_next_thread();
@@ -681,14 +681,14 @@ __attribute__((noreturn)) void thread_start(void) {
   // Every thread starts by entering this function
 
   // Call thread's actual function
-  _current_thread->work(_current_thread->args.a1, _current_thread->args.a2,
-                        _current_thread->args.a3, _current_thread->args.a4);
+  current_thread->work(current_thread->args.a1, current_thread->args.a2,
+                        current_thread->args.a3, current_thread->args.a4);
 
   // Yield back to the scheduler
   k_log_event("exiting");
 
   // Make sure we're not scheduled again
-  _current_thread->state = finished;
+  current_thread->state = finished;
 
   /* You might think this is a timing issue.
      What if we're interrupted here?
@@ -702,7 +702,7 @@ __attribute__((noreturn)) void thread_start(void) {
      away anyway.
   */
 
-  cleanup_thread(_current_thread);
+  cleanup_thread(current_thread);
 
   // Calling thread_switch directly so we don't print 'yielding'
   thread_switch();

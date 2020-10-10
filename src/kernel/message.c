@@ -10,13 +10,13 @@ static void inc_msg_pointer(Thread* thr, Message** ptr) {
 
 bool k_get_msg(int* sender, int* message) {
   // If message box is not empty, or it is full
-  if (_current_thread->next_msg != _current_thread->end_msgs ||
-      _current_thread->msgs_full) {
-    *sender = _current_thread->next_msg->src;
-    *message = _current_thread->next_msg->content;
+  if (current_thread->next_msg != current_thread->end_msgs ||
+      current_thread->msgs_full) {
+    *sender = current_thread->next_msg->src;
+    *message = current_thread->next_msg->content;
 
-    inc_msg_pointer(_current_thread, &_current_thread->next_msg);
-    _current_thread->msgs_full = false;
+    inc_msg_pointer(current_thread, &current_thread->next_msg);
+    current_thread->msgs_full = false;
 
     return true;
   }

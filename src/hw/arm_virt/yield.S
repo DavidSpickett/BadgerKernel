@@ -12,15 +12,15 @@
 
 .macro CURRENT_IN_R10_NEXT_IN_R11
   // Deliberatley callee saved registers so we can call do_scheduler easily
-  ldr r10, =_current_thread
+  ldr r10, =current_thread
   ldr r11, =next_thread
 .endm
 
 .macro NEXT_EQUAL_CURRENT
   ldr r0, =next_thread     // Otherwise make next the current thread
-  ldr r1, =_current_thread // to reload and return to it
+  ldr r1, =current_thread // to reload and return to it
   ldr r1, [r1]
-  str r1, [r0]             // next_thread = _current_thread
+  str r1, [r0]             // next_thread = current_thread
 .endm
 
 .macro SAVE_CURRENT_THREAD
@@ -33,16 +33,16 @@
   CURRENT_IN_R10_NEXT_IN_R11
 
   /* Save stack pointer */
-  ldr r1, [r10]        // r1 = _current_thread
-  str sp, [r1], #4     // _current_thread->stack_ptr=sp
+  ldr r1, [r10]        // r1 = current_thread
+  str sp, [r1], #4     // current_thread->stack_ptr=sp
 
   /* Update state */
-  ldr r2, [r1]         // r2 = _current_thread->state
+  ldr r2, [r1]         // r2 = current_thread->state
   mov r3, #running
   cmp r2, r3           // if we're something other than running, leave it as it is
   bne 1f
   mov r3, #suspended   // otherwise move to suspended
-  str r3, [r1]         // _current_thread->state = suspended
+  str r3, [r1]         // current_thread->state = suspended
 1:
 .endm
 
@@ -125,7 +125,7 @@ finalise_timer:
 
 .global load_first_thread
 load_first_thread:
-  // This is called from kernel mode so _current_thread is NULL
+  // This is called from kernel mode so current_thread is NULL
   // No saving temps here since we came from the kernel
   b load_next_thread
 
@@ -146,14 +146,14 @@ load_next_thread:
 
 actually_load_thread:
   cps #SYSTEM_MODE     // Back to user stack
-  str r4, [r10]        // _current_thread = next_thread
+  str r4, [r10]        // current_thread = next_thread
   mov r5, #0           // Set next to null for next switch to call scheduler
   str r5, [r11]        // next_thread = NULL
-  ldr r10, [r10]       // r10 = _current_thread
-  ldr sp, [r10], #4    // sp = _current_thread->stack_ptr
+  ldr r10, [r10]       // r10 = current_thread
+  ldr sp, [r10], #4    // sp = current_thread->stack_ptr
 
   mov r4, #running      // start running
-  str r4, [r10]         // _current_thread->state = running
+  str r4, [r10]         // current_thread->state = running
 
   /* even an init state thread will have a blank context to restore */
   pop {r0-r12, r14}     // restore our own regs (no sp/pc)

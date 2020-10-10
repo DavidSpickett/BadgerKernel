@@ -14,7 +14,7 @@
 
 .macro CURRENT_IN_R6_NEXT_IN_R7
   // Callee saved regs so we can call do_scheduler
-  ldr r6, =_current_thread
+  ldr r6, =current_thread
   ldr r7, =next_thread
 .endm
 
@@ -37,16 +37,16 @@
   CURRENT_IN_R6_NEXT_IN_R7
 
   /* Save stack pointer */
-  ldr r1, [r6]           // r1 = _current_thread
-  str sp, [r1], #4       // _current_thread->stack_ptr = sp
+  ldr r1, [r6]           // r1 = current_thread
+  str sp, [r1], #4       // current_thread->stack_ptr = sp
 
   /* Update state */
-  ldr r2, [r1]          // r2 = _current_thread->state
+  ldr r2, [r1]          // r2 = current_thread->state
   mov r3, #running
   cmp r2, r3            // if we're something other than running, leave it as it is
   bne 1f
   mov r3, #suspended    // otherwise move to suspended
-  str r3, [r1]          // _current_thread->state = suspended
+  str r3, [r1]          // current_thread->state = suspended
 1:
 .endm
 
@@ -54,18 +54,18 @@
 .macro LOAD_NEXT_THREAD
   CURRENT_IN_R6_NEXT_IN_R7
   ldr r4, [r7]          // r4 = next_thread
-  str r4, [r6]          // _current_thread = next_thread
+  str r4, [r6]          // current_thread = next_thread
   mov r4, #0            // Set next to null for next switch to call scheduler
   str r4, [r7]          // next_thread = NULL
-  ldr r6, [r6]          // r6 = _current_thread
-  ldr r5, [r6]          // r5 = _current_thread->stack_ptr
+  ldr r6, [r6]          // r6 = current_thread
+  ldr r5, [r6]          // r5 = current_thread->stack_ptr
   mov sp, r5            // MSP = new thread's stack pointer
 
   /* no need to restore PC, exc return will do that */
 
   mov r4, #running      // start running
   add r6, r6, #4        // r6 = &(current_thread->state)
-  str r4, [r6]          // _current_thread->state = running
+  str r4, [r6]          // current_thread->state = running
 
   // Even init threads have some saved context setup by init_thread
   pop {r4-r11}

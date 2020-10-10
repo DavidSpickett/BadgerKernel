@@ -18,7 +18,7 @@ static void k_invalid_syscall(size_t arg1, size_t arg2, size_t arg3,
 
 typedef size_t (*SyscallFn)();
 void k_handle_syscall(void) {
-  RegisterContext* ctx = (RegisterContext*)_current_thread->stack_ptr;
+  RegisterContext* ctx = (RegisterContext*)current_thread->stack_ptr;
 
   SyscallFn syscall_fn = NULL;
   bool has_result = true;
