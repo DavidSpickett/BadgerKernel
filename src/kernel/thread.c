@@ -673,6 +673,7 @@ void check_stack(void) {
       // (on arches with banked stack pointers)
       load_next_thread();
     } else {
+      // TODO: not covered by tests
       k_exit(1);
     }
   }
