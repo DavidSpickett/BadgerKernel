@@ -682,7 +682,7 @@ __attribute__((noreturn)) void thread_start(void) {
 
   // Call thread's actual function
   current_thread->work(current_thread->args.a1, current_thread->args.a2,
-                        current_thread->args.a3, current_thread->args.a4);
+                       current_thread->args.a3, current_thread->args.a4);
 
   // Yield back to the scheduler
   k_log_event("exiting");
