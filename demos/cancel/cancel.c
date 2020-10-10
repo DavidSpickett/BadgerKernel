@@ -11,7 +11,9 @@ __attribute__((noreturn)) void work() {
 
 void canceller() {
   // Can't cancel an invalid thread
-  bool did_cancel = thread_cancel(99);
+  // Use MAX_THREADS here to cover some places
+  // we use <= instead of < when validating it.
+  bool did_cancel = thread_cancel(MAX_THREADS);
   assert(!did_cancel);
 
   // So thread 3 is never run
