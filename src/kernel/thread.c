@@ -28,7 +28,6 @@ uint8_t code_page_backing[CODE_BACKING_PAGES][CODE_PAGE_SIZE];
 #endif
 #endif /* CODE_PAGE_SIZE */
 
-Thread* current_thread(void);
 extern void setup(void);
 extern void load_first_thread(void);
 void check_stack(void);
