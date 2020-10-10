@@ -345,7 +345,8 @@ void do_scheduler(void) {
       continue;
     }
 
-    if (all_threads[_idx].id != _idx) {
+    // We know that the ID is no -1 at this point
+    if ((size_t)all_threads[_idx].id != _idx) {
       printf("thread ID %u and position %u inconsistent!\n", (unsigned)_idx,
              all_threads[_idx].id);
       k_exit(1);

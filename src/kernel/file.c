@@ -30,7 +30,7 @@ int k_list_dir(const char* path, char* out, size_t outsz) {
   parameters[0] = ls_fd;
   // Check output would fit in buffer
   int ls_sz = generic_semihosting_call(SYS_FLEN, parameters);
-  assert(ls_sz < outsz);
+  assert((ls_sz != -1) && (size_t)ls_sz < outsz);
   // Read whole file back
   k_read(ls_fd, out, ls_sz);
   // Null terminate

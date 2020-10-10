@@ -340,7 +340,7 @@ static SectionHeader get_section_header(int elf, uint16_t idx,
 
   SectionHeader section_hdr;
   ssize_t got = k_read(elf, &section_hdr, section_hdr_size);
-  if (got < section_hdr_size) {
+  if ((size_t)got < section_hdr_size) {
     PRINT_EXIT("Couldn't read header for section %u\n", idx);
   }
   return section_hdr;
@@ -375,7 +375,7 @@ static SymbolInfo get_symbol_info(int elf, uint16_t table_idx, size_t sym_idx,
       sym_table_hdr.sh_offset + (sym_idx * sym_table_hdr.sh_entsize);
   checked_lseek(elf, symbol_offset, SEEK_CUR);
   ssize_t got = k_read(elf, &symbol, sym_table_hdr.sh_entsize);
-  if (got < sym_table_hdr.sh_entsize) {
+  if ((size_t)got < sym_table_hdr.sh_entsize) {
     PRINT_EXIT("Couldn't read symbol at index %u\n", sym_idx);
   }
 
@@ -447,7 +447,7 @@ static void resolve_relocs(int elf, uint16_t idx, size_t section_table_offs,
     checked_lseek(elf, offs, SEEK_CUR);
     ELFRelocation reloc;
     ssize_t got = k_read(elf, &reloc, reloc_size);
-    if (got != reloc_size) {
+    if ((size_t)got != reloc_size) {
       PRINT_EXIT("Failed to read reloc %u in section %s\n", reloc_idx, name);
     }
 
@@ -585,7 +585,7 @@ static bool load_section(int elf, uint16_t idx, size_t section_table_offs,
   // Copy from ELF file to destination page
   // (which can be different from code_page)
   ssize_t section_got = k_read(elf, dest_addr, section_hdr.sh_size);
-  if (section_got != section_hdr.sh_size) {
+  if ((size_t)section_got != section_hdr.sh_size) {
     PRINT_EXIT("Couldn't read content for section \"%s\" (%u)\n", name, idx);
   }
   DEBUG_MSG_ELF("Loaded %u bytes from section \"%s\" (%u)\n", section_got, name,
@@ -612,7 +612,7 @@ void (*load_elf(const char* filename, void* dest))(void) {
   size_t header_size = sizeof(ElfHeader);
   ElfHeader elf_hdr;
   ssize_t got = k_read(elf, &elf_hdr, header_size);
-  if (got < header_size) {
+  if ((size_t)got < header_size) {
     PRINT_EXIT("Couldn't read complete header from %s\n", filename);
   }
 
