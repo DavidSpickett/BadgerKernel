@@ -130,7 +130,6 @@ bool k_set_thread_property(int tid, size_t property, const void* value) {
       break;
     default:
       assert(0);
-      return false;
   }
 
   return true;
@@ -181,7 +180,6 @@ bool k_get_thread_property(int tid, size_t property, void* res) {
       break;
     default:
       assert(0);
-      return false;
   }
 
   return true;
