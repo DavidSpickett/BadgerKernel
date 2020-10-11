@@ -27,7 +27,7 @@ This document describes how key parts of the kernel work and why.
 
 # Origins
 
-AMT is the product of boredom and curiosity. Most of the initial structure is influenced by my experience doing debug support for RTOS such as Zephyr and FreeRTOS. 
+AMT is the product of boredom and curiosity. Most of the initial structure is influenced by my experience doing debug support for RTOS such as Zephyr and FreeRTOS.
 
 The cycle always goes like this:
 * Read a high level overview of a thing
@@ -68,7 +68,7 @@ These tools are used for the development and testing:
 * expect
 * Python cog module (for code generation)
 * clang-format
-* QEMU 
+* QEMU
 
 # Demos
 
@@ -83,7 +83,7 @@ Demos mostly use a golden reference log file. That works like this:
 * Compare that file with demos/\<demo\>/expected.log
 * Any difference is a test failure
 
-The exception (for now) is the backtrace demo. Functions addresses change with compiler settings so we can't use a static logfile. 
+The exception (for now) is the backtrace demo. Functions addresses change with compiler settings so we can't use a static logfile.
 
 Instead we use expect's regex abilities.
 * Run the demo in QEMU with serial into a file
@@ -104,25 +104,25 @@ Running with lit provides better feedback in general but make is more convenient
 ## Key Variables
 
 There are 3 key objects for the kernel:
-* all_threads - an array of thread structures
-* current_thread - pointer to the active thread
-* next_thread - a pointer to the next thread to be ran
+* `all_threads` - an array of thread structures
+* `current_thread` - pointer to the active thread
+* `next_thread` - a pointer to the next thread to be ran
 
-all_threads is an array of Thread structures that is statically allocated with size MAX_THREADS. So at any one time some of them may not be valid threads.
+`all_threads` is an array of `Thread` structures that is statically allocated with size `MAX_THREADS`. So at any one time some of them may not be valid threads.
 
 The "scheduler" is very simple it just finds the next thread that is available to run and sets next_thread to that. (plus some housekeeping)
 
 The most important parts of the Thread structure are:
-* stack_ptr - It's last sp value. From the kernel's point of view this always points to the start of the thread's saved context
-* state - The state of the thread. Most of the time it will jump between suspended and running, the full list is:
-    - init (not run at all yet)
-    - running (is the active thread)
-    - suspended (not running, but can be chosen to run next)
-    - waiting (cannot run until some condition is met/signal received)
-    - finished
-    - cancelled
-* id - Used to identify the thread in log messages and find its address in all_threads. For valid threads it's index will always be the same as its ID.
-* stack - The stack memory for the thread. stack_ptr will point to somewhere in here.
+* `stack_ptr` - It's last sp value. From the kernel's point of view this always points to the start of the thread's saved context
+* `state` - The state of the thread. Most of the time it will jump between suspended and running, the full list is:
+    - `init` (not run at all yet)
+    - `running` (is the active thread)
+    - `suspended` (not running, but can be chosen to run next)
+    - `waiting` (cannot run until some condition is met)
+    - `finished`
+    - `cancelled`
+* `id` - Used to identify the thread in log messages and find its address in all_threads. For valid threads it's index will always be the same as its ID.
+* `stack` - The stack memory for the thread. stack_ptr will point to somewhere in here.
 
 ## Kernel Startup
 
@@ -137,7 +137,7 @@ The most important parts of the Thread structure are:
 7. Load the setup thread (which puts us in user mode)
 8. Run user setup code
 
-The reason for adding the setup thread is akin to running "init" in other systems. I used to have the intial user threads added in a kernel mode function but didn't like having kernel functions in user demos.
+The reason for adding the setup thread is akin to running "init" in other systems. I used to have the initial user threads added in a kernel mode function but didn't like having kernel functions in user demos.
 
 Hence setup. The user defines `setup()` and the setup thread runs that. You can do anything you want in that function, including real code and yielding. Without any special case code in the kernel.
 
@@ -167,10 +167,11 @@ asm volatile("svc 123");
 ```
 For the code above you need to save *everything* because the compiler isn't going to know that that asm is basically a function call. (a syscall if you will)
 
-Anyway, the upshot is that AMT saves all user registers on kernel entry. Which is not totally needed, and is slower but:
-1. It gives us some cool features like modifying thread registers.
-2. We can sort of support timer interrupts
-3. Speed is not a goal
+Anyway, the upshot is that AMT saves all user registers on kernel entry. Which is not totally needed and is slower but:
+1. It gives us some cool features like modifying thread registers, without some 2 stage saving process.
+2. Calling kernel C functions is as easy as...well, calling them.
+3. We can sort of support timer interrupts
+4. Speed is not a goal
 
 ### Thread Context Content
 
@@ -197,15 +198,15 @@ bar
 foo
 yield
 saved context
-thread->stack_ptr
+<<< thread->stack_ptr
 ```
 Where the thread's `stack_ptr` points to the start of the context. (you can see these contexts in `include/port/<platform>.h`)
 
 ### The Initial Thread Context
 
-To remove special cases, even threads that haven't run yet have a context on their stack. This context is empty apart from:
+To remove special cases, even threads that haven't run yet have a context on their stack. This context is zeroed apart from:
 * The address of the `thread_start` function
-* Any special configuration register values the platform needs (e.g. Thumb mode) 
+* Any special configuration register values the platform needs (e.g. Thumb mode)
 
 ### Thread Lifecycle Example
 
@@ -218,19 +219,21 @@ This walks you through the following:
 
 First the kernel adds the setup thread. This means setting its worker function to `setup()` as defined by the user.
 
-Then the kernel jumps into the middle of the thread switching code (see `yield.S`), skipping the save thread portion.
+Note that all threads start in `thread_start` which *then* calls the worker function. This allows us to catch finished threads.
+
+Then the kernel jumps into the middle of the thread switching code (see `yield.S`), skipping the save thread portion to get to thread loading.
 
 The setup thread's stack looks like this:
 ```
 stack top (high address)
 initial register context
-stack_ptr (low address)
+<<< stack_ptr (low address)
 ```
 The loading code gets the thread's stack pointer from the thread structure and uses it to restore the context into the real registers.
 
 Then we exception return, which starts the user thread at the desired pc. (remember that reset is usually an exception too so we can still "return from" it)
 
-Now `setup()` executes. It's like any other thread so any user code can be run, but for now assume we just yield.
+Now `setup()` executes. It's like any other thread so any user code can be run but for now assume we just yield.
 ```
 void setup(void) {
     yield();
@@ -246,7 +249,7 @@ setup()
 yield()
 <misc user code wrappers>
 saved context
-stack_ptr (low address)
+<<< stack_ptr (low address)
 ```
 Then the kernel checks why we got here. It's either:
 * a timer interrupt
@@ -261,46 +264,46 @@ So `next_thread` is set to thread 0 and we return from the syscall.
 
 Side note here about syscalls is that whenever we return from the syscall handler with a `next_thread` that is not NULL, we use that value.
 
-If it were NULL then we would simply return to the same thread. Which in this example, is the same result.
+If it were NULL then we would simply return to the same thread. Which in this example is the same result.
 
-Anyway, we have chosen a thread so we now restore that thread. By loading the real registers with the values in its stored context. Return from exception and now we're:
+Now we have chosen a thread so we restore it by loading the real registers with the values in its stored context. Return from exception and now we're:
 ```
 void setup(void) {
     yield();
     <<< here >>>
 }
 ```
-`setup()` continues to run and returns to `thread_start`. Now we know the thread has ended so we set our state to finished and yield again. Knowing that we will not be rescheduled due to our state.
+`setup()` continues to run and returns to `thread_start`. Now we know the thread has ended so we set our state to finished and yield again. We will not be rescheduled due to our state.
 
-Back in the kernel we save the thread context again (not required but again, speed not a goal). Then run the scheduler.
+Back in the kernel we save the thread context (not required but again, speed not a goal) then run the scheduler.
 
-The scheduler again walks the whole of `all_threads` and doesn't find any valid threads. So the system exits.
+The scheduler walks the whole of `all_threads` and doesn't find any valid threads so the system exits.
 
 # Syscalls
 
-AMT's syscalls are generated from a file in `scripts/`, into a header `include/common/syscall.h`.
+AMT's syscalls are generated from a file `scripts/syscalls.py` into a header `include/common/syscall.h`. (amongst other places)
 
 The general idea is to keep the list minimal so some like `mutex` are a single call with a flag to define what it does.
-(yes mutexes can be done in user space sure, but I'm lazy and making it a syscall is an easy way to get atomicity)
+(yes mutexes can be done in user space but I'm lazy and making it a syscall is an easy way to get atomicity)
 
 The other example of this is `get_thread_property` and `set_thread_property`. These are used to implement a bunch of calls that are all reading/writing bits of the thread structure without doing anything else.
 (e.g sending a signal uses `set_thread_property`)
 
 ## User Syscall Usage
 
-User threads invoke syscalls with their platform's supervisor call instruction. There is a set supervisor call number that means syscalls. (some may have to put this in a register if their instruction doesn't have a code field)
+User threads invoke syscalls with their platform's supervisor call instruction. There is a set supervisor call number that means syscalls. (some will have to put this in a register if their instruction doesn't have a code field)
 
 Arguments are loaded into the first 4 argument registers, and the syscall number into some other register. `src/user` provides wrappers for each syscall that in turn call `generic_syscall`. This interface is implemented by each platform.
 
-For example mutex is a single call as mentioned, but has multiple actions. So there is a function for each operation that calls the generic invoker with the right arguments.
+For example mutex is a single call as mentioned but has multiple actions. So there is a function for each operation that calls the generic invoker with the right arguments.
 
 When a user thread returns from a syscall the result is in the first argument register.
 
 ## Kernel Syscall Handling
 
-Kernel code will, in some platform specific way, call `k_handle_syscall`. This function is also generated from the syscalls Python file.
+The exception handler will, in some platform specific way, call `k_handle_syscall`.
 
-This uses the thread's saved context to load the 4 possible arguments, and the syscall number. Then switches on the number and calls the kernel function for that syscall.
+This uses the thread's saved context to load the 4 possible arguments and the syscall number. Then switches on the number and calls the kernel function for that syscall.
 
 We save the result and then store that in the thread's saved register context. So as far as it's concerned, only the first argument register has changed.
 
@@ -318,13 +321,13 @@ void k_foo() {
 
 # Signal Handling
 
-Note that these "signals" don't work quite the same as you might be used to. The wordy way of saying this is these signals "force a thread to run a handler, the next time it would be run".
-
 A signal is just a number that is stored as a bitmask on the thread. So you can only have one pending signal per number, anything else is ignored.
 
 The scheduler will check the next thread for pending signals. Lower signal numbers (lower bits) are handled first.
 
-Where handling means the next time the thread yields it runs its handler function (if it has one) then returns to the kernel. Meaning that a signal makes a thread skip its turn for normal execution.
+Where handling means the next time the thread would run it runs its handler function (if it has one) then returns to the kernel. Meaning that a signal makes a thread skip its turn for normal execution.
+
+There is only one user signal handler and it gets the signal number as its first argument. If you don't have a handler registered, all signals are ignored.
 
 Getting the thread to execute the handler function is done by:
 * Initialising another register context on its stack
@@ -338,9 +341,9 @@ yield();
 <initialised register context>
 ```
 * Setting the pc of that new context to a special wrapper function `signal_handler_wrapper`.
-* Resume the thread 
+* Resuming the thread
 * Which runs `signal_handler_wrapper`
-* Which calls the signal handler function with the signal number
+* Which calls the user's signal handler function
 * The handler returns to `signal_handler_wrapper`
 * Which does a yield supervisor call (instead of the syscall version)
 
@@ -351,7 +354,7 @@ thread_start();
 thread_function();
 <whatever it was doing>
 yield();
-<saved register context>   
+<saved register context>
 <<< new stack_ptr
 <signal handling register context>
 <<< old_stack_ptr
@@ -445,7 +448,7 @@ yield()
 
 Then we resume the user thread and it continues as normal.
 
-They key point being, we don't need to know which signal each context refers to. We simply remove a saved context each time we see the magic end address.
+They key point is that we don't need to know which signal each context refers to. We simply remove a saved context each time we see the magic end address.
 
 # TODO: user threads
 
