@@ -4,7 +4,7 @@ set( CMAKE_EXPORT_COMPILE_COMMANDS ON )
 
 set( BUILD_PLATFORM "arm" CACHE STRING "Architecture to build for." )
 set( OPT_LEVEL "3" CACHE STRING "Compiler optmisation level." )
-option( SANITIZERS "Enable UBSAN/ASAN (ASAN Linux only)." OFF )
+option( SANITIZERS "Enable UBSAN" OFF )
 option( LTO "Enable link time optimisation." OFF )
 option( CCACHE "Enable ccache." ON )
 set( STACK_SIZE 2 ) # In KB
