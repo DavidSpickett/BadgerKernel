@@ -9,7 +9,7 @@ for platform in "arm" "thumb" "aarch64"; do
         if [[ "${opt_level}_${lto}" != "0_ON" ]]; then
           rm -f CMakeCache.txt
           cmake . -DBUILD_PLATFORM=${platform} -DOPT_LEVEL=${opt_level} -DSANITIZERS=${sanitizers} -DLTO=${lto}
-          make -j2 make_demos
+          make -j$(nproc) make_demos
           lit demos/ -a
           make clean
         fi
