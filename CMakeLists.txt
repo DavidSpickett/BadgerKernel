@@ -34,8 +34,9 @@ elseif( BP_LOWER STREQUAL "thumb" )
   set( PLATFORM     "-mthumb -mcpu=cortex-m4" )
   set( PLATFORM_SRC "thumb_lm3s6965evb" )
   set( RAM_START    "0x20000000" )
-  # 64k of RAM
-  set( RAM_SIZE     0x10000)
+  # 70k of RAM, up from 64k to fit the loadbinaries demo
+  # QEMU docs/system/arm/stellaris.rst says 64k but it seems to let us get away with it
+  set( RAM_SIZE     0x11800)
   set( UART_BASE    "0x4000C000" )
   set( QEMU_CMD     "qemu-system-arm -M lm3s6965evb -cpu cortex-m4" )
 else()
@@ -70,7 +71,15 @@ if(SANITIZERS AND LTO)
 endif()
 
 # Note that the thumb board ignores -M
-set( QEMU "${QEMU_CMD} -m 1M -nographic -semihosting -kernel" )
+set( QEMU "${QEMU_CMD} -m 1M -nographic -semihosting" )
+if( BP_LOWER STREQUAL "thumb" )
+  # As of QEMU 2.11.1 the thumb board requires -kernel
+  # This is known to be fixed in at least 5.1.0
+  set( QEMU "${QEMU} -kernel ")
+else()
+  set( QEMU "${QEMU} -device loader,file=")
+endif()
+
 set( CFLAGS "${CFLAGS} -ffreestanding -nostdlib" )
 add_definitions(-DUART_BASE=${UART_BASE} -DSRC_ROOT=\"${CMAKE_SOURCE_DIR}\" )
 

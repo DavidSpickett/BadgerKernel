@@ -3,18 +3,26 @@ SECTIONS
 {
  .vectors . : { *vectors.s.o(.text) }
  .startup . : { *startup.s.o(.text) }
- .text : { *(.text) }
+ .text : { *(.text*) _etext = . ; }
  . = ram_start;
- .data : { *(.data) }
+ .data :
+  AT ( ADDR (.text) + SIZEOF (.text) )
+  {
+    _data = . ;
+    *(.data)
+    *(.rodata*)
+    *(.thread_vars)
+    _edata = . ; }
  /* align 16 for AArch64 */
  . = ALIGN(16);
- . = . + 0x800; /* 2kB of stack for kernel */
+ . = . + 0xC00; /* 3kB of stack for kernel */
  stack_top = .;
- .bss : {
+ .bss (NOLOAD) : {
+    _bstart = . ;
     /* Thread structs go first! */
     *(.thread_structs)
-    /* then the important globals */
-    *(.thread_vars)
+    /* then the important zero init globals */
+    *(.thread_vars_bss)
     *(.bss COMMON)
     /* Putting this first mimises waste on Arm/Thumb due to alignment below */
     *(.code_page_backing)
@@ -24,7 +32,10 @@ SECTIONS
     . = ALIGN(0x1000);
     /* on the end in case of weird stuff writing beyond */
     *(.code_page)
+    _bend = . ;
   }
   ram_end = .;
   ASSERT((ram_end <= (ram_start + ram_size)), "Too much data for RAM!")
+  /* Don't need unwinding info on Arm */
+  /DISCARD/ : { *(.ARM.exidx ) }
 }

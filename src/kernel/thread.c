@@ -11,10 +11,10 @@
 #include <stdarg.h>
 #include <string.h>
 
-__attribute__((section(".thread_vars"))) Thread* current_thread;
+__attribute__((section(".thread_vars_bss"))) Thread* current_thread;
 
 __attribute__((section(".thread_structs"))) Thread all_threads[MAX_THREADS];
-__attribute__((section(".thread_vars"))) Thread* next_thread;
+__attribute__((section(".thread_vars_bss"))) Thread* next_thread;
 
 __attribute__((section(".thread_vars"))) uint32_t kernel_config =
     KCFG_LOG_THREADS;
@@ -229,6 +229,14 @@ static int k_add_named_thread_with_args(void (*worker)(), const char* name,
                                         const ThreadArgs* args,
                                         uint16_t remove_permissions);
 __attribute__((noreturn)) void entry(void) {
+  extern char _etext, _data, _edata, _bstart, _bend;
+
+  // Copy .data sections
+  memcpy(&_data, &_etext, &_edata - &_data);
+
+  // Zero bss
+  memset(&_bstart, 0, &_bend - &_bstart);
+
   for (size_t idx = 0; idx < MAX_THREADS; ++idx) {
     ThreadArgs noargs = {0, 0, 0, 0};
     init_thread(&all_threads[idx], INVALID_THREAD, NULL, NULL, &noargs,

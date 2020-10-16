@@ -25,14 +25,14 @@ function(__add_demo NAME TEST_TYPE MAX_THREADS)
   add_dependencies(run_${NAME} ${NAME})
 
   add_custom_command(TARGET run_${NAME} POST_BUILD
-    COMMAND eval "${QEMU} ${NAME}"
+    COMMAND eval "${QEMU}${NAME}"
    VERBATIM)
 
   add_custom_target(debug_${NAME})
   add_dependencies(debug_${NAME} ${NAME})
 
   add_custom_command(TARGET debug_${NAME} POST_BUILD
-    COMMAND eval "${QEMU} ${NAME} -s -S"
+    COMMAND eval "${QEMU}${NAME} -s -S"
     VERBATIM)
 
   if(NOT TEST_TYPE STREQUAL "none")
@@ -44,7 +44,7 @@ function(__add_demo NAME TEST_TYPE MAX_THREADS)
     # If it exited unexpectedly print the log and fail the test.
     # Most often happens on a UBSAN failure.
     set(QEMU_GET_LOG
-      "${QEMU} ${NAME} -serial file:${NAME}_got.log > /dev/null 2>&1 || (cat ${NAME}_got.log && exit 1)")
+      "${QEMU}${NAME} -serial file:${NAME}_got.log > /dev/null 2>&1 || (cat ${NAME}_got.log && exit 1)")
 
     if(TEST_TYPE STREQUAL "log")
       add_custom_command(TARGET test_${NAME} POST_BUILD
