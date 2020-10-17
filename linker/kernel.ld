@@ -3,14 +3,16 @@ SECTIONS
 {
  .vectors . : { *vectors.s.o(.text) }
  .startup . : { *startup.s.o(.text) }
- .text : { *(.text*) _etext = . ; }
+ .text : {
+    *(.text*)
+    *(.rodata*)
+    _etext = . ; }
  . = ram_start;
  .data :
   AT ( ADDR (.text) + SIZEOF (.text) )
   {
     _data = . ;
     *(.data)
-    *(.rodata*)
     *(.thread_vars)
     _edata = . ; }
  /* align 16 for AArch64 */

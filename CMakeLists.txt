@@ -34,9 +34,7 @@ elseif( BP_LOWER STREQUAL "thumb" )
   set( PLATFORM     "-mthumb -mcpu=cortex-m4" )
   set( PLATFORM_SRC "thumb_lm3s6965evb" )
   set( RAM_START    "0x20000000" )
-  # 70k of RAM, up from 64k to fit the loadbinaries demo
-  # QEMU docs/system/arm/stellaris.rst says 64k but it seems to let us get away with it
-  set( RAM_SIZE     0x11800)
+  set( RAM_SIZE     0x10000)
   set( UART_BASE    "0x4000C000" )
   set( QEMU_CMD     "qemu-system-arm -M lm3s6965evb -cpu cortex-m4" )
 else()
