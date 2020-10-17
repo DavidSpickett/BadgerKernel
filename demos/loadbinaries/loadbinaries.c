@@ -2,7 +2,13 @@
 #include "user/errno.h"
 #include "user/thread.h"
 
+// To check .bss loading
+int zero_init_global = 0;
+
 void load_again() {
+  // Threads added by a loaded file share the code page
+  // with that file, therefore the globals as well.
+  assert(zero_init_global == 1);
   // This yielding is also testing that going from
   // non backed to backed and vice versa works
   int tid = INVALID_THREAD;
@@ -24,6 +30,9 @@ void load_again() {
 }
 
 void setup(void) {
+  assert(zero_init_global == 0);
+  zero_init_global = 1;
+
   set_kernel_config(KCFG_LOG_SCHEDULER, 0);
 
   const char* filename = "task";
