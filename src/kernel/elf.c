@@ -77,6 +77,8 @@ typedef struct {
 #endif /* ifdef __aarch64__ */
 } SectionHeader;
 
+#define SHT_NOBITS 8
+
 // TODO: handle relocA properly
 typedef struct {
   size_t r_offset;
@@ -584,12 +586,17 @@ static bool load_section(int elf, uint16_t idx, size_t section_table_offs,
 
   // Copy from ELF file to destination page
   // (which can be different from code_page)
-  ssize_t section_got = k_read(elf, dest_addr, section_hdr.sh_size);
-  if ((size_t)section_got != section_hdr.sh_size) {
-    PRINT_EXIT("Couldn't read content for section \"%s\" (%u)\n", name, idx);
+  if (section_hdr.sh_type & SHT_NOBITS) {
+    // Zero init (reading from the elf just gets you rubbish)
+    memset(dest_addr, 0, section_hdr.sh_size);
+  } else {
+    ssize_t section_got = k_read(elf, dest_addr, section_hdr.sh_size);
+    if ((size_t)section_got != section_hdr.sh_size) {
+      PRINT_EXIT("Couldn't read content for section \"%s\" (%u)\n", name, idx);
+    }
   }
-  DEBUG_MSG_ELF("Loaded %u bytes from section \"%s\" (%u)\n", section_got, name,
-                idx);
+  DEBUG_MSG_ELF("Loaded %u bytes from section \"%s\" (index %u)\n",
+                section_hdr.sh_size, name, idx);
 
   return true;
 }

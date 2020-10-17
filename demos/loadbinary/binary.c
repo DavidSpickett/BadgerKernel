@@ -1,6 +1,9 @@
+#include "common/assert.h"
 #include "user/thread.h"
 
 const char* globalmsg = "Using a global!";
+// To prove we init .bss correctly
+int zero_init_global = 0;
 
 void other_worker() {
   log_event(globalmsg);
@@ -8,6 +11,7 @@ void other_worker() {
 
 // The entry point
 void worker() {
+  assert(zero_init_global == 0);
   /* Note that this *will* get reloaded when loadbinary
      loads the file again. So each time we'll add a new thread. */
   static bool add_new_thread = true;
