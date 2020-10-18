@@ -21,8 +21,9 @@ jobs:
         displayName: apt-installs
 
       - ${{ if in(build_platform, 'ARM', 'THUMB') }}:
-        - script: sudo apt-get install -y gcc-arm-none-eabi libnewlib-arm-none-eabi
-          displayName: apt-get-toolchain
+        - template: get-arm-toolchain.yml
+          parameters:
+            toolchain_url: https://developer.arm.com/-/media/Files/downloads/gnu-rm/9-2020q2/gcc-arm-none-eabi-9-2020-q2-update-x86_64-linux.tar.bz2
 
       - ${{ if eq(build_platform, 'AARCH64') }}:
         - template: get-arm-toolchain.yml
