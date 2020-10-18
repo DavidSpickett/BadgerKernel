@@ -10,12 +10,19 @@ For more detail see the [design doc](design.md).
 
 ## Building
 
-Install cmake and an arm-none-eabi or aarch64-elf toolchain. (Linaro releases are the easiest way to get these)
+Install cmake and an arm-none-eabi or aarch64-none-elf toolchain.
+
+Arm developer releases are the best way to get these:
+
+https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-a/downloads
+
+See the [CI config](azure/azure-job.yml) for the currently tested versions.
 
 Install QEMU with Arm support (this will get you aarch64 too):
 ```
 sudo apt-get install qemu-system-arm
 ```
+Version 2.1 is used in CI but anything newer than that should be fine too.
 
 Then configure according to which toolchain you installed, and build:
 ```
