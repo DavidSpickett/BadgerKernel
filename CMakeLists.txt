@@ -20,7 +20,7 @@ if( BP_LOWER STREQUAL "arm" )
   set( UART_BASE    "0x09000000" )
   set( QEMU_CMD     "qemu-system-arm -M virt -cpu cortex-a15" )
 elseif( BP_LOWER STREQUAL "aarch64" )
-  set( PREFIX       "aarch64-elf-" )
+  set( PREFIX       "aarch64-none-elf-" )
   # Don't generate NEON
   set( PLATFORM     "-mcpu=cortex-a57 -mgeneral-regs-only" )
   set( PLATFORM_SRC "aarch64_virt" )

@@ -25,9 +25,9 @@ jobs:
           displayName: apt-get-toolchain
 
       - ${{ if eq(build_platform, 'AARCH64') }}:
-        - template: get-linaro-toolchain.yml
+        - template: get-arm-toolchain.yml
           parameters:
-            toolchain_url: 7.4-2019.02/aarch64-elf/gcc-linaro-7.4.1-2019.02-x86_64_aarch64-elf.tar.xz
+            toolchain_url: https://developer.arm.com/-/media/Files/downloads/gnu-a/9.2-2019.12/binrel/gcc-arm-9.2-2019.12-x86_64-aarch64-none-elf.tar.xz
 
       - script: |
           # Required for distlib, used by virtualenv

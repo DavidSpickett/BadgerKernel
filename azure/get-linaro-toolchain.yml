@@ -1,9 +1,0 @@
-parameters:
-  toolchain_url:
-
-steps:
-- script: |
-    mkdir toolchain
-    wget -qO- https://releases.linaro.org/components/toolchain/binaries/${{parameters.toolchain_url}} | tar xJf - -C toolchain --strip-components=1
-  workingDirectory: $(Agent.BuildDirectory)
-  displayName: download-linaro-toolchain
