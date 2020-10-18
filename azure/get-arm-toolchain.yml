@@ -4,6 +4,7 @@ parameters:
 steps:
 - script: |
     mkdir toolchain
-    wget -qO- "${{parameters.toolchain_url}}" | tar xaf - -C toolchain --strip-components=1
+    wget "${{parameters.toolchain_url}}"
+    tar xaf $(basename ${{parameters.toolchain_url}}) -C toolchain --strip-components=1
   workingDirectory: $(Agent.BuildDirectory)
   displayName: download-arm-toolchain
