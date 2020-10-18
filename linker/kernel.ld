@@ -39,5 +39,5 @@ SECTIONS
   ram_end = .;
   ASSERT((ram_end <= (ram_start + ram_size)), "Too much data for RAM!")
   /* Don't need unwinding info on Arm */
-  /DISCARD/ : { *(.ARM.exidx* ) }
+  /DISCARD/ : { *(.ARM.exidx ) }
 }
