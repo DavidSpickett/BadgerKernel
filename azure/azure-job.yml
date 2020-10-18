@@ -20,14 +20,11 @@ jobs:
           sudo apt-get install -y python3-pip ccache expect qemu-system-arm
         displayName: apt-installs
 
-      - ${{ if in(build_platform, 'ARM', 'THUMB') }}:
-        - template: get-arm-toolchain.yml
-          parameters:
+      - template: get-arm-toolchain.yml
+        parameters:
+          ${{ if in(build_platform, 'ARM', 'THUMB') }}:
             toolchain_url: https://developer.arm.com/-/media/Files/downloads/gnu-rm/9-2020q2/gcc-arm-none-eabi-9-2020-q2-update-x86_64-linux.tar.bz2
-
-      - ${{ if eq(build_platform, 'AARCH64') }}:
-        - template: get-arm-toolchain.yml
-          parameters:
+          ${{ if eq(build_platform, 'AARCH64') }}:
             toolchain_url: https://developer.arm.com/-/media/Files/downloads/gnu-a/9.2-2019.12/binrel/gcc-arm-9.2-2019.12-x86_64-aarch64-none-elf.tar.xz
 
       - script: |
