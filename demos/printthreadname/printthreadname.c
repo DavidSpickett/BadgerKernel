@@ -24,10 +24,9 @@ void setup(void) {
   PRINT_SPRINT(buf, "Unsigned numbers: %u %u %u %u %u\n", 0, 1, 2, 3, 4);
 
   const char* hex = "hex";
-  // TODO: hex case
   PRINT_SPRINT(buf, "print %s: 0x%X 0x%x\n", hex, 0xABAB, 0xBC);
 
-  PRINT_SPRINT(buf, "Padding hex 0x%8x 0x%08x 0x%10x\n", 0xCDEF, 0xABCD,
+  PRINT_SPRINT(buf, "Padding hex 0x%8x 0x%08X 0x%10x\n", 0xCDEF, 0xABCD,
                0x3344);
   PRINT_SPRINT(buf, "Padding decimal %2u %3i %10i\n", 3, -4, -12345);
 

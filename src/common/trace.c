@@ -42,14 +42,14 @@ void print_backtrace(RegisterContext ctx, const Symbol* symbols,
   info.ip = ctx.r12;
   info.fp = ctx.r11;
 
-  printf("0: 0x%08x (%s)\n", ctx.pc,
+  printf("0: 0x%08X (%s)\n", ctx.pc,
          find_symbol(symbols, num_symbols, (void*)ctx.pc));
 
   int depth = 1;
   while (info.fp) {
     // Arm points to some way into the frame info
     info = *(FrameInfo*)(info.fp - 12);
-    printf("%i: 0x%08x (%s)\n", depth, info.lr,
+    printf("%i: 0x%08X (%s)\n", depth, info.lr,
            find_symbol(symbols, num_symbols, (void*)info.lr));
     depth++;
   }

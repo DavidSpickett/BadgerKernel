@@ -18,9 +18,9 @@ void basic_types(void) {
   *u64 = 0xABCDABCDABCDABCD;
 
   // No one should overwrite another
-  printf(" u8: 0x%x\n", *u08);
-  printf("u16: 0x%x\n", *u16);
-  printf("u32: 0x%x\n", *u32);
+  printf(" u8: 0x%X\n", *u08);
+  printf("u16: 0x%X\n", *u16);
+  printf("u32: 0x%X\n", *u32);
   /* Rather than go through the hassle of getting
      64 bit types to print correctly. */
   assert(*u64 == 0xABCDABCDABCDABCD);

@@ -7,15 +7,15 @@ void platform_init_register_context(RegisterContext* regs) {
 }
 
 void print_register_context(const RegisterContext* ctx) {
-  printf("       x0: 0x%16x   x1: 0x%16x  x2: 0x%16x  x3: 0x%16x\n"
-         "       x4: 0x%16x   x5: 0x%16x  x6: 0x%16x  x7: 0x%16x\n"
-         "       x8: 0x%16x   x9: 0x%16x x10: 0x%16x x11: 0x%16x\n"
-         "      x12: 0x%16x  x13: 0x%16x x14: 0x%16x x15: 0x%16x\n"
-         "      x16: 0x%16x  x17: 0x%16x x18: 0x%16x x19: 0x%16x\n"
-         "      x20: 0x%16x  x21: 0x%16x x22: 0x%16x x23: 0x%16x\n"
-         "      x24: 0x%16x  x25: 0x%16x x26: 0x%16x x27: 0x%16x\n"
-         "      x28: 0x%16x  x29: 0x%16x x30: 0x%16x  pc: 0x%16x\n"
-         " spsr_el1: 0x%16x fpsr: 0x%16x\n",
+  printf("       x0: 0x%16X   x1: 0x%16X  x2: 0x%16X  x3: 0x%16X\n"
+         "       x4: 0x%16X   x5: 0x%16X  x6: 0x%16X  x7: 0x%16X\n"
+         "       x8: 0x%16X   x9: 0x%16X x10: 0x%16X x11: 0x%16X\n"
+         "      x12: 0x%16X  x13: 0x%16X x14: 0x%16X x15: 0x%16X\n"
+         "      x16: 0x%16X  x17: 0x%16X x18: 0x%16X x19: 0x%16X\n"
+         "      x20: 0x%16X  x21: 0x%16X x22: 0x%16X x23: 0x%16X\n"
+         "      x24: 0x%16X  x25: 0x%16X x26: 0x%16X x27: 0x%16X\n"
+         "      x28: 0x%16X  x29: 0x%16X x30: 0x%16X  pc: 0x%16X\n"
+         " spsr_el1: 0x%16X fpsr: 0x%16X\n",
          ctx->x0, ctx->x1, ctx->x2, ctx->x3, ctx->x4, ctx->x5, ctx->x6, ctx->x7,
          ctx->x8, ctx->x9, ctx->x10, ctx->x11, ctx->x12, ctx->x13, ctx->x14,
          ctx->x15, ctx->x16, ctx->x17, ctx->x18, ctx->x19, ctx->x20, ctx->x21,
