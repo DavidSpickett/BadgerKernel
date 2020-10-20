@@ -69,3 +69,8 @@ jobs:
       continueOnError: true
       workingDirectory: $(Agent.BuildDirectory)
       displayName: shellcheck
+
+    - script: 'echo 1>&2'
+      failOnStderr: true
+      displayName: 'Fail partially succeeded.'
+      condition: eq(variables['Agent.JobStatus'], 'SucceededWithIssues')
