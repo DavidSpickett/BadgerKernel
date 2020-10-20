@@ -19,6 +19,9 @@ void setup(void) {
 
   add_thread_from_worker(thread_worker_1);
 
+    rubbish!
+    more rubbish!
+
   while (1) {
     log_event("working");
     yield();
