@@ -162,19 +162,22 @@ static void do_command(char* cmd) {
   }
 }
 
-#define PRINT_PROMPT printf("$ ");
-#define MAX_CMD_LINE 256 // Bold assumptions
+#define PRINT_PROMPT      printf("$ ");
+#define MAX_CMD_LINE      256 // Bold assumptions
+#define INPUT_BUFFER_SIZE 16
 
 typedef struct {
   // The command line we're building
-  char* const cmd_line;
+  char cmd_line[MAX_CMD_LINE];
   // Cursor/edit position in that command line
   size_t pos;
-  // Pointer to the character we're processing
-  char* in;
-} InputState;
+  // Latest chars read from stdin
+  char in[INPUT_BUFFER_SIZE];
+  // Pointer to the input character we're processing
+  char* curr;
+} CmdLineState;
 
-static void handle_return(InputState* state) {
+static void handle_return(CmdLineState* state) {
   state->cmd_line[state->pos] = '\0';
   state->pos = 0;
   putchar('\n');
@@ -183,21 +186,21 @@ static void handle_return(InputState* state) {
   state->pos = 0;
 }
 
-static void handle_end_of_text(InputState* state) {
+static void handle_end_of_text(CmdLineState* state) {
   putchar('\n');
   PRINT_PROMPT
   state->pos = 0;
 }
 
-static void handle_escape_sequence(InputState* state) {
+static void handle_escape_sequence(CmdLineState* state) {
   // TODO: actual cursor pos. This just skips them so we don't crash
-  if (*(state->in + 1) == '[') {
-    switch (*(state->in + 2)) {
+  if (*(state->curr + 1) == '[') {
+    switch (*(state->curr + 2)) {
       case 'A': // Up
       case 'B': // Down
       case 'C': // Right / forward
       case 'D': // Left / back
-        state->in += 2;
+        state->curr += 2;
         break;
       default:
         assert(0); // Shouldn't get here
@@ -208,14 +211,14 @@ static void handle_escape_sequence(InputState* state) {
   }
 }
 
-static void handle_backspace(InputState* state) {
+static void handle_backspace(CmdLineState* state) {
   if (state->pos) {
     state->pos--;
     printf("\b \b");
   }
 }
 
-static void handle_char(InputState* state) {
+static void handle_char(CmdLineState* state) {
   if (state->pos < MAX_CMD_LINE) {
     state->cmd_line[state->pos] = *state->in;
     ++state->pos;
@@ -223,17 +226,13 @@ static void handle_char(InputState* state) {
   }
 }
 
-#define INPUT_BUFFER_SIZE 16
 static void command_loop(int input) {
-  char cmd_line[MAX_CMD_LINE];
-  char in[INPUT_BUFFER_SIZE];
-
-  InputState state = {.cmd_line = cmd_line, .pos = 0, .in = NULL};
+  CmdLineState state = {.pos = 0};
 
   PRINT_PROMPT
   while (1) {
     // -1 for null terminator space
-    ssize_t got = read(input, &in, INPUT_BUFFER_SIZE - 1);
+    ssize_t got = read(input, &state.in, INPUT_BUFFER_SIZE - 1);
     assert((got != 0) && "stdin closed!");
 
     // got = 1 + size of read seems to mean nothing read
@@ -242,8 +241,8 @@ static void command_loop(int input) {
     }
 
     // Terminate after new data so we don't reprocess old data
-    in[got] = '\0';
-    for (state.in = in; *state.in != '\0'; ++state.in) {
+    state.in[got] = '\0';
+    for (state.curr = state.in; *state.curr != '\0'; ++state.curr) {
       switch (*state.in) {
         case '\r': // Enter
           handle_return(&state);
