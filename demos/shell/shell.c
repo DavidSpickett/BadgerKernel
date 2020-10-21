@@ -163,13 +163,72 @@ static void do_command(char* cmd) {
 }
 
 #define PRINT_PROMPT printf("$ ");
+#define MAX_CMD_LINE 256 // Bold assumptions
 
-#define MAX_CMD_LINE      256 // Bold assumptions
+typedef struct {
+  // The command line we're building
+  char* const cmd_line;
+  // Cursor/edit position in that command line
+  size_t pos;
+  // Pointer to the character we're processing
+  char* in;
+} InputState;
+
+static void handle_return(InputState* state) {
+  state->cmd_line[state->pos] = '\0';
+  state->pos = 0;
+  putchar('\n');
+  do_command(state->cmd_line);
+  PRINT_PROMPT
+  state->pos = 0;
+}
+
+static void handle_end_of_text(InputState* state) {
+  putchar('\n');
+  PRINT_PROMPT
+  state->pos = 0;
+}
+
+static void handle_escape_sequence(InputState* state) {
+  // TODO: actual cursor pos. This just skips them so we don't crash
+  if (*(state->in + 1) == '[') {
+    switch (*(state->in + 2)) {
+      case 'A': // Up
+      case 'B': // Down
+      case 'C': // Right / forward
+      case 'D': // Left / back
+        state->in += 2;
+        break;
+      default:
+        assert(0); // Shouldn't get here
+        __builtin_unreachable();
+    }
+  } else {
+    assert(0 && "Unhandled escape sequence!\n");
+  }
+}
+
+static void handle_backspace(InputState* state) {
+  if (state->pos) {
+    state->pos--;
+    printf("\b \b");
+  }
+}
+
+static void handle_char(InputState* state) {
+  if (state->pos < MAX_CMD_LINE) {
+    state->cmd_line[state->pos] = *state->in;
+    ++state->pos;
+    putchar(*state->in);
+  }
+}
+
 #define INPUT_BUFFER_SIZE 16
 static void command_loop(int input) {
   char cmd_line[MAX_CMD_LINE];
-  size_t cmd_line_pos = 0;
   char in[INPUT_BUFFER_SIZE];
+
+  InputState state = {.cmd_line = cmd_line, .pos = 0, .in = NULL};
 
   PRINT_PROMPT
   while (1) {
@@ -184,57 +243,25 @@ static void command_loop(int input) {
 
     // Terminate after new data so we don't reprocess old data
     in[got] = '\0';
-    for (const char* curr = in; *curr != '\0'; ++curr) {
-      switch (*curr) {
+    for (state.in = in; *state.in != '\0'; ++state.in) {
+      switch (*state.in) {
         case '\r': // Enter
-          cmd_line[cmd_line_pos] = '\0';
-          cmd_line_pos = 0;
-          putchar('\n');
-          do_command(cmd_line);
-          PRINT_PROMPT
+          handle_return(&state);
           break;
-        case 0x03: // End of text ( Ctrl-C )
-          cmd_line_pos = 0;
-          putchar('\n');
-          PRINT_PROMPT
+        case 0x03: // Ctrl-C
+          handle_end_of_text(&state);
           break;
-        case 0x1B: // Escape char
-          if (*(curr + 1) == '[') {
-            switch (*(curr + 2)) {
-              case 'A':    // Up
-              case 'B':    // Down
-                curr += 2; // Ignore
-                break;
-              case 'C': // Right / forward
-                // TODO: cursor pos
-                curr += 2;
-                break;
-              case 'D': // Left / back
-                curr += 2;
-                break;
-              default:
-                assert(0); // Shouldn't get here
-                __builtin_unreachable();
-            }
-          } else {
-            assert(0 && "Unhandled escape sequence!\n");
-          }
+        case 0x1B:
+          handle_escape_sequence(&state);
           break;
-        case 0x7F: // Backspace
-          if (cmd_line_pos) {
-            cmd_line_pos--;
-            printf("\b \b");
-          }
+        case 0x7F:
+          handle_backspace(&state);
           break;
-        case 0x04: // End of transmission (Ctrl-D)
+        case 0x04: // Ctrl-D
           quit(0, NULL);
           break;
         default:
-          if (cmd_line_pos < MAX_CMD_LINE) {
-            cmd_line[cmd_line_pos] = *curr;
-            ++cmd_line_pos;
-            putchar(*curr);
-          }
+          handle_char(&state);
           break;
       }
     }
