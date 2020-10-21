@@ -34,12 +34,8 @@ static void buffer_writer(PrintOutput* output, int chr) {
 static const PrintOutput serial_output = {.writer = serial_writer,
                                           .buf = (char*)UART_BASE};
 
-static int putchar_n_output(PrintOutput* output, int chr, int repeat) {
-  if (repeat < 0) {
-    return 0;
-  }
-
-  for (int i = 0; i < repeat; ++i) {
+static int putchar_n_output(PrintOutput* output, int chr, unsigned int repeat) {
+  for (unsigned int i = 0; i < repeat; ++i) {
     output->writer(output, chr);
   }
   return repeat;
@@ -63,7 +59,7 @@ int putchar(int chr) {
   return putchar_output(&output, chr);
 }
 
-size_t uint_to_str(uint64_t num, char* out, char fmt) {
+static size_t uint_to_str(uint64_t num, char* out, char fmt) {
   size_t len = 0;
   unsigned base = fmt == 'u' ? 10 : 16;
 
@@ -169,8 +165,10 @@ static va_list handle_format_char(int* out_len, const char** fmt_chr,
         len += putchar_output(output, '-');
         num = abs(num);
       }
-      uint_to_str(num, int_str, 'u');
-      len += putchar_n_output(output, '0', padding_len - strlen(int_str));
+      size_t int_len = uint_to_str(num, int_str, 'u');
+      if (int_len < padding_len) {
+        len += putchar_n_output(output, '0', padding_len - int_len);
+      }
       len += putstr_output(output, int_str);
       fmt++;
       break;
@@ -180,8 +178,10 @@ static va_list handle_format_char(int* out_len, const char** fmt_chr,
     case 'X': {
       // 64 bit hex plus null terminator
       char num_str[17];
-      uint_to_str(va_arg(args, size_t), num_str, *fmt);
-      len += putchar_n_output(output, '0', padding_len - strlen(num_str));
+      size_t num_len = uint_to_str(va_arg(args, size_t), num_str, *fmt);
+      if (num_len < padding_len) {
+        len += putchar_n_output(output, '0', padding_len - num_len);
+      }
       len += putstr_output(output, num_str);
       fmt++;
       break;

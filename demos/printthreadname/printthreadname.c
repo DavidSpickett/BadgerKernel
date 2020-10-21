@@ -26,9 +26,12 @@ void setup(void) {
   const char* hex = "hex";
   PRINT_SPRINT(buf, "print %s: 0x%X 0x%x\n", hex, 0xABAB, 0xBC);
 
-  PRINT_SPRINT(buf, "Padding hex 0x%8x 0x%08X 0x%10x\n", 0xCDEF, 0xABCD,
-               0x3344);
-  PRINT_SPRINT(buf, "Padding decimal %2u %3i %10i\n", 3, -4, -12345);
+  // Note that the first one doesn't need padding
+  PRINT_SPRINT(buf, "Padding hex 0x%03x 0x%8x 0x%08X 0x%10x\n", 0x1234, 0xCDEF,
+               0xABCD, 0x3344);
+  // Same again, first won't be padded
+  PRINT_SPRINT(buf, "Padding decimal %04i %2u %3i %10i\n", -23456, 3, -4,
+               -12345);
 
   // Use up some IDs
   assert(add_thread_from_worker(go_to_sleep) != INVALID_THREAD);
