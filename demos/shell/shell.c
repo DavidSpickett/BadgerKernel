@@ -14,19 +14,14 @@ typedef struct {
 static void AddCmdLinePart(ProcessedCmdLine* cmdline, const char* part) {
   cmdline->parts[cmdline->num_parts] = part;
   cmdline->num_parts++;
-
-  if (cmdline->num_parts >= MAX_CMD_LINE_PARTS) {
-    printf("Too many parts to command line!\n");
-    exit(1);
-  }
+  assert(cmdline->num_parts <= MAX_CMD_LINE_PARTS);
 }
 
 static ProcessedCmdLine split_cmd_line(char* cmd_line) {
   /* Take a long string with whitespace in and make it into
      effectivley a list of strings by null terminating where
      spaces are. */
-  ProcessedCmdLine parts;
-  parts.num_parts = 0;
+  ProcessedCmdLine parts = {.num_parts = 0};
 
   if (!cmd_line || (*cmd_line == '\0')) {
     return parts;
@@ -174,20 +169,21 @@ static void do_command(char* cmd) {
 static void command_loop(int input) {
   char cmd_line[MAX_CMD_LINE];
   size_t cmd_line_pos = 0;
-  PRINT_PROMPT
-
   char in[INPUT_BUFFER_SIZE];
+
+  PRINT_PROMPT
   while (1) {
     // -1 for null terminator space
     ssize_t got = read(input, &in, INPUT_BUFFER_SIZE - 1);
+    assert((got != 0) && "stdin closed!");
 
-    assert(in[INPUT_BUFFER_SIZE - 1] == '\0');
-
-    // TODO: that second condition is a bit dodgy
-    if (!got || (got == INPUT_BUFFER_SIZE)) {
+    // got = 1 + size of read seems to mean nothing read
+    if (got == INPUT_BUFFER_SIZE) {
       continue;
     }
 
+    // Terminate after new data so we don't reprocess old data
+    in[got] = '\0';
     for (const char* curr = in; *curr != '\0'; ++curr) {
       switch (*curr) {
         case '\r': // Enter
@@ -221,8 +217,7 @@ static void command_loop(int input) {
                 __builtin_unreachable();
             }
           } else {
-            printf("Unhandled escape sequence!\n");
-            exit(1);
+            assert(0 && "Unhandled escape sequence!\n");
           }
           break;
         case 0x7F: // Backspace
@@ -252,9 +247,8 @@ void run_shell() {
   printf("---------------------\n");
 
   int input = open(":tt", O_RDONLY);
-  if (input < 0) {
-    printf("Couldn't open stdin!\n");
-  }
+  assert((input >= 0) && "Could not open stdin!");
+  // TODO: use stdout also?
   command_loop(input);
 }
 
