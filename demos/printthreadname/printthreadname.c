@@ -33,6 +33,8 @@ void setup(void) {
   PRINT_SPRINT(buf, "Padding decimal %04i %2u %3i %10i\n", -23456, 3, -4,
                -12345);
 
+  PRINT_SPRINT(buf, "String padding >%6s< >%02s< >%3s<\n", "foo", "aardvark", "");
+
   // Use up some IDs
   assert(add_thread_from_worker(go_to_sleep) != INVALID_THREAD);
   assert(add_thread_from_worker(go_to_sleep) != INVALID_THREAD);

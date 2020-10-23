@@ -153,7 +153,12 @@ static va_list handle_format_char(int* out_len, const char** fmt_chr,
   switch (*fmt) {
     case 's': // string
     {
-      len += putstr_output(output, va_arg(args, const char*));
+      const char* str = va_arg(args, const char*);
+      size_t str_len = strlen(str);
+      if (str_len < padding_len) {
+        len += putchar_n_output(output, ' ', padding_len - str_len);
+      }
+      len += putstr_output(output, str);
       fmt++;
       break;
     }
