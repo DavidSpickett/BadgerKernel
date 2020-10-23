@@ -235,11 +235,14 @@ static va_list handle_format_char(int* out_len, const char** fmt_chr,
     case '%': // Escaped %
       len += putchar_output(output, *fmt++);
       break;
-    default:
-      // Just print it all out including any padding/precision
-      len += putstr_output(output, *fmt_chr, SIZE_MAX);
-      fmt += len;
+    default: {
+      // Consume unknown char
+      ++fmt;
+      // Echo back that char and any padding/precision
+      size_t out_sz = fmt - *fmt_chr;
+      len += putstr_output(output, *fmt_chr, out_sz);
       break;
+    }
   }
 
   *fmt_chr = fmt;
