@@ -33,8 +33,14 @@ void setup(void) {
   PRINT_SPRINT(buf, "Padding decimal %04i %2u %3i %10i\n", -23456, 3, -4,
                -12345);
 
-  PRINT_SPRINT(buf, "String padding >%6s< >%02s< >%3s<\n", "foo", "aardvark", "");
-  PRINT_SPRINT(buf, "Strings with precision >%.2s< >%.4s< >%06.3s<\n", "abcd", "def", "ghijkl");
+  // Padding with < 0 doesn't do anything
+  PRINT_SPRINT(buf, "String padding >%6s< >%02s< >%3s< >%*s< >%*s<\n", "foo",
+               "aardvark", "", 4, "11", -1, "bar");
+  // Precision of < 0 doesn't do anything
+  PRINT_SPRINT(
+      buf,
+      "Strings with precision >%.2s< >%.*s< >%06.3s< >%*.*s< >%1.0s< >%.*s<\n",
+      "abcd", 4, "def", "ghijkl", 4, 2, "999", "66", -1, "abc");
 
   // Use up some IDs
   assert(add_thread_from_worker(go_to_sleep) != INVALID_THREAD);

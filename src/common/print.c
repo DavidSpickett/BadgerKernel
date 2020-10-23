@@ -153,16 +153,35 @@ static va_list handle_format_char(int* out_len, const char** fmt_chr,
   // assigning back at the end
   const char* fmt = *fmt_chr;
   int len = 0;
-  size_t padding_len = consume_uint(&fmt);
-  if (padding_len == SIZE_MAX) {
-    padding_len = 0;
+
+  size_t padding_len = SIZE_MAX;
+  if (*fmt == '*') {
+    int arg_pad = va_arg(args, int);
+    padding_len = arg_pad > 0 ? arg_pad : 0;
+    // consume the *
+    ++fmt;
+  } else {
+    padding_len = consume_uint(&fmt);
+    if (padding_len == SIZE_MAX) {
+      padding_len = 0;
+    }
   }
+
   // Check for precision
   size_t precision = SIZE_MAX;
   if (*fmt == '.') {
     // Consume the .
     ++fmt;
-    precision = consume_uint(&fmt);
+    if (*fmt == '*') {
+      int precision_arg = va_arg(args, int);
+      if (precision_arg >= 0) {
+        precision = precision_arg;
+      }
+      // consume the *
+      ++fmt;
+    } else {
+      precision = consume_uint(&fmt);
+    }
   }
 
   switch (*fmt) {
@@ -261,35 +280,18 @@ int sprintf(char* str, const char* fmt, ...) {
 }
 
 void format_thread_name(char* out, int tid, const char* name) {
-  // fill with spaces (skip last, null terminator done later)
-  for (size_t idx = 0; idx < THREAD_NAME_MAX_LEN; ++idx) {
-    out[idx] = ' ';
-  }
+  char thread_id[4];
 
   if (!name || !strlen(name)) {
     // If the thread had a stack issue
     if (tid == INVALID_THREAD) {
-      const char* hidden = "<HIDDEN>";
-      size_t h_len = strlen(hidden);
-      size_t padding = THREAD_NAME_MAX_LEN - h_len;
-      strncpy(&out[padding], hidden, h_len);
+      name = "<HIDDEN>";
     } else {
-      // Just show the ID number (assume max 999 threads)
-      char idstr[4];
-      int len = sprintf(idstr, "%u", tid);
-      strcpy(&out[THREAD_NAME_MAX_LEN - len], idstr);
+      // Just show the ID number
+      sprintf(thread_id, "%u", tid);
+      name = thread_id;
     }
-  } else {
-    size_t name_len = strlen(name);
-
-    // cut off long names
-    if (name_len > THREAD_NAME_MAX_LEN) {
-      name_len = THREAD_NAME_MAX_LEN;
-    }
-
-    size_t padding = THREAD_NAME_MAX_LEN - name_len;
-    strncpy(&out[padding], name, name_len);
   }
 
-  out[THREAD_NAME_MAX_LEN] = '\0';
+  sprintf(out, "%*s", THREAD_NAME_MAX_LEN, name);
 }

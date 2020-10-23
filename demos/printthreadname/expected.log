@@ -10,10 +10,10 @@ Padding hex 0x1234 0x0000cdef 0x0000ABCD 0x0000003344
 Padding hex 0x1234 0x0000cdef 0x0000ABCD 0x0000003344
 Padding decimal -23456 03 -004 -0000012345
 Padding decimal -23456 03 -004 -0000012345
-String padding >   foo< >aardvark< >   <
-String padding >   foo< >aardvark< >   <
-Strings with precision >ab< >def< >   ghi<
-Strings with precision >ab< >def< >   ghi<
+String padding >   foo< >aardvark< >   < >  11< >bar<
+String padding >   foo< >aardvark< >   < >  11< >bar<
+Strings with precision >ab< >def< >   ghi< >  99< > < >abc<
+Strings with precision >ab< >def< >   ghi< >  99< > < >abc<
 Added 2 threads which are now sleeping.
 Thread            0: exiting
 Thread name_that_ge: exiting
