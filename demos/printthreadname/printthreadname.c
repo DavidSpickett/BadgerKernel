@@ -34,6 +34,7 @@ void setup(void) {
                -12345);
 
   PRINT_SPRINT(buf, "String padding >%6s< >%02s< >%3s<\n", "foo", "aardvark", "");
+  PRINT_SPRINT(buf, "Strings with precision >%.2s< >%.4s< >%06.3s<\n", "abcd", "def", "ghijkl");
 
   // Use up some IDs
   assert(add_thread_from_worker(go_to_sleep) != INVALID_THREAD);

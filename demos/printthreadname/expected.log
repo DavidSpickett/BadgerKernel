@@ -12,6 +12,8 @@ Padding decimal -23456 03 -004 -0000012345
 Padding decimal -23456 03 -004 -0000012345
 String padding >   foo< >aardvark< >   <
 String padding >   foo< >aardvark< >   <
+Strings with precision >ab< >def< >   ghi<
+Strings with precision >ab< >def< >   ghi<
 Added 2 threads which are now sleeping.
 Thread            0: exiting
 Thread name_that_ge: exiting

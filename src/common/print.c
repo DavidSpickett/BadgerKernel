@@ -45,10 +45,15 @@ int putchar_output(PrintOutput* output, int chr) {
   return putchar_n_output(output, chr, 1);
 }
 
-static int putstr_output(PrintOutput* output, const char* str) {
+// Output a string to the given output stream
+// If num is SIZE_MAX, go until null terminator, otherwise num chars
+static int putstr_output(PrintOutput* output, const char* str, size_t num) {
   int len = 0;
-  while (*str) {
+  while (*str && num) {
     len += putchar_output(output, *str++);
+    if (num != SIZE_MAX) {
+      --num;
+    }
   }
   return len;
 }
@@ -113,9 +118,12 @@ static size_t pow(size_t base, size_t power) {
   return ret;
 }
 
+// Parse an unsigned integer from in, returning SIZE_MAX
+// if it is not an integer. Otherwise return the number
+// and update in to point to the char after it.
 static size_t consume_uint(const char** in) {
   if (!isdigit((unsigned char)**in)) {
-    return (size_t)-1;
+    return SIZE_MAX;
   }
 
   // Find end of number
@@ -146,8 +154,15 @@ static va_list handle_format_char(int* out_len, const char** fmt_chr,
   const char* fmt = *fmt_chr;
   int len = 0;
   size_t padding_len = consume_uint(&fmt);
-  if (padding_len == (size_t)-1) {
+  if (padding_len == SIZE_MAX) {
     padding_len = 0;
+  }
+  // Check for precision
+  size_t precision = SIZE_MAX;
+  if (*fmt == '.') {
+    // Consume the .
+    ++fmt;
+    precision = consume_uint(&fmt);
   }
 
   switch (*fmt) {
@@ -155,10 +170,13 @@ static va_list handle_format_char(int* out_len, const char** fmt_chr,
     {
       const char* str = va_arg(args, const char*);
       size_t str_len = strlen(str);
+      if (str_len > precision) {
+        str_len = precision;
+      }
       if (str_len < padding_len) {
         len += putchar_n_output(output, ' ', padding_len - str_len);
       }
-      len += putstr_output(output, str);
+      len += putstr_output(output, str, precision);
       fmt++;
       break;
     }
@@ -174,7 +192,7 @@ static va_list handle_format_char(int* out_len, const char** fmt_chr,
       if (int_len < padding_len) {
         len += putchar_n_output(output, '0', padding_len - int_len);
       }
-      len += putstr_output(output, int_str);
+      len += putstr_output(output, int_str, SIZE_MAX);
       fmt++;
       break;
     }
@@ -187,7 +205,7 @@ static va_list handle_format_char(int* out_len, const char** fmt_chr,
       if (num_len < padding_len) {
         len += putchar_n_output(output, '0', padding_len - num_len);
       }
-      len += putstr_output(output, num_str);
+      len += putstr_output(output, num_str, SIZE_MAX);
       fmt++;
       break;
     }
