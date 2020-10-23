@@ -1,4 +1,4 @@
-project(MultiTaskingDemo C)
+project(MultiTaskingDemo)
 cmake_minimum_required( VERSION 3.7 )
 set( CMAKE_EXPORT_COMPILE_COMMANDS ON )
 
@@ -59,8 +59,9 @@ if(CCACHE)
 endif()
 
 set( CMAKE_C_COMPILER "${PREFIX}gcc" )
+set( CMAKE_CXX_COMPILER "${PREFIX}g++" )
 
-set( CFLAGS "-DSTACK_SIZE=${STACK_SIZE} -g3 -O${OPT_LEVEL} -Wall -Werror -std=gnu11")
+set( CFLAGS "-DSTACK_SIZE=${STACK_SIZE} -g3 -O${OPT_LEVEL} -Wall -Werror")
 
 # Ignore lto type mismatch error which triggers at O0 for UBSAN handlers
 # I *think*, due to https://gcc.gnu.org/bugzilla/show_bug.cgi?id=78562#c6
@@ -89,7 +90,8 @@ if(SANITIZERS)
   set( CFLAGS "${CFLAGS} -fsanitize=undefined" )
 endif(SANITIZERS)
 
-set( CMAKE_C_FLAGS "${PLATFORM} ${CFLAGS}" )
+set( CMAKE_C_FLAGS "${PLATFORM} ${CFLAGS} -std=gnu11" )
+set( CMAKE_CXX_FLAGS "${PLATFORM} ${CFLAGS} -fno-rtti -fno-exceptions -fno-unwind-tables -std=c++11" )
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
@@ -111,7 +113,7 @@ set( KERNEL_SOURCES
   src/hw/${PLATFORM_SRC}/yield.S
   src/hw/${PLATFORM_SRC}/port.c
 
-  src/common/print.c
+  src/common/print.cpp
   src/common/trace.c
   src/common/assert.c
 

@@ -1,6 +1,10 @@
 #ifndef COMMON_PRINT_H
 #define COMMON_PRINT_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdarg.h>
 #include <stdint.h>
 #include <string.h>
@@ -11,5 +15,9 @@ int putchar(int chr);
 int sprintf(char* str, const char* fmt, ...);
 
 void format_thread_name(char* out, int tid, const char* name);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ifdef COMMON_PRINT_H */

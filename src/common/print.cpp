@@ -5,63 +5,76 @@
 #include <stdlib.h>
 #include <string.h>
 
-// Think of this as a C++ struct where "this" is a PrintOutput*.
-// Pass these to the "put" functions to manage where characters
-// are written to.
-typedef struct PrintOutput {
-  // Write char to buf, then modify buf as appropriate
-  void (*const writer)(struct PrintOutput*, int);
-  // Char destination, may be modified by the writer
-  char* buf;
-} PrintOutput;
-
-static void serial_writer(PrintOutput* output, int chr) {
-  // This must be a an int write not a char
-  volatile unsigned int* const UART0 = (unsigned int*)output->buf;
-  *UART0 = (unsigned int)chr;
-  // We do not modify buf here, serial port doesn't move
+extern "C" void __cxa_pure_virtual()
+{
+  // TODO: exit error
+  while (1) {}
 }
 
-static void buffer_writer(PrintOutput* output, int chr) {
-  *output->buf = (char)chr;
-  // Writing to a memory buffer, so inc pointer
-  ++output->buf;
-}
+class PrintOutput {
+public:
+  explicit PrintOutput(char* out):
+    m_out(out) {}
 
-// This is const but buffer writers cannot be const
-// since we need to move the buffer pointer if writing
-// to memory. So take a copy of this when you need to use it.
-static const PrintOutput serial_output = {.writer = serial_writer,
-                                          .buf = (char*)UART_BASE};
+  virtual void write(int chr) = 0;
 
-static int putchar_n_output(PrintOutput* output, int chr, unsigned int repeat) {
-  for (unsigned int i = 0; i < repeat; ++i) {
-    output->writer(output, chr);
-  }
-  return repeat;
-}
-
-int putchar_output(PrintOutput* output, int chr) {
-  return putchar_n_output(output, chr, 1);
-}
-
-// Output a string to the given output stream
-// If num is SIZE_MAX, go until null terminator, otherwise num chars
-static int putstr_output(PrintOutput* output, const char* str, size_t num) {
-  int len = 0;
-  while (*str && num) {
-    len += putchar_output(output, *str++);
-    if (num != SIZE_MAX) {
-      --num;
+  int putchar_n(int chr, unsigned int repeat) {
+    for (unsigned int i = 0; i < repeat; ++i) {
+      write(chr);
     }
+    return repeat;
   }
-  return len;
-}
+
+  int putchar(int chr) {
+    return putchar_n(chr, 1);
+  }
+
+  // Output a string to the given output stream
+  // If num is SIZE_MAX, go until null terminator, otherwise num chars
+  int putstr(const char* str, size_t num) {
+    int len = 0;
+    while (*str && num) {
+      len += putchar(*str++);
+      if (num != SIZE_MAX) {
+        --num;
+      }
+    }
+    return len;
+  }
+
+protected:
+  char* m_out;
+};
+
+class SerialPrintOutput: public PrintOutput {
+public:
+  SerialPrintOutput():
+    PrintOutput(reinterpret_cast<char*>(UART_BASE)) {
+  }
+
+  void write(int chr) final {
+    // This must be a an int write not a char
+    volatile unsigned int* const UART0 = (unsigned int*)m_out;
+    *UART0 = (unsigned int)chr;
+    // We do not modify buf here, serial port doesn't move
+  }
+};
+
+class BufferPrintOutput: public PrintOutput {
+public:
+  using PrintOutput::PrintOutput;
+
+  void write(int chr) final {
+    // Writing to a memory buffer, so inc pointer
+    *m_out++ = (char)chr;
+  }
+};
+
+static SerialPrintOutput serial_output;
 
 // Do not use this in here, just for external use
 int putchar(int chr) {
-  PrintOutput output = serial_output;
-  return putchar_output(&output, chr);
+  return serial_output.putchar_n(chr, 1);
 }
 
 static size_t uint_to_str(uint64_t num, char* out, char fmt) {
@@ -151,7 +164,7 @@ static size_t consume_uint(const char** in) {
 // In case we don't recognise the format and need to print everything including
 // the %
 static va_list handle_format_char(int* out_len, const char** fmt_chr,
-                                  va_list args, PrintOutput* output) {
+                                  va_list args, PrintOutput& output) {
   // Save a bunch of * by making a copy now and assigning back at the end.
   // Also allows us to print the whole formatter if it's not recongised
   // +1 to consume the %
@@ -197,9 +210,9 @@ static va_list handle_format_char(int* out_len, const char** fmt_chr,
         str_len = precision;
       }
       if (str_len < padding_len) {
-        len += putchar_n_output(output, ' ', padding_len - str_len);
+        len += output.putchar_n(' ', padding_len - str_len);
       }
-      len += putstr_output(output, str, precision);
+      len += output.putstr(str, precision);
       fmt++;
       break;
     }
@@ -208,14 +221,14 @@ static va_list handle_format_char(int* out_len, const char** fmt_chr,
       char int_str[17];
       int num = va_arg(args, int);
       if (num < 0) {
-        len += putchar_output(output, '-');
+        len += output.putchar('-');
         num = abs(num);
       }
       size_t int_len = uint_to_str(num, int_str, 'u');
       if (int_len < padding_len) {
-        len += putchar_n_output(output, '0', padding_len - int_len);
+        len += output.putchar_n('0', padding_len - int_len);
       }
-      len += putstr_output(output, int_str, SIZE_MAX);
+      len += output.putstr(int_str, SIZE_MAX);
       fmt++;
       break;
     }
@@ -226,21 +239,21 @@ static va_list handle_format_char(int* out_len, const char** fmt_chr,
       char num_str[17];
       size_t num_len = uint_to_str(va_arg(args, size_t), num_str, *fmt);
       if (num_len < padding_len) {
-        len += putchar_n_output(output, '0', padding_len - num_len);
+        len += output.putchar_n('0', padding_len - num_len);
       }
-      len += putstr_output(output, num_str, SIZE_MAX);
+      len += output.putstr(num_str, SIZE_MAX);
       fmt++;
       break;
     }
     case '%': // Escaped %
-      len += putchar_output(output, *fmt++);
+      len += output.putchar(*fmt++);
       break;
     default: {
       // Consume unknown char
       ++fmt;
       // Echo back that char and any padding/precision
       size_t out_sz = fmt - *fmt_chr;
-      len += putstr_output(output, *fmt_chr, out_sz);
+      len += output.putstr(*fmt_chr, out_sz);
       break;
     }
   }
@@ -252,15 +265,14 @@ static va_list handle_format_char(int* out_len, const char** fmt_chr,
 
 int vprintf(const char* fmt, va_list args) {
   int len = 0;
-  PrintOutput output = serial_output;
 
   while (*fmt) {
     // Check for formatting arg
     if (*fmt == '%') {
-      args = handle_format_char(&len, &fmt, args, &output);
+      args = handle_format_char(&len, &fmt, args, serial_output);
     } else {
       // Any non formatting character
-      len += putchar_output(&output, *fmt++);
+      len += serial_output.putchar(*fmt++);
     }
   }
 
@@ -271,13 +283,13 @@ int sprintf(char* str, const char* fmt, ...) {
   int len = 0;
   va_list args;
   va_start(args, fmt);
-  PrintOutput output = {.writer = buffer_writer, .buf = str};
+  BufferPrintOutput output(str);
 
   while (*fmt) {
     if (*fmt == '%') {
-      args = handle_format_char(&len, &fmt, args, &output);
+      args = handle_format_char(&len, &fmt, args, output);
     } else {
-      len += putchar_output(&output, *fmt++);
+      len += output.putchar(*fmt++);
     }
   }
 

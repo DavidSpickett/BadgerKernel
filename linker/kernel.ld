@@ -6,6 +6,11 @@ SECTIONS
  .text : {
     *(.text*)
     *(.rodata*)
+    /* align to pointer size (8 for AArch64) */
+    . = ALIGN(8);
+    _init_array = .;
+    *(.init_array*)
+    _einit_array = .;
     _etext = . ; }
  . = ram_start;
  .data :
