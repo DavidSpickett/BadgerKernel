@@ -147,11 +147,15 @@ static size_t consume_uint(const char** in) {
   return num;
 }
 
+// Note that *fmt_chr here will point to the % not the char
+// In case we don't recognise the format and need to print everything including
+// the %
 static va_list handle_format_char(int* out_len, const char** fmt_chr,
                                   va_list args, PrintOutput* output) {
-  // Save a bunch of * by making a copy now and
-  // assigning back at the end
-  const char* fmt = *fmt_chr;
+  // Save a bunch of * by making a copy now and assigning back at the end.
+  // Also allows us to print the whole formatter if it's not recongised
+  // +1 to consume the %
+  const char* fmt = *fmt_chr + 1;
   int len = 0;
 
   size_t padding_len = SIZE_MAX;
@@ -232,7 +236,9 @@ static va_list handle_format_char(int* out_len, const char** fmt_chr,
       len += putchar_output(output, *fmt++);
       break;
     default:
-      __builtin_unreachable();
+      // Just print it all out including any padding/precision
+      len += putstr_output(output, *fmt_chr, SIZE_MAX);
+      fmt += len;
       break;
   }
 
@@ -248,7 +254,6 @@ int vprintf(const char* fmt, va_list args) {
   while (*fmt) {
     // Check for formatting arg
     if (*fmt == '%') {
-      fmt++;
       args = handle_format_char(&len, &fmt, args, &output);
     } else {
       // Any non formatting character
@@ -267,7 +272,6 @@ int sprintf(char* str, const char* fmt, ...) {
 
   while (*fmt) {
     if (*fmt == '%') {
-      fmt++;
       args = handle_format_char(&len, &fmt, args, &output);
     } else {
       len += putchar_output(&output, *fmt++);

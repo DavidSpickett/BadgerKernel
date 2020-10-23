@@ -20,6 +20,7 @@ void setup(void) {
 
   // Check we can escape %
   PRINT_SPRINT(buf, "%% printf/sprintf Demo %%\n");
+  PRINT_SPRINT(buf, "Unknown formats: %? %02? %*.5? %*.*?\n");
   PRINT_SPRINT(buf, "Signed numbers: %i %i %i %i %i\n", -2, -1, 0, 1, 2);
   PRINT_SPRINT(buf, "Unsigned numbers: %u %u %u %u %u\n", 0, 1, 2, 3, 4);
 
