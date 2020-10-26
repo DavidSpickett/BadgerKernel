@@ -71,7 +71,8 @@ jobs:
                   source testenv/bin/activate
                   cd build_${{opt_level}}_${{sanitizers}}_${{lto}}
                   # Don't be fooled, this is actually JUnit format
-                  lit ../ARMMultiTasking/demos/ --xunit-xml-output results.xml -a
+                  # TODO: With multiple threads we sometimes get an error reading progress file
+                  lit ../ARMMultiTasking/demos/ --xunit-xml-output results.xml -a -j1
                 workingDirectory: $(Agent.BuildDirectory)
                 displayName: test-O${{opt_level}}_SANITIZERS_${{sanitizers}}_LTO_${{lto}}
                 # So we'll get a failed build when tests fail
