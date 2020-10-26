@@ -233,10 +233,10 @@ static void command_loop(int input) {
   while (1) {
     // -1 for null terminator space
     ssize_t got = read(input, &state.in, INPUT_BUFFER_SIZE - 1);
-    assert((got != 0) && "stdin closed!");
 
-    // got = 1 + size of read seems to mean nothing read
-    if (got == INPUT_BUFFER_SIZE) {
+    // in qemu 2, got = 1 + size of read seems to mean nothing read
+    // qemu version >=4 returns 0 when nothing is read
+    if (!got || got == INPUT_BUFFER_SIZE) {
       continue;
     }
 
