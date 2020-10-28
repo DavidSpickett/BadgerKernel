@@ -53,9 +53,8 @@ public:
   }
 
   void write(int chr) final {
-    // This must be a an int write not a char
-    volatile unsigned int* const UART0 = (unsigned int*)m_out;
-    *UART0 = (unsigned int)chr;
+    volatile uint32_t* const UART0 = (uint32_t*)m_out;
+    *UART0 = (uint32_t)chr;
     // We do not modify buf here, serial port doesn't move
   }
 };
