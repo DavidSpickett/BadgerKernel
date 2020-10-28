@@ -1,4 +1,6 @@
 #include "kernel/thread.h"
+// So we can user log_event on exit
+#include "user/thread.h"
 #include "common/assert.h"
 #include "common/errno.h"
 #include "common/print.h"
@@ -702,7 +704,7 @@ __attribute__((noreturn)) void thread_start(void) {
                        current_thread->args.a3, current_thread->args.a4);
 
   // Yield back to the scheduler
-  k_log_event("exiting");
+  log_event("exiting");
 
   // Make sure we're not scheduled again
   current_thread->state = finished;
