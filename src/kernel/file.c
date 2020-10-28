@@ -6,6 +6,60 @@
 #include <stddef.h>
 #include <string.h>
 
+// Used to detect semihosting extensions
+#define MAGIC_LEN    4
+#define SHFB_MAGIC_0 0x53
+#define SHFB_MAGIC_1 0x48
+#define SHFB_MAGIC_2 0x46
+#define SHFB_MAGIC_3 0x42
+
+static bool k_host_supports_open_stdout(void) {
+  int fd = k_open(":semihosting-features", O_RDONLY);
+  if (fd == -1) {
+    return false;
+  }
+
+  char magic[MAGIC_LEN];
+  ssize_t got = k_read(fd, magic, MAGIC_LEN);
+  if (got != MAGIC_LEN || magic[0] != SHFB_MAGIC_0 ||
+      magic[1] != SHFB_MAGIC_1 || magic[2] != SHFB_MAGIC_2 ||
+      magic[3] != SHFB_MAGIC_3) {
+    k_close(fd);
+    return false;
+  }
+
+  char feature_byte_1;
+  got = k_read(fd, &feature_byte_1, 1);
+  if (got != 1) {
+    k_close(fd);
+    return false;
+  }
+
+  k_close(fd);
+  return feature_byte_1 & 2;
+}
+
+bool k_stdout_isatty(void) {
+  if (!k_host_supports_open_stdout()) {
+    return false;
+  }
+
+  int stdout_fd = k_open(":tt", O_WRONLY);
+  if (stdout_fd == -1) {
+    return false;
+  }
+
+  int istty = k_isatty(stdout_fd);
+  k_close(stdout_fd);
+
+  return istty == 1;
+}
+
+int k_isatty(int fd) {
+  size_t param = fd;
+  return generic_semihosting_call(SYS_ISTTY, &param);
+}
+
 int k_list_dir(const char* path, char* out, size_t outsz) {
   if (k_has_no_permission(TPERM_FILE)) {
     return -1;

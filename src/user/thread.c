@@ -7,7 +7,8 @@
 // TODO: maybe logging should go via syscall
 // to prevent splitting messages?
 void log_event(const char* event, ...) {
-  if (!(get_kernel_config() & KCFG_LOG_THREADS)) {
+  uint32_t k_config = get_kernel_config();
+  if (!(k_config & KCFG_LOG_THREADS)) {
     return;
   }
 

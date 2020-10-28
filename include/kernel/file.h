@@ -13,5 +13,7 @@ ssize_t k_write(int filedes, const void* buf, size_t nbyte);
 off_t k_lseek(int fd, off_t offset, int whence);
 int k_remove(const char* path);
 int k_close(int filedes);
+int k_isatty(int fd);
+bool k_stdout_isatty(void);
 
 #endif /* ifdef KERNEL_FILE_H */

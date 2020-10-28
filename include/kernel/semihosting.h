@@ -8,6 +8,7 @@
 #define SYS_CLOSE  0x02
 #define SYS_WRITE  0x05
 #define SYS_READ   0x06
+#define SYS_ISTTY  0x09
 #define SYS_SEEK   0x0A
 #define SYS_FLEN   0x0C
 #define SYS_REMOVE 0x0E

@@ -315,3 +315,14 @@ void format_thread_name(char* out, int tid, const char* name) {
 
   sprintf(out, "%*s", THREAD_NAME_MAX_LEN, name);
 }
+
+const char* text_colour(enum TextColour colour) {
+  switch (colour) {
+    case eReset:
+      return "\033[0m";
+    case eYellow:
+      return "\033[0;33m";
+    default:
+      return "<unknown text colour>";
+  }
+}

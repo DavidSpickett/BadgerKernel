@@ -16,6 +16,9 @@ int sprintf(char* str, const char* fmt, ...);
 
 void format_thread_name(char* out, int tid, const char* name);
 
+enum TextColour { eReset, eYellow };
+const char* text_colour(enum TextColour colour);
+
 #ifdef __cplusplus
 }
 #endif

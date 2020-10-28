@@ -1,15 +1,16 @@
 #include "kernel/thread.h"
-// So we can user log_event on exit
-#include "user/thread.h"
 #include "common/assert.h"
 #include "common/errno.h"
 #include "common/print.h"
 #include "common/trace.h"
 #include "port/port.h"
+// So we can user log_event on exit
+#include "user/thread.h"
 #if CODE_PAGE_SIZE
 #include "kernel/elf.h"
 #endif
 #include "kernel/alloc.h"
+#include "kernel/file.h"
 #include <stdarg.h>
 #include <string.h>
 
@@ -254,6 +255,10 @@ __attribute__((noreturn)) void entry(void) {
     (*fn)();
   }
 
+  if (k_stdout_isatty()) {
+    kernel_config |= KCFG_COLOUR_OUTPUT;
+  }
+
   ThreadArgs empty_args = make_args(0, 0, 0, 0);
 
 #if defined CODE_PAGE_SIZE && defined STARTUP_PROG
@@ -284,13 +289,15 @@ void k_log_event(const char* event, ...) {
     return;
   }
 
+  bool colour = kernel_config & KCFG_COLOUR_OUTPUT;
   char thread_name[THREAD_NAME_SIZE];
   const char* name = NULL;
   if (current_thread) {
     name = current_thread->name;
   }
   format_thread_name(thread_name, k_get_thread_id(), name);
-  printf("Thread %s: ", thread_name);
+  printf("%sThread %s:%s ", colour ? text_colour(eYellow) : "", thread_name,
+         colour ? text_colour(eReset) : "");
 
   va_list args;
   va_start(args, event);
@@ -302,7 +309,9 @@ void k_log_event(const char* event, ...) {
 
 void log_scheduler_event(const char* event) {
   if (kernel_config & KCFG_LOG_SCHEDULER) {
-    printf("Thread  <scheduler>: %s\n", event);
+    bool colour = kernel_config & KCFG_COLOUR_OUTPUT;
+    printf("%sThread  <scheduler>:%s %s\n", colour ? text_colour(eYellow) : "",
+           colour ? text_colour(eReset) : "", event);
   }
 }
 
