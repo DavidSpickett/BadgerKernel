@@ -162,8 +162,6 @@ static size_t consume_uint(const char** in) {
 // Note that *fmt_chr here will point to the % not the char
 // In case we don't recognise the format and need to print everything including
 // the %
-// TODO: This gets constant propograted and we end up with two copies of it. Which breaks the memory budget on Thumb. (inlining probably not on at -O1, but just to be safe)
-__attribute__((noinline, optimize("-O1")))
 static va_list handle_format_char(int* out_len, const char** fmt_chr,
                                   va_list args, const PrintOutput& output) {
   // Save a bunch of * by making a copy now and assigning back at the end.
