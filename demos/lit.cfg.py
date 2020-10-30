@@ -46,6 +46,10 @@ config.excludes.add('shell')
 # lower() because Azure config is case sensitive but local use may not be
 if platform.lower() == 'aarch64':
     config.excludes.add('threadlocalstorage')
+if platform.lower() == 'thumb' and \
+        opt_level == '3' and \
+        sanitizers == 'ON':
+    config.excludes.add('loadbinaries')
 if not (
         (platform.lower() == 'arm') and
         (opt_level == '0')):
