@@ -8,9 +8,9 @@
 #define NUM_BLOCKS HEAP_SIZE / BLOCK_SIZE
 
 typedef struct {
-  int tid;
-  size_t tag;
-} BlockTag;
+  int16_t tid;
+  uint16_t tag;
+} __attribute__((packed)) BlockTag;
 BlockTag block_tags[NUM_BLOCKS];
 uint8_t heap[HEAP_SIZE] __attribute__((aligned(BLOCK_SIZE)));
 const uint8_t* heap_end = heap + HEAP_SIZE;
