@@ -16,22 +16,22 @@ public:
   explicit PrintOutput(char* out):
     m_out(out) {}
 
-  virtual void write(int chr) = 0;
+  virtual void write(int chr) const = 0;
 
-  int putchar_n(int chr, unsigned int repeat) {
+  int putchar_n(int chr, unsigned int repeat) const {
     for (unsigned int i = 0; i < repeat; ++i) {
       write(chr);
     }
     return repeat;
   }
 
-  int putchar(int chr) {
+  int putchar(int chr) const {
     return putchar_n(chr, 1);
   }
 
   // Output a string to the given output stream
   // If num is SIZE_MAX, go until null terminator, otherwise num chars
-  int putstr(const char* str, size_t num) {
+  int putstr(const char* str, size_t num) const {
     int len = 0;
     while (*str && num) {
       len += putchar(*str++);
@@ -43,7 +43,7 @@ public:
   }
 
 protected:
-  char* m_out;
+  mutable char* m_out;
 };
 
 class SerialPrintOutput: public PrintOutput {
@@ -52,7 +52,7 @@ public:
     PrintOutput(reinterpret_cast<char*>(UART_BASE)) {
   }
 
-  void write(int chr) final {
+  void write(int chr) const final {
     volatile uint32_t* const UART0 = (uint32_t*)m_out;
     *UART0 = (uint32_t)chr;
     // We do not modify buf here, serial port doesn't move
@@ -63,13 +63,13 @@ class BufferPrintOutput: public PrintOutput {
 public:
   using PrintOutput::PrintOutput;
 
-  void write(int chr) final {
+  void write(int chr) const final {
     // Writing to a memory buffer, so inc pointer
     *m_out++ = (char)chr;
   }
 };
 
-static SerialPrintOutput serial_output;
+static const SerialPrintOutput serial_output;
 
 // Do not use this in here, just for external use
 int putchar(int chr) {
@@ -165,7 +165,7 @@ static size_t consume_uint(const char** in) {
 // TODO: This gets constant propograted and we end up with two copies of it. Which breaks the memory budget on Thumb. (inlining probably not on at -O1, but just to be safe)
 __attribute__((noinline, optimize("-O1")))
 static va_list handle_format_char(int* out_len, const char** fmt_chr,
-                                  va_list args, PrintOutput& output) {
+                                  va_list args, const PrintOutput& output) {
   // Save a bunch of * by making a copy now and assigning back at the end.
   // Also allows us to print the whole formatter if it's not recongised
   // +1 to consume the %
