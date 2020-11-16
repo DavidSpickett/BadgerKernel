@@ -31,7 +31,8 @@ void setup(void) {
   // This shows that even an init thread can handle a signal
   thread_signal(tid, 1);
   // Handles signal 1
-  yield();
+  // Use yield_to here to prove that a direct yield also handles signals
+  yield_to(tid);
 
   // Actually runs, changes handler
   yield();

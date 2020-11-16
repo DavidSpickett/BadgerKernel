@@ -317,6 +317,10 @@ void log_scheduler_event(const char* event) {
 
 #if CODE_BACKING_PAGES
 static void swap_paged_threads(const Thread* current, const Thread* next) {
+  if (current == next) {
+    return;
+  }
+
   // See if we need to swap out current thread
   if (current && (current->code_backing_page != INVALID_PAGE)) {
     memcpy(code_page_backing[current->code_backing_page], code_page,
@@ -350,16 +354,8 @@ static size_t next_possible_thread_idx(const Thread* curr) {
   return 0;
 }
 
-void do_scheduler(void) {
-  // NULL next_thread means choose one for us
-  // otherwise just do required housekeeping to switch
-  if (next_thread != NULL) {
-#if CODE_BACKING_PAGES
-    swap_paged_threads(current_thread, next_thread);
-#endif
-    return;
-  }
-
+// Basic scheduler that walks the all_threads array
+static Thread* choose_next_thread(void) {
   size_t start_thread_idx = next_possible_thread_idx(current_thread);
 
   size_t max_thread_idx = start_thread_idx + MAX_THREADS;
@@ -371,7 +367,7 @@ void do_scheduler(void) {
       continue;
     }
 
-    // We know that the ID is no -1 at this point
+    // We know that the ID is not -1 at this point
     if ((size_t)all_threads[_idx].id != _idx) {
       printf("thread ID %u and position %u inconsistent!\n", (unsigned)_idx,
              all_threads[_idx].id);
@@ -381,24 +377,33 @@ void do_scheduler(void) {
     log_scheduler_event("scheduling new thread");
 
     log_scheduler_event("next thread chosen");
-    next_thread = &all_threads[_idx];
+    return &all_threads[_idx];
+  }
+  return NULL;
+}
+
+void do_scheduler(void) {
+  // NULL means the scheduler should pick the next thread
+  if (next_thread == NULL) {
+    next_thread = choose_next_thread();
+  }
+
+  // If we couldn't find a thread to switch to
+  if (next_thread == NULL) {
+    // If the current thread is the last one, just return to it
+    if (can_schedule_thread(k_get_thread_id())) {
+      next_thread = current_thread;
+    } else {
+      // Otherwise exit the kernel completely
+      log_scheduler_event("all threads finished");
+      k_exit(0);
+    }
+  }
 
 #if CODE_BACKING_PAGES
-    swap_paged_threads(current_thread, next_thread);
+  swap_paged_threads(current_thread, next_thread);
 #endif
-
-    check_signals(next_thread);
-
-    return;
-  }
-
-  // If the current thread is the last one, just return to it
-  if (can_schedule_thread(k_get_thread_id())) {
-    next_thread = current_thread;
-  } else {
-    log_scheduler_event("all threads finished");
-    k_exit(0);
-  }
+  check_signals(next_thread);
 }
 
 static bool set_thread_state(int tid, ThreadState state) {
