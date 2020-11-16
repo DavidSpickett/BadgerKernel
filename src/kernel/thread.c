@@ -464,26 +464,9 @@ static bool k_do_yield(Thread* to) {
 }
 
 static bool k_yield_next(void) {
-  // Yield to next valid thread, wrapping around the list
-  // Pretty much what the scheduler does, but you will return
-  // to current thread if there isn't another one to go to
-  int id = k_get_thread_id();
-  bool found = false;
-
-  // Check every other thread than this one
-  size_t limit = id + MAX_THREADS;
-  for (size_t idx = id + 1; idx < limit; ++idx) {
-    size_t idx_in_range = idx % MAX_THREADS;
-    if (can_schedule_thread(idx_in_range)) {
-      k_do_yield(&all_threads[idx_in_range]);
-      found = true;
-      break;
-    }
-  }
-
-  // If we set next_thread then we'll switch after this return
-  // If not, back to the same thread
-  return found;
+  k_do_yield(NULL);
+  // Return true if we found a next thread
+  return next_thread && (next_thread != current_thread);
 }
 
 bool k_yield(int tid, int kind) {
