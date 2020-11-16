@@ -23,7 +23,7 @@ void signaller(void) {
   for (unsigned i = 0; i < 2; ++i) {
     log_event("Signalling");
     signal(&cond_var);
-    yield_next();
+    yield();
   }
 
   // Signal the rest

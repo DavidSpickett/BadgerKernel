@@ -57,9 +57,8 @@
 #define TPERM_NO_TCONFIG_OTHER                                                 \
   ((uint32_t)TPERM_TCONFIG_OTHER << TFLAG_PERM_SHIFT)
 
-#define YIELD_ANY  0
-#define YIELD_TO   1
-#define YIELD_NEXT 2
+#define YIELD_ANY 0
+#define YIELD_TO  1
 
 typedef struct {
   size_t a1;

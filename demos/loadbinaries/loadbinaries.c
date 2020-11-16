@@ -25,7 +25,6 @@ void load_again() {
 
   // Check that skipping the scheduler still copies
   // in the new program. If not we'll see "Hello" instead
-  // (also covers yield_next)
   yield_to(tid);
 }
 

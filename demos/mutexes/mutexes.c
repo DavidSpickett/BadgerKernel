@@ -11,7 +11,7 @@ void thread_work(const char* word) {
     // Can't unlock a mutex you didn't lock
     bool unlocked = unlock_mutex(&buffer_mutex);
     assert(!unlocked);
-    yield_next();
+    yield();
   }
 
   /* Looks a little silly, but shows we can
@@ -20,7 +20,7 @@ void thread_work(const char* word) {
   while (*word) {
     *dest++ = *word++;
     log_event("copying...");
-    yield_next();
+    yield();
   }
 
   log_event(buffer);

@@ -458,14 +458,9 @@ static bool k_do_yield(Thread* to) {
   check_stack();
 
   next_thread = to;
-  do_scheduler();
   // Assembly handler will see next_thread set and do the switch
-  return true;
-}
-
-static bool k_yield_next(void) {
-  k_do_yield(NULL);
-  // Return true if we found a next thread
+  do_scheduler();
+  // Return true if we found a new thread to yield to
   return next_thread && (next_thread != current_thread);
 }
 
@@ -479,9 +474,6 @@ bool k_yield(int tid, int kind) {
         return false;
       }
       return k_do_yield(&all_threads[tid]);
-    case YIELD_NEXT:
-      assert(tid == INVALID_THREAD);
-      return k_yield_next();
     default:
       assert(0);
       break;

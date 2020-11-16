@@ -36,7 +36,7 @@ void worker() {
   log_event(msg);
 
   add_foo_thread();
-  yield_next();
+  yield();
 
   log_event("Goodbye");
 }

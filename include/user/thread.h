@@ -34,7 +34,8 @@ int get_thread_id(void);
 bool thread_name(int tid, char* name);
 bool set_thread_name(int tid, const char* name);
 
-void yield(void);
+bool yield(void);
+bool yield_to(int tid);
 bool thread_join(int tid, ThreadState* state);
 bool get_thread_state(int tid, ThreadState* state) __attribute__((nonnull));
 bool set_child(int child);
@@ -51,9 +52,6 @@ void log_event(const char* event, ...);
 
 void set_kernel_config(uint32_t enable, uint32_t disable);
 uint32_t get_kernel_config(void);
-
-bool yield_to(int tid);
-bool yield_next(void);
 
 bool get_msg(int* sender, int* message);
 bool send_msg(int destination, int message);

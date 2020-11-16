@@ -8,13 +8,11 @@ void thread1() {
 void thread2() {
   yield_to(1);
   add_named_thread(thread1, "last");
-  yield_next(); // switch to "last"
-  yield_next(); // switch back to "last"
+  yield(); // switch to "last"
+  yield(); // switch back to "last"
   // Run ourselves again, shouldn't actually do a switch
-  bool yielded = yield_next();
-  assert(!yielded);
-  yielded = yield_to(1);
-  assert(!yielded);
+  assert(!yield());
+  assert(!yield_to(1));
 }
 
 void setup(void) {

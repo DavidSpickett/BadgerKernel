@@ -89,22 +89,16 @@ bool get_thread_state(int tid, ThreadState* state) {
   return got;
 }
 
-void yield(void) {
+bool yield(void) {
   log_event("yielding");
-  DO_SYSCALL_2(yield, INVALID_THREAD, YIELD_ANY);
+  bool yielded = DO_SYSCALL_2(yield, INVALID_THREAD, YIELD_ANY);
   log_event("resuming");
+  return yielded;
 }
 
 bool yield_to(int tid) {
   log_event("yielding");
   bool got = DO_SYSCALL_2(yield, tid, YIELD_TO);
-  log_event("resuming");
-  return got;
-}
-
-bool yield_next(void) {
-  log_event("yielding");
-  bool got = DO_SYSCALL_2(yield, INVALID_THREAD, YIELD_NEXT);
   log_event("resuming");
   return got;
 }

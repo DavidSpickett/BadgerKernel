@@ -50,7 +50,6 @@ class AddThreadAction(Action):
 def gen_worker(thread_num, depth):
     thread_actions = [
       Action("yield"),
-      Action("yield_next"),
       ThreadIDAction("yield_to"),
       ThreadIDAction("thread_cancel"),
     ]
