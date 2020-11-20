@@ -9,8 +9,6 @@ Thread  <scheduler>: scheduling new thread
 Thread  <scheduler>: next thread chosen
 Thread       second: resuming
 Thread       second: yielding
-Thread  <scheduler>: scheduling new thread
-Thread  <scheduler>: next thread chosen
 Thread         last: yielding
 Thread       second: resuming
 Thread       second: yielding
