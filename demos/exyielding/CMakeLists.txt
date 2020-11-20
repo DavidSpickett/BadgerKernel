@@ -1,1 +1,1 @@
-add_demo(exyielding 3)
+add_demo(exyielding 4)
