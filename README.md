@@ -6,7 +6,7 @@ Current build targets are Arm (Armv7A, Cortex A-15), Thumb (Armv7E-M Cortex-M4),
 
 All bare metal platforms use exceptions for switching threads. Either by yielding (which uses a software exception) or enabling a timer interrupt for preemptive switching.
 
-For more detail see the [design doc](design.md).
+For more detail see the [design doc](docs/design.md).
 
 ## Building
 
