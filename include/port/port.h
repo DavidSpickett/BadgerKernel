@@ -1,8 +1,9 @@
 #ifndef PORT_PORT_H
 #define PORT_PORT_H
 
+#include "common/svc_calls.h"
 #include "common/syscall.h"
-#include "common/thread_state.h"
+#include "common/thread.h"
 #include <stddef.h>
 #include <stdint.h>
 

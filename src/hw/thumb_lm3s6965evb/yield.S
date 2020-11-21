@@ -1,4 +1,4 @@
-#include "common/thread_state.h"
+#include "common/svc_calls.h"
 
 // This allows us to use push/pop with high registers
 .syntax unified
@@ -39,15 +39,6 @@
   /* Save stack pointer */
   ldr r1, [r6]           // r1 = current_thread
   str sp, [r1], #4       // current_thread->stack_ptr = sp
-
-  /* Update state */
-  ldr r2, [r1]          // r2 = current_thread->state
-  mov r3, #running
-  cmp r2, r3            // if we're something other than running, leave it as it is
-  bne 1f
-  mov r3, #suspended    // otherwise move to suspended
-  str r3, [r1]          // current_thread->state = suspended
-1:
 .endm
 
 // This is just the load, returning into it can be handled differently
@@ -62,10 +53,6 @@
   mov sp, r5            // MSP = new thread's stack pointer
 
   /* no need to restore PC, exc return will do that */
-
-  mov r4, #running      // start running
-  add r6, r6, #4        // r6 = &(current_thread->state)
-  str r4, [r6]          // current_thread->state = running
 
   // Even init threads have some saved context setup by init_thread
   pop {r4-r11}

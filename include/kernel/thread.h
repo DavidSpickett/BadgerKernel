@@ -2,7 +2,6 @@
 #define KERNEL_THREAD_H
 
 #include "common/thread.h"
-#include "common/thread_state.h"
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>

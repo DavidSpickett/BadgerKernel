@@ -400,6 +400,12 @@ void do_scheduler(void) {
     }
   }
 
+  // Don't change cancelled/waiting etc.
+  if (current_thread && current_thread->state == running) {
+    current_thread->state = suspended;
+  }
+  next_thread->state = running;
+
 #if CODE_BACKING_PAGES
   swap_paged_threads(current_thread, next_thread);
 #endif

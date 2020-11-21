@@ -1,5 +1,5 @@
 #include "user/timer.h"
-#include "common/thread_state.h"
+#include "common/svc_calls.h"
 #include "port/port.h"
 #include <stddef.h>
 

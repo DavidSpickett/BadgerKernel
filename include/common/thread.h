@@ -60,6 +60,15 @@
 #define YIELD_ANY 0
 #define YIELD_TO  1
 
+typedef enum {
+  init = 0,
+  running = 1,
+  suspended = 2,
+  waiting = 3,
+  finished = 4,
+  cancelled = 5,
+} ThreadState;
+
 typedef struct {
   size_t a1;
   size_t a2;

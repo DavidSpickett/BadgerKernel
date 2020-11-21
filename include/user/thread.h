@@ -2,7 +2,6 @@
 #define USER_THREAD_H
 
 #include "common/thread.h"
-#include "common/thread_state.h"
 #include "common/trace.h"
 #include <stdint.h>
 

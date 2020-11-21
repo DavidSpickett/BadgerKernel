@@ -1,4 +1,4 @@
-#include "common/thread_state.h"
+#include "common/svc_calls.h"
 
 .set TIMER_AMOUNT, 100000
 
@@ -55,15 +55,6 @@
   ldr x1, [x20]        // x1 = current_thread
   mov x3, sp
   str x3, [x1], #8     // current_thread->stack_ptr=sp
-
-  /* Update state */
-  ldr x2, [x1]         // x2 = current_thread->state
-  mov x3, #running
-  cmp x2, x3           // if we're something other than running, leave it as it is
-  bne 1f
-  mov x2, #suspended   // otherwise move to suspended
-  str x2, [x1]         // current_thread->state = suspended
-1:
 .endm
 
 .macro DISABLE_TIMER
@@ -172,9 +163,6 @@ actually_load_thread:
   ldr x20, [x20]           // x20 = current_thread
   ldr x3, [x20], #8        // x3 = current_thread->stack_ptr
   mov sp, x3
-
-  mov x4, #running         // start running
-  str x4, [x20]            // current_thread->state = running
 
   /* Restore all registers of the new thread
      (even init state threads have a blank context

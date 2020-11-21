@@ -1,4 +1,4 @@
-#include "common/thread_state.h"
+#include "common/svc_calls.h"
 
 .set SYSTEM_MODE,     0x1f
 .set SUPERVISOR_MODE, 0x13
@@ -35,15 +35,6 @@
   /* Save stack pointer */
   ldr r1, [r10]        // r1 = current_thread
   str sp, [r1], #4     // current_thread->stack_ptr=sp
-
-  /* Update state */
-  ldr r2, [r1]         // r2 = current_thread->state
-  mov r3, #running
-  cmp r2, r3           // if we're something other than running, leave it as it is
-  bne 1f
-  mov r3, #suspended   // otherwise move to suspended
-  str r3, [r1]         // current_thread->state = suspended
-1:
 .endm
 
 .macro DISABLE_TIMER
@@ -150,10 +141,7 @@ actually_load_thread:
   mov r5, #0           // Set next to null for next switch to call scheduler
   str r5, [r11]        // next_thread = NULL
   ldr r10, [r10]       // r10 = current_thread
-  ldr sp, [r10], #4    // sp = current_thread->stack_ptr
-
-  mov r4, #running      // start running
-  str r4, [r10]         // current_thread->state = running
+  ldr sp, [r10]        // sp = current_thread->stack_ptr
 
   /* even an init state thread will have a blank context to restore */
   pop {r0-r12, r14}     // restore our own regs (no sp/pc)
