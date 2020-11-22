@@ -49,6 +49,7 @@ typedef struct {
 
 Thread all_threads[MAX_THREADS];
 Thread* current_thread;
+Thread* next_thread;
 
 int k_add_thread_from_file_with_args(const char* filename,
                                      const ThreadArgs* args,

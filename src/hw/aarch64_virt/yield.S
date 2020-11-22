@@ -110,15 +110,6 @@ check_svc:
 
 generic_syscall:
   CALL_KERNEL k_handle_syscall
-
-  // If next thread is NULL, just resume current thread
-  mov x0, #0
-  ldr x1, =next_thread
-  ldr x1, [x1]
-  cmp x0, x1
-  bne 1f
-  NEXT_EQUAL_CURRENT
-1:
   b load_next_thread
 
 enable_timer:

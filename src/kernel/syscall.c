@@ -146,4 +146,10 @@ void k_handle_syscall(void) {
     result = 0;
   }
   ctx->arg0 = result;
+
+  // If we did something like yield, then go to the new thread
+  // Otherwise return to the calling thread
+  if (!next_thread) {
+    next_thread = current_thread;
+  }
 }

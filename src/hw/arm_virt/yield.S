@@ -91,15 +91,6 @@ handle_exception:
 
 generic_syscall:
   CALL_KERNEL k_handle_syscall
-
-  // If next_thread is NULL by now, just return normally to same thread
-  mov r0, #0
-  ldr r1, =next_thread
-  ldr r1, [r1]
-  cmp r0, r1
-  bne use_next_thread      // If it wasn't NULL, load use it
-  NEXT_EQUAL_CURRENT
-use_next_thread:
   b load_next_thread
 
 enable_timer:
