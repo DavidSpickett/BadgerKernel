@@ -2,7 +2,6 @@
 
 .set SYSTEM_MODE,     0x1f
 .set SUPERVISOR_MODE, 0x13
-.set USER_MODE,       0x10
 
 .macro CHECK_SVC code, handler
   mov r1, #\code
