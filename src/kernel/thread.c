@@ -456,10 +456,6 @@ bool k_thread_cancel(int tid) {
   return set;
 }
 
-static void thread_switch(void) {
-  YIELD_ASM;
-}
-
 static bool k_do_yield(Thread* to) {
   check_stack();
 
@@ -698,28 +694,14 @@ __attribute__((noreturn)) void thread_start(void) {
   current_thread->work(current_thread->args.a1, current_thread->args.a2,
                        current_thread->args.a3, current_thread->args.a4);
 
-  // Yield back to the scheduler
+  cleanup_thread(current_thread);
   log_event("exiting");
-
-  // Make sure we're not scheduled again
+  // Set this last so if we're interrupted after this
+  // it's not an issue.
   current_thread->state = finished;
 
-  /* You might think this is a timing issue.
-     What if we're interrupted here?
-
-     Well, we'd go to thread_switch, next_thread
-     is set to the scheduler automatically.
-     Since our state is finished, it won't be updated
-     to suspended. Meaning, we'll never come back here.
-
-     Which is just fine, since we were going to switch
-     away anyway.
-  */
-
-  cleanup_thread(current_thread);
-
-  // Calling thread_switch directly so we don't print 'yielding'
-  thread_switch();
+  // Yielding directly so we don't print "yielding"
+  YIELD_ASM;
 
   __builtin_unreachable();
 }
