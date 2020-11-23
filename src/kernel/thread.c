@@ -33,7 +33,11 @@ uint8_t code_page_backing[CODE_BACKING_PAGES][CODE_PAGE_SIZE];
 
 extern void setup(void);
 extern void load_first_thread(void);
+extern void load_next_thread(void);
 void check_stack(void);
+static int k_add_named_thread_with_args(void (*worker)(), const char* name,
+                                        const ThreadArgs* args,
+                                        uint16_t remove_permissions);
 
 bool k_has_no_permission(uint16_t permission) {
   if (!current_thread) {
@@ -236,9 +240,6 @@ __attribute__((constructor)) static void init_threads(void) {
   }
 }
 
-static int k_add_named_thread_with_args(void (*worker)(), const char* name,
-                                        const ThreadArgs* args,
-                                        uint16_t remove_permissions);
 __attribute__((noreturn)) void entry(void) {
   extern char _etext, _data, _edata, _bstart, _bend;
 
@@ -643,7 +644,6 @@ void k_thread_wait(void) {
   do_scheduler();
 }
 
-extern void load_next_thread(void);
 void check_stack(void) {
   bool underflow = current_thread->bottom_canary != STACK_CANARY;
   bool overflow = current_thread->top_canary != STACK_CANARY;
