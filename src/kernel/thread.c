@@ -643,12 +643,6 @@ void k_thread_wait(void) {
   do_scheduler();
 }
 
-// Use these struct names to ensure that these are
-// placed *after* the thread structs to prevent
-// stack overflow corrupting them.
-__attribute__((section(".thread_vars"))) size_t thread_stack_offset =
-    offsetof(Thread, stack);
-
 extern void load_next_thread(void);
 void check_stack(void) {
   bool underflow = current_thread->bottom_canary != STACK_CANARY;
