@@ -26,8 +26,15 @@ __attribute__((section(".thread_vars"))) uint32_t kernel_config =
 __attribute__((section(".code_page"))) uint8_t code_page[CODE_PAGE_SIZE];
 #if CODE_BACKING_PAGES
 #define INVALID_PAGE 123456
-__attribute__((section(".code_page_backing")))
-uint8_t code_page_backing[CODE_BACKING_PAGES][CODE_PAGE_SIZE];
+
+// Since we don't run code from these, alignment isn't an issue
+typedef struct {
+  uint8_t ref_count;
+  uint8_t data[CODE_PAGE_SIZE];
+} __attribute__((packed)) CodeBackingPage;
+
+__attribute__((section(".code_backing_pages")))
+CodeBackingPage code_backing_pages[CODE_BACKING_PAGES];
 #endif
 #endif /* CODE_PAGE_SIZE */
 
@@ -324,12 +331,12 @@ static void swap_paged_threads(const Thread* current, const Thread* next) {
 
   // See if we need to swap out current thread
   if (current && (current->code_backing_page != INVALID_PAGE)) {
-    memcpy(code_page_backing[current->code_backing_page], code_page,
+    memcpy(code_backing_pages[current->code_backing_page].data, code_page,
            CODE_PAGE_SIZE);
   }
   // If the next thread's code is in a backing page
   if (next->code_backing_page != INVALID_PAGE) {
-    memcpy(code_page, code_page_backing[next->code_backing_page],
+    memcpy(code_page, code_backing_pages[next->code_backing_page].data,
            CODE_PAGE_SIZE);
   }
 }
@@ -434,7 +441,13 @@ static void cleanup_thread(Thread* thread) {
   // running from it they will still have true to keep it alive.
   thread->in_code_page = false;
 #if CODE_BACKING_PAGES
-  thread->code_backing_page = INVALID_PAGE;
+  size_t backing_page = thread->code_backing_page;
+  if (backing_page != INVALID_PAGE) {
+    if (code_backing_pages[backing_page].ref_count) {
+      code_backing_pages[backing_page].ref_count--;
+    }
+    thread->code_backing_page = INVALID_PAGE;
+  }
 #endif
 #endif
 }
@@ -498,18 +511,8 @@ static int code_page_in_use_by() {
 
 #if CODE_BACKING_PAGES
 static size_t find_free_backing_page(void) {
-  bool possible[CODE_BACKING_PAGES];
   for (size_t i = 0; i < CODE_BACKING_PAGES; ++i) {
-    possible[i] = true;
-  }
-  for (size_t i = 0; i < MAX_THREADS; ++i) {
-    size_t page = all_threads[i].code_backing_page;
-    if (page != INVALID_PAGE) {
-      possible[page] = false;
-    }
-  }
-  for (size_t i = 0; i < CODE_BACKING_PAGES; ++i) {
-    if (possible[i]) {
+    if (!code_backing_pages[i].ref_count) {
       return i;
     }
   }
@@ -525,6 +528,7 @@ static void setup_code_page(size_t idx) {
     size_t page = curr->code_backing_page;
     if (page != INVALID_PAGE) {
       all_threads[idx].code_backing_page = page;
+      code_backing_pages[page].ref_count++;
     }
   }
 #else
@@ -583,7 +587,7 @@ int k_add_thread_from_file_with_args(const char* filename,
 
   uint8_t* dest = code_page;
 #if CODE_BACKING_PAGES
-  dest = code_page_backing[free_page];
+  dest = code_backing_pages[free_page].data;
 #endif
 
   void (*entry)() = load_elf(filename, dest);
@@ -599,6 +603,7 @@ int k_add_thread_from_file_with_args(const char* filename,
 
 #if CODE_BACKING_PAGES
   all_threads[tid].code_backing_page = free_page;
+  code_backing_pages[free_page].ref_count += 1;
 #else
   all_threads[tid].in_code_page = true;
 #endif
