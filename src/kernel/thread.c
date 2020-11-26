@@ -676,9 +676,6 @@ void check_stack(void) {
 
       // Would clear heap allocs here but we can't trust the thread ID
 
-      // Aka don't save any state, just load the scheduler
-      // TODO: this isn't actually checked by the assembly
-      current_thread->state = init;
       // TODO: we're probably losing kernel stack space every time we do this.
       // (on arches with banked stack pointers)
       load_next_thread();
