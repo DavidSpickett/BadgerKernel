@@ -528,7 +528,7 @@ static void setup_code_page(size_t idx) {
     }
   }
 #else
-  // Check null because we might be in setup() which runs as kernel
+  // curr can be null because this could be called from startup
   if (curr && curr->in_code_page) {
     // Code page must live as long as all threads created by code in it
     all_threads[idx].in_code_page = true;
