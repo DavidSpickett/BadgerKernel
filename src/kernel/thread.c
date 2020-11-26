@@ -74,6 +74,9 @@ bool is_valid_thread(int tid) {
 }
 
 static bool can_schedule_thread(int tid) {
+  // Allowing running here looks odd but remember that we only
+  // suspend a thread if we switch to another.
+  // While you're in a syscall you're still "running".
   return is_valid_thread(tid) &&
          (all_threads[tid].state == suspended ||
           all_threads[tid].state == init || all_threads[tid].state == running);
