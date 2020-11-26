@@ -50,7 +50,8 @@ bool k_stdout_isatty(void) {
   }
 
   int istty = k_isatty(stdout_fd);
-  k_close(stdout_fd);
+  // Closing stdout_fd may cause QEMU 4.2.1 to close its stdout
+  // So we just leave it opened here
 
   return istty == 1;
 }
