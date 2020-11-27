@@ -1,10 +1,9 @@
-#include "kernel/thread.h" // For struct Thread
+// For current_thread
+#include "kernel/thread.h"
 #include "user/thread.h"
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
-
-extern Thread* current_thread;
 
 #define ALLOC_SIZE 500
 __attribute__((noinline)) void recurse(int repeat) {
