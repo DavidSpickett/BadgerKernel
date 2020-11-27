@@ -39,8 +39,6 @@ CodeBackingPage code_backing_pages[CODE_BACKING_PAGES];
 #endif /* CODE_PAGE_SIZE */
 
 extern void setup(void);
-extern void load_first_thread(void);
-extern void load_next_thread(void);
 void check_stack(void);
 static int k_add_named_thread_with_args(void (*worker)(), const char* name,
                                         const ThreadArgs* args,
