@@ -36,8 +36,11 @@ _Reset:
   /* Go to entry as El1 */
   b entry
 
- /* Current EL with SP0 */
- .balign 0x800
+/*     Vector table      */
+  .extern handle_svc
+
+  /* Current EL with SP0 */
+  .balign 0x800
 el1_table:
   b . // sync
   .balign 128
@@ -49,7 +52,6 @@ el1_table:
 
   /* Current EL with SPxELR_EL3 */
   .balign 128
-  .extern handle_svc
   b handle_svc // sync
   .balign 128
   b .  // irq
@@ -60,7 +62,6 @@ el1_table:
 
   /* Lower EL using AArch64 */
   .balign 128
-  .extern handle_svc
   b handle_svc
   .balign 128
   b handle_timer   // irq
