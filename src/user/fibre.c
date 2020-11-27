@@ -2,8 +2,6 @@
 #include "port/port.h"
 #include <string.h>
 
-extern void set_context_from_stack_address(void);
-
 static void init_context(FibreContext* ctx) {
   memset(ctx, 0, sizeof(FibreContext));
 }

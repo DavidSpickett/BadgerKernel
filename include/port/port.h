@@ -48,4 +48,7 @@ size_t generic_semihosting_call(size_t operation, size_t* parameters);
 size_t generic_syscall(Syscall num, size_t arg1, size_t arg2, size_t arg3,
                        size_t arg4);
 
+// Used to catch returning fibres
+void set_context_from_stack_address(void);
+
 #endif /* ifdef PORT_PORT_H */
