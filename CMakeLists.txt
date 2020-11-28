@@ -79,7 +79,8 @@ else()
   set( QEMU "${QEMU} -device loader,file=")
 endif()
 
-set( CFLAGS "${CFLAGS} -ffreestanding -nostdlib" )
+# -fno-common to disallow variables being present in multiple compliaton units
+set( CFLAGS "${CFLAGS} -ffreestanding -nostdlib -fno-common" )
 add_definitions(-DUART_BASE=${UART_BASE} -DSRC_ROOT=\"${CMAKE_SOURCE_DIR}\" )
 
 if(LTO)

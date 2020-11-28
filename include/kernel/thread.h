@@ -47,9 +47,9 @@ typedef struct {
   uint64_t top_canary;
 } Thread;
 
-Thread all_threads[MAX_THREADS];
-Thread* current_thread;
-Thread* next_thread;
+extern Thread all_threads[MAX_THREADS];
+extern Thread* current_thread;
+extern Thread* next_thread;
 
 int k_add_thread_from_file_with_args(const char* filename,
                                      const ThreadArgs* args,
