@@ -1,5 +1,6 @@
 #include "common/syscall.h"
 #include "common/print.h"
+#include "common/thread.h"
 #include "kernel/alloc.h"
 #include "kernel/condition_variable.h"
 #include "kernel/file.h"
@@ -8,6 +9,71 @@
 #include "kernel/thread.h"
 #include "port/port.h"
 #include <stddef.h>
+
+static const char* syscall_name(size_t num) {
+  /* [[[cog
+  import cog
+  from scripts.syscalls import syscalls
+  cog.outl("switch (num) {")
+  for syscall, has_result in syscalls:
+    cog.outl("  case syscall_{}:".format(syscall))
+    cog.outl("    return \"{}\";".format(syscall))
+  ]]] */
+  switch (num) {
+    case syscall_add_thread:
+      return "add_thread";
+    case syscall_get_thread_property:
+      return "get_thread_property";
+    case syscall_set_thread_property:
+      return "set_thread_property";
+    case syscall_get_kernel_config:
+      return "get_kernel_config";
+    case syscall_set_kernel_config:
+      return "set_kernel_config";
+    case syscall_yield:
+      return "yield";
+    case syscall_get_msg:
+      return "get_msg";
+    case syscall_send_msg:
+      return "send_msg";
+    case syscall_thread_wait:
+      return "thread_wait";
+    case syscall_thread_wake:
+      return "thread_wake";
+    case syscall_thread_cancel:
+      return "thread_cancel";
+    case syscall_mutex:
+      return "mutex";
+    case syscall_condition_variable:
+      return "condition_variable";
+    case syscall_open:
+      return "open";
+    case syscall_read:
+      return "read";
+    case syscall_write:
+      return "write";
+    case syscall_lseek:
+      return "lseek";
+    case syscall_remove:
+      return "remove";
+    case syscall_close:
+      return "close";
+    case syscall_exit:
+      return "exit";
+    case syscall_malloc:
+      return "malloc";
+    case syscall_realloc:
+      return "realloc";
+    case syscall_free:
+      return "free";
+    case syscall_list_dir:
+      return "list_dir";
+    /* [[[end]]] */
+    case syscall_eol:
+    default:
+      return "(unknown syscall)";
+  }
+}
 
 static void k_invalid_syscall(size_t arg1, size_t arg2, size_t arg3,
                               size_t arg4, size_t num) {
@@ -139,6 +205,14 @@ void k_handle_syscall(void) {
       break;
   }
 
+  bool log_errno = k_get_kernel_config() & KCFG_LOG_FAILED_ERRNO;
+  int old_err_no;
+  if (log_errno) {
+    // Callers aren't required to set errno to 0 so save current
+    old_err_no = current_thread->err_no;
+    current_thread->err_no = 0;
+  }
+
   result = syscall_fn(ctx->arg0, ctx->arg1, ctx->arg2, ctx->arg3);
   // Make sure we zero out the result if the syscall returned void
   // So we don't leak some in kernel address
@@ -146,6 +220,19 @@ void k_handle_syscall(void) {
     result = 0;
   }
   ctx->arg0 = result;
+
+  if (log_errno) {
+    if (current_thread->err_no != 0) {
+      k_log_event("Syscall %s failed with errno %u (%s)!",
+                  syscall_name(ctx->syscall_num), current_thread->err_no,
+                  strerror(current_thread->err_no));
+    } else {
+      // The call didn't fail so restore the old errno
+      // (even if that errno was a failure value, it's
+      // not related to the current syscall)
+      current_thread->err_no = old_err_no;
+    }
+  }
 
   // If we did something like yield, then go to the new thread
   // Otherwise return to the calling thread

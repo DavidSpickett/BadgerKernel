@@ -7,4 +7,6 @@
 #define E_NO_PAGE      4 // No code/backing page to load program into
 #define E_INVALID_ARGS 5 // Incorrect arguments to syscall
 
+char* strerror(int errnum);
+
 #endif /* ifdef COMMON_ERRNO_H */

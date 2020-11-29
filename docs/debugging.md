@@ -106,6 +106,24 @@ You can single step over/into things like supervisor calls but others like retur
 
 If you have this issue then the best idea is to breakpoint on both sides of the divide. If that's returning from interrupt then step to the return point and break back in user space where you expect to hit.
 
+## Logging Failed Syscalls
+
+If your program is silently failing you may be calling a syscall incorrectly and not checking errno.
+
+You can enable logging of these situations with:
+```
+set_kernel_config(KCFG_LOG_FAILED_ERRNO, 0);
+```
+
+With this set any subsequent syscalls that set errno (that fail) will be logged. It looks like:
+```
+Thread            0: Syscall get_msg failed with errno 5 (invalid arguments)!
+```
+
+Note:
+* This is not a replacement for good error handling. Check errno if it's important to your code!
+* Our errno usage is not complete yet, so some syscalls may not use it where you think they would. Check the source to be sure.
+
 ## General Troubleshooting Steps
 
 There are some issues that aren't obvious to the developer. If you're scratching your head over some weird issue try these:

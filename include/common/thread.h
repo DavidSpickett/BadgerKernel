@@ -20,6 +20,7 @@
 #define KCFG_LOG_SCHEDULER        1 << 1
 #define KCFG_LOG_THREADS          1 << 2
 #define KCFG_COLOUR_OUTPUT        1 << 3
+#define KCFG_LOG_FAILED_ERRNO     1 << 4 // Log failed syscalls
 
 #define TPROP_ID              0
 #define TPROP_NAME            1
