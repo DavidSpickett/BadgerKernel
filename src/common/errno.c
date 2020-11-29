@@ -11,7 +11,7 @@ char* strerror(int errnum) {
   ]]] */
   switch (errnum) {
     case E_PERM:
-      return "permisson denied";
+      return "permission denied";
     case E_INVALID_ID:
       return "invalid thread ID";
     case E_NOT_FOUND:
