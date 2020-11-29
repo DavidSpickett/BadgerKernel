@@ -1,3 +1,4 @@
+#include "common/errno.h"
 #include "kernel/thread.h"
 
 static void inc_msg_pointer(Thread* thr, Message** ptr) {
@@ -9,6 +10,11 @@ static void inc_msg_pointer(Thread* thr, Message** ptr) {
 }
 
 bool k_get_msg(int* sender, int* message) {
+  if (!sender || !message) {
+    current_thread->err_no = E_INVALID_ARGS;
+    return false;
+  }
+
   // If message box is not empty, or it is full
   if (current_thread->next_msg != current_thread->end_msgs ||
       current_thread->msgs_full) {

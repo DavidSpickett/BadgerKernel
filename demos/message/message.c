@@ -1,3 +1,5 @@
+#include "common/assert.h"
+#include "user/errno.h"
 #include "user/thread.h"
 #include "user/util.h"
 
@@ -49,6 +51,16 @@ __attribute__((noreturn)) void receiver() {
 }
 
 void setup(void) {
+  // Check syscall argument validation
+  int tmp;
+  errno = 0;
+  assert(!get_msg(NULL, &tmp));
+  assert(errno == E_INVALID_ARGS);
+
+  errno = 0;
+  assert(!get_msg(&tmp, NULL));
+  assert(errno == E_INVALID_ARGS);
+
   add_named_thread(sender, "sender");
   add_named_thread(receiver, "receiver");
   set_thread_name(CURRENT_THREAD, "spammer");
