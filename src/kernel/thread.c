@@ -144,6 +144,7 @@ bool k_set_thread_property(int tid, size_t property, const void* value) {
       thread->signal_handler = *(void (**)(uint32_t))value;
       break;
     default:
+      // TODO: E_INVALID_ARGS for this and value ptr
       assert(0);
   }
 
@@ -194,6 +195,7 @@ bool k_get_thread_property(int tid, size_t property, void* res) {
       *(int**)res = &current_thread->err_no;
       break;
     default:
+      // TODO: E_INVALID_ARGS for this and res ptr
       assert(0);
   }
 
