@@ -24,6 +24,9 @@ void setup(void) {
   PRINT_SPRINT(buf, "Signed numbers: %i %i %i %i %i\n", -2, -1, 0, 1, 2);
   PRINT_SPRINT(buf, "Unsigned numbers: %u %u %u %u %u\n", 0, 1, 2, 3, 4);
 
+  // Null string handling
+  PRINT_SPRINT(buf, "Null string: %s\n", NULL);
+
   const char* hex = "hex";
   PRINT_SPRINT(buf, "print %s: 0x%X 0x%x\n", hex, 0xABAB, 0xBC);
 

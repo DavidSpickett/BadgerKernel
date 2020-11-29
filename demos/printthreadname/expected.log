@@ -6,6 +6,8 @@ Signed numbers: -2 -1 0 1 2
 Signed numbers: -2 -1 0 1 2
 Unsigned numbers: 0 1 2 3 4
 Unsigned numbers: 0 1 2 3 4
+Null string: (null)
+Null string: (null)
 print hex: 0xABAB 0xbc
 print hex: 0xABAB 0xbc
 Padding hex 0x1234 0x0000cdef 0x0000ABCD 0x0000003344

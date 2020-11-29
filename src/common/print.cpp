@@ -204,6 +204,10 @@ static va_list handle_format_char(int* out_len, const char** fmt_chr,
     case 's': // string
     {
       const char* str = va_arg(args, const char*);
+      if (!str) {
+        str = "(null)";
+      }
+
       size_t str_len = strlen(str);
       if (str_len > precision) {
         str_len = precision;
