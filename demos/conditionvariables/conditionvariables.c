@@ -1,5 +1,7 @@
 #include "common/assert.h"
 #include "user/condition_variable.h"
+#include "user/errno.h"
+#include "user/syscall.h"
 #include "user/thread.h"
 
 ConditionVariable cond_var;
@@ -42,6 +44,16 @@ void signaller(void) {
 }
 
 void setup(void) {
+  // Check argument validation
+  // Operation
+  errno = 0;
+  assert(!DO_SYSCALL_2(condition_variable, -1, &cond_var));
+  assert(errno == E_INVALID_ARGS);
+  // CV pointer
+  errno = 0;
+  assert(!DO_SYSCALL_2(condition_variable, CONDITION_VARIABLE_INIT, NULL));
+  assert(errno == E_INVALID_ARGS);
+
   init_condition_variable(&cond_var);
 
   const unsigned num_waiting = 5;

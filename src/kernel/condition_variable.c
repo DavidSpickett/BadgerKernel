@@ -1,10 +1,12 @@
 #include "kernel/condition_variable.h"
+#include "common/errno.h"
 #include "kernel/thread.h"
 
-static void k_init_condition_variable(ConditionVariable* cv) {
+static bool k_init_condition_variable(ConditionVariable* cv) {
   cv->first = 0;
   cv->last = 0;
   cv->full = false;
+  return true;
 }
 
 static bool k_signal(ConditionVariable* cv) {
@@ -17,35 +19,43 @@ static bool k_signal(ConditionVariable* cv) {
   return false;
 }
 
-static void k_broadcast(ConditionVariable* cv) {
+static bool k_broadcast(ConditionVariable* cv) {
   bool signalled = false;
   do {
     signalled = k_signal(cv);
   } while (signalled);
+  return true;
 }
 
-static void k_wait(ConditionVariable* cv) {
+static bool k_wait(ConditionVariable* cv) {
   cv->waiting[cv->last] = k_get_thread_id();
   cv->last = (cv->last + 1) % MAX_THREADS;
   cv->full = cv->first == cv->last;
   k_thread_wait();
+  return true;
 }
 
 bool k_condition_variable(unsigned op, ConditionVariable* cv) {
+  bool (*cv_func)(ConditionVariable*) = NULL;
   switch (op) {
     case CONDITION_VARIABLE_INIT:
-      k_init_condition_variable(cv);
-      return true;
+      cv_func = k_init_condition_variable;
+      break;
     case CONDITION_VARIABLE_SIGNAL:
-      return k_signal(cv);
+      cv_func = k_signal;
+      break;
     case CONDITION_VARIABLE_BROADCAST:
-      k_broadcast(cv);
-      return true;
+      cv_func = k_broadcast;
+      break;
     case CONDITION_VARIABLE_WAIT:
-      k_wait(cv);
-      return true;
-    default:
-      // TODO: E_INVALID_ARGS
-      return false;
+      cv_func = k_wait;
+      break;
   }
+
+  if (!cv_func || !cv) {
+    current_thread->err_no = E_INVALID_ARGS;
+    return false;
+  }
+
+  return cv_func(cv);
 }
