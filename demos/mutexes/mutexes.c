@@ -1,5 +1,7 @@
 #include "common/assert.h"
+#include "user/errno.h"
 #include "user/mutex.h"
+#include "user/syscall.h"
 #include "user/thread.h"
 #include <string.h>
 
@@ -28,6 +30,16 @@ void thread_work(const char* word) {
 }
 
 void setup(void) {
+  // Check argument validation
+  // Invalid operation
+  errno = 0;
+  assert(!DO_SYSCALL_2(mutex, -1, &buffer_mutex));
+  assert(errno == E_INVALID_ARGS);
+  // Invalid mutex ptr
+  errno = 0;
+  assert(!DO_SYSCALL_2(mutex, MUTEX_INIT, NULL));
+  assert(errno == E_INVALID_ARGS);
+
   init_mutex(&buffer_mutex);
 
   const char* word1 = "dog";

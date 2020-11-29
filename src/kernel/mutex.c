@@ -1,8 +1,10 @@
 #include "kernel/mutex.h"
+#include "common/errno.h"
 #include "kernel/thread.h"
 
-static void k_init_mutex(Mutex* m) {
+static bool k_init_mutex(Mutex* m) {
   *m = INVALID_THREAD;
+  return true;
 }
 
 static bool k_unlock_mutex(Mutex* m) {
@@ -23,16 +25,23 @@ static bool k_lock_mutex(Mutex* m) {
 }
 
 bool k_mutex(unsigned op, Mutex* m) {
+  bool (*mutex_fn)(Mutex*) = NULL;
   switch (op) {
     case MUTEX_INIT:
-      k_init_mutex(m);
-      return true;
+      mutex_fn = k_init_mutex;
+      break;
     case MUTEX_LOCK:
-      return k_lock_mutex(m);
+      mutex_fn = k_lock_mutex;
+      break;
     case MUTEX_UNLOCK:
-      return k_unlock_mutex(m);
-    default:
-      // TODO: E_INVALID_ARGS
-      return false;
+      mutex_fn = k_unlock_mutex;
+      break;
   }
+
+  if (!mutex_fn || !m) {
+    current_thread->err_no = E_INVALID_ARGS;
+    return false;
+  }
+
+  return mutex_fn(m);
 }
