@@ -27,7 +27,7 @@ jobs:
         source checkenv/bin/activate
         cd ARMMultiTasking
         export PYTHONPATH=.
-        cog -r include/common/syscall.h src/kernel/syscall.c include/common/errno.h include/common/errno.c
+        cog -r include/common/syscall.h src/kernel/syscall.c include/common/errno.h src/common/errno.c
         # See if anything changed
         git diff > /tmp/cog.diff
         cat /tmp/cog.diff
