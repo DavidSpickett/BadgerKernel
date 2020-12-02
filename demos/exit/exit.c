@@ -1,6 +1,5 @@
 #include "common/assert.h"
 #include "user/thread.h"
-#include <stddef.h>
 
 void work(int num) {
   for (int i = 0; i < num; ++i) {
