@@ -5,16 +5,15 @@
 #include <stdlib.h>
 #include <string.h>
 
-extern "C" void __cxa_pure_virtual()
-{
+extern "C" void __cxa_pure_virtual() {
   // TODO: exit error
-  while (1) {}
+  while (1) {
+  }
 }
 
 class PrintOutput {
 public:
-  explicit PrintOutput(char* out):
-    m_out(out) {}
+  explicit PrintOutput(char* out) : m_out(out) {}
 
   virtual void write(int chr) const = 0;
 
@@ -46,11 +45,9 @@ protected:
   mutable char* m_out;
 };
 
-class SerialPrintOutput: public PrintOutput {
+class SerialPrintOutput : public PrintOutput {
 public:
-  SerialPrintOutput():
-    PrintOutput(reinterpret_cast<char*>(UART_BASE)) {
-  }
+  SerialPrintOutput() : PrintOutput(reinterpret_cast<char*>(UART_BASE)) {}
 
   void write(int chr) const final {
     volatile uint32_t* const UART0 = (uint32_t*)m_out;
@@ -59,7 +56,7 @@ public:
   }
 };
 
-class BufferPrintOutput: public PrintOutput {
+class BufferPrintOutput : public PrintOutput {
 public:
   using PrintOutput::PrintOutput;
 

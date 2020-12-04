@@ -43,7 +43,7 @@ jobs:
         # Check that we ran clang-format
         set -ex
         cd ARMMultiTasking
-        clang-format -i `find -name "*.c"` `find -name "*.h"`
+        clang-format -i `find -name "*.c"` `find -name "*.cpp"` `find -name "*.h"`
         # See if anything changed
         git diff > /tmp/clang-format.diff
         cat /tmp/clang-format.diff
