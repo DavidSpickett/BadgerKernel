@@ -21,9 +21,9 @@ typedef struct {
 } Message;
 
 typedef struct {
+  // Only stack_ptr is read from assembly. So it is first for convenience.
   uint8_t* stack_ptr;
-  // Not an enum directly because we need to know its size
-  size_t state;
+  ThreadState state;
   void (*signal_handler)(uint32_t);
   uint32_t pending_signals;
   int id;

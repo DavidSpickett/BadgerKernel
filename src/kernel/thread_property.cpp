@@ -95,11 +95,7 @@ static bool do_get_thread_property(int tid, size_t property, UserPointer& res) {
       res.set_value<TPROP_CHILD, int>(thread->child);
       break;
     case TPROP_STATE:
-      // This one is a bit weird given that it's
-      // actually a size_t in the struct.
-      // TODO: is that a problem anymore since asm doesn't use it?
-      res.set_value<TPROP_STATE, ThreadState>(
-          static_cast<ThreadState>(thread->state));
+      res.set_value<TPROP_STATE, ThreadState>(thread->state);
       break;
     case TPROP_PERMISSIONS:
       res.set_value<TPROP_PERMISSIONS, uint16_t>(thread->permissions);
