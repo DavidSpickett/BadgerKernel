@@ -8,6 +8,7 @@ void work(int num) {
 }
 
 void counter() {
+  set_thread_name(CURRENT_THREAD, "counter");
   // Start at 1 so we don't join on ourselves
   for (int i = 1; i < 3; ++i) {
     ThreadState state = init;
@@ -24,6 +25,5 @@ void setup(void) {
   ThreadArgs ta2 = make_args(4, 0, 0, 0);
   add_named_thread_with_args(work, NULL, &ta2);
 
-  yield();
   counter();
 }
