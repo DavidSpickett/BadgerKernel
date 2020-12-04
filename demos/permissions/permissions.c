@@ -136,10 +136,24 @@ void cleanup() {
   set_child(tid);                                                              \
   yield();
 
+#define CHECK_TPROP_FAILS(fn, property, ptr)                                   \
+  errno = 0;                                                                   \
+  assert(!fn(CURRENT_THREAD, property, ptr));                                  \
+  assert(errno == E_INVALID_ARGS);
+
 // Use this to run one by one so we aren't limited
 // by MAX_THREADS
 void setup(void) {
   int tid = INVALID_THREAD;
+
+  // Random errno checks we have no better place for
+  // NULL value/dest ptrs rejected
+  CHECK_TPROP_FAILS(get_thread_property, TPROP_REGISTERS, NULL);
+  CHECK_TPROP_FAILS(get_thread_property, TPROP_REGISTERS, NULL);
+  // Invalid properties rejected
+  CHECK_TPROP_FAILS(set_thread_property, -1, (void*)(1));
+  CHECK_TPROP_FAILS(get_thread_property, -1, (void*)(1));
+
   set_thread_name(CURRENT_THREAD, "runner");
 
   RUN_TEST_THREAD("noalloc", cannot_alloc, THREAD_FUNC | TPERM_NO_ALLOC);

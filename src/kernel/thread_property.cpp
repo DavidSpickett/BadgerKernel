@@ -1,5 +1,4 @@
 #include "common/errno.h"
-#include <common/assert.h>
 #include <common/trace.h>
 #include <kernel/thread.h>
 #include <string.h>
@@ -69,7 +68,7 @@ private:
 };
 /* clang-format on */
 
-static bool do_get_thread_property(int tid, size_t property, UserPointer& res) {
+static bool do_get_thread_property(int tid, size_t property, UserPointer res) {
   if (tid == CURRENT_THREAD) {
     tid = k_get_thread_id();
   }
@@ -109,20 +108,23 @@ static bool do_get_thread_property(int tid, size_t property, UserPointer& res) {
       res.set_value<TPROP_ERRNO_PTR, int*>(&current_thread->err_no);
       break;
     default:
-      // TODO: E_INVALID_ARGS for this and res ptr
-      assert(0);
+      current_thread->err_no = E_INVALID_ARGS;
+      return false;
   }
 
   return true;
 }
 
 extern "C" bool k_get_thread_property(int tid, size_t property, void* res) {
-  UserPointer p(res);
-  return do_get_thread_property(tid, property, p);
+  if (!res) {
+    current_thread->err_no = E_INVALID_ARGS;
+    return false;
+  }
+  return do_get_thread_property(tid, property, UserPointer(res));
 }
 
 static bool do_set_thread_property(int tid, size_t property,
-                                   const ConstUserPointer& value) {
+                                   const ConstUserPointer value) {
   if (((tid == CURRENT_THREAD) && k_has_no_permission(TPERM_TCONFIG)) ||
       ((tid != CURRENT_THREAD) && k_has_no_permission(TPERM_TCONFIG_OTHER))) {
     current_thread->err_no = E_PERM;
@@ -174,8 +176,8 @@ static bool do_set_thread_property(int tid, size_t property,
           value.get_value<TPROP_SIGNAL_HANDLER, void (*)(uint32_t)>();
       break;
     default:
-      // TODO: E_INVALID_ARGS for this and value ptr
-      assert(0);
+      current_thread->err_no = E_INVALID_ARGS;
+      return false;
   }
 
   return true;
@@ -183,6 +185,9 @@ static bool do_set_thread_property(int tid, size_t property,
 
 extern "C" bool k_set_thread_property(int tid, size_t property,
                                       const void* value) {
-  ConstUserPointer p(value);
-  return do_set_thread_property(tid, property, value);
+  if (!value) {
+    current_thread->err_no = E_INVALID_ARGS;
+    return false;
+  }
+  return do_set_thread_property(tid, property, ConstUserPointer(value));
 }
