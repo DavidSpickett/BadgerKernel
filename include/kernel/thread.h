@@ -1,6 +1,10 @@
 #ifndef KERNEL_THREAD_H
 #define KERNEL_THREAD_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "common/thread.h"
 #include <stdbool.h>
 #include <stddef.h>
@@ -60,6 +64,7 @@ int k_add_thread(const char* name, const ThreadArgs* args, void* worker,
 
 bool is_valid_thread(int tid);
 int k_get_thread_id(void);
+void k_set_thread_name(Thread* thread, const char* name);
 bool k_get_thread_property(int tid, size_t property, void* res);
 bool k_set_thread_property(int tid, size_t property, const void* res);
 
@@ -85,5 +90,9 @@ void init_register_context(Thread* thread);
 
 // Not thread related but no better place for it
 void k_exit(int status);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ifdef KERNEL_THREAD_H */

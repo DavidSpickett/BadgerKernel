@@ -84,7 +84,7 @@ int k_get_thread_id(void) {
   return current_thread ? current_thread->id : INVALID_THREAD;
 }
 
-static void k_set_thread_name(Thread* thread, const char* name) {
+void k_set_thread_name(Thread* thread, const char* name) {
   if (name) {
     // Will null pad if name is smaller than buffer
     strncpy(thread->name, name, THREAD_NAME_MAX_LEN);
@@ -92,114 +92,6 @@ static void k_set_thread_name(Thread* thread, const char* name) {
   } else {
     thread->name[0] = '\0';
   }
-}
-
-bool k_set_thread_property(int tid, size_t property, const void* value) {
-  if (((tid == CURRENT_THREAD) && k_has_no_permission(TPERM_TCONFIG)) ||
-      ((tid != CURRENT_THREAD) && k_has_no_permission(TPERM_TCONFIG_OTHER))) {
-    current_thread->err_no = E_PERM;
-    return false;
-  }
-
-  if (tid == CURRENT_THREAD) {
-    tid = k_get_thread_id();
-  }
-  if (!is_valid_thread(tid)) {
-    current_thread->err_no = E_INVALID_ID;
-    return false;
-  }
-
-  Thread* thread = &all_threads[tid];
-  switch (property) {
-    case TPROP_CHILD: {
-      // Not sure I like one property call setting two things
-      int child = *(const int*)value;
-      if (is_valid_thread(child)) {
-        thread->child = child;
-        all_threads[child].parent = tid;
-      }
-      break;
-    }
-    case TPROP_NAME:
-      k_set_thread_name(thread, *(const char**)value);
-      break;
-    case TPROP_PERMISSIONS:
-      thread->permissions &= ~(*(uint16_t*)value);
-      break;
-    case TPROP_REGISTERS: {
-      // Note that setting registers on an init thread doesn't
-      // serve much purpose but it won't break anything.
-      RegisterContext* ctx = (RegisterContext*)value;
-      memcpy(thread->stack_ptr, ctx, sizeof(RegisterContext));
-      break;
-    }
-    case TPROP_PENDING_SIGNALS: {
-      uint32_t signal = *(uint32_t*)value;
-      if (signal) {
-        thread->pending_signals |= 1 << (signal - 1);
-      }
-      break;
-    }
-    case TPROP_SIGNAL_HANDLER:
-      thread->signal_handler = *(void (**)(uint32_t))value;
-      break;
-    default:
-      // TODO: E_INVALID_ARGS for this and value ptr
-      assert(0);
-  }
-
-  return true;
-}
-
-bool k_get_thread_property(int tid, size_t property, void* res) {
-  if (tid == CURRENT_THREAD) {
-    tid = k_get_thread_id();
-  }
-  if (!is_valid_thread(tid)) {
-    current_thread->err_no = E_INVALID_ID;
-    return false;
-  }
-
-  Thread* thread = &all_threads[tid];
-  switch (property) {
-    // Cast to correct type is important here so that
-    // we don't overwrite more of the result than expected.
-    case TPROP_ID:
-      *(int*)res = thread->id;
-      break;
-    case TPROP_NAME: {
-      char* dest = (char*)res;
-      if (dest) {
-        strncpy(dest, thread->name, THREAD_NAME_MAX_LEN);
-        dest[strlen(thread->name)] = '\0';
-      }
-      break;
-    }
-    case TPROP_CHILD:
-      *(int*)res = thread->child;
-      break;
-    case TPROP_STATE:
-      // This one is a bit weird given that it's
-      // actually a size_t in the struct.
-      *(ThreadState*)res = thread->state;
-      break;
-    case TPROP_PERMISSIONS:
-      *(uint16_t*)res = thread->permissions;
-      break;
-    case TPROP_REGISTERS: {
-      RegisterContext* ctx = (RegisterContext*)res;
-      *ctx = *(RegisterContext*)thread->stack_ptr;
-      break;
-    }
-    case TPROP_ERRNO_PTR:
-      *(int**)res = &current_thread->err_no;
-      break;
-    default:
-      // TODO: E_INVALID_ARGS for this and res ptr
-      assert(0);
-  }
-
-  return true;
 }
 
 void init_thread(Thread* thread, int tid, const char* name,

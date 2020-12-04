@@ -98,6 +98,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 set( KERNEL_SOURCES
   src/kernel/thread.c
+  src/kernel/thread_property.cpp
   src/kernel/mutex.c
   src/kernel/condition_variable.c
   src/kernel/signal_handling.c

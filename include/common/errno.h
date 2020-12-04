@@ -1,6 +1,10 @@
 #ifndef COMMON_ERRNO_H
 #define COMMON_ERRNO_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* [[[cog
 import cog
 from scripts.errnos import errnos
@@ -16,5 +20,9 @@ for name, num, desc in errnos:
 /* [[[end]]] */
 
 char* strerror(int errnum);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ifdef COMMON_ERRNO_H */
