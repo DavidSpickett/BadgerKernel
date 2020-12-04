@@ -1,27 +1,27 @@
-Thread            0: yielding
+Thread      counter: yielding
 Thread            1: yielding
 Thread            2: yielding
-Thread            0: resuming
-Thread            0: yielding
+Thread      counter: resuming
+Thread      counter: yielding
 Thread            1: resuming
 Thread            1: yielding
 Thread            2: resuming
 Thread            2: yielding
-Thread            0: resuming
-Thread            0: yielding
+Thread      counter: resuming
+Thread      counter: yielding
 Thread            1: resuming
 Thread            1: exiting
 Thread            2: resuming
 Thread            2: yielding
-Thread            0: resuming
-Thread            0: thread 1 exited
-Thread            0: yielding
+Thread      counter: resuming
+Thread      counter: thread 1 exited
+Thread      counter: yielding
 Thread            2: resuming
 Thread            2: yielding
-Thread            0: resuming
-Thread            0: yielding
+Thread      counter: resuming
+Thread      counter: yielding
 Thread            2: resuming
 Thread            2: exiting
-Thread            0: resuming
-Thread            0: thread 2 exited
-Thread            0: exiting
+Thread      counter: resuming
+Thread      counter: thread 2 exited
+Thread      counter: exiting
