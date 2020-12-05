@@ -11,6 +11,22 @@ Current targets are:
 
 For implementation details see the [design doc](docs/design.md).
 
+## Features
+
+* Cooperative multitasking
+* Timer based thread switching
+* Loading ELF programs, including position independent code
+* Message passing
+* Mutexes and condition variables
+* Thread local storage
+* Memory allocation
+* File handling (via semihosting)
+* Signal handling
+* Permissions and errno for error handling
+* Access to thread registers for tracing
+* User space threads (fibres)
+* Stack under/overflow detection
+
 ## Building
 
 Install cmake, make and an arm-none-eabi or aarch64-none-elf toolchain. Arm developer releases are the best way to get these.
@@ -53,33 +69,7 @@ Each demo has `run_<demo>`, `debug_<demo>` and `test_<demo>` make targets.
 
 To test all the demos use `lit` (https://pypi.org/project/lit/) or just run `make`.
 
-Below is a list of the current demos.
-
-| Name                              | Description                                                                        |
-|-----------------------------------|------------------------------------------------------------------------------------|
-| yielding                          | Threads yielding back to the scheduler.                                            |
-| exyielding                        | Threads yielding directly to another thread or the next available thread.          |
-| message                           | Passing messages between threads.                                                  |
-| exit                              | Threads exiting normally like any other C function.                                |
-| spawn                             | One thread creating other threads.                                                 |
-| stackcheck                        | Detection of thread stack underflow or overflow when they try to yield.            |
-| args                              | Passing arguments to a thread.                                                     |
-| mutexes                           | Locking a buffer using a mutex.                                                    |
-| timer                             | Thread switching using a timer interrupt.                                          |
-| threadlocalstorage (Arm/Thumb)    | Using thread local storage (TLS) to give each thread it's own 'global' variables.  |
-| conditionvariables                | Waiting on, signalling and broadcasting to condition variables.                    |
-| cancel                            | Cancelling threads.                                                                |
-| file                              | Read from a file.                                                                  |
-| alloc                             | Use of malloc/free.                                                                |
-| loadbinary                        | Loading a thread from a separate binary.                                           |
-| loadbinaries                      | Loading multiple binaries, swapping them as they become active.                    |
-| loadpiebinary                     | Loading a position independent binary.                                             |
-| parentchild                       | Setting child threads to set the order they run in, relative to a parent thread.   |
-| permissions                       | Setting syscall access permissions per thread. (includes errno usage)              |
-| trace                             | Redirecting another thread by writing to its PC.                                   |
-| signalhandling                    | Installing and invoking signal handlers.                                           |
-| backtrace                         | Show callstack of user threads. (only tested on Arm -O0)                           |
-| fibres                            | User space threading.                                                              |
+For a full list see the [demos.md](docs/demos.md).
 
 ## Shell
 
