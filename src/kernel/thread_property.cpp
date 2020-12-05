@@ -11,8 +11,25 @@
 // We use enable_if to check at compile time that each property
 // is handled in the expected way.
 
+/* [[[cog
+import cog
+from scripts.thread_properties import properties
+for number, name, define, type in properties:
+  cog.outl("struct Prop{} {{".format(name))
+  cog.outl("  constexpr static int value = TPROP_{};".format(define))
+  cog.outl("  typedef {};".format(type))
+  cog.outl("};")
+]]]*/
 struct PropID {
   constexpr static int value = TPROP_ID;
+  typedef int type;
+};
+struct PropName {
+  constexpr static int value = TPROP_NAME;
+  typedef char type;
+};
+struct PropChild {
+  constexpr static int value = TPROP_CHILD;
   typedef int type;
 };
 struct PropState {
@@ -23,21 +40,13 @@ struct PropPermissions {
   constexpr static int value = TPROP_PERMISSIONS;
   typedef uint16_t type;
 };
-struct PropErrnoPtr {
-  constexpr static int value = TPROP_ERRNO_PTR;
-  typedef int* type;
-};
-struct PropChild {
-  constexpr static int value = TPROP_CHILD;
-  typedef int type;
-};
-struct PropName {
-  constexpr static int value = TPROP_NAME;
-  typedef char type;
-};
 struct PropRegisters {
   constexpr static int value = TPROP_REGISTERS;
   typedef RegisterContext type;
+};
+struct PropErrnoPtr {
+  constexpr static int value = TPROP_ERRNO_PTR;
+  typedef int* type;
 };
 struct PropPendingSignals {
   constexpr static int value = TPROP_PENDING_SIGNALS;
@@ -47,6 +56,7 @@ struct PropSignalHandler {
   constexpr static int value = TPROP_SIGNAL_HANDLER;
   typedef void (*type)(uint32_t);
 };
+/* [[[end]]] */
 
 /* clang-format off */
 class UserPointer {

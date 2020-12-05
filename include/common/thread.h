@@ -22,6 +22,13 @@
 #define KCFG_COLOUR_OUTPUT        1 << 3
 #define KCFG_LOG_FAILED_ERRNO     1 << 4 // Log failed syscalls
 
+/* [[[cog
+import cog
+from scripts.thread_properties import properties
+name_len = max([len(d) for _,_,d,_ in properties])
+for number, name, define, type in properties:
+  cog.outl("#define TPROP_{} {}".format(define.ljust(name_len), number))
+]]] */
 #define TPROP_ID              0
 #define TPROP_NAME            1
 #define TPROP_CHILD           2
@@ -31,6 +38,7 @@
 #define TPROP_ERRNO_PTR       6
 #define TPROP_PENDING_SIGNALS 7
 #define TPROP_SIGNAL_HANDLER  8
+/* [[[end]]] */
 
 #define TFLAG_KIND_MASK 0xFFFF
 #define THREAD_FUNC     0
