@@ -11,29 +11,82 @@
 // We use enable_if to check at compile time that each property
 // is handled in the expected way.
 
+struct PropID {
+  constexpr static int value = TPROP_ID;
+  typedef int type;
+};
+struct PropState {
+  constexpr static int value = TPROP_STATE;
+  typedef ThreadState type;
+};
+struct PropPermissions {
+  constexpr static int value = TPROP_PERMISSIONS;
+  typedef uint16_t type;
+};
+struct PropErrnoPtr {
+  constexpr static int value = TPROP_ERRNO_PTR;
+  typedef int* type;
+};
+struct PropChild {
+  constexpr static int value = TPROP_CHILD;
+  typedef int type;
+};
+struct PropName {
+  constexpr static int value = TPROP_NAME;
+  typedef char type;
+};
+struct PropRegisters {
+  constexpr static int value = TPROP_REGISTERS;
+  typedef RegisterContext type;
+};
+struct PropPendingSignals {
+  constexpr static int value = TPROP_PENDING_SIGNALS;
+  typedef uint32_t type;
+};
+struct PropSignalHandler {
+  constexpr static int value = TPROP_SIGNAL_HANDLER;
+  typedef void (*type)(uint32_t);
+};
+
 /* clang-format off */
 class UserPointer {
 public:
   UserPointer(void* ptr) : m_ptr(ptr) {}
 
-  template <
-      unsigned Property, typename T,
+  // Write a value back to userspace
+  template <typename P,
       typename = typename std::enable_if<
-          (Property == TPROP_ID          && std::is_same<T, int>::value)         ||
-          (Property == TPROP_STATE       && std::is_same<T, ThreadState>::value) ||
-          (Property == TPROP_PERMISSIONS && std::is_same<T, uint16_t>::value)    ||
-          (Property == TPROP_ERRNO_PTR   && std::is_same<T, int*>::value)        ||
-          (Property == TPROP_CHILD       && std::is_same<T, int>::value)>::type>
-  void set_value(T value) {
-    *static_cast<T*>(m_ptr) = value;
+          (std::is_same<P, PropID>::value)          ||
+          (std::is_same<P, PropState>::value)       ||
+          (std::is_same<P, PropPermissions>::value) ||
+          (std::is_same<P, PropErrnoPtr>::value)    ||
+          (std::is_same<P, PropChild>::value)
+      >::type>
+  void set_value(typename P::type value) {
+    *static_cast<typename P::type*>(m_ptr) = value;
   }
 
-  template <unsigned Property, typename T,
+  // Error when the parameter type is != the property type
+  // Even if the compiler could implicitly cast to it.
+  // E.g. p.set_value<PropChild>((uin16_t)1); is an error
+  template <typename P, typename T,
+      typename = typename std::enable_if<
+          (std::is_same<P, PropID>::value          && !std::is_same<T, typename P::type>::value) ||
+          (std::is_same<P, PropState>::value       && !std::is_same<T, typename P::type>::value) ||
+          (std::is_same<P, PropPermissions>::value && !std::is_same<T, typename P::type>::value) ||
+          (std::is_same<P, PropErrnoPtr>::value    && !std::is_same<T, typename P::type>::value) ||
+          (std::is_same<P, PropChild>::value       && !std::is_same<T, typename P::type>::value)
+      >::type>
+  void set_value(T value) = delete;
+
+  // Get the user pointer as a pointer to a specific type that you can write to
+  template <typename P,
             typename = typename std::enable_if<
-                (Property == TPROP_NAME      && std::is_same<T, char>::value) ||
-                (Property == TPROP_REGISTERS && std::is_same<T, RegisterContext>::value)>::type>
-  T* get_ptr() const {
-    return static_cast<T*>(m_ptr);
+                (std::is_same<P, PropName>::value) ||
+                (std::is_same<P, PropRegisters>::value)
+            >::type>
+  typename P::type* get_ptr() const {
+    return static_cast<typename P::type*>(m_ptr);
   }
 
 private:
@@ -44,23 +97,26 @@ class ConstUserPointer {
 public:
   ConstUserPointer(const void* ptr) : m_ptr(ptr) {}
 
-  template <
-      unsigned Property, typename T,
+  // Read value out of user pointer
+  template <typename P,
       typename = typename std::enable_if<
-          (Property == TPROP_NAME            && std::is_same<T, const char*>::value)        ||
-          (Property == TPROP_CHILD           && std::is_same<T, int>::value)                ||
-          (Property == TPROP_PENDING_SIGNALS && std::is_same<T, uint32_t>::value)           ||
-          (Property == TPROP_SIGNAL_HANDLER  && std::is_same<T, void (*)(uint32_t)>::value) ||
-          (Property == TPROP_PERMISSIONS     && std::is_same<T, uint16_t>::value)>::type>
-  T get_value() const {
-    return *static_cast<const T*>(m_ptr);
+          (std::is_same<P, PropChild>::value)          ||
+          (std::is_same<P, PropPendingSignals>::value) ||
+          (std::is_same<P, PropSignalHandler>::value)  ||
+          (std::is_same<P, PropPermissions>::value)
+      >::type>
+  typename P::type get_value() const {
+    return *static_cast<const typename P::type*>(m_ptr);
   }
 
-  template <unsigned Property, typename T,
+  // Get the user pointer as a const pointer you can read from
+  template <typename P,
             typename = typename std::enable_if<
-                Property == TPROP_REGISTERS && std::is_same<T, RegisterContext>::value>::type>
-  const T* get_ptr() const {
-    return static_cast<const T*>(m_ptr);
+                (std::is_same<P, PropName>::value) ||
+                (std::is_same<P, PropRegisters>::value)
+            >::type>
+  const typename P::type* get_ptr() const {
+    return static_cast<const typename P::type*>(m_ptr);
   }
 
 private:
@@ -79,33 +135,33 @@ static bool do_get_thread_property(int tid, size_t property, UserPointer res) {
 
   Thread* thread = &all_threads[tid];
   switch (property) {
-    case TPROP_ID:
-      res.set_value<TPROP_ID, int>(thread->id);
+    case PropID::value:
+      res.set_value<PropID>(thread->id);
       break;
-    case TPROP_NAME: {
-      char* dest = res.get_ptr<TPROP_NAME, char>();
+    case PropName::value: {
+      char* dest = res.get_ptr<PropName>();
       if (dest) {
         strncpy(dest, thread->name, THREAD_NAME_MAX_LEN);
         dest[strlen(thread->name)] = '\0';
       }
       break;
     }
-    case TPROP_CHILD:
-      res.set_value<TPROP_CHILD, int>(thread->child);
+    case PropChild::value:
+      res.set_value<PropChild>(thread->child);
       break;
-    case TPROP_STATE:
-      res.set_value<TPROP_STATE, ThreadState>(thread->state);
+    case PropState::value:
+      res.set_value<PropState>(thread->state);
       break;
-    case TPROP_PERMISSIONS:
-      res.set_value<TPROP_PERMISSIONS, uint16_t>(thread->permissions);
+    case PropPermissions::value:
+      res.set_value<PropPermissions>(thread->permissions);
       break;
-    case TPROP_REGISTERS: {
-      RegisterContext* ctx = res.get_ptr<TPROP_REGISTERS, RegisterContext>();
+    case PropRegisters::value: {
+      RegisterContext* ctx = res.get_ptr<PropRegisters>();
       *ctx = *(RegisterContext*)thread->stack_ptr;
       break;
     }
-    case TPROP_ERRNO_PTR:
-      res.set_value<TPROP_ERRNO_PTR, int*>(&current_thread->err_no);
+    case PropErrnoPtr::value:
+      res.set_value<PropErrnoPtr>(&current_thread->err_no);
       break;
     default:
       current_thread->err_no = E_INVALID_ARGS;
@@ -141,39 +197,37 @@ static bool do_set_thread_property(int tid, size_t property,
 
   Thread* thread = &all_threads[tid];
   switch (property) {
-    case TPROP_CHILD: {
+    case PropChild::value: {
       // Not sure I like one property call setting two things
-      int child = value.get_value<TPROP_CHILD, int>();
+      int child = value.get_value<PropChild>();
       if (is_valid_thread(child)) {
         thread->child = child;
         all_threads[child].parent = tid;
       }
       break;
     }
-    case TPROP_NAME:
-      k_set_thread_name(thread, value.get_value<TPROP_NAME, const char*>());
+    case PropName::value:
+      k_set_thread_name(thread, value.get_ptr<PropName>());
       break;
-    case TPROP_PERMISSIONS:
-      thread->permissions &= ~(value.get_value<TPROP_PERMISSIONS, uint16_t>());
+    case PropPermissions::value:
+      thread->permissions &= ~(value.get_value<PropPermissions>());
       break;
-    case TPROP_REGISTERS: {
+    case PropRegisters::value: {
       // Note that setting registers on an init thread doesn't
       // serve much purpose but it won't break anything.
-      const RegisterContext* ctx =
-          value.get_ptr<TPROP_REGISTERS, RegisterContext>();
+      const RegisterContext* ctx = value.get_ptr<PropRegisters>();
       memcpy(thread->stack_ptr, ctx, sizeof(RegisterContext));
       break;
     }
-    case TPROP_PENDING_SIGNALS: {
-      uint32_t signal = value.get_value<TPROP_PENDING_SIGNALS, uint32_t>();
+    case PropPendingSignals::value: {
+      uint32_t signal = value.get_value<PropPendingSignals>();
       if (signal) {
         thread->pending_signals |= 1 << (signal - 1);
       }
       break;
     }
-    case TPROP_SIGNAL_HANDLER:
-      thread->signal_handler =
-          value.get_value<TPROP_SIGNAL_HANDLER, void (*)(uint32_t)>();
+    case PropSignalHandler::value:
+      thread->signal_handler = value.get_value<PropSignalHandler>();
       break;
     default:
       current_thread->err_no = E_INVALID_ARGS;

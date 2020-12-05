@@ -69,7 +69,7 @@ bool thread_name(int tid, char* name) {
 }
 
 bool set_thread_name(int tid, const char* name) {
-  return DO_SYSCALL_3(set_thread_property, tid, TPROP_NAME, &name);
+  return DO_SYSCALL_3(set_thread_property, tid, TPROP_NAME, name);
 }
 
 void set_kernel_config(uint32_t enable, uint32_t disable) {
