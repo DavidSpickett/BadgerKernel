@@ -11,7 +11,7 @@ static void inc_msg_pointer(Thread* thr, Message** ptr) {
 
 bool k_get_msg(int* sender, int* message) {
   if (!sender || !message) {
-    current_thread->err_no = E_INVALID_ARGS;
+    user_thread_info.err_no = E_INVALID_ARGS;
     return false;
   }
 

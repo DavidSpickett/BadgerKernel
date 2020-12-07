@@ -53,7 +53,7 @@ bool k_condition_variable(unsigned op, ConditionVariable* cv) {
   }
 
   if (!cv_func || !cv) {
-    current_thread->err_no = E_INVALID_ARGS;
+    user_thread_info.err_no = E_INVALID_ARGS;
     return false;
   }
 

@@ -1,5 +1,6 @@
 #include "user/thread.h"
 #include "common/print.h"
+#include "user/errno.h"
 #include "user/syscall.h"
 #include <stdarg.h>
 #include <string.h>
@@ -58,14 +59,20 @@ int add_named_thread_with_args(void (*worker)(), const char* name,
 }
 
 int get_thread_id(void) {
-  int ret = 0;
-  get_thread_property(CURRENT_THREAD, TPROP_ID, &ret);
-  return ret;
+  return user_thread_info.id;
 }
 
 bool thread_name(int tid, char* name) {
-  bool got = get_thread_property(tid, TPROP_NAME, name);
-  return got;
+  if (tid == CURRENT_THREAD) {
+    if (!name) {
+      errno = E_INVALID_ARGS;
+      return false;
+    }
+
+    memcpy(name, user_thread_info.name, THREAD_NAME_SIZE);
+    return true;
+  }
+  return get_thread_property(tid, TPROP_NAME, name);
 }
 
 bool set_thread_name(int tid, const char* name) {
@@ -77,7 +84,7 @@ void set_kernel_config(uint32_t enable, uint32_t disable) {
 }
 
 uint32_t get_kernel_config(void) {
-  return DO_SYSCALL_0(get_kernel_config);
+  return user_thread_info.kernel_config;
 }
 
 bool set_child(int child) {

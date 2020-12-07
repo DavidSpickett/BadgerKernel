@@ -19,7 +19,7 @@ After the creation, the new thread waits until it is yielded to.
 
 In AMT, we store the name of a thread in a `Thread` structure.
 
-When we call this function, it uses the `get_thread_property` syscall to copy the name from the kernel, then stores it into the location pointed to by `name`.
+When we call this function for the current thread it will copy the name from `user_thread_info` into the location pointed to by `name`. If we're asking about another thread then it will use the `get_thread_property` syscall with `TPROP_NAME` to have the kernel copy it into `name`.
 
 ## Walkthrough
 

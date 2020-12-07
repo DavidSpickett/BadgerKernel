@@ -20,10 +20,6 @@ for number, name, define, type in properties:
   cog.outl("  typedef {};".format(type))
   cog.outl("};")
 ]]]*/
-struct PropID {
-  constexpr static int value = TPROP_ID;
-  typedef int type;
-};
 struct PropName {
   constexpr static int value = TPROP_NAME;
   typedef char type;
@@ -44,10 +40,6 @@ struct PropRegisters {
   constexpr static int value = TPROP_REGISTERS;
   typedef RegisterContext type;
 };
-struct PropErrnoPtr {
-  constexpr static int value = TPROP_ERRNO_PTR;
-  typedef int* type;
-};
 struct PropPendingSignals {
   constexpr static int value = TPROP_PENDING_SIGNALS;
   typedef uint32_t type;
@@ -66,10 +58,8 @@ public:
   // Write a value back to userspace
   template <typename P,
       typename = typename std::enable_if<
-          (std::is_same<P, PropID>::value)          ||
           (std::is_same<P, PropState>::value)       ||
           (std::is_same<P, PropPermissions>::value) ||
-          (std::is_same<P, PropErrnoPtr>::value)    ||
           (std::is_same<P, PropChild>::value)
       >::type>
   void set_value(typename P::type value) {
@@ -81,10 +71,8 @@ public:
   // E.g. p.set_value<PropChild>((uin16_t)1); is an error
   template <typename P, typename T,
       typename = typename std::enable_if<
-          (std::is_same<P, PropID>::value          && !std::is_same<T, typename P::type>::value) ||
           (std::is_same<P, PropState>::value       && !std::is_same<T, typename P::type>::value) ||
           (std::is_same<P, PropPermissions>::value && !std::is_same<T, typename P::type>::value) ||
-          (std::is_same<P, PropErrnoPtr>::value    && !std::is_same<T, typename P::type>::value) ||
           (std::is_same<P, PropChild>::value       && !std::is_same<T, typename P::type>::value)
       >::type>
   void set_value(T value) = delete;
@@ -139,15 +127,12 @@ static bool do_get_thread_property(int tid, size_t property, UserPointer res) {
     tid = k_get_thread_id();
   }
   if (!is_valid_thread(tid)) {
-    current_thread->err_no = E_INVALID_ID;
+    user_thread_info.err_no = E_INVALID_ID;
     return false;
   }
 
   Thread* thread = &all_threads[tid];
   switch (property) {
-    case PropID::value:
-      res.set_value<PropID>(thread->id);
-      break;
     case PropName::value: {
       char* dest = res.get_ptr<PropName>();
       if (dest) {
@@ -170,11 +155,8 @@ static bool do_get_thread_property(int tid, size_t property, UserPointer res) {
       *ctx = *(RegisterContext*)thread->stack_ptr;
       break;
     }
-    case PropErrnoPtr::value:
-      res.set_value<PropErrnoPtr>(&current_thread->err_no);
-      break;
     default:
-      current_thread->err_no = E_INVALID_ARGS;
+      user_thread_info.err_no = E_INVALID_ARGS;
       return false;
   }
 
@@ -183,7 +165,7 @@ static bool do_get_thread_property(int tid, size_t property, UserPointer res) {
 
 extern "C" bool k_get_thread_property(int tid, size_t property, void* res) {
   if (!res) {
-    current_thread->err_no = E_INVALID_ARGS;
+    user_thread_info.err_no = E_INVALID_ARGS;
     return false;
   }
   return do_get_thread_property(tid, property, UserPointer(res));
@@ -193,7 +175,7 @@ static bool do_set_thread_property(int tid, size_t property,
                                    const ConstUserPointer value) {
   if (((tid == CURRENT_THREAD) && k_has_no_permission(TPERM_TCONFIG)) ||
       ((tid != CURRENT_THREAD) && k_has_no_permission(TPERM_TCONFIG_OTHER))) {
-    current_thread->err_no = E_PERM;
+    user_thread_info.err_no = E_PERM;
     return false;
   }
 
@@ -201,7 +183,7 @@ static bool do_set_thread_property(int tid, size_t property,
     tid = k_get_thread_id();
   }
   if (!is_valid_thread(tid)) {
-    current_thread->err_no = E_INVALID_ID;
+    user_thread_info.err_no = E_INVALID_ID;
     return false;
   }
 
@@ -240,7 +222,7 @@ static bool do_set_thread_property(int tid, size_t property,
       thread->signal_handler = value.get_value<PropSignalHandler>();
       break;
     default:
-      current_thread->err_no = E_INVALID_ARGS;
+      user_thread_info.err_no = E_INVALID_ARGS;
       return false;
   }
 
@@ -250,7 +232,7 @@ static bool do_set_thread_property(int tid, size_t property,
 extern "C" bool k_set_thread_property(int tid, size_t property,
                                       const void* value) {
   if (!value) {
-    current_thread->err_no = E_INVALID_ARGS;
+    user_thread_info.err_no = E_INVALID_ARGS;
     return false;
   }
   return do_set_thread_property(tid, property, ConstUserPointer(value));

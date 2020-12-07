@@ -39,7 +39,7 @@ bool k_mutex(unsigned op, Mutex* m) {
   }
 
   if (!mutex_fn || !m) {
-    current_thread->err_no = E_INVALID_ARGS;
+    user_thread_info.err_no = E_INVALID_ARGS;
     return false;
   }
 

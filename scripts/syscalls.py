@@ -1,29 +1,32 @@
 syscalls = (
-    # Name and whether the call has a return value
-    ("add_thread",          True),
-    ("get_thread_property", True),
-    ("set_thread_property", True),
-    ("get_kernel_config",   True),
-    ("set_kernel_config",   False),
-    ("yield",               False),
-    ("get_msg",             True),
-    ("send_msg",            True),
-    ("thread_wait",         False),
-    ("thread_wake",         True),
-    ("thread_cancel",       True),
-    ("mutex",               True),
+    # Name
+    # Whether the call has a return value
+    # Whether the call invalidates the user side thread info
+    ("add_thread",          True,  False),
+    ("get_thread_property", True,  False),
+    # TODO: only certain properties invalid user thread info
+    ("set_thread_property", True,  True),
+    # User gets kernel_config from user_thread_info
+    ("set_kernel_config",   False, True),
+    ("yield",               False, False),
+    ("get_msg",             True,  False),
+    ("send_msg",            True,  False),
+    ("thread_wait",         False, False),
+    ("thread_wake",         True,  False),
+    ("thread_cancel",       True,  False),
+    ("mutex",               True,  False),
     # One of the ops does return void but we return
     # true from kernel for that anyway
-    ("condition_variable",  True),
-    ("open",                True),
-    ("read",                True),
-    ("write",               True),
-    ("lseek",               True),
-    ("remove",              True),
-    ("close",               True),
-    ("exit",                False),
-    ("malloc",              True),
-    ("realloc",             True),
-    ("free",                False),
-    ("list_dir",            True),
+    ("condition_variable",  True,  False),
+    ("open",                True,  False),
+    ("read",                True,  False),
+    ("write",               True,  False),
+    ("lseek",               True,  False),
+    ("remove",              True,  False),
+    ("close",               True,  False),
+    ("exit",                False, False),
+    ("malloc",              True,  False),
+    ("realloc",             True,  False),
+    ("free",                False, False),
+    ("list_dir",            True,  False),
 )

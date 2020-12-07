@@ -15,7 +15,7 @@ static const char* syscall_name(size_t num) {
   import cog
   from scripts.syscalls import syscalls
   cog.outl("switch (num) {")
-  for syscall, has_result in syscalls:
+  for syscall, _, _ in syscalls:
     cog.outl("  case syscall_{}:".format(syscall))
     cog.outl("    return \"{}\";".format(syscall))
   ]]] */
@@ -26,8 +26,6 @@ static const char* syscall_name(size_t num) {
       return "get_thread_property";
     case syscall_set_thread_property:
       return "set_thread_property";
-    case syscall_get_kernel_config:
-      return "get_kernel_config";
     case syscall_set_kernel_config:
       return "set_kernel_config";
     case syscall_yield:
@@ -88,114 +86,136 @@ void k_handle_syscall(void) {
 
   SyscallFn syscall_fn = NULL;
   bool has_result = true;
+  bool update_user_thread_info = false;
   size_t result = 0;
 
   /* [[[cog
   import cog
   from scripts.syscalls import syscalls
   cog.outl("switch (ctx->syscall_num) {")
-  for syscall, has_result in syscalls:
+  for syscall, has_result, update_user_thread_info in syscalls:
     cog.outl("  case syscall_{}:".format(syscall))
     cog.outl("    syscall_fn = (SyscallFn)k_{};".format(syscall))
     cog.outl("    has_result = {};".format("true" if has_result else "false"))
+    cog.outl("    update_user_thread_info = {};".format(
+      "true" if update_user_thread_info else "false"))
     cog.outl("    break;")
   ]]] */
   switch (ctx->syscall_num) {
     case syscall_add_thread:
       syscall_fn = (SyscallFn)k_add_thread;
       has_result = true;
+      update_user_thread_info = false;
       break;
     case syscall_get_thread_property:
       syscall_fn = (SyscallFn)k_get_thread_property;
       has_result = true;
+      update_user_thread_info = false;
       break;
     case syscall_set_thread_property:
       syscall_fn = (SyscallFn)k_set_thread_property;
       has_result = true;
-      break;
-    case syscall_get_kernel_config:
-      syscall_fn = (SyscallFn)k_get_kernel_config;
-      has_result = true;
+      update_user_thread_info = true;
       break;
     case syscall_set_kernel_config:
       syscall_fn = (SyscallFn)k_set_kernel_config;
       has_result = false;
+      update_user_thread_info = true;
       break;
     case syscall_yield:
       syscall_fn = (SyscallFn)k_yield;
       has_result = false;
+      update_user_thread_info = false;
       break;
     case syscall_get_msg:
       syscall_fn = (SyscallFn)k_get_msg;
       has_result = true;
+      update_user_thread_info = false;
       break;
     case syscall_send_msg:
       syscall_fn = (SyscallFn)k_send_msg;
       has_result = true;
+      update_user_thread_info = false;
       break;
     case syscall_thread_wait:
       syscall_fn = (SyscallFn)k_thread_wait;
       has_result = false;
+      update_user_thread_info = false;
       break;
     case syscall_thread_wake:
       syscall_fn = (SyscallFn)k_thread_wake;
       has_result = true;
+      update_user_thread_info = false;
       break;
     case syscall_thread_cancel:
       syscall_fn = (SyscallFn)k_thread_cancel;
       has_result = true;
+      update_user_thread_info = false;
       break;
     case syscall_mutex:
       syscall_fn = (SyscallFn)k_mutex;
       has_result = true;
+      update_user_thread_info = false;
       break;
     case syscall_condition_variable:
       syscall_fn = (SyscallFn)k_condition_variable;
       has_result = true;
+      update_user_thread_info = false;
       break;
     case syscall_open:
       syscall_fn = (SyscallFn)k_open;
       has_result = true;
+      update_user_thread_info = false;
       break;
     case syscall_read:
       syscall_fn = (SyscallFn)k_read;
       has_result = true;
+      update_user_thread_info = false;
       break;
     case syscall_write:
       syscall_fn = (SyscallFn)k_write;
       has_result = true;
+      update_user_thread_info = false;
       break;
     case syscall_lseek:
       syscall_fn = (SyscallFn)k_lseek;
       has_result = true;
+      update_user_thread_info = false;
       break;
     case syscall_remove:
       syscall_fn = (SyscallFn)k_remove;
       has_result = true;
+      update_user_thread_info = false;
       break;
     case syscall_close:
       syscall_fn = (SyscallFn)k_close;
       has_result = true;
+      update_user_thread_info = false;
       break;
     case syscall_exit:
       syscall_fn = (SyscallFn)k_exit;
       has_result = false;
+      update_user_thread_info = false;
       break;
     case syscall_malloc:
       syscall_fn = (SyscallFn)k_malloc;
       has_result = true;
+      update_user_thread_info = false;
       break;
     case syscall_realloc:
       syscall_fn = (SyscallFn)k_realloc;
       has_result = true;
+      update_user_thread_info = false;
       break;
     case syscall_free:
       syscall_fn = (SyscallFn)k_free;
       has_result = false;
+      update_user_thread_info = false;
       break;
     case syscall_list_dir:
       syscall_fn = (SyscallFn)k_list_dir;
       has_result = true;
+      update_user_thread_info = false;
       break;
     /* [[[end]]] */
     case syscall_eol:
@@ -205,12 +225,12 @@ void k_handle_syscall(void) {
       break;
   }
 
-  bool log_errno = k_get_kernel_config() & KCFG_LOG_FAILED_ERRNO;
+  bool log_errno = kernel_config & KCFG_LOG_FAILED_ERRNO;
   int old_err_no;
   if (log_errno) {
     // Callers aren't required to set errno to 0 so save current
-    old_err_no = current_thread->err_no;
-    current_thread->err_no = 0;
+    old_err_no = user_thread_info.err_no;
+    user_thread_info.err_no = 0;
   }
 
   result = syscall_fn(ctx->arg0, ctx->arg1, ctx->arg2, ctx->arg3);
@@ -222,15 +242,15 @@ void k_handle_syscall(void) {
   ctx->arg0 = result;
 
   if (log_errno) {
-    if (current_thread->err_no != 0) {
+    if (user_thread_info.err_no != 0) {
       k_log_event("Syscall %s failed with errno %u (%s)!",
-                  syscall_name(ctx->syscall_num), current_thread->err_no,
-                  strerror(current_thread->err_no));
+                  syscall_name(ctx->syscall_num), user_thread_info.err_no,
+                  strerror(user_thread_info.err_no));
     } else {
       // The call didn't fail so restore the old errno
       // (even if that errno was a failure value, it's
       // not related to the current syscall)
-      current_thread->err_no = old_err_no;
+      user_thread_info.err_no = old_err_no;
     }
   }
 
@@ -238,5 +258,8 @@ void k_handle_syscall(void) {
   // Otherwise return to the calling thread
   if (!next_thread) {
     next_thread = current_thread;
+    if (update_user_thread_info) {
+      k_update_user_thread_info(next_thread);
+    }
   }
 }

@@ -5,6 +5,8 @@
 extern "C" {
 #endif
 
+#define KERNEL
+
 #include "common/thread.h"
 #include <stdbool.h>
 #include <stddef.h>
@@ -78,8 +80,8 @@ void k_log_event(const char* event, ...);
 bool k_get_msg(int* sender, int* message);
 bool k_send_msg(int destination, int message);
 
+extern uint32_t kernel_config;
 void k_set_kernel_config(uint32_t enable, uint32_t disable);
-uint32_t k_get_kernel_config(void);
 
 bool k_yield(int tid, int kind);
 
@@ -88,6 +90,8 @@ bool k_has_no_permission(uint16_t permission);
 void check_signals(Thread* thread);
 void thread_start(void);
 void init_register_context(Thread* thread);
+
+void k_update_user_thread_info(Thread* thread);
 
 // Not thread related but no better place for it
 void k_exit(int status);

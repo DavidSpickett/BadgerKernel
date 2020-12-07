@@ -18,6 +18,8 @@ __attribute__((section(".thread_vars_bss"))) Thread* current_thread;
 
 __attribute__((section(".thread_structs"))) Thread all_threads[MAX_THREADS];
 __attribute__((section(".thread_vars_bss"))) Thread* next_thread;
+// User space collection of thread properties for easier access
+__attribute__((section(".thread_vars_bss"))) UserThreadInfo user_thread_info;
 
 __attribute__((section(".thread_vars"))) uint32_t kernel_config =
     KCFG_LOG_THREADS;
@@ -60,10 +62,6 @@ void k_set_kernel_config(uint32_t enable, uint32_t disable) {
 
   kernel_config |= enable;
   kernel_config &= ~disable;
-}
-
-uint32_t k_get_kernel_config(void) {
-  return kernel_config;
 }
 
 bool is_valid_thread(int tid) {
@@ -285,6 +283,19 @@ static Thread* choose_next_thread(void) {
   return NULL;
 }
 
+void k_update_user_thread_info(Thread* thread) {
+  if (current_thread) {
+    // Save errno back to thread struct in case
+    // we're switching threads.
+    current_thread->err_no = user_thread_info.err_no;
+  }
+
+  user_thread_info.id = thread->id;
+  user_thread_info.kernel_config = kernel_config;
+  memcpy(user_thread_info.name, thread->name, THREAD_NAME_SIZE);
+  user_thread_info.err_no = thread->err_no;
+}
+
 void do_scheduler(void) {
   // NULL means the scheduler should pick the next thread
   if (next_thread == NULL) {
@@ -313,6 +324,7 @@ void do_scheduler(void) {
   swap_paged_threads(current_thread, next_thread);
 #endif
   check_signals(next_thread);
+  k_update_user_thread_info(next_thread);
 }
 
 static bool set_thread_state(int tid, ThreadState state) {
@@ -475,7 +487,7 @@ int k_add_thread_from_file_with_args(const char* filename,
   if (code_page_in_use_by() != INVALID_THREAD) {
 #endif
     if (current_thread) {
-      current_thread->err_no = E_NO_PAGE;
+      user_thread_info.err_no = E_NO_PAGE;
     }
     return INVALID_THREAD;
   }
@@ -489,7 +501,7 @@ int k_add_thread_from_file_with_args(const char* filename,
   if (!entry) {
     // Startup may call this to load STARTUP_PROG
     if (current_thread) {
-      current_thread->err_no = E_NOT_FOUND;
+      user_thread_info.err_no = E_NOT_FOUND;
     }
     return INVALID_THREAD;
   }

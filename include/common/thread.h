@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdint.h>
 
 // Thread related stuff available to user and kernel
 
@@ -29,15 +30,13 @@ name_len = max([len(d) for _,_,d,_ in properties])
 for number, name, define, type in properties:
   cog.outl("#define TPROP_{} {}".format(define.ljust(name_len), number))
 ]]] */
-#define TPROP_ID              0
-#define TPROP_NAME            1
-#define TPROP_CHILD           2
-#define TPROP_STATE           3
-#define TPROP_PERMISSIONS     4
-#define TPROP_REGISTERS       5
-#define TPROP_ERRNO_PTR       6
-#define TPROP_PENDING_SIGNALS 7
-#define TPROP_SIGNAL_HANDLER  8
+#define TPROP_NAME            0
+#define TPROP_CHILD           1
+#define TPROP_STATE           2
+#define TPROP_PERMISSIONS     3
+#define TPROP_REGISTERS       4
+#define TPROP_PENDING_SIGNALS 5
+#define TPROP_SIGNAL_HANDLER  6
 /* [[[end]]] */
 
 #define TFLAG_KIND_MASK 0xFFFF
@@ -89,5 +88,19 @@ typedef struct {
 // arithmetic e.g. make_args(argv+1...) => (size_t)(argv+1)
 #define make_args(a, b, c, d)                                                  \
   { (size_t)(a), (size_t)(b), (size_t)(c), (size_t)(d) }
+
+#ifdef KERNEL
+#define USER_CONST
+#else
+#define USER_CONST const
+#endif
+
+typedef struct {
+  USER_CONST int id;
+  USER_CONST char name[THREAD_NAME_SIZE];
+  USER_CONST uint32_t kernel_config;
+  int err_no;
+} UserThreadInfo;
+extern UserThreadInfo user_thread_info;
 
 #endif /* ifdef COMMON_THREAD_H */
