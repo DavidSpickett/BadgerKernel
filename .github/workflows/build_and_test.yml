@@ -9,6 +9,14 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+		strategy:
+		  matrix:
+		    build_platform: [ARM, THUMB, AARCH64]
+				toolchain_url: [
+          https://developer.arm.com/-/media/Files/downloads/gnu-rm/9-2020q2/gcc-arm-none-eabi-9-2020-q2-update-x86_64-linux.tar.bz2,
+          https://developer.arm.com/-/media/Files/downloads/gnu-rm/9-2020q2/gcc-arm-none-eabi-9-2020-q2-update-x86_64-linux.tar.bz2,
+					https://developer.arm.com/-/media/Files/downloads/gnu-a/9.2-2019.12/binrel/gcc-arm-9.2-2019.12-x86_64-aarch64-none-elf.tar.xz
+				]
 
     steps:
     - uses: actions/checkout@v2
@@ -17,12 +25,13 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y python3-pip ccache expect qemu-system-arm
+        echo "CCACHE_DIR=$(pwd)/.ccache" >> $GITHUB_ENV
 
     - name: Download Toolchain
       run: |
         mkdir toolchain
-        wget https://developer.arm.com/-/media/Files/downloads/gnu-a/9.2-2019.12/binrel/gcc-arm-9.2-2019.12-x86_64-aarch64-none-elf.tar.xz
-        tar xaf gcc-arm-9.2-2019.12-x86_64-aarch64-none-elf.tar.xz -C toolchain --strip-components=1
+        wget ${{ matrix.toolchain_url }}
+        tar xaf $(basename ${{ matrix.toolchain_url }}) -C toolchain --strip-components=1
         echo "PATH=$(pwd)/toolchain/bin/:$PATH" >> $GITHUB_ENV
 
     - name: Install Lit
@@ -37,21 +46,16 @@ jobs:
 
     - name: Build
       run: |
-        export CCACHE_DIR=$(pwd)/.ccache
-
         # TODO: some kind of for loop or matrix?
         mkdir build_O0_OFF_OFF
         cd build_O0_OFF_OFF
         ccache -z
-        cmake -DBUILD_PLATFORM=aarch64 -DOPT_LEVEL=0 -DSANITIZERS=OFF -DLTO=OFF ../
+        cmake -DBUILD_PLATFORM=${{ matrix.build_platform }} -DOPT_LEVEL=0 -DSANITIZERS=OFF -DLTO=OFF ../
         make -j$(nproc) make_demos
         ccache -s
 
     - name: Test
       run: |
-        # Some loadables get built in tests
-        export CCACHE_DIR=$(pwd)/.ccache
-
         source testenv/bin/activate
         cd build_O0_OFF_OFF
         # TODO: With multiple threads we sometimes get an error reading progress file
