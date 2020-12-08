@@ -45,25 +45,116 @@ jobs:
         source testenv/bin/activate
         pip3 install lit
 
-    - name: Build
-      env:
-        OPT_LEVELS: 0 s 3
-        SANITIZERS: OFF ON
-        LTO: OFF ON
+    # [[[cog
+    # import cog
+    # for opt_level in ["0", "s", "3"]:
+    #   for sanitizers in ["OFF", "ON"]:
+    #     for lto in ["OFF", "ON"]:
+    #       # LTO makes no difference at O0
+    #       if (opt_level == "0") and (lto == "ON"):
+    #         continue
+    #       inputs = (opt_level, sanitizers, lto)
+    #       cog.outl("- name: Build_O{}_SANITIZERS_{}_LTO_{}".format(*inputs))
+    #       cog.outl("  run: |")
+    #       cog.outl("    mkdir build_O{}_SANITIZERS_{}_LTO_{}".format(*inputs))
+    #       cog.outl("    cd build_O{}_SANITIZERS_{}_LTO_{}".format(*inputs))
+    #       cog.outl("    ccache -z")
+    #       cog.outl("    cmake -DBUILD_PLATFORM=${{{{ matrix.build_platform }}}} -DOPT_LEVEL={} -DSANITIZERS={} -DLTO={} ../".format(*inputs))
+    #       cog.outl("    make -j$(nproc) make_demos")
+    #       cog.outl("    ccache -s")
+    #       cog.outl()
+    # ]]]
+    - name: Build_O0_SANITIZERS_OFF_LTO_OFF
       run: |
-        for opt_level in $OPT_LEVELS; do
-          for sanitizers in $SANITIZERS; do
-            for lto in $LTO; do
-              mkdir build_${opt_level}_${sanitizers}_${lto}
-              cd build_${opt_level}_${sanitizers}_${lto}
-              ccache -z
-              cmake -DBUILD_PLATFORM=${{ matrix.build_platform }} -DOPT_LEVEL=${opt_level} -DSANITIZERS=${sanitizers} -DLTO=${lto} ../
-              make -j$(nproc) make_demos
-              ccache -s
-              cd ..
-            done
-          done
-        done
+        mkdir build_O0_SANITIZERS_OFF_LTO_OFF
+        cd build_O0_SANITIZERS_OFF_LTO_OFF
+        ccache -z
+        cmake -DBUILD_PLATFORM=${{ matrix.build_platform }} -DOPT_LEVEL=0 -DSANITIZERS=OFF -DLTO=OFF ../
+        make -j$(nproc) make_demos
+        ccache -s
+
+    - name: Build_O0_SANITIZERS_ON_LTO_OFF
+      run: |
+        mkdir build_O0_SANITIZERS_ON_LTO_OFF
+        cd build_O0_SANITIZERS_ON_LTO_OFF
+        ccache -z
+        cmake -DBUILD_PLATFORM=${{ matrix.build_platform }} -DOPT_LEVEL=0 -DSANITIZERS=ON -DLTO=OFF ../
+        make -j$(nproc) make_demos
+        ccache -s
+
+    - name: Build_Os_SANITIZERS_OFF_LTO_OFF
+      run: |
+        mkdir build_Os_SANITIZERS_OFF_LTO_OFF
+        cd build_Os_SANITIZERS_OFF_LTO_OFF
+        ccache -z
+        cmake -DBUILD_PLATFORM=${{ matrix.build_platform }} -DOPT_LEVEL=s -DSANITIZERS=OFF -DLTO=OFF ../
+        make -j$(nproc) make_demos
+        ccache -s
+
+    - name: Build_Os_SANITIZERS_OFF_LTO_ON
+      run: |
+        mkdir build_Os_SANITIZERS_OFF_LTO_ON
+        cd build_Os_SANITIZERS_OFF_LTO_ON
+        ccache -z
+        cmake -DBUILD_PLATFORM=${{ matrix.build_platform }} -DOPT_LEVEL=s -DSANITIZERS=OFF -DLTO=ON ../
+        make -j$(nproc) make_demos
+        ccache -s
+
+    - name: Build_Os_SANITIZERS_ON_LTO_OFF
+      run: |
+        mkdir build_Os_SANITIZERS_ON_LTO_OFF
+        cd build_Os_SANITIZERS_ON_LTO_OFF
+        ccache -z
+        cmake -DBUILD_PLATFORM=${{ matrix.build_platform }} -DOPT_LEVEL=s -DSANITIZERS=ON -DLTO=OFF ../
+        make -j$(nproc) make_demos
+        ccache -s
+
+    - name: Build_Os_SANITIZERS_ON_LTO_ON
+      run: |
+        mkdir build_Os_SANITIZERS_ON_LTO_ON
+        cd build_Os_SANITIZERS_ON_LTO_ON
+        ccache -z
+        cmake -DBUILD_PLATFORM=${{ matrix.build_platform }} -DOPT_LEVEL=s -DSANITIZERS=ON -DLTO=ON ../
+        make -j$(nproc) make_demos
+        ccache -s
+
+    - name: Build_O3_SANITIZERS_OFF_LTO_OFF
+      run: |
+        mkdir build_O3_SANITIZERS_OFF_LTO_OFF
+        cd build_O3_SANITIZERS_OFF_LTO_OFF
+        ccache -z
+        cmake -DBUILD_PLATFORM=${{ matrix.build_platform }} -DOPT_LEVEL=3 -DSANITIZERS=OFF -DLTO=OFF ../
+        make -j$(nproc) make_demos
+        ccache -s
+
+    - name: Build_O3_SANITIZERS_OFF_LTO_ON
+      run: |
+        mkdir build_O3_SANITIZERS_OFF_LTO_ON
+        cd build_O3_SANITIZERS_OFF_LTO_ON
+        ccache -z
+        cmake -DBUILD_PLATFORM=${{ matrix.build_platform }} -DOPT_LEVEL=3 -DSANITIZERS=OFF -DLTO=ON ../
+        make -j$(nproc) make_demos
+        ccache -s
+
+    - name: Build_O3_SANITIZERS_ON_LTO_OFF
+      run: |
+        mkdir build_O3_SANITIZERS_ON_LTO_OFF
+        cd build_O3_SANITIZERS_ON_LTO_OFF
+        ccache -z
+        cmake -DBUILD_PLATFORM=${{ matrix.build_platform }} -DOPT_LEVEL=3 -DSANITIZERS=ON -DLTO=OFF ../
+        make -j$(nproc) make_demos
+        ccache -s
+
+    - name: Build_O3_SANITIZERS_ON_LTO_ON
+      run: |
+        mkdir build_O3_SANITIZERS_ON_LTO_ON
+        cd build_O3_SANITIZERS_ON_LTO_ON
+        ccache -z
+        cmake -DBUILD_PLATFORM=${{ matrix.build_platform }} -DOPT_LEVEL=3 -DSANITIZERS=ON -DLTO=ON ../
+        make -j$(nproc) make_demos
+        ccache -s
+
+    # [[[end]]]
 
     - name: Test
       env:
@@ -75,7 +166,7 @@ jobs:
         for opt_level in $OPT_LEVELS; do
           for sanitizers in $SANITIZERS; do
             for lto in $LTO; do
-              cd build_${opt_level}_${sanitizers}_${lto}
+              cd build_O${opt_level}_SANITIZERS_${sanitizers}_LTO_${lto}
               # TODO: With multiple threads we sometimes get an error reading progress file
               lit ../demos/ --xunit-xml-output results.xml -a -j1
               cd ..
