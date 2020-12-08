@@ -55,11 +55,10 @@ jobs:
           for sanitizers in $SANITIZERS; do
             for lto in $LTO; do
               # TODO: some kind of for loop or matrix?
-              echo $opt_level $sanitizers $lto
-              mkdir build_$opt_level_$sanitizers_$lto
-              cd build_$opt_level_$sanitizers_$lto
+              mkdir build_${opt_level}_${sanitizers}_${lto}
+              cd build_${opt_level}_${sanitizers}_${lto}
               ccache -z
-              cmake -DBUILD_PLATFORM=${{ matrix.build_platform }} -DOPT_LEVEL=$opt_level -DSANITIZERS=$sanitizers -DLTO=$lto ../
+              cmake -DBUILD_PLATFORM=${{ matrix.build_platform }} -DOPT_LEVEL=${opt_level} -DSANITIZERS=${sanitizers} -DLTO=${lto} ../
               make -j$(nproc) make_demos
               ccache -s
             done
