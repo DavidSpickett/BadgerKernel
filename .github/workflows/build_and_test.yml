@@ -46,14 +46,24 @@ jobs:
         pip3 install lit
 
     - name: Build
-      run: |
-        # TODO: some kind of for loop or matrix?
-        mkdir build_O0_OFF_OFF
-        cd build_O0_OFF_OFF
-        ccache -z
-        cmake -DBUILD_PLATFORM=${{ matrix.build_platform }} -DOPT_LEVEL=0 -DSANITIZERS=OFF -DLTO=OFF ../
-        make -j$(nproc) make_demos
-        ccache -s
+      env:
+        OPT_LEVELS: 0 S 3
+        SANITIZERS: OFF ON
+        LTO: OFF ON
+        run: |
+          for opt_level in $OPT_LEVELS; do
+            for sanitizers in $SANITIZERS; do
+              for lto in $LTO; do
+                # TODO: some kind of for loop or matrix?
+                mkdir build_$opt_level_$sanitizers_$lto
+                cd build_$opt_level_$sanitizers_$lto
+                ccache -z
+                cmake -DBUILD_PLATFORM=${{ matrix.build_platform }} -DOPT_LEVEL=$opt_level -DSANITIZERS=$sanitizers -DLTO=$lto ../
+                make -j$(nproc) make_demos
+                ccache -s
+              done
+            done
+          done
 
     - name: Test
       run: |
