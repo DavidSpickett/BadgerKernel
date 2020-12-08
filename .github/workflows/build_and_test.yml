@@ -55,6 +55,7 @@ jobs:
           for sanitizers in $SANITIZERS; do
             for lto in $LTO; do
               # TODO: some kind of for loop or matrix?
+              echo $opt_level $sanitizers $lto
               mkdir build_$opt_level_$sanitizers_$lto
               cd build_$opt_level_$sanitizers_$lto
               ccache -z
