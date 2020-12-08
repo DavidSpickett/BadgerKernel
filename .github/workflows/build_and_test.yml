@@ -35,7 +35,7 @@ jobs:
     - name: Download Toolchain
       run: |
         mkdir toolchain
-        wget $TOOLCHAIN_URL
+        wget --quiet $TOOLCHAIN_URL
         tar xaf $(basename $TOOLCHAIN_URL) -C toolchain --strip-components=1
         echo "PATH=$(pwd)/toolchain/bin/:$PATH" >> $GITHUB_ENV
 
