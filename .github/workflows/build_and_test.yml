@@ -47,7 +47,7 @@ jobs:
 
     - name: Build
       env:
-        OPT_LEVELS: 0 S 3
+        OPT_LEVELS: 0 s 3
         SANITIZERS: OFF ON
         LTO: OFF ON
       run: |
