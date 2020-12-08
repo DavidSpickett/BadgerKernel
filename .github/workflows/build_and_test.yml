@@ -1,0 +1,67 @@
+name: build_and_test
+
+on: [push]
+
+env:
+  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  BUILD_TYPE: Release
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        path: 'ARMMultiTasking'
+
+    - name: Apt Installs
+      run: sudo apt-get update
+      run: sudo apt-get install -y python3-pip ccache expect qemu-system-arm
+
+    - name: Download Toolchain
+      run: |
+        mkdir toolchain
+        wget https://developer.arm.com/-/media/Files/downloads/gnu-a/9.2-2019.12/binrel/gcc-arm-9.2-2019.12-x86_64-aarch64-none-elf.tar.xz
+        tar xaf gcc-arm-9.2-2019.12-x86_64-aarch64-none-elf.tar.xz -C toolchain --strip-components=1
+
+    - name: Install Lit
+      run: |
+        # Required for distlib, used by virtualenv
+        pip3 install setuptools wheel
+        # A venv is the best way to be sure where 'lit' is located after install
+        pip3 install virtualenv
+        python3 -m virtualenv testvenv
+        source testenv/bin/activate
+        pip3 install lit
+
+    - name: Build
+      run: |
+        # TODO: these can be env: ?
+        export PATH=$(pwd)/toolchain/bin/:$PATH
+        export CCACHE_DIR=$(pwd)/.ccache
+
+        # TODO: some kind of for loop or matrix?
+        mkdir build_O0_OFF_OFF
+        cd build_O0_OFF_OFF
+        ccache -z
+        cmake -DBUILD_PLATFORM=aarch64 -DOPT_LEVEL=0 -DSANITIZERS=OFF -DLTO=OFF ../ARMMultiTasking/
+        make -j$(nproc) make_demos
+        ccache -s
+
+    - name: Test
+			run: |
+        # Some loadables get built in tests
+        export PATH=$(pwd)/toolchain/bin/:$PATH
+        export CCACHE_DIR=$(pwd)/.ccache
+
+        source testenv/bin/activate
+        cd build_O0_OFF_OFF
+        # TODO: With multiple threads we sometimes get an error reading progress file
+        lit ../ARMMultiTasking/demos/ --xunit-xml-output results.xml -a -j1
+
+    - name: Publish Test Report
+        uses: mikepenz/action-junit-report@v1
+        with:
+          report_paths: '**/results.xml'
+          github_token: ${{ secrets.GITHUB_TOKEN }}
