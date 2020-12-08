@@ -15,7 +15,6 @@ jobs:
 
     - name: Apt Installs
       run: |
-        sudo apt-get update
         sudo apt-get install -y python3-pip ccache expect qemu-system-arm
 
     - name: Download Toolchain
