@@ -66,15 +66,26 @@ jobs:
         done
 
     - name: Test
+      env:
+        OPT_LEVELS: 0 s 3
+        SANITIZERS: OFF ON
+        LTO: OFF ON
       run: |
         source testenv/bin/activate
-        cd build_O0_OFF_OFF
-        # TODO: With multiple threads we sometimes get an error reading progress file
-        lit ../demos/ --xunit-xml-output results.xml -a -j1
+        for opt_level in $OPT_LEVELS; do
+          for sanitizers in $SANITIZERS; do
+            for lto in $LTO; do
+              cd build_${opt_level}_${sanitizers}_${lto}
+              # TODO: With multiple threads we sometimes get an error reading progress file
+              lit ../demos/ --xunit-xml-output results.xml -a -j1
+              cd ..
+            done
+          done
+        done
 
     - name: Publish Test Report
       uses: mikepenz/action-junit-report@v1
       with:
         report_paths: '**/results.xml'
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        check_name: ${{ matrix.build_platform }}_O0_SANITIZERS_OFF_LTO_OFF
+        check_name: ${{ matrix.build_platform }}
