@@ -9,14 +9,14 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-		strategy:
-		  matrix:
-		    build_platform: [ARM, THUMB, AARCH64]
-				toolchain_url: [
+    strategy:
+      matrix:
+        build_platform: [ARM, THUMB, AARCH64]
+        toolchain_url: [
           https://developer.arm.com/-/media/Files/downloads/gnu-rm/9-2020q2/gcc-arm-none-eabi-9-2020-q2-update-x86_64-linux.tar.bz2,
           https://developer.arm.com/-/media/Files/downloads/gnu-rm/9-2020q2/gcc-arm-none-eabi-9-2020-q2-update-x86_64-linux.tar.bz2,
-					https://developer.arm.com/-/media/Files/downloads/gnu-a/9.2-2019.12/binrel/gcc-arm-9.2-2019.12-x86_64-aarch64-none-elf.tar.xz
-				]
+          https://developer.arm.com/-/media/Files/downloads/gnu-a/9.2-2019.12/binrel/gcc-arm-9.2-2019.12-x86_64-aarch64-none-elf.tar.xz
+        ]
 
     steps:
     - uses: actions/checkout@v2
