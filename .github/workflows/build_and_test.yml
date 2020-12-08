@@ -46,23 +46,29 @@ jobs:
         pip3 install lit
 
     # [[[cog
-    # import cog
-    # for opt_level in ["0", "s", "3"]:
-    #   for sanitizers in ["OFF", "ON"]:
-    #     for lto in ["OFF", "ON"]:
-    #       # LTO makes no difference at O0
-    #       if (opt_level == "0") and (lto == "ON"):
-    #         continue
-    #       inputs = (opt_level, sanitizers, lto)
-    #       cog.outl("- name: Build_O{}_SANITIZERS_{}_LTO_{}".format(*inputs))
-    #       cog.outl("  run: |")
-    #       cog.outl("    mkdir build_O{}_SANITIZERS_{}_LTO_{}".format(*inputs))
-    #       cog.outl("    cd build_O{}_SANITIZERS_{}_LTO_{}".format(*inputs))
-    #       cog.outl("    ccache -z")
-    #       cog.outl("    cmake -DBUILD_PLATFORM=${{{{ matrix.build_platform }}}} -DOPT_LEVEL={} -DSANITIZERS={} -DLTO={} ../".format(*inputs))
-    #       cog.outl("    make -j$(nproc) make_demos")
-    #       cog.outl("    ccache -s")
-    #       cog.outl()
+    # import cog, itertools
+    #
+    # opt_levels = ("0", "s", "3")
+    # sanitizers = ("OFF", "ON")
+    # lto = ("OFF", "ON")
+    #
+    # def skip(params):
+    #  opt_level, _, lto = params
+    #  # LTO makes no difference at O0
+    #  return opt_level == "0" and lto == "ON"
+    #
+    # for params in itertools.product(opt_levels, sanitizers, lto):
+    #   if skip(params):
+    #     continue
+    #   cog.outl("- name: Build_O{}_SANITIZERS_{}_LTO_{}".format(*params))
+    #   cog.outl("  run: |")
+    #   cog.outl("    mkdir build_O{}_SANITIZERS_{}_LTO_{}".format(*params))
+    #   cog.outl("    cd build_O{}_SANITIZERS_{}_LTO_{}".format(*params))
+    #   cog.outl("    ccache -z")
+    #   cog.outl("    cmake -DBUILD_PLATFORM=${{{{ matrix.build_platform }}}} -DOPT_LEVEL={} -DSANITIZERS={} -DLTO={} ../".format(*params))
+    #   cog.outl("    make -j$(nproc) make_demos")
+    #   cog.outl("    ccache -s")
+    #   cog.outl()
     # ]]]
     - name: Build_O0_SANITIZERS_OFF_LTO_OFF
       run: |
@@ -157,21 +163,16 @@ jobs:
     # [[[end]]]
 
     # [[[cog
-    # import cog
-    # for opt_level in ["0", "s", "3"]:
-    #   for sanitizers in ["OFF", "ON"]:
-    #     for lto in ["OFF", "ON"]:
-    #       # LTO makes no difference at O0
-    #       if (opt_level == "0") and (lto == "ON"):
-    #         continue
-    #       inputs = (opt_level, sanitizers, lto)
-    #       cog.outl("- name: Test_O{}_SANITIZERS_{}_LTO_{}".format(*inputs))
-    #       cog.outl("  run: |")
-    #       cog.outl("    source testenv/bin/activate")
-    #       cog.outl("    cd build_O{}_SANITIZERS_{}_LTO_{}".format(*inputs))
-    #       cog.outl("    # TODO: With multiple threads we sometimes get an error reading progress file")
-    #       cog.outl("    lit ../demos/ --xunit-xml-output results.xml -a -j1")
-    #       cog.outl()
+    # for params in itertools.product(opt_levels, sanitizers, lto):
+    #   if skip(params):
+    #     continue
+    #   cog.outl("- name: Test_O{}_SANITIZERS_{}_LTO_{}".format(*params))
+    #   cog.outl("  run: |")
+    #   cog.outl("    source testenv/bin/activate")
+    #   cog.outl("    cd build_O{}_SANITIZERS_{}_LTO_{}".format(*params))
+    #   cog.outl("    # TODO: With multiple threads we sometimes get an error reading progress file")
+    #   cog.outl("    lit ../demos/ --xunit-xml-output results.xml -a -j1")
+    #   cog.outl()
     # ]]]
     - name: Test_O0_SANITIZERS_OFF_LTO_OFF
       run: |
