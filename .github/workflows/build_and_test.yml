@@ -12,8 +12,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-      with:
-        path: 'ARMMultiTasking'
 
     - name: Apt Installs
       run: |
@@ -46,7 +44,7 @@ jobs:
         mkdir build_O0_OFF_OFF
         cd build_O0_OFF_OFF
         ccache -z
-        cmake -DBUILD_PLATFORM=aarch64 -DOPT_LEVEL=0 -DSANITIZERS=OFF -DLTO=OFF ../ARMMultiTasking/
+        cmake -DBUILD_PLATFORM=aarch64 -DOPT_LEVEL=0 -DSANITIZERS=OFF -DLTO=OFF ../
         make -j$(nproc) make_demos
         ccache -s
 
@@ -59,7 +57,7 @@ jobs:
         source testenv/bin/activate
         cd build_O0_OFF_OFF
         # TODO: With multiple threads we sometimes get an error reading progress file
-        lit ../ARMMultiTasking/demos/ --xunit-xml-output results.xml -a -j1
+        lit ../demos/ --xunit-xml-output results.xml -a -j1
 
     - name: Publish Test Report
       uses: mikepenz/action-junit-report@v1
