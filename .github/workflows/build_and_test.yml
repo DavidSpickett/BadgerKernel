@@ -156,23 +156,94 @@ jobs:
 
     # [[[end]]]
 
-    - name: Test
-      env:
-        OPT_LEVELS: 0 s 3
-        SANITIZERS: OFF ON
-        LTO: OFF ON
+    # [[[cog
+    # import cog
+    # for opt_level in ["0", "s", "3"]:
+    #   for sanitizers in ["OFF", "ON"]:
+    #     for lto in ["OFF", "ON"]:
+    #       # LTO makes no difference at O0
+    #       if (opt_level == "0") and (lto == "ON"):
+    #         continue
+    #       inputs = (opt_level, sanitizers, lto)
+    #       cog.outl("- name: Test_O{}_SANITIZERS_{}_LTO_{}".format(*inputs))
+    #       cog.outl("  run: |")
+    #       cog.outl("    source testenv/bin/activate")
+    #       cog.outl("    cd build_O{}_SANITIZERS_{}_LTO_{}".format(*inputs))
+    #       cog.outl("    # TODO: With multiple threads we sometimes get an error reading progress file")
+    #       cog.outl("    lit ../demos/ --xunit-xml-output results.xml -a -j1")
+    #       cog.outl()
+    # ]]]
+    - name: Test_O0_SANITIZERS_OFF_LTO_OFF
       run: |
         source testenv/bin/activate
-        for opt_level in $OPT_LEVELS; do
-          for sanitizers in $SANITIZERS; do
-            for lto in $LTO; do
-              cd build_O${opt_level}_SANITIZERS_${sanitizers}_LTO_${lto}
-              # TODO: With multiple threads we sometimes get an error reading progress file
-              lit ../demos/ --xunit-xml-output results.xml -a -j1
-              cd ..
-            done
-          done
-        done
+        cd build_O0_SANITIZERS_OFF_LTO_OFF
+        # TODO: With multiple threads we sometimes get an error reading progress file
+        lit ../demos/ --xunit-xml-output results.xml -a -j1
+
+    - name: Test_O0_SANITIZERS_ON_LTO_OFF
+      run: |
+        source testenv/bin/activate
+        cd build_O0_SANITIZERS_ON_LTO_OFF
+        # TODO: With multiple threads we sometimes get an error reading progress file
+        lit ../demos/ --xunit-xml-output results.xml -a -j1
+
+    - name: Test_Os_SANITIZERS_OFF_LTO_OFF
+      run: |
+        source testenv/bin/activate
+        cd build_Os_SANITIZERS_OFF_LTO_OFF
+        # TODO: With multiple threads we sometimes get an error reading progress file
+        lit ../demos/ --xunit-xml-output results.xml -a -j1
+
+    - name: Test_Os_SANITIZERS_OFF_LTO_ON
+      run: |
+        source testenv/bin/activate
+        cd build_Os_SANITIZERS_OFF_LTO_ON
+        # TODO: With multiple threads we sometimes get an error reading progress file
+        lit ../demos/ --xunit-xml-output results.xml -a -j1
+
+    - name: Test_Os_SANITIZERS_ON_LTO_OFF
+      run: |
+        source testenv/bin/activate
+        cd build_Os_SANITIZERS_ON_LTO_OFF
+        # TODO: With multiple threads we sometimes get an error reading progress file
+        lit ../demos/ --xunit-xml-output results.xml -a -j1
+
+    - name: Test_Os_SANITIZERS_ON_LTO_ON
+      run: |
+        source testenv/bin/activate
+        cd build_Os_SANITIZERS_ON_LTO_ON
+        # TODO: With multiple threads we sometimes get an error reading progress file
+        lit ../demos/ --xunit-xml-output results.xml -a -j1
+
+    - name: Test_O3_SANITIZERS_OFF_LTO_OFF
+      run: |
+        source testenv/bin/activate
+        cd build_O3_SANITIZERS_OFF_LTO_OFF
+        # TODO: With multiple threads we sometimes get an error reading progress file
+        lit ../demos/ --xunit-xml-output results.xml -a -j1
+
+    - name: Test_O3_SANITIZERS_OFF_LTO_ON
+      run: |
+        source testenv/bin/activate
+        cd build_O3_SANITIZERS_OFF_LTO_ON
+        # TODO: With multiple threads we sometimes get an error reading progress file
+        lit ../demos/ --xunit-xml-output results.xml -a -j1
+
+    - name: Test_O3_SANITIZERS_ON_LTO_OFF
+      run: |
+        source testenv/bin/activate
+        cd build_O3_SANITIZERS_ON_LTO_OFF
+        # TODO: With multiple threads we sometimes get an error reading progress file
+        lit ../demos/ --xunit-xml-output results.xml -a -j1
+
+    - name: Test_O3_SANITIZERS_ON_LTO_ON
+      run: |
+        source testenv/bin/activate
+        cd build_O3_SANITIZERS_ON_LTO_ON
+        # TODO: With multiple threads we sometimes get an error reading progress file
+        lit ../demos/ --xunit-xml-output results.xml -a -j1
+
+    # [[[end]]]
 
     - name: Publish Test Report
       uses: mikepenz/action-junit-report@v1
