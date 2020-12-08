@@ -23,6 +23,7 @@ jobs:
         mkdir toolchain
         wget https://developer.arm.com/-/media/Files/downloads/gnu-a/9.2-2019.12/binrel/gcc-arm-9.2-2019.12-x86_64-aarch64-none-elf.tar.xz
         tar xaf gcc-arm-9.2-2019.12-x86_64-aarch64-none-elf.tar.xz -C toolchain --strip-components=1
+        echo "PATH=$(pwd)/toolchain/bin/:$PATH" >> $GITHUB_ENV
 
     - name: Install Lit
       run: |
@@ -36,8 +37,6 @@ jobs:
 
     - name: Build
       run: |
-        # TODO: these can be env: ?
-        export PATH=$(pwd)/toolchain/bin/:$PATH
         export CCACHE_DIR=$(pwd)/.ccache
 
         # TODO: some kind of for loop or matrix?
@@ -51,7 +50,6 @@ jobs:
     - name: Test
       run: |
         # Some loadables get built in tests
-        export PATH=$(pwd)/toolchain/bin/:$PATH
         export CCACHE_DIR=$(pwd)/.ccache
 
         source testenv/bin/activate
