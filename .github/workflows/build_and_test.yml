@@ -16,8 +16,9 @@ jobs:
         path: 'ARMMultiTasking'
 
     - name: Apt Installs
-      run: sudo apt-get update
-      run: sudo apt-get install -y python3-pip ccache expect qemu-system-arm
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y python3-pip ccache expect qemu-system-arm
 
     - name: Download Toolchain
       run: |
@@ -50,7 +51,7 @@ jobs:
         ccache -s
 
     - name: Test
-			run: |
+      run: |
         # Some loadables get built in tests
         export PATH=$(pwd)/toolchain/bin/:$PATH
         export CCACHE_DIR=$(pwd)/.ccache
