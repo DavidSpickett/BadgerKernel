@@ -71,3 +71,4 @@ jobs:
       with:
         report_paths: '**/results.xml'
         github_token: ${{ secrets.GITHUB_TOKEN }}
+        check_name: ${{ matrix.build_platform }}_O0_SANITIERS_OFF_LTO_OFF
