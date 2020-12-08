@@ -27,7 +27,7 @@ jobs:
         source checkenv/bin/activate
         cd ARMMultiTasking
         export PYTHONPATH=.
-        cog -r `find -name "*.c"` `find -name "*.cpp"` `find -name "*.h"`
+        cog -r `find -name "*.c"` `find -name "*.cpp"` `find -name "*.h"` `find -name "*.yml"`
         # See if anything changed
         git diff > /tmp/cog.diff
         cat /tmp/cog.diff
