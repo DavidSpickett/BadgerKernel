@@ -22,7 +22,6 @@ jobs:
         python3 -m virtualenv ../checkenv
         source ../checkenv/bin/activate
         pip3 install cogapp pycodestyle
-        exit 1
 
     # Require that the previous steps succeed but allow the next steps
     # to fail and still run the rest of the checks.
