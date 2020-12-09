@@ -43,9 +43,8 @@ Install QEMU with Arm support (comes with AArch64 as well):
 ```
 sudo apt-get install qemu-system-arm
 ```
-Version 2.1 is used in CI but anything newer than that should be fine too.
 
-See the [CI config](azure/azure-job.yml) for the currently tested versions of all of the tools.
+See the [CI config](.github/workflows/build_and_test.yml) for the currently tested versions of all of the tools.
 
 Then configure and build according to which toolchain you installed:
 ```
