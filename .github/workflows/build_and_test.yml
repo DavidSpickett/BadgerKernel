@@ -226,93 +226,93 @@ jobs:
     #   if skip(params):
     #     continue
     #   cog.outl("- name: Test_O{}_SANITIZERS_{}_LTO_{}".format(*params))
-    #   cog.outl("  continue-on-error: true")
     #   cog.outl("  run: |")
     #   cog.outl("    source testenv/bin/activate")
     #   cog.outl("    cd build_O{}_SANITIZERS_{}_LTO_{}".format(*params))
     #   cog.outl("    # TODO: With multiple threads we sometimes get an error reading progress file")
     #   cog.outl("    lit ../demos/ --xunit-xml-output results.xml -a -j1")
+    #   cog.outl("  if: succeeded() || failed()")
     #   cog.outl()
     # ]]]
     - name: Test_O0_SANITIZERS_OFF_LTO_OFF
-      continue-on-error: true
       run: |
         source testenv/bin/activate
         cd build_O0_SANITIZERS_OFF_LTO_OFF
         # TODO: With multiple threads we sometimes get an error reading progress file
         lit ../demos/ --xunit-xml-output results.xml -a -j1
+      if: succeeded() || failed()
 
     - name: Test_O0_SANITIZERS_ON_LTO_OFF
-      continue-on-error: true
       run: |
         source testenv/bin/activate
         cd build_O0_SANITIZERS_ON_LTO_OFF
         # TODO: With multiple threads we sometimes get an error reading progress file
         lit ../demos/ --xunit-xml-output results.xml -a -j1
+      if: succeeded() || failed()
 
     - name: Test_Os_SANITIZERS_OFF_LTO_OFF
-      continue-on-error: true
       run: |
         source testenv/bin/activate
         cd build_Os_SANITIZERS_OFF_LTO_OFF
         # TODO: With multiple threads we sometimes get an error reading progress file
         lit ../demos/ --xunit-xml-output results.xml -a -j1
+      if: succeeded() || failed()
 
     - name: Test_Os_SANITIZERS_OFF_LTO_ON
-      continue-on-error: true
       run: |
         source testenv/bin/activate
         cd build_Os_SANITIZERS_OFF_LTO_ON
         # TODO: With multiple threads we sometimes get an error reading progress file
         lit ../demos/ --xunit-xml-output results.xml -a -j1
+      if: succeeded() || failed()
 
     - name: Test_Os_SANITIZERS_ON_LTO_OFF
-      continue-on-error: true
       run: |
         source testenv/bin/activate
         cd build_Os_SANITIZERS_ON_LTO_OFF
         # TODO: With multiple threads we sometimes get an error reading progress file
         lit ../demos/ --xunit-xml-output results.xml -a -j1
+      if: succeeded() || failed()
 
     - name: Test_Os_SANITIZERS_ON_LTO_ON
-      continue-on-error: true
       run: |
         source testenv/bin/activate
         cd build_Os_SANITIZERS_ON_LTO_ON
         # TODO: With multiple threads we sometimes get an error reading progress file
         lit ../demos/ --xunit-xml-output results.xml -a -j1
+      if: succeeded() || failed()
 
     - name: Test_O3_SANITIZERS_OFF_LTO_OFF
-      continue-on-error: true
       run: |
         source testenv/bin/activate
         cd build_O3_SANITIZERS_OFF_LTO_OFF
         # TODO: With multiple threads we sometimes get an error reading progress file
         lit ../demos/ --xunit-xml-output results.xml -a -j1
+      if: succeeded() || failed()
 
     - name: Test_O3_SANITIZERS_OFF_LTO_ON
-      continue-on-error: true
       run: |
         source testenv/bin/activate
         cd build_O3_SANITIZERS_OFF_LTO_ON
         # TODO: With multiple threads we sometimes get an error reading progress file
         lit ../demos/ --xunit-xml-output results.xml -a -j1
+      if: succeeded() || failed()
 
     - name: Test_O3_SANITIZERS_ON_LTO_OFF
-      continue-on-error: true
       run: |
         source testenv/bin/activate
         cd build_O3_SANITIZERS_ON_LTO_OFF
         # TODO: With multiple threads we sometimes get an error reading progress file
         lit ../demos/ --xunit-xml-output results.xml -a -j1
+      if: succeeded() || failed()
 
     - name: Test_O3_SANITIZERS_ON_LTO_ON
-      continue-on-error: true
       run: |
         source testenv/bin/activate
         cd build_O3_SANITIZERS_ON_LTO_ON
         # TODO: With multiple threads we sometimes get an error reading progress file
         lit ../demos/ --xunit-xml-output results.xml -a -j1
+      if: succeeded() || failed()
 
     # [[[end]]]
 
