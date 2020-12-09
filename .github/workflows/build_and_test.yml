@@ -226,10 +226,10 @@ jobs:
     # (which will be failed if some tests fail)
     # If we used continue-on-error for the test steps then they would be marked
     # as passing in the UI, which isn't very intuitive.
-    name: Set SHOULD_CONTINUE=YES
+    - name: Set SHOULD_CONTINUE=YES
       run: echo "SHOULD_CONTINUE=YES" >> $GITHUB_ENV
       if: ${{ success() }}
-    name: Set SHOULD_CONTINUE=NO
+    - name: Set SHOULD_CONTINUE=NO
       run: echo "SHOULD_CONTINUE=YES" >> $GITHUB_ENV
       if: ${{ failure() }}
 
