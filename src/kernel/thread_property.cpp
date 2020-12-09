@@ -134,7 +134,8 @@ private:
 };
 /* clang-format on */
 
-static bool do_get_thread_property(int tid, size_t property, UserPointer res) {
+static bool 
+do_get_thread_property(int tid, size_t property, UserPointer res) {
   if (tid == CURRENT_THREAD) {
     tid = k_get_thread_id();
   }

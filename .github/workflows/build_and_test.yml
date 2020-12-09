@@ -26,7 +26,6 @@ jobs:
     - name: Check Cog
       run: |
         # Check that we re-ran cog as needed
-        set -ex
         source ../checkenv/bin/activate
         export PYTHONPATH=.
         cog -r `find -name "*.c"` `find -name "*.cpp"` `find -name "*.h"` `find -name "*.yml"`
@@ -37,11 +36,11 @@ jobs:
         git checkout .
         # Fail the stage so we know to re-run cog
         ! test -s /tmp/cog.diff
+      if: ${{ failure() }} || ${{ success() }}
 
     - name: Clang Format
       run: |
         # Check that we ran clang-format
-        set -ex
         clang-format -i `find -name "*.c"` `find -name "*.cpp"` `find -name "*.h"`
         # See if anything changed
         git diff > /tmp/clang-format.diff
@@ -49,17 +48,18 @@ jobs:
         # Reset for next checkout
         git checkout .
         ! test -s /tmp/clang-format.diff
+      if: ${{ failure() }} || ${{ success() }}
 
     - name: Pycodestyle
       run: |
-        set -ex
         source ../checkenv/bin/activate
         pycodestyle `find -name "*.py"`
+      if: ${{ failure() }} || ${{ success() }}
 
     - name: Shellcheck
       run: |
-        set -ex
         shellcheck `find -name "*.sh"`
+      if: ${{ failure() }} || ${{ success() }}
 
   build:
     runs-on: ubuntu-latest

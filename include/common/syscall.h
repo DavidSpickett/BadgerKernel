@@ -12,6 +12,7 @@ typedef enum {
     syscall, _ = syscall_info
     cog.outl("syscall_{} = {},".format(syscall, n))
   ]]] */
+  // Comment to break cog check!
   syscall_add_thread = 0,
   syscall_get_thread_property = 1,
   syscall_set_thread_property = 2,
