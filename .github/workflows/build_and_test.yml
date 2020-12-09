@@ -221,6 +221,18 @@ jobs:
 
     # [[[end]]]
 
+    # This allows us to require that the steps above succeed
+    # Then also allow the test steps to run regardless of the job state
+    # (which will be failed if some tests fail)
+    # If we used continue-on-error for the test steps then they would be marked
+    # as passing in the UI, which isn't very intuitive.
+    name: Set SHOULD_CONTINUE=YES
+      run: echo "SHOULD_CONTINUE=YES" >> $GITHUB_ENV
+      if: ${{ success() }}
+    name: Set SHOULD_CONTINUE=NO
+      run: echo "SHOULD_CONTINUE=YES" >> $GITHUB_ENV
+      if: ${{ failure() }}
+
     # [[[cog
     # for params in itertools.product(opt_levels, sanitizers, lto):
     #   if skip(params):
