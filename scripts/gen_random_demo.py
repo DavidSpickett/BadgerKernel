@@ -14,7 +14,6 @@ MAX_THREAD_ACTIONS = 10
 # Allow threads to enable/disable timer interrupts
 ENABLE_TIMER = False
 
-
 class Action(object):
     def __init__(self, name):
         self.name = name

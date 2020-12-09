@@ -4,6 +4,10 @@
 #include <string.h>
 #include <type_traits>
 
+#ifdef __aarch64__
+#error
+#endif
+
 // The following classes are used to limit access to user space
 // pointers.
 // UserPointer for get_thread_property (writing to user space)
@@ -134,7 +138,8 @@ private:
 };
 /* clang-format on */
 
-static bool do_get_thread_property(int tid, size_t property, UserPointer res) {
+static bool 
+do_get_thread_property(int tid, size_t property, UserPointer res) {
   if (tid == CURRENT_THREAD) {
     tid = k_get_thread_id();
   }
