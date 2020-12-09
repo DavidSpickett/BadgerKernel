@@ -230,7 +230,7 @@ jobs:
       run: echo "SHOULD_CONTINUE=YES" >> $GITHUB_ENV
       if: ${{ success() }}
     - name: Set SHOULD_CONTINUE=NO
-      run: echo "SHOULD_CONTINUE=YES" >> $GITHUB_ENV
+      run: echo "SHOULD_CONTINUE=NO" >> $GITHUB_ENV
       if: ${{ failure() }}
 
     # [[[cog
