@@ -144,7 +144,6 @@ void cleanup() {
 // Use this to run one by one so we aren't limited
 // by MAX_THREADS
 void setup(void) {
-  assert(0);
   int tid = INVALID_THREAD;
 
   // Random errno checks we have no better place for
