@@ -231,7 +231,7 @@ jobs:
     #   cog.outl("    cd build_O{}_SANITIZERS_{}_LTO_{}".format(*params))
     #   cog.outl("    # TODO: With multiple threads we sometimes get an error reading progress file")
     #   cog.outl("    lit ../demos/ --xunit-xml-output results.xml -a -j1")
-    #   cog.outl("  if: succeeded() || failed()")
+    #   cog.outl("  if: ${{ failure() }} || ${{ success() }}")
     #   cog.outl()
     # ]]]
     - name: Test_O0_SANITIZERS_OFF_LTO_OFF
@@ -240,7 +240,7 @@ jobs:
         cd build_O0_SANITIZERS_OFF_LTO_OFF
         # TODO: With multiple threads we sometimes get an error reading progress file
         lit ../demos/ --xunit-xml-output results.xml -a -j1
-      if: succeeded() || failed()
+      if: ${{ failure() }} || ${{ success() }}
 
     - name: Test_O0_SANITIZERS_ON_LTO_OFF
       run: |
@@ -248,7 +248,7 @@ jobs:
         cd build_O0_SANITIZERS_ON_LTO_OFF
         # TODO: With multiple threads we sometimes get an error reading progress file
         lit ../demos/ --xunit-xml-output results.xml -a -j1
-      if: succeeded() || failed()
+      if: ${{ failure() }} || ${{ success() }}
 
     - name: Test_Os_SANITIZERS_OFF_LTO_OFF
       run: |
@@ -256,7 +256,7 @@ jobs:
         cd build_Os_SANITIZERS_OFF_LTO_OFF
         # TODO: With multiple threads we sometimes get an error reading progress file
         lit ../demos/ --xunit-xml-output results.xml -a -j1
-      if: succeeded() || failed()
+      if: ${{ failure() }} || ${{ success() }}
 
     - name: Test_Os_SANITIZERS_OFF_LTO_ON
       run: |
@@ -264,7 +264,7 @@ jobs:
         cd build_Os_SANITIZERS_OFF_LTO_ON
         # TODO: With multiple threads we sometimes get an error reading progress file
         lit ../demos/ --xunit-xml-output results.xml -a -j1
-      if: succeeded() || failed()
+      if: ${{ failure() }} || ${{ success() }}
 
     - name: Test_Os_SANITIZERS_ON_LTO_OFF
       run: |
@@ -272,7 +272,7 @@ jobs:
         cd build_Os_SANITIZERS_ON_LTO_OFF
         # TODO: With multiple threads we sometimes get an error reading progress file
         lit ../demos/ --xunit-xml-output results.xml -a -j1
-      if: succeeded() || failed()
+      if: ${{ failure() }} || ${{ success() }}
 
     - name: Test_Os_SANITIZERS_ON_LTO_ON
       run: |
@@ -280,7 +280,7 @@ jobs:
         cd build_Os_SANITIZERS_ON_LTO_ON
         # TODO: With multiple threads we sometimes get an error reading progress file
         lit ../demos/ --xunit-xml-output results.xml -a -j1
-      if: succeeded() || failed()
+      if: ${{ failure() }} || ${{ success() }}
 
     - name: Test_O3_SANITIZERS_OFF_LTO_OFF
       run: |
@@ -288,7 +288,7 @@ jobs:
         cd build_O3_SANITIZERS_OFF_LTO_OFF
         # TODO: With multiple threads we sometimes get an error reading progress file
         lit ../demos/ --xunit-xml-output results.xml -a -j1
-      if: succeeded() || failed()
+      if: ${{ failure() }} || ${{ success() }}
 
     - name: Test_O3_SANITIZERS_OFF_LTO_ON
       run: |
@@ -296,7 +296,7 @@ jobs:
         cd build_O3_SANITIZERS_OFF_LTO_ON
         # TODO: With multiple threads we sometimes get an error reading progress file
         lit ../demos/ --xunit-xml-output results.xml -a -j1
-      if: succeeded() || failed()
+      if: ${{ failure() }} || ${{ success() }}
 
     - name: Test_O3_SANITIZERS_ON_LTO_OFF
       run: |
@@ -304,7 +304,7 @@ jobs:
         cd build_O3_SANITIZERS_ON_LTO_OFF
         # TODO: With multiple threads we sometimes get an error reading progress file
         lit ../demos/ --xunit-xml-output results.xml -a -j1
-      if: succeeded() || failed()
+      if: ${{ failure() }} || ${{ success() }}
 
     - name: Test_O3_SANITIZERS_ON_LTO_ON
       run: |
@@ -312,7 +312,7 @@ jobs:
         cd build_O3_SANITIZERS_ON_LTO_ON
         # TODO: With multiple threads we sometimes get an error reading progress file
         lit ../demos/ --xunit-xml-output results.xml -a -j1
-      if: succeeded() || failed()
+      if: ${{ failure() }} || ${{ success() }}
 
     # [[[end]]]
 
