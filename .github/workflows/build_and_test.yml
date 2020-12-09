@@ -18,7 +18,8 @@ jobs:
       run: |
         pip3 install setuptools wheel
         pip3 install virtualenv
-        python3 -m virtualenv checkenv
+        # Create this outside of the git checkout
+        python3 -m virtualenv ../checkenv
         source checkenv/bin/activate
         pip3 install cogapp pycodestyle
 
@@ -26,7 +27,7 @@ jobs:
       run: |
         # Check that we re-ran cog as needed
         set -ex
-        source checkenv/bin/activate
+        source ../checkenv/bin/activate
         export PYTHONPATH=.
         cog -r `find -name "*.c"` `find -name "*.cpp"` `find -name "*.h"` `find -name "*.yml"`
         # See if anything changed
@@ -52,14 +53,12 @@ jobs:
     - name: Pycodestyle
       run: |
         set -ex
-        source checkenv/bin/activate
-        # TODO: this probably finds the venv too
+        source ../checkenv/bin/activate
         pycodestyle `find -name "*.py"`
 
     - name: Shellcheck
       run: |
         set -ex
-        # TODO: is this including the venv?
         shellcheck `find -name "*.sh"`
 
   build:
