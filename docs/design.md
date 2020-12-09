@@ -42,7 +42,7 @@ Somewhere along the line you might even read the implementation from another sys
 
 This describes the source level layout of AMT.
 
-* azure - Config for Azure pipelines CI
+* .github/workflows - Config for Github Actions CI
 * cmake - CMake functions for adding demos and loadable files
 * demos - Test applications
 * include
