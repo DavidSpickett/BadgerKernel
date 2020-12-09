@@ -45,7 +45,7 @@ jobs:
         git checkout .
         # Fail the stage so we know to re-run cog
         ! test -s /tmp/cog.diff
-      if: env.SHOULD_CONTINUE == 'YES' && ( ${{ failure() }} || ${{ success() }} )
+      if: ${{ env.SHOULD_CONTINUE == 'YES' && ( failure() || success() ) }}
 
     - name: Clang Format
       run: |
@@ -57,18 +57,18 @@ jobs:
         # Reset for next checkout
         git checkout .
         ! test -s /tmp/clang-format.diff
-      if: env.SHOULD_CONTINUE == 'YES' && ( ${{ failure() }} || ${{ success() }} )
+      if: ${{ env.SHOULD_CONTINUE == 'YES' && ( failure() || success() ) }}
 
     - name: Pycodestyle
       run: |
         source ../checkenv/bin/activate
         pycodestyle `find -name "*.py"`
-      if: env.SHOULD_CONTINUE == 'YES' && ( ${{ failure() }} || ${{ success() }} )
+      if: ${{ env.SHOULD_CONTINUE == 'YES' && ( failure() || success() ) }}
 
     - name: Shellcheck
       run: |
         shellcheck `find -name "*.sh"`
-      if: env.SHOULD_CONTINUE == 'YES' && ( ${{ failure() }} || ${{ success() }} )
+      if: ${{ env.SHOULD_CONTINUE == 'YES' && ( failure() || success() ) }}
 
   build:
     runs-on: ubuntu-latest
@@ -252,7 +252,7 @@ jobs:
     #   cog.outl("    cd build_O{}_SANITIZERS_{}_LTO_{}".format(*params))
     #   cog.outl("    # TODO: With multiple threads we sometimes get an error reading progress file")
     #   cog.outl("    lit ../demos/ --xunit-xml-output results.xml -a -j1")
-    #   cog.outl("  if: env.SHOULD_CONTINUE == 'YES' && ( ${{ failure() }} || ${{ success() }} )")
+    #   cog.outl("  if: ${{ env.SHOULD_CONTINUE == 'YES' && ( failure() || success() ) }}")
     #   cog.outl()
     # ]]]
     - name: Test_O0_SANITIZERS_OFF_LTO_OFF
@@ -261,7 +261,7 @@ jobs:
         cd build_O0_SANITIZERS_OFF_LTO_OFF
         # TODO: With multiple threads we sometimes get an error reading progress file
         lit ../demos/ --xunit-xml-output results.xml -a -j1
-      if: env.SHOULD_CONTINUE == 'YES' && ( ${{ failure() }} || ${{ success() }} )
+      if: ${{ env.SHOULD_CONTINUE == 'YES' && ( failure() || success() ) }}
 
     - name: Test_O0_SANITIZERS_ON_LTO_OFF
       run: |
@@ -269,7 +269,7 @@ jobs:
         cd build_O0_SANITIZERS_ON_LTO_OFF
         # TODO: With multiple threads we sometimes get an error reading progress file
         lit ../demos/ --xunit-xml-output results.xml -a -j1
-      if: env.SHOULD_CONTINUE == 'YES' && ( ${{ failure() }} || ${{ success() }} )
+      if: ${{ env.SHOULD_CONTINUE == 'YES' && ( failure() || success() ) }}
 
     - name: Test_Os_SANITIZERS_OFF_LTO_OFF
       run: |
@@ -277,7 +277,7 @@ jobs:
         cd build_Os_SANITIZERS_OFF_LTO_OFF
         # TODO: With multiple threads we sometimes get an error reading progress file
         lit ../demos/ --xunit-xml-output results.xml -a -j1
-      if: env.SHOULD_CONTINUE == 'YES' && ( ${{ failure() }} || ${{ success() }} )
+      if: ${{ env.SHOULD_CONTINUE == 'YES' && ( failure() || success() ) }}
 
     - name: Test_Os_SANITIZERS_OFF_LTO_ON
       run: |
@@ -285,7 +285,7 @@ jobs:
         cd build_Os_SANITIZERS_OFF_LTO_ON
         # TODO: With multiple threads we sometimes get an error reading progress file
         lit ../demos/ --xunit-xml-output results.xml -a -j1
-      if: env.SHOULD_CONTINUE == 'YES' && ( ${{ failure() }} || ${{ success() }} )
+      if: ${{ env.SHOULD_CONTINUE == 'YES' && ( failure() || success() ) }}
 
     - name: Test_Os_SANITIZERS_ON_LTO_OFF
       run: |
@@ -293,7 +293,7 @@ jobs:
         cd build_Os_SANITIZERS_ON_LTO_OFF
         # TODO: With multiple threads we sometimes get an error reading progress file
         lit ../demos/ --xunit-xml-output results.xml -a -j1
-      if: env.SHOULD_CONTINUE == 'YES' && ( ${{ failure() }} || ${{ success() }} )
+      if: ${{ env.SHOULD_CONTINUE == 'YES' && ( failure() || success() ) }}
 
     - name: Test_Os_SANITIZERS_ON_LTO_ON
       run: |
@@ -301,7 +301,7 @@ jobs:
         cd build_Os_SANITIZERS_ON_LTO_ON
         # TODO: With multiple threads we sometimes get an error reading progress file
         lit ../demos/ --xunit-xml-output results.xml -a -j1
-      if: env.SHOULD_CONTINUE == 'YES' && ( ${{ failure() }} || ${{ success() }} )
+      if: ${{ env.SHOULD_CONTINUE == 'YES' && ( failure() || success() ) }}
 
     - name: Test_O3_SANITIZERS_OFF_LTO_OFF
       run: |
@@ -309,7 +309,7 @@ jobs:
         cd build_O3_SANITIZERS_OFF_LTO_OFF
         # TODO: With multiple threads we sometimes get an error reading progress file
         lit ../demos/ --xunit-xml-output results.xml -a -j1
-      if: env.SHOULD_CONTINUE == 'YES' && ( ${{ failure() }} || ${{ success() }} )
+      if: ${{ env.SHOULD_CONTINUE == 'YES' && ( failure() || success() ) }}
 
     - name: Test_O3_SANITIZERS_OFF_LTO_ON
       run: |
@@ -317,7 +317,7 @@ jobs:
         cd build_O3_SANITIZERS_OFF_LTO_ON
         # TODO: With multiple threads we sometimes get an error reading progress file
         lit ../demos/ --xunit-xml-output results.xml -a -j1
-      if: env.SHOULD_CONTINUE == 'YES' && ( ${{ failure() }} || ${{ success() }} )
+      if: ${{ env.SHOULD_CONTINUE == 'YES' && ( failure() || success() ) }}
 
     - name: Test_O3_SANITIZERS_ON_LTO_OFF
       run: |
@@ -325,7 +325,7 @@ jobs:
         cd build_O3_SANITIZERS_ON_LTO_OFF
         # TODO: With multiple threads we sometimes get an error reading progress file
         lit ../demos/ --xunit-xml-output results.xml -a -j1
-      if: env.SHOULD_CONTINUE == 'YES' && ( ${{ failure() }} || ${{ success() }} )
+      if: ${{ env.SHOULD_CONTINUE == 'YES' && ( failure() || success() ) }}
 
     - name: Test_O3_SANITIZERS_ON_LTO_ON
       run: |
@@ -333,7 +333,7 @@ jobs:
         cd build_O3_SANITIZERS_ON_LTO_ON
         # TODO: With multiple threads we sometimes get an error reading progress file
         lit ../demos/ --xunit-xml-output results.xml -a -j1
-      if: env.SHOULD_CONTINUE == 'YES' && ( ${{ failure() }} || ${{ success() }} )
+      if: ${{ env.SHOULD_CONTINUE == 'YES' && ( failure() || success() ) }}
 
     # [[[end]]]
 
@@ -343,4 +343,4 @@ jobs:
         report_paths: '**/results.xml'
         github_token: ${{ secrets.GITHUB_TOKEN }}
         check_name: ${{ matrix.build_platform }}
-      if: env.SHOULD_CONTINUE == 'YES' && ( ${{ failure() }} || ${{ success() }} )
+      if: ${{ env.SHOULD_CONTINUE == 'YES' && ( failure() || success() ) }}
