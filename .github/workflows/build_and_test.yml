@@ -322,3 +322,4 @@ jobs:
         report_paths: '**/results.xml'
         github_token: ${{ secrets.GITHUB_TOKEN }}
         check_name: ${{ matrix.build_platform }}
+      if: ${{ failure() }} || ${{ success() }}
