@@ -14,6 +14,10 @@
 #include <stdarg.h>
 #include <string.h>
 
+#ifdef __aarch64__
+#error
+#endif
+
 __attribute__((section(".thread_vars_bss"))) Thread* current_thread;
 
 __attribute__((section(".thread_structs"))) Thread all_threads[MAX_THREADS];
