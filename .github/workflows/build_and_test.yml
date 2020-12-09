@@ -22,6 +22,16 @@ jobs:
         python3 -m virtualenv ../checkenv
         source ../checkenv/bin/activate
         pip3 install cogapp pycodestyle
+        exit 1
+
+    # Require that the previous steps succeed but allow the next steps
+    # to fail and still run the rest of the checks.
+    - name: Set SHOULD_CONTINUE=YES
+      run: echo "SHOULD_CONTINUE=YES" >> $GITHUB_ENV
+      if: ${{ success() }}
+    - name: Set SHOULD_CONTINUE=NO
+      run: echo "SHOULD_CONTINUE=NO" >> $GITHUB_ENV
+      if: ${{ failure() }}
 
     - name: Check Cog
       run: |
@@ -36,7 +46,7 @@ jobs:
         git checkout .
         # Fail the stage so we know to re-run cog
         ! test -s /tmp/cog.diff
-      if: ${{ failure() }} || ${{ success() }}
+      if: env.SHOULD_CONTINUE == 'YES'
 
     - name: Clang Format
       run: |
@@ -48,18 +58,18 @@ jobs:
         # Reset for next checkout
         git checkout .
         ! test -s /tmp/clang-format.diff
-      if: ${{ failure() }} || ${{ success() }}
+      if: env.SHOULD_CONTINUE == 'YES'
 
     - name: Pycodestyle
       run: |
         source ../checkenv/bin/activate
         pycodestyle `find -name "*.py"`
-      if: ${{ failure() }} || ${{ success() }}
+      if: env.SHOULD_CONTINUE == 'YES'
 
     - name: Shellcheck
       run: |
         shellcheck `find -name "*.sh"`
-      if: ${{ failure() }} || ${{ success() }}
+      if: env.SHOULD_CONTINUE == 'YES'
 
   build:
     runs-on: ubuntu-latest
