@@ -14,7 +14,7 @@ For the best understanding we suggest that you:
 | [message](../demos/message/README.md)       | Passing messages between threads.                                                 |
 | [exit](../demos/exit/README.md)             | Threads exiting normally like any other C function.                               |
 | [spawn](../demos/spawn/README.md)           | One thread creating other threads.                                                |
-| stackcheck                                  | Detection of thread stack underflow or overflow when they try to yield.           |
+| [stackcheck](../demos/stackcheck/README.md) | Detection of thread stack underflow or overflow when they try to yield.           |
 | args                                        | Passing arguments to a thread.                                                    |
 | mutexes                                     | Locking a buffer using a mutex.                                                   |
 | timer                                       | Thread switching using a timer interrupt.                                         |
