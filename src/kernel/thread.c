@@ -549,7 +549,9 @@ void check_stack(void) {
   bool overflow = current_thread->top_canary != STACK_CANARY;
 
   if (underflow || overflow) {
-    // Don't schedule this again, or rely on its ID
+    /* Setting INVALID_THREAD here, instead of state=finished is fine,
+       because A: the thread didn't actually finish
+               B: the thread struct is actually invalid */
     current_thread->id = INVALID_THREAD;
     current_thread->name[0] = '\0';
 
@@ -561,11 +563,6 @@ void check_stack(void) {
     }
 
     if (kernel_config & KCFG_DESTROY_ON_STACK_ERR) {
-      /* Setting INVALID_THREAD here, instead of state=finished is fine,
-          because A: the thread didn't actually finish
-                  B: the thread struct is actually invalid */
-      current_thread->id = INVALID_THREAD;
-
       // Would clear heap allocs here but we can't trust the thread ID
 
       // TODO: we're probably losing kernel stack space every time we do this.
