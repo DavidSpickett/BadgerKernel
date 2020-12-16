@@ -545,8 +545,8 @@ void k_thread_wait(void) {
 }
 
 void check_stack(void) {
-  bool underflow = current_thread->bottom_canary != STACK_CANARY;
-  bool overflow = current_thread->top_canary != STACK_CANARY;
+  bool underflow = current_thread->top_canary != STACK_CANARY;
+  bool overflow = current_thread->bottom_canary != STACK_CANARY;
 
   if (underflow || overflow) {
     /* Setting INVALID_THREAD here, instead of state=finished is fine,

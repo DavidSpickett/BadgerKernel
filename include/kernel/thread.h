@@ -48,6 +48,7 @@ typedef struct {
 #endif /* CODE_PAGE_SIZE */
   uint64_t bottom_canary;
   uint8_t stack[THREAD_STACK_SIZE];
+  // Where "top" is the higher address
   uint64_t top_canary;
 } Thread;
 

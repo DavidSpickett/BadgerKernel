@@ -1,10 +1,10 @@
-Thread    underflow: recursing
-Thread  underflowed: yielding
-Thread     <HIDDEN>: Stack underflow!
-Thread      watcher: yielding
-Thread     overflow: overflowing
-Thread     overflow: yielding
+Thread     overflow: recursing
+Thread   overflowed: yielding
 Thread     <HIDDEN>: Stack overflow!
+Thread      watcher: yielding
+Thread    underflow: underflowing
+Thread    underflow: yielding
+Thread     <HIDDEN>: Stack underflow!
 Thread      watcher: resuming
 Thread      watcher: All threads errored
 Thread      watcher: exiting

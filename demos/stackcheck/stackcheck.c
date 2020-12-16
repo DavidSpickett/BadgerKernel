@@ -17,8 +17,8 @@ __attribute__((noinline)) void recurse(int repeat) {
   return;
 }
 
-void underflow() {
-  set_thread_name(CURRENT_THREAD, "underflow");
+void overflow() {
+  set_thread_name(CURRENT_THREAD, "overflow");
 
   char dummy;
   size_t distance = (void*)(&dummy) - (void*)current_thread;
@@ -27,18 +27,18 @@ void underflow() {
   // Reset the name so we have consistent test output
   // To do this we need a correct thread ID
   current_thread->id = 0;
-  set_thread_name(CURRENT_THREAD, "underflowed");
+  set_thread_name(CURRENT_THREAD, "overflowed");
   yield();
 }
 
-void overflow() {
+void underflow() {
   char dummy;
   size_t distance = (void*)(&dummy) - (void*)current_thread;
-  log_event("overflowing");
+  log_event("underflowing");
   /* We're probably very close to top of stack
      so this is overkill. At least we can be sure that:
      (top of stack - sp) < (sp - current_thread)
-     So overflow is garaunteed.
+     So underflow is garaunteed.
   */
   // Set INVALID_THREAD so scheduler doesn't check that position == ID
   memset((void*)&dummy, INVALID_THREAD, distance);
@@ -65,6 +65,6 @@ void setup(void) {
   set_kernel_config(KCFG_DESTROY_ON_STACK_ERR, KCFG_LOG_SCHEDULER);
 
   add_named_thread(watcher, "watcher");
-  add_named_thread(overflow, "overflow");
-  underflow();
+  add_named_thread(underflow, "underflow");
+  overflow();
 }
