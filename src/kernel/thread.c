@@ -41,7 +41,7 @@ CodeBackingPage code_backing_pages[CODE_BACKING_PAGES];
 #endif /* CODE_PAGE_SIZE */
 
 extern void setup(void);
-void check_stack(void);
+bool check_stack(void);
 static int k_add_named_thread_with_args(void (*worker)(), const char* name,
                                         const ThreadArgs* args,
                                         uint16_t remove_permissions);
@@ -378,9 +378,6 @@ bool k_thread_cancel(int tid) {
 }
 
 static bool k_do_yield(Thread* to) {
-  // Will invalidate current thread if there's a stack problem
-  check_stack();
-
   next_thread = to;
   // Assembly handler will see next_thread set and do the switch
   do_scheduler();
@@ -389,13 +386,24 @@ static bool k_do_yield(Thread* to) {
 }
 
 bool k_yield(int tid, int kind) {
+  // Marks current thread invalid if problems are found
+  bool current_stack_ok = check_stack();
+
   switch (kind) {
+    // We can YIELD_ANY even if current stack is invalid
+    // Since the scheduler will never pick an invalid thread
     case YIELD_ANY:
       assert(tid == INVALID_THREAD);
       return k_do_yield(NULL);
+    // Here when the current stack is invalid we must not return
+    // Instead, convert it into a YIELD_ANY and continue
     case YIELD_TO:
       if (!can_schedule_thread(tid)) {
-        return false;
+        if (current_stack_ok) {
+          return false;
+        } else {
+          return k_do_yield(NULL);
+        }
       }
       return k_do_yield(&all_threads[tid]);
     default:
@@ -557,7 +565,7 @@ void k_thread_wait(void) {
   do_scheduler();
 }
 
-void check_stack(void) {
+bool check_stack(void) {
   bool underflow = current_thread->top_canary != STACK_CANARY;
   bool overflow = current_thread->bottom_canary != STACK_CANARY;
 
@@ -580,7 +588,11 @@ void check_stack(void) {
     if (!(kernel_config & KCFG_DESTROY_ON_STACK_ERR)) {
       k_exit(1);
     }
+
+    return false;
   }
+
+  return true;
 }
 
 __attribute__((noreturn)) void thread_start(void) {

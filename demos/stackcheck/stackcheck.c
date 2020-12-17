@@ -28,7 +28,11 @@ void overflow() {
   // To do this we need a correct thread ID
   current_thread->id = 0;
   set_thread_name(CURRENT_THREAD, "overflowed");
-  yield();
+
+  // Attempt to yield back to ourselves to show that
+  // stack checks apply to yield_to. This will not return.
+  yield_to(get_thread_id());
+  __builtin_unreachable();
 }
 
 void underflow() {
