@@ -10,6 +10,36 @@
 #include "port/port.h"
 #include <stddef.h>
 
+static bool check_stack(void) {
+  bool underflow = current_thread->top_canary != STACK_CANARY;
+  bool overflow = current_thread->bottom_canary != STACK_CANARY;
+
+  if (underflow || overflow) {
+    /* Setting INVALID_THREAD here, instead of state=finished is fine,
+       because A: the thread didn't actually finish
+               B: the thread struct is actually invalid */
+    current_thread->id = INVALID_THREAD;
+    current_thread->name[0] = '\0';
+
+    // Would clear heap allocs here but we can't trust the thread ID
+
+    if (underflow) {
+      k_log_event("Stack underflow!");
+    }
+    if (overflow) {
+      k_log_event("Stack overflow!");
+    }
+
+    if (!(kernel_config & KCFG_DESTROY_ON_STACK_ERR)) {
+      k_exit(1);
+    }
+
+    return false;
+  }
+
+  return true;
+}
+
 static const char* syscall_name(size_t num) {
   /* [[[cog
   import cog
@@ -83,6 +113,14 @@ static void k_invalid_syscall(size_t arg1, size_t arg2, size_t arg3,
 typedef size_t (*SyscallFn)();
 void k_handle_syscall(void) {
   RegisterContext* ctx = (RegisterContext*)current_thread->stack_ptr;
+
+  if (!check_stack()) {
+    // Current thread now invalid, convert into a yield to pick
+    // another valid thread. We will not return to the current.
+    ctx->syscall_num = syscall_yield;
+    ctx->arg1 = YIELD_ANY;
+    ctx->arg0 = INVALID_THREAD;
+  }
 
   SyscallFn syscall_fn = NULL;
   bool has_result = true;

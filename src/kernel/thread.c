@@ -41,7 +41,6 @@ CodeBackingPage code_backing_pages[CODE_BACKING_PAGES];
 #endif /* CODE_PAGE_SIZE */
 
 extern void setup(void);
-bool check_stack(void);
 static int k_add_named_thread_with_args(void (*worker)(), const char* name,
                                         const ThreadArgs* args,
                                         uint16_t remove_permissions);
@@ -386,24 +385,13 @@ static bool k_do_yield(Thread* to) {
 }
 
 bool k_yield(int tid, int kind) {
-  // Marks current thread invalid if problems are found
-  bool current_stack_ok = check_stack();
-
   switch (kind) {
-    // We can YIELD_ANY even if current stack is invalid
-    // Since the scheduler will never pick an invalid thread
     case YIELD_ANY:
       assert(tid == INVALID_THREAD);
       return k_do_yield(NULL);
-    // Here when the current stack is invalid we must not return
-    // Instead, convert it into a YIELD_ANY and continue
     case YIELD_TO:
       if (!can_schedule_thread(tid)) {
-        if (current_stack_ok) {
-          return false;
-        } else {
-          return k_do_yield(NULL);
-        }
+        return false;
       }
       return k_do_yield(&all_threads[tid]);
     default:
@@ -563,36 +551,6 @@ void k_thread_wait(void) {
   current_thread->state = waiting;
   // Manually move to next thread
   do_scheduler();
-}
-
-bool check_stack(void) {
-  bool underflow = current_thread->top_canary != STACK_CANARY;
-  bool overflow = current_thread->bottom_canary != STACK_CANARY;
-
-  if (underflow || overflow) {
-    /* Setting INVALID_THREAD here, instead of state=finished is fine,
-       because A: the thread didn't actually finish
-               B: the thread struct is actually invalid */
-    current_thread->id = INVALID_THREAD;
-    current_thread->name[0] = '\0';
-
-    // Would clear heap allocs here but we can't trust the thread ID
-
-    if (underflow) {
-      k_log_event("Stack underflow!");
-    }
-    if (overflow) {
-      k_log_event("Stack overflow!");
-    }
-
-    if (!(kernel_config & KCFG_DESTROY_ON_STACK_ERR)) {
-      k_exit(1);
-    }
-
-    return false;
-  }
-
-  return true;
 }
 
 __attribute__((noreturn)) void thread_start(void) {

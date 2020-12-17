@@ -24,15 +24,11 @@ void overflow() {
   size_t distance = (void*)(&dummy) - (void*)current_thread;
   log_event("recursing");
   recurse(distance / ALLOC_SIZE);
-  // Reset the name so we have consistent test output
-  // To do this we need a correct thread ID
-  current_thread->id = 0;
-  set_thread_name(CURRENT_THREAD, "overflowed");
 
-  // Attempt to yield back to ourselves to show that
-  // stack checks apply to yield_to. This will not return.
-  yield_to(get_thread_id());
-  __builtin_unreachable();
+  // This causes a syscall, which checks the stack
+  // and marks this thread as invalid.
+  log_event("syscalling");
+  set_thread_name(CURRENT_THREAD, "overflowed");
 }
 
 void underflow() {
