@@ -34,7 +34,6 @@
 #endif
 
 void load_first_thread(void);
-void load_next_thread(void);
 
 void platform_init_register_context(RegisterContext* regs);
 void print_register_context(const RegisterContext* ctx);

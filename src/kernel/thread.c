@@ -378,6 +378,7 @@ bool k_thread_cancel(int tid) {
 }
 
 static bool k_do_yield(Thread* to) {
+  // Will invalidate current thread if there's a stack problem
   check_stack();
 
   next_thread = to;
@@ -567,6 +568,8 @@ void check_stack(void) {
     current_thread->id = INVALID_THREAD;
     current_thread->name[0] = '\0';
 
+    // Would clear heap allocs here but we can't trust the thread ID
+
     if (underflow) {
       k_log_event("Stack underflow!");
     }
@@ -574,14 +577,7 @@ void check_stack(void) {
       k_log_event("Stack overflow!");
     }
 
-    if (kernel_config & KCFG_DESTROY_ON_STACK_ERR) {
-      // Would clear heap allocs here but we can't trust the thread ID
-
-      // TODO: we're probably losing kernel stack space every time we do this.
-      // (on arches with banked stack pointers)
-      load_next_thread();
-    } else {
-      // TODO: not covered by tests
+    if (!(kernel_config & KCFG_DESTROY_ON_STACK_ERR)) {
       k_exit(1);
     }
   }

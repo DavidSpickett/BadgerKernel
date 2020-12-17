@@ -146,7 +146,6 @@ load_first_thread:
   ldr lr, =thread_start
   bx lr
 
-.global load_next_thread
 .thumb_func
 load_next_thread:
   @ When a stack check for the current thread fails,
