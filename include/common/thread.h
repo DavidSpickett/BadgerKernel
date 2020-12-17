@@ -17,10 +17,13 @@
 // Max strlen() of a thread name
 #define THREAD_NAME_MAX_LEN (THREAD_NAME_SIZE - 1)
 
-#define KCFG_DESTROY_ON_STACK_ERR 1 << 0
-#define KCFG_LOG_SCHEDULER        1 << 1
-#define KCFG_LOG_THREADS          1 << 2
-#define KCFG_COLOUR_OUTPUT        1 << 3
+/* clang-format off */
+
+#define KCFG_DESTROY_ON_STACK_ERR 1 << 0 // Destroy threads with stack issues
+                                         // (instead of exiting the kernel completely)
+#define KCFG_LOG_SCHEDULER        1 << 1 // Print messages from the scheduler
+#define KCFG_LOG_THREADS          1 << 2 // Print messages from threads
+#define KCFG_COLOUR_OUTPUT        1 << 3 // Apply colours to messages
 #define KCFG_LOG_FAILED_ERRNO     1 << 4 // Log failed syscalls
 
 /* [[[cog
@@ -48,12 +51,14 @@ for number, name, define, type in properties:
 
 #define TPERM_NONE          (0)
 #define TPERM_ALL           (0xFFFF)
-#define TPERM_CREATE        (1 << 0)
-#define TPERM_FILE          (1 << 1)
-#define TPERM_ALLOC         (1 << 2)
-#define TPERM_KCONFIG       (1 << 3)
-#define TPERM_TCONFIG       (1 << 4)
-#define TPERM_TCONFIG_OTHER (1 << 5)
+#define TPERM_CREATE        (1 << 0) // Create new threads
+#define TPERM_FILE          (1 << 1) // Read/write files
+#define TPERM_ALLOC         (1 << 2) // Dynamically allocate memory
+#define TPERM_KCONFIG       (1 << 3) // Change the kernel configuration
+#define TPERM_TCONFIG       (1 << 4) // Configure the current thread
+#define TPERM_TCONFIG_OTHER (1 << 5) // Configure other threads
+
+/* clang-format on */
 
 // Use when removing permissions via add_thread
 #define TPERM_NO_ALL     ((uint32_t)TPERM_ALL << TFLAG_PERM_SHIFT)
@@ -95,6 +100,8 @@ typedef struct {
 #define USER_CONST const
 #endif
 
+// This strcuture is available to threads from userspace
+// and allows us to avoid syscalls for common operations.
 typedef struct {
   USER_CONST int id;
   USER_CONST char name[THREAD_NAME_SIZE];
