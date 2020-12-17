@@ -8,8 +8,6 @@
 #define ALLOC_SIZE 500
 __attribute__((noinline)) void recurse(int repeat) {
   char dummy[ALLOC_SIZE];
-  // Set all 1s so that our permissions will allow
-  // us to reset the thread name later.
   memset((void*)dummy, -1, ALLOC_SIZE);
   if (repeat) {
     recurse(repeat - 1);
