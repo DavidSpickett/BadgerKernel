@@ -16,7 +16,7 @@ For the best understanding we suggest that you:
 | [spawn](../demos/spawn/README.md)           | One thread creating other threads.                                                |
 | [stackcheck](../demos/stackcheck/README.md) | Detection of thread stack underflow or overflow when they try to yield.           |
 | [args](../demos/args/README.md)             | Passing arguments to a thread.                                                    |
-| mutexes                                     | Locking a buffer using a mutex.                                                   |
+| [mutexes](../demos/mutexes/README.md)       | Locking a buffer using a mutex.                                                   |
 | timer                                       | Thread switching using a timer interrupt.                                         |
 | threadlocalstorage (Arm/Thumb)              | Using thread local storage (TLS) to give each thread it's own 'global' variables. |
 | conditionvariables                          | Waiting on, signalling and broadcasting to condition variables.                   |
