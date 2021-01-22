@@ -1,12 +1,12 @@
-#include "user/fibre.h"
+#include "user/fiber.h"
 #include "port/port.h"
 #include <string.h>
 
-static void init_context(FibreContext* ctx) {
-  memset(ctx, 0, sizeof(FibreContext));
+static void init_context(FiberContext* ctx) {
+  memset(ctx, 0, sizeof(FiberContext));
 }
 
-void make_context(FibreContext* ctx, void (*function)(FibreContext*),
+void make_context(FiberContext* ctx, void (*function)(FiberContext*),
                   uint8_t* stack_ptr) {
   init_context(ctx);
 
@@ -16,11 +16,11 @@ void make_context(FibreContext* ctx, void (*function)(FibreContext*),
 
   // In case the function returns normally, we'll catch it
   ctx->lr = (size_t)set_context_from_stack_address;
-  // Putting the address of the return context on the new fibre's stack
-  ctx->sp -= sizeof(FibreContext*);
+  // Putting the address of the return context on the new fiber's stack
+  ctx->sp -= sizeof(FiberContext*);
   // Note that we align, then write to it
   ctx->sp = ALIGN_STACK_PTR(ctx->sp);
 
-  FibreContext** ctx_addr_on_stack = (FibreContext**)ctx->sp;
+  FiberContext** ctx_addr_on_stack = (FiberContext**)ctx->sp;
   *ctx_addr_on_stack = ctx;
 }

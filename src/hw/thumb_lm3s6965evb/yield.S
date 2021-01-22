@@ -227,7 +227,7 @@ set_context:
   ldr r1,  [r0], #4 @ Our new PC
   bx r1
 
-@ Used to catch fibres returning normally
+@ Used to catch fibers returning normally
 .global set_context_from_stack_address
 .thumb_func
 set_context_from_stack_address:

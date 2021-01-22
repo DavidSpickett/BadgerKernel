@@ -31,4 +31,4 @@ For the best understanding we suggest that you:
 | trace                                       | Redirecting another thread by writing to its PC.                                  |
 | signalhandling                              | Installing and invoking signal handlers.                                          |
 | backtrace                                   | Show callstack of user threads. (only tested on Arm -O0)                          |
-| fibres                                      | User space threading.                                                             |
+| fiber                                       | User space threading.                                                             |
