@@ -1,7 +1,7 @@
-#include "user/fibre.h"
+#include "user/fiber.h"
 #include "user/thread.h"
 
-void do_work(FibreContext* other) {
+void do_work(FiberContext* other) {
   log_event("EFGH");
   swap_context(other);
 
@@ -13,7 +13,7 @@ void do_work(FibreContext* other) {
 }
 
 void test_swap(void) {
-  FibreContext ctx;
+  FiberContext ctx;
   // Arm O0 = 512
   // AArch64 O0 = 1024
   size_t do_work_stack_size = 1024;
@@ -39,13 +39,13 @@ void setup(void) {
 
   volatile int num = 0;
 
-  FibreContext ctx;
+  FiberContext ctx;
   get_context(&ctx);
 
   if (num) {
-    log_event("Hello fibres again!");
+    log_event("Hello fiber again!");
   } else {
-    log_event("Hello fibres!");
+    log_event("Hello fiber!");
   }
 
   if (!num) {

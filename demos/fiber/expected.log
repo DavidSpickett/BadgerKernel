@@ -1,5 +1,5 @@
-Thread            0: Hello fibres!
-Thread            0: Hello fibres again!
+Thread            0: Hello fiber!
+Thread            0: Hello fiber again!
 Thread            0: ABCD
 Thread            0: EFGH
 Thread            0: HIJK

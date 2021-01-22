@@ -76,7 +76,7 @@ typedef struct {
   size_t lr; // aka x30
   size_t sp;
   size_t pc;
-} __attribute__((packed)) FibreContext;
+} __attribute__((packed)) FiberContext;
 
 #define PC_ADD_MODE(pc)      (pc)
 #define PC_REMOVE_MODE(pc)   (pc)

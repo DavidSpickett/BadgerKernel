@@ -24,7 +24,7 @@ For implementation details see the [design doc](docs/design.md).
 * Signal handling
 * Permissions and errno for error handling
 * Access to thread registers for tracing
-* User space threads (fibres)
+* User space threads (fibers)
 * Stack under/overflow detection
 
 ## Building
