@@ -21,7 +21,7 @@ For the best understanding we suggest that you:
 | threadlocalstorage (Arm/Thumb)                              | Using thread local storage (TLS) to give each thread it's own 'global' variables. |
 | [conditionvariables](../demos/conditionvariables/README.md) | Waiting on, signalling and broadcasting to condition variables.                   |
 | [cancel](../demos/cancel/README.md)                         | Cancelling threads.                                                               |
-| file                                                        | Read from a file.                                                                 |
+| [file](../demos/file/README.md)                             | Read from a file.                                                                 |
 | alloc                                                       | Use of malloc/free.                                                               |
 | loadbinary                                                  | Loading a thread from a separate binary.                                          |
 | loadbinaries                                                | Loading multiple binaries, swapping them as they become active.                   |
