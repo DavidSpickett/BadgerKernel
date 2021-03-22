@@ -17,6 +17,7 @@ void do_svc(SVCCode code) {
 }
 
 size_t generic_semihosting_call(size_t operation, size_t* parameters) {
+#ifdef SEMIHOSTING_ENABLED
   size_t ret;
   // We assume that we're already in kernel mode by this point
   asm volatile("mov " RCHR "0, %[operation]\n\t"
@@ -27,6 +28,11 @@ size_t generic_semihosting_call(size_t operation, size_t* parameters) {
                : [ parameters ] "r"(parameters), [ operation ] "r"(operation)
                : RCHR "0", RCHR "1", "memory");
   return ret;
+#else
+  (void)operation;
+  (void)parameters;
+  return -1;
+#endif
 }
 
 size_t generic_syscall(Syscall num, size_t arg1, size_t arg2, size_t arg3,
