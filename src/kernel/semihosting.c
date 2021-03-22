@@ -1,4 +1,5 @@
 #include "kernel/semihosting.h"
+#include "common/print.h"
 
 // Arm semihosting routines
 // platform specific asm in generic_semihosting_call
@@ -21,5 +22,12 @@ void k_exit(int status) {
   size_t* parameters = (size_t*)event;
 #endif
   generic_semihosting_call(SYS_EXIT, parameters);
+#ifdef SEMIHOSTING_ENABLED
   __builtin_unreachable();
+#else
+  (void)status;
+  printf("Exiting kernel\n");
+  while (1) {
+  }
+#endif
 }
