@@ -532,6 +532,7 @@ int k_add_thread(const char* name, const ThreadArgs* args, void* worker,
     case THREAD_FILE:
 #ifndef CODE_PAGE_SIZE
       assert(0);
+      __builtin_unreachable();
 #else
       return k_add_thread_from_file_with_args((const char*)worker, args,
                                               remove_permissions);
@@ -541,7 +542,7 @@ int k_add_thread(const char* name, const ThreadArgs* args, void* worker,
                                           remove_permissions);
     default:
       assert(0 && "invalid flags!");
-      break;
+      __builtin_unreachable();
   }
 
   __builtin_unreachable();
