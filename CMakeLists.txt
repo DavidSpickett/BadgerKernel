@@ -61,7 +61,7 @@ endif()
 set( CMAKE_C_COMPILER "${PREFIX}gcc" )
 set( CMAKE_CXX_COMPILER "${PREFIX}g++" )
 
-set( CFLAGS "-DSTACK_SIZE=${STACK_SIZE} -g3 -O${OPT_LEVEL} -Wall -Werror")
+set( CFLAGS "-DSTACK_SIZE=${STACK_SIZE} -g3 -O${OPT_LEVEL} -Wall -Werror -Wextra")
 
 # Ignore lto type mismatch error which triggers at O0 for UBSAN handlers
 # I *think*, due to https://gcc.gnu.org/bugzilla/show_bug.cgi?id=78562#c6
