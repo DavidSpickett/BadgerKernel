@@ -56,26 +56,20 @@ public:
   UserPointer(void* ptr) : m_ptr(ptr) {}
 
   // Write a value back to userspace
-  template <typename P,
-      typename = typename std::enable_if<
-          (std::is_same<P, PropState>::value)       ||
-          (std::is_same<P, PropPermissions>::value) ||
-          (std::is_same<P, PropChild>::value)
-      >::type>
-  void set_value(typename P::type value) {
-    *static_cast<typename P::type*>(m_ptr) = value;
-  }
-
-  // Error when the parameter type is != the property type
-  // Even if the compiler could implicitly cast to it.
-  // E.g. p.set_value<PropChild>((uin16_t)1); is an error
   template <typename P, typename T,
       typename = typename std::enable_if<
-          (std::is_same<P, PropState>::value       && !std::is_same<T, typename P::type>::value) ||
-          (std::is_same<P, PropPermissions>::value && !std::is_same<T, typename P::type>::value) ||
-          (std::is_same<P, PropChild>::value       && !std::is_same<T, typename P::type>::value)
+          (std::is_same<P, PropState>::value       ||
+           std::is_same<P, PropPermissions>::value ||
+           std::is_same<P, PropChild>::value
+          ) &&
+          // Error when the parameter type is != the property type
+          // Even if the compiler could implicitly cast to it.
+          // E.g. p.set_value<PropChild>((uin16_t)1); is an error
+          std::is_same<T, typename P::type>::value
       >::type>
-  void set_value(T value) = delete;
+  void set_value(T value) {
+    *static_cast<T*>(m_ptr) = value;
+  }
 
   // Get the user pointer as a pointer to a specific type that you can write to
   template <typename P,
