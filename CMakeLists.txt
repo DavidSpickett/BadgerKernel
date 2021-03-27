@@ -10,6 +10,7 @@ option( CCACHE "Enable ccache." ON )
 set( SEMIHOSTING ON )
 set( STACK_SIZE 2 ) # In KB
 set( RAM_SIZE 0x100000 ) # 1MB in bytes
+set( LINKER_SCRIPT "kernel.ld" )
 
 string( TOLOWER "${BUILD_PLATFORM}" BP_LOWER )
 
@@ -50,6 +51,7 @@ message(STATUS "LTO is ${LTO}")
 message(STATUS "COVERAGE is ${COVERAGE}")
 message(STATUS "STACK_SIZE is ${STACK_SIZE}KB")
 message(STATUS "SEMIHOSTING is ${SEMIHOSTING}")
+message(STATUS "LINKER_SCRIPT is ${LINKER_SCRIPT}")
 
 if(CCACHE)
   find_program(CCACHE_FOUND ccache)
