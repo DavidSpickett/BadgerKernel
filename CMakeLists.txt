@@ -7,6 +7,7 @@ set( OPT_LEVEL "3" CACHE STRING "Compiler optmisation level." )
 option( SANITIZERS "Enable UBSAN" OFF )
 option( LTO "Enable link time optimisation." OFF )
 option( CCACHE "Enable ccache." ON )
+set( SEMIHOSTING ON )
 set( STACK_SIZE 2 ) # In KB
 set( RAM_SIZE 0x100000 ) # 1MB in bytes
 set( LINKER_SCRIPT "kernel.ld" )
@@ -49,6 +50,7 @@ message(STATUS "SANITIZERS are ${SANITIZERS}")
 message(STATUS "LTO is ${LTO}")
 message(STATUS "COVERAGE is ${COVERAGE}")
 message(STATUS "STACK_SIZE is ${STACK_SIZE}KB")
+message(STATUS "SEMIHOSTING is ${SEMIHOSTING}")
 message(STATUS "LINKER_SCRIPT is ${LINKER_SCRIPT}")
 
 if(CCACHE)
@@ -92,6 +94,10 @@ endif()
 if(SANITIZERS)
   set( CFLAGS "${CFLAGS} -fsanitize=undefined" )
 endif(SANITIZERS)
+
+if(SEMIHOSTING)
+  set( CFLAGS "${CFLAGS} -DSEMIHOSTING_ENABLED" )
+endif(SEMIHOSTING)
 
 set( CMAKE_C_FLAGS "${PLATFORM} ${CFLAGS} -std=gnu11" )
 set( CMAKE_CXX_FLAGS "${PLATFORM} ${CFLAGS} -fno-rtti -fno-exceptions -fno-unwind-tables -std=c++11" )
