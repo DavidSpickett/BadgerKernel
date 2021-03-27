@@ -9,6 +9,7 @@ option( LTO "Enable link time optimisation." OFF )
 option( CCACHE "Enable ccache." ON )
 set( STACK_SIZE 2 ) # In KB
 set( RAM_SIZE 0x100000 ) # 1MB in bytes
+set( LINKER_SCRIPT "kernel.ld" )
 
 string( TOLOWER "${BUILD_PLATFORM}" BP_LOWER )
 
@@ -48,6 +49,7 @@ message(STATUS "SANITIZERS are ${SANITIZERS}")
 message(STATUS "LTO is ${LTO}")
 message(STATUS "COVERAGE is ${COVERAGE}")
 message(STATUS "STACK_SIZE is ${STACK_SIZE}KB")
+message(STATUS "LINKER_SCRIPT is ${LINKER_SCRIPT}")
 
 if(CCACHE)
   find_program(CCACHE_FOUND ccache)
