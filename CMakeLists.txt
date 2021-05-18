@@ -11,6 +11,7 @@ set( SEMIHOSTING ON )
 set( STACK_SIZE 2 ) # In KB
 set( RAM_SIZE 0x100000 ) # 1MB in bytes
 set( LINKER_SCRIPT "kernel.ld" )
+set( SERIAL_DRIVER "virt_serial.c" )
 
 string( TOLOWER "${BUILD_PLATFORM}" BP_LOWER )
 
@@ -19,7 +20,6 @@ if( BP_LOWER STREQUAL "arm" )
   set( PLATFORM     "-mcpu=cortex-a15" )
   set( PLATFORM_SRC "arm_virt" )
   set( RAM_START    "0x40000000" )
-  set( UART_BASE    "0x09000000" )
   set( QEMU_CMD     "qemu-system-arm -M virt -cpu cortex-a15" )
 elseif( BP_LOWER STREQUAL "aarch64" )
   set( PREFIX       "aarch64-none-elf-" )
@@ -27,7 +27,6 @@ elseif( BP_LOWER STREQUAL "aarch64" )
   set( PLATFORM     "-mcpu=cortex-a57 -mgeneral-regs-only" )
   set( PLATFORM_SRC "aarch64_virt" )
   set( RAM_START    "0x40000000" )
-  set( UART_BASE    "0x09000000" )
   set( QEMU_CMD     "qemu-system-aarch64 -M virt -cpu cortex-a57" )
   # O3 LTO UBSAN trace demo needs some extra
   set( STACK_SIZE 3 )
@@ -37,7 +36,6 @@ elseif( BP_LOWER STREQUAL "thumb" )
   set( PLATFORM_SRC "thumb_lm3s6965evb" )
   set( RAM_START    "0x20000000" )
   set( RAM_SIZE     0x10000)
-  set( UART_BASE    "0x4000C000" )
   set( QEMU_CMD     "qemu-system-arm -M lm3s6965evb -cpu cortex-m4" )
 else()
   message(FATAL_ERROR "Invalid platform \"${BP_LOWER}\". \
@@ -52,6 +50,7 @@ message(STATUS "COVERAGE is ${COVERAGE}")
 message(STATUS "STACK_SIZE is ${STACK_SIZE}KB")
 message(STATUS "SEMIHOSTING is ${SEMIHOSTING}")
 message(STATUS "LINKER_SCRIPT is ${LINKER_SCRIPT}")
+message(STATUS "SERIAL_DRIVER is ${SERIAL_DRIVER}")
 
 if(CCACHE)
   find_program(CCACHE_FOUND ccache)
@@ -85,7 +84,7 @@ endif()
 
 # -fno-common to disallow variables being present in multiple compliaton units
 set( CFLAGS "${CFLAGS} -ffreestanding -nostdlib -fno-common" )
-add_definitions(-DUART_BASE=${UART_BASE} -DSRC_ROOT=\"${CMAKE_SOURCE_DIR}\" )
+add_definitions( -DSRC_ROOT=\"${CMAKE_SOURCE_DIR}\" )
 
 if(LTO)
   set( CFLAGS "${CFLAGS} -flto -ffunction-sections" )
@@ -122,6 +121,8 @@ set( KERNEL_SOURCES
   src/hw/${PLATFORM_SRC}/startup.s
   src/hw/${PLATFORM_SRC}/yield.S
   src/hw/${PLATFORM_SRC}/port.c
+
+  src/hw/driver/${SERIAL_DRIVER}
 
   src/common/print.cpp
   src/common/trace.c
