@@ -1,4 +1,5 @@
 #include "common/print.h"
+#include "common/serial_port.h"
 #include "common/thread.h"
 #include <ctype.h>
 #include <stdint.h>
@@ -13,6 +14,7 @@ extern "C" void __cxa_pure_virtual() {
 
 class PrintOutput {
 public:
+  PrintOutput() {}
   explicit PrintOutput(char* out) : m_out(out) {}
 
   virtual void write(int chr) const = 0;
@@ -47,12 +49,12 @@ protected:
 
 class SerialPrintOutput : public PrintOutput {
 public:
-  SerialPrintOutput() : PrintOutput(reinterpret_cast<char*>(UART_BASE)) {}
+  SerialPrintOutput() {
+    serial_port.init();
+  }
 
   void write(int chr) const final {
-    volatile uint32_t* const UART0 = (uint32_t*)m_out;
-    *UART0 = (uint32_t)chr;
-    // We do not modify buf here, serial port doesn't move
+    serial_port.putchar(chr);
   }
 };
 
