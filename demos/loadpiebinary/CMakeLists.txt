@@ -1,5 +1,6 @@
 # To support LTO we need to attribute used a lot of stuff
-if(LTO)
+# We can not load binaries without semihosting
+if(LTO OR NOT SEMIHOSTING)
   return()
 endif()
 
