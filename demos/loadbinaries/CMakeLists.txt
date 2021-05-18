@@ -1,4 +1,5 @@
-if(LTO)
+# We can not load binary files without semihosting
+if(LTO OR NOT SEMIHOSTING)
   return()
 endif()
 

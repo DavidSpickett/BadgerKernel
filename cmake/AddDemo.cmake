@@ -28,21 +28,23 @@ function(__add_demo NAME TEST_TYPE MAX_THREADS)
     VERBATIM)
   add_dependencies(make_demos ${NAME})
 
-  add_custom_target(run_${NAME})
-  add_dependencies(run_${NAME} ${NAME})
+  if (NOT BP_LOWER STREQUAL "raspi4")
+    add_custom_target(run_${NAME})
+    add_dependencies(run_${NAME} ${NAME})
 
-  add_custom_command(TARGET run_${NAME} POST_BUILD
-    COMMAND eval "${QEMU}${NAME}"
-   VERBATIM)
+    add_custom_command(TARGET run_${NAME} POST_BUILD
+      COMMAND eval "${QEMU}${NAME}"
+     VERBATIM)
 
-  add_custom_target(debug_${NAME})
-  add_dependencies(debug_${NAME} ${NAME})
+    add_custom_target(debug_${NAME})
+    add_dependencies(debug_${NAME} ${NAME})
 
-  add_custom_command(TARGET debug_${NAME} POST_BUILD
-    COMMAND eval "${QEMU}${NAME} -s -S"
-    VERBATIM)
+    add_custom_command(TARGET debug_${NAME} POST_BUILD
+      COMMAND eval "${QEMU}${NAME} -s -S"
+      VERBATIM)
+  endif()
 
-  if(NOT TEST_TYPE STREQUAL "none")
+  if(NOT TEST_TYPE STREQUAL "none" AND NOT BP_LOWER STREQUAL "raspi4")
     # This could be done with add_test, but then we wouldn't see the failure output.
     add_custom_target(test_${NAME} ALL)
     add_dependencies(test_${NAME} ${NAME})
@@ -67,5 +69,5 @@ function(__add_demo NAME TEST_TYPE MAX_THREADS)
     else()
       message(FATAL_ERROR "Unknown testing type \"${TEST_TYPE}\" for demo \"${NAME}\"")
     endif()
-  endif(NOT TEST_TYPE STREQUAL "none")
+  endif(NOT TEST_TYPE STREQUAL "none" AND NOT BP_LOWER STREQUAL "raspi4")
 endfunction(__add_demo)

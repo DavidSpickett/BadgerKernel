@@ -1,4 +1,5 @@
-if(LTO)
+# We can not perform file operations without semihosting
+if(LTO OR NOT SEMIHOSTING)
   return()
 endif()
 
