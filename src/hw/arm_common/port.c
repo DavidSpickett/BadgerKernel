@@ -24,8 +24,8 @@ size_t generic_semihosting_call(size_t operation, size_t* parameters) {
                "mov " RCHR "1, %[parameters]\n\t"
                "" SEMIHOSTING_CALL "\n\t"
                "mov %[ret], " RCHR "0\n\t"
-               : [ ret ] "=r"(ret)
-               : [ parameters ] "r"(parameters), [ operation ] "r"(operation)
+               : [ret] "=r"(ret)
+               : [parameters] "r"(parameters), [operation] "r"(operation)
                : RCHR "0", RCHR "1", "memory");
   return ret;
 #else
@@ -49,13 +49,14 @@ size_t generic_syscall(Syscall num, size_t arg1, size_t arg2, size_t arg3,
      when LTO is enabled.
      r8 is used as r7 is the frame pointer on Thumb.
   */
-  asm volatile("mov " RCHR "" SYSCALL_REG ", %[num]\n\t"
-               "svc %[svc_syscall]\n\t"
-               : "=r"(reg0)
-               : "r"(reg0), "r"(reg1), "r"(reg2), "r"(reg3),
-                 [ svc_syscall ] "i"(svc_syscall), [ num ] "r"((size_t)num)
-               /* Clobbers the callee saved reg for num.
-                  Kernel saves the rest for us. */
-               : RCHR "" SYSCALL_REG, "memory");
+  asm volatile(
+      "mov " RCHR "" SYSCALL_REG ", %[num]\n\t"
+      "svc %[svc_syscall]\n\t"
+      : "=r"(reg0)
+      : "r"(reg0), "r"(reg1), "r"(reg2),
+        "r"(reg3), [svc_syscall] "i"(svc_syscall), [num] "r"((size_t)num)
+      /* Clobbers the callee saved reg for num.
+         Kernel saves the rest for us. */
+      : RCHR "" SYSCALL_REG, "memory");
   return reg0;
 }
