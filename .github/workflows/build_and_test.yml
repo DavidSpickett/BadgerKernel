@@ -50,6 +50,7 @@ jobs:
     - name: Clang Format
       run: |
         # Check that we ran clang-format
+        clang-format --version
         clang-format -i `find -name "*.c"` `find -name "*.cpp"` `find -name "*.h"`
         # See if anything changed
         git diff > /tmp/clang-format.diff
