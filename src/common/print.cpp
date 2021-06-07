@@ -14,9 +14,6 @@ extern "C" void __cxa_pure_virtual() {
 
 class PrintOutput {
 public:
-  PrintOutput() {}
-  explicit PrintOutput(char* out) : m_out(out) {}
-
   virtual void write(int chr) const = 0;
 
   int putchar_n(int chr, unsigned int repeat) const {
@@ -42,9 +39,6 @@ public:
     }
     return len;
   }
-
-protected:
-  mutable char* m_out;
 };
 
 class SerialPrintOutput : public PrintOutput {
@@ -60,12 +54,15 @@ public:
 
 class BufferPrintOutput : public PrintOutput {
 public:
-  using PrintOutput::PrintOutput;
+  BufferPrintOutput(char* out) : m_out(out) {}
 
   void write(int chr) const final {
     // Writing to a memory buffer, so inc pointer
     *m_out++ = (char)chr;
   }
+
+protected:
+  mutable char* m_out;
 };
 
 static const SerialPrintOutput serial_output;
