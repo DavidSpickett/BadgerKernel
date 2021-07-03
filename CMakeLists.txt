@@ -35,8 +35,6 @@ set( KERNEL_SOURCES
   ${CMAKE_SOURCE_DIR}/src/kernel/semihosting.c
   ${CMAKE_SOURCE_DIR}/src/kernel/file.c
 
-  ${CMAKE_SOURCE_DIR}/src/hw/arm_common/port.c
-
   ${CMAKE_SOURCE_DIR}/src/common/print.cpp
   ${CMAKE_SOURCE_DIR}/src/common/trace.c
   ${CMAKE_SOURCE_DIR}/src/common/assert.c

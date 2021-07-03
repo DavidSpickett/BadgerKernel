@@ -1,4 +1,5 @@
 set( KERNEL_SOURCES ${KERNEL_SOURCES}
+  ${CMAKE_SOURCE_DIR}/src/hw/arm_common/port.c
   ${CMAKE_SOURCE_DIR}/src/hw/arm_common/gic.c
   ${CMAKE_SOURCE_DIR}/src/hw/driver/virt_serial.c)
 
