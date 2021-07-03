@@ -14,7 +14,7 @@ function(__add_demo NAME TEST_TYPE MAX_THREADS)
   add_executable ( ${NAME} demos/${NAME}/${NAME}.c ${KERNEL_SOURCES} )
   target_compile_definitions(${NAME} PRIVATE MAX_THREADS=${MAX_THREADS})
 
-  target_link_libraries(${NAME} PRIVATE "-Wl,-T,${CMAKE_SOURCE_DIR}/linker/${LINKER_SCRIPT},-defsym=ram_start=${RAM_START},-defsym=ram_size=${RAM_SIZE},-lgcc,-lc,-N,--build-id=none")
+  target_link_libraries(${NAME} PRIVATE "-Wl,-T,${CMAKE_SOURCE_DIR}/linker/${LINKER_SCRIPT},-lgcc,-lc,-N,--build-id=none")
 
   add_custom_command(TARGET ${NAME} PRE_BUILD
     COMMAND eval "${CMAKE_C_COMPILER} --version | head -n 1"

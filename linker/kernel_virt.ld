@@ -11,15 +11,18 @@ SECTIONS
     _init_array = .;
     *(.init_array*)
     _einit_array = .;
-    _etext = . ; }
- . = ram_start;
+    _etext = . ;
+ }
+ . = 0x40000000;
+ ram_start = . ;
  .data :
   AT ( ADDR (.text) + SIZEOF (.text) )
   {
     _data = . ;
     *(.data)
     *(.thread_vars)
-    _edata = . ; }
+    _edata = . ;
+ }
  /* align 16 for AArch64 */
  . = ALIGN(16);
  . = . + 0xC00; /* 3kB of stack for kernel */
@@ -42,7 +45,7 @@ SECTIONS
     _bend = . ;
   }
   ram_end = .;
-  ASSERT((ram_end <= (ram_start + ram_size)), "Too much data for RAM!")
+  ASSERT((ram_end <= (ram_start + 0x100000)), "Too much data for RAM!")
   /* Don't need unwinding info on Arm */
   /DISCARD/ : { *(.ARM.exidx* ) }
 }
