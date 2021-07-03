@@ -14,11 +14,9 @@ function(__add_demo NAME TEST_TYPE MAX_THREADS)
   # TODO: source file properties are only visible to the current CMakeLists.txt
   # Really, we shouldn't be using this hack. Instead using the normal compiler detection
   # mechanisms.
-  set_source_files_properties(
-    ${CMAKE_SOURCE_DIR}/src/hw/${PLATFORM_SRC}/startup.s
-    ${CMAKE_SOURCE_DIR}/src/hw/${PLATFORM_SRC}/yield.S
-    ${CMAKE_SOURCE_DIR}/src/hw/${PLATFORM_SRC}/vectors.s
-    PROPERTIES LANGUAGE C)
+  set( ASM_SOURCES ${KERNEL_SOURCES} )
+  list( FILTER ASM_SOURCES INCLUDE REGEX ".*\.(s|S)$" )
+  set_source_files_properties(${ASM_SOURCES} PROPERTIES LANGUAGE C)
 
   add_executable ( ${NAME} ${CMAKE_SOURCE_DIR}/demos/${NAME}/${NAME}.c ${KERNEL_SOURCES} )
   target_compile_definitions(${NAME} PRIVATE MAX_THREADS=${MAX_THREADS})

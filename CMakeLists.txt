@@ -37,13 +37,6 @@ else()
   Expected one of \"arm\", \"thumb\", \"aarch64\".")
 endif()
 
-set(KERNEL_SOURCES ${KERNEL_SOURCES}
-  # TODO: this file should be optional
-  ${CMAKE_SOURCE_DIR}/src/hw/${PLATFORM_SRC}/vectors.s
-  ${CMAKE_SOURCE_DIR}/src/hw/${PLATFORM_SRC}/startup.s
-  ${CMAKE_SOURCE_DIR}/src/hw/${PLATFORM_SRC}/yield.S
-)
-
 set( CMAKE_C_COMPILER "${PREFIX}gcc" )
 set( CMAKE_CXX_COMPILER "${PREFIX}g++" )
 
