@@ -26,9 +26,9 @@ function(__add_loadable PARENT NAME PIE TEST)
 
   target_compile_definitions(${PARENT} PRIVATE CODE_PAGE_SIZE=${CODE_PAGE_SIZE})
   # Need elf parser
-  target_sources(${PARENT} PRIVATE src/kernel/elf.c)
+  target_sources(${PARENT} PRIVATE ${CMAKE_SOURCE_DIR}/src/kernel/elf.c)
 
-  add_executable(${NAME} demos/${PARENT}/${NAME}.c)
+  add_executable(${NAME} ${CMAKE_SOURCE_DIR}/demos/${PARENT}/${NAME}.c)
   add_dependencies(${NAME} ${PARENT})
 
   set(LINK_CMD "-Wl,--defsym=code_page_size=${CODE_PAGE_SIZE},--build-id=none,")
@@ -36,7 +36,7 @@ function(__add_loadable PARENT NAME PIE TEST)
     target_compile_options(${NAME} PRIVATE -fpie -shared -fPIC)
     target_link_libraries(${NAME} PRIVATE "${LINK_CMD}-T,${CMAKE_SOURCE_DIR}/linker/pie_loadable.ld,-pie,-shared")
     if(SANITIZERS)
-      target_sources(${NAME} PRIVATE src/common/ubsan.c)
+      target_sources(${NAME} PRIVATE ${CMAKE_SOURCE_DIR}/src/common/ubsan.c)
     endif()
   else()
     target_link_libraries(${NAME} PRIVATE "${LINK_CMD}-T,${CMAKE_SOURCE_DIR}/linker/loadable.ld,--just-symbols=${PARENT}")

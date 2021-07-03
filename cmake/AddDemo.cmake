@@ -11,7 +11,16 @@ function(add_demo_no_test NAME MAX_THREADS)
 endfunction()
 
 function(__add_demo NAME TEST_TYPE MAX_THREADS)
-  add_executable ( ${NAME} demos/${NAME}/${NAME}.c ${KERNEL_SOURCES} )
+  # TODO: source file properties are only visible to the current CMakeLists.txt
+  # Really, we shouldn't be using this hack. Instead using the normal compiler detection
+  # mechanisms.
+  set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/src/hw/${PLATFORM_SRC}/startup.s
+    ${CMAKE_SOURCE_DIR}/src/hw/${PLATFORM_SRC}/yield.S
+    ${CMAKE_SOURCE_DIR}/src/hw/${PLATFORM_SRC}/vectors.s
+    PROPERTIES LANGUAGE C)
+
+  add_executable ( ${NAME} ${CMAKE_SOURCE_DIR}/demos/${NAME}/${NAME}.c ${KERNEL_SOURCES} )
   target_compile_definitions(${NAME} PRIVATE MAX_THREADS=${MAX_THREADS})
 
   target_link_libraries(${NAME} PRIVATE "-Wl,-T,${CMAKE_SOURCE_DIR}/linker/${LINKER_SCRIPT},-lgcc,-lc,-N,--build-id=none")

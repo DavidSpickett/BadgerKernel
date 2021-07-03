@@ -101,61 +101,57 @@ set( CMAKE_CXX_FLAGS "${PLATFORM} ${CFLAGS} -fno-rtti -fno-exceptions -fno-unwin
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 set( KERNEL_SOURCES
-  src/kernel/thread.c
-  src/kernel/thread_property.cpp
-  src/kernel/mutex.c
-  src/kernel/condition_variable.c
-  src/kernel/signal_handling.c
-  src/kernel/alloc.c
-  src/kernel/syscall.c
-  src/kernel/message.c
-  src/kernel/semihosting.c
-  src/kernel/file.c
+  ${CMAKE_SOURCE_DIR}/src/kernel/thread.c
+  ${CMAKE_SOURCE_DIR}/src/kernel/thread_property.cpp
+  ${CMAKE_SOURCE_DIR}/src/kernel/mutex.c
+  ${CMAKE_SOURCE_DIR}/src/kernel/condition_variable.c
+  ${CMAKE_SOURCE_DIR}/src/kernel/signal_handling.c
+  ${CMAKE_SOURCE_DIR}/src/kernel/alloc.c
+  ${CMAKE_SOURCE_DIR}/src/kernel/syscall.c
+  ${CMAKE_SOURCE_DIR}/src/kernel/message.c
+  ${CMAKE_SOURCE_DIR}/src/kernel/semihosting.c
+  ${CMAKE_SOURCE_DIR}/src/kernel/file.c
 
-  src/hw/arm_common/port.c
+  ${CMAKE_SOURCE_DIR}/src/hw/arm_common/port.c
 
-  src/hw/${PLATFORM_SRC}/vectors.s
-  src/hw/${PLATFORM_SRC}/startup.s
-  src/hw/${PLATFORM_SRC}/yield.S
-  src/hw/${PLATFORM_SRC}/port.c
+  ${CMAKE_SOURCE_DIR}/src/hw/${PLATFORM_SRC}/vectors.s
+  ${CMAKE_SOURCE_DIR}/src/hw/${PLATFORM_SRC}/startup.s
+  ${CMAKE_SOURCE_DIR}/src/hw/${PLATFORM_SRC}/yield.S
+  ${CMAKE_SOURCE_DIR}/src/hw/${PLATFORM_SRC}/port.c
 
-  src/hw/driver/${SERIAL_DRIVER}
+  ${CMAKE_SOURCE_DIR}/src/hw/driver/${SERIAL_DRIVER}
 
-  src/common/print.cpp
-  src/common/trace.c
-  src/common/assert.c
-  src/common/errno.c
+  ${CMAKE_SOURCE_DIR}/src/common/print.cpp
+  ${CMAKE_SOURCE_DIR}/src/common/trace.c
+  ${CMAKE_SOURCE_DIR}/src/common/assert.c
+  ${CMAKE_SOURCE_DIR}/src/common/errno.c
 
   # /user files here for threads within the same binary
-  src/user/errno.c
-  src/user/thread.c
-  src/user/file.c
-  src/user/util.c
-  src/user/alloc.c
-  src/user/mutex.c
-  src/user/condition_variable.c
-  src/user/timer.c
-  src/user/fiber.c
+  ${CMAKE_SOURCE_DIR}/src/user/errno.c
+  ${CMAKE_SOURCE_DIR}/src/user/thread.c
+  ${CMAKE_SOURCE_DIR}/src/user/file.c
+  ${CMAKE_SOURCE_DIR}/src/user/util.c
+  ${CMAKE_SOURCE_DIR}/src/user/alloc.c
+  ${CMAKE_SOURCE_DIR}/src/user/mutex.c
+  ${CMAKE_SOURCE_DIR}/src/user/condition_variable.c
+  ${CMAKE_SOURCE_DIR}/src/user/timer.c
+  ${CMAKE_SOURCE_DIR}/src/user/fiber.c
 )
 
 if(NOT BP_LOWER STREQUAL "aarch64")
-  set( KERNEL_SOURCES ${KERNEL_SOURCES} src/user/emutls.c)
+  set( KERNEL_SOURCES ${KERNEL_SOURCES} ${CMAKE_SOURCE_DIR}/src/user/emutls.c)
 endif()
 
 if(BP_LOWER STREQUAL "thumb" )
-  set( KERNEL_SOURCES ${KERNEL_SOURCES} src/hw/${PLATFORM_SRC}/timer.c)
+  set( KERNEL_SOURCES ${KERNEL_SOURCES} ${CMAKE_SOURCE_DIR}/src/hw/${PLATFORM_SRC}/timer.c)
 endif()
 
-set_property(SOURCE src/hw/${PLATFORM_SRC}/startup.s PROPERTY LANGUAGE C)
-set_property(SOURCE src/hw/${PLATFORM_SRC}/yield.S   PROPERTY LANGUAGE C)
-set_property(SOURCE src/hw/${PLATFORM_SRC}/vectors.s PROPERTY LANGUAGE C)
-
 if(SANITIZERS)
-  set( KERNEL_SOURCES ${KERNEL_SOURCES} src/common/ubsan.c )
+  set( KERNEL_SOURCES ${KERNEL_SOURCES} ${CMAKE_SOURCE_DIR}/src/common/ubsan.c )
 endif()
 
 if(NOT BP_LOWER STREQUAL "thumb")
-  set( KERNEL_SOURCES ${KERNEL_SOURCES} src/hw/arm_common/gic.c )
+  set( KERNEL_SOURCES ${KERNEL_SOURCES} ${CMAKE_SOURCE_DIR}/src/hw/arm_common/gic.c )
 endif()
 
 # Convenient build target for CI
@@ -164,30 +160,4 @@ add_custom_target(make_demos)
 include(cmake/AddDemo.cmake)
 include(cmake/AddLoadable.cmake)
 
-include(demos/yielding/CMakeLists.txt)
-include(demos/exyielding/CMakeLists.txt)
-include(demos/message/CMakeLists.txt)
-include(demos/exit/CMakeLists.txt)
-include(demos/spawn/CMakeLists.txt)
-include(demos/args/CMakeLists.txt)
-include(demos/mutexes/CMakeLists.txt)
-include(demos/conditionvariables/CMakeLists.txt)
-include(demos/cancel/CMakeLists.txt)
-include(demos/printthreadname/CMakeLists.txt)
-include(demos/file/CMakeLists.txt)
-include(demos/generated/CMakeLists.txt)
-include(demos/threadlocalstorage/CMakeLists.txt)
-include(demos/stackcheck/CMakeLists.txt)
-include(demos/selfyield/CMakeLists.txt)
-include(demos/alloc/CMakeLists.txt)
-include(demos/timer/CMakeLists.txt)
-include(demos/loadbinary/CMakeLists.txt)
-include(demos/loadbinaries/CMakeLists.txt)
-include(demos/loadpiebinary/CMakeLists.txt)
-include(demos/parentchild/CMakeLists.txt)
-include(demos/permissions/CMakeLists.txt)
-include(demos/trace/CMakeLists.txt)
-include(demos/signalhandling/CMakeLists.txt)
-include(demos/backtrace/CMakeLists.txt)
-include(demos/fiber/CMakeLists.txt)
-include(demos/shell/CMakeLists.txt)
+add_subdirectory(demos)
