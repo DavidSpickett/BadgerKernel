@@ -54,6 +54,10 @@ set( KERNEL_SOURCES
   ${CMAKE_SOURCE_DIR}/src/user/fiber.c
 )
 
+if(SANITIZERS)
+  set( KERNEL_SOURCES ${KERNEL_SOURCES} ${CMAKE_SOURCE_DIR}/src/common/ubsan.c )
+endif()
+
 if( BP_LOWER STREQUAL "arm" )
   include(src/hw/arm_virt/CMakeLists.txt)
 elseif( BP_LOWER STREQUAL "aarch64" )
