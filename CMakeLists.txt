@@ -42,7 +42,6 @@ set(KERNEL_SOURCES ${KERNEL_SOURCES}
   ${CMAKE_SOURCE_DIR}/src/hw/${PLATFORM_SRC}/vectors.s
   ${CMAKE_SOURCE_DIR}/src/hw/${PLATFORM_SRC}/startup.s
   ${CMAKE_SOURCE_DIR}/src/hw/${PLATFORM_SRC}/yield.S
-  ${CMAKE_SOURCE_DIR}/src/hw/${PLATFORM_SRC}/port.c
 )
 
 set( CMAKE_C_COMPILER "${PREFIX}gcc" )

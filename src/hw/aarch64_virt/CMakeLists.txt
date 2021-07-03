@@ -1,7 +1,8 @@
 set( KERNEL_SOURCES ${KERNEL_SOURCES}
   ${CMAKE_SOURCE_DIR}/src/hw/arm_common/port.c
   ${CMAKE_SOURCE_DIR}/src/hw/arm_common/gic.c
-  ${CMAKE_SOURCE_DIR}/src/hw/driver/virt_serial.c)
+  ${CMAKE_SOURCE_DIR}/src/hw/driver/virt_serial.c
+  ${CMAKE_SOURCE_DIR}/src/hw/aarch64_virt/port.c)
 
 set( PREFIX       "aarch64-none-elf-" )
 # Don't generate NEON
