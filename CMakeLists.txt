@@ -23,38 +23,8 @@ endif()
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-set( KERNEL_SOURCES
-  ${CMAKE_SOURCE_DIR}/src/kernel/thread.c
-  ${CMAKE_SOURCE_DIR}/src/kernel/thread_property.cpp
-  ${CMAKE_SOURCE_DIR}/src/kernel/mutex.c
-  ${CMAKE_SOURCE_DIR}/src/kernel/condition_variable.c
-  ${CMAKE_SOURCE_DIR}/src/kernel/signal_handling.c
-  ${CMAKE_SOURCE_DIR}/src/kernel/alloc.c
-  ${CMAKE_SOURCE_DIR}/src/kernel/syscall.c
-  ${CMAKE_SOURCE_DIR}/src/kernel/message.c
-  ${CMAKE_SOURCE_DIR}/src/kernel/semihosting.c
-  ${CMAKE_SOURCE_DIR}/src/kernel/file.c
-
-  ${CMAKE_SOURCE_DIR}/src/common/print.cpp
-  ${CMAKE_SOURCE_DIR}/src/common/trace.c
-  ${CMAKE_SOURCE_DIR}/src/common/assert.c
-  ${CMAKE_SOURCE_DIR}/src/common/errno.c
-
-  # /user files here for threads within the same binary
-  ${CMAKE_SOURCE_DIR}/src/user/errno.c
-  ${CMAKE_SOURCE_DIR}/src/user/thread.c
-  ${CMAKE_SOURCE_DIR}/src/user/file.c
-  ${CMAKE_SOURCE_DIR}/src/user/util.c
-  ${CMAKE_SOURCE_DIR}/src/user/alloc.c
-  ${CMAKE_SOURCE_DIR}/src/user/mutex.c
-  ${CMAKE_SOURCE_DIR}/src/user/condition_variable.c
-  ${CMAKE_SOURCE_DIR}/src/user/timer.c
-  ${CMAKE_SOURCE_DIR}/src/user/fiber.c
-)
-
-if(SANITIZERS)
-  set( KERNEL_SOURCES ${KERNEL_SOURCES} ${CMAKE_SOURCE_DIR}/src/common/ubsan.c )
-endif()
+set( KERNEL_SOURCES )
+add_subdirectory(src)
 
 if( BP_LOWER STREQUAL "arm" )
   include(src/hw/arm_virt/CMakeLists.txt)
