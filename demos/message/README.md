@@ -9,7 +9,7 @@ To explain this demo, we will first introduce the following:
 
 ## `send_msg`
 
-In AMT, each thread owns a ring buffer to store pending messages. When this function is called, the kernel will check the corresponding buffer of the destination thread.
+In Badger Kernel, each thread owns a ring buffer to store pending messages. When this function is called, the kernel will check the corresponding buffer of the destination thread.
 
 If the buffer is not full, the message will be copied into the destination thread's buffer according to the `destination` and `message` we specified and remains there until the thread takes it out.
 

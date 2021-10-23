@@ -12,7 +12,7 @@ To explain the demo, we need to introduce:
 
 ## `make_args`
 
-In AMT, we use `ThreadArgs` to pack arguments so we can pass these variables into the thread we want to create. 
+In Badger Kernel, we use `ThreadArgs` to pack arguments so we can pass these variables into the thread we want to create. 
 
 Since `ThreadArgs` comes with 4 variables, we can pass at most 4 arguments into a thread. On the other hand, if we want to use less than 4 arguments, we need to provide 0 as dummy argument.
 

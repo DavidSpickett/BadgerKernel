@@ -2,7 +2,7 @@
 
 In this demo we manipulate the data on the host's file system with syscalls.
 
-Since AMT does not have a file system, we use semihosting to implement the operations for files.
+Since Badger Kernel does not have a file system, we use semihosting to implement the operations for files.
 
 To describe the concepts, we need to introduce:
 
@@ -16,7 +16,7 @@ To describe the concepts, we need to introduce:
 
 This function opens a file descriptor according to the `path` and the `oflags` we specified.
 
-In AMT, the access modes we provide are `O_RDONLY` and `O_WRONLY`.
+In Badger Kernel, the access modes we provide are `O_RDONLY` and `O_WRONLY`.
 
 If we can open the file, the return value will be nonzero. If we can not open the file, the value will be set to `-1`.
 

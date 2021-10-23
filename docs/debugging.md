@@ -2,13 +2,13 @@
 
 ## Debug Settings
 
-AMT always builds with debug symbols (`-g`) but the higher optimisation levels can be very difficult to follow.
+Badger Kernel always builds with debug symbols (`-g`) but the higher optimisation levels can be very difficult to follow.
 
 The recommended setting is `-O0` with LTO disabled.
 
 ## Basic Debugging
 
-Each AMT demo has a `debug_<demo>` target.
+Each Badger Kernel demo has a `debug_<demo>` target.
 
 ```
 $ make debug_yielding
@@ -25,7 +25,7 @@ Reading symbols from yielding...done.
 (gdb) target remote :1234
 Remote debugging using :1234
 _Reset ()
-    at <...>/ARMMultiTasking/src/hw/aarch64_virt/startup.s:6
+    at <...>/BadgerKernel/src/hw/aarch64_virt/startup.s:6
 6         mov x1, #(0x3 << 20)
 ```
 
@@ -44,7 +44,7 @@ UBSAN will catch undefined behaviour at runtime and tell you about it. For examp
 ```
 $ make run_yielding
 <...>
-UBSAN: type_mismatch_v1 @ <...>/ARMMultiTasking/src/kernel/thread.c:362:6
+UBSAN: type_mismatch_v1 @ <...>/BadgerKernel/src/kernel/thread.c:362:6
 ```
 
 Since our UBSAN is very minimal we can't show you exactly what the expected type and the type we got is here.
@@ -54,7 +54,7 @@ However you can break on the handlers that print those messages.
 
 ```
 (gdb) rbreak __ubsan_handle_.*
-Breakpoint 1 at 0xc78c: file <...>/ARMMultiTasking/src/common/ubsan.c, line 28.
+Breakpoint 1 at 0xc78c: file <...>/BadgerKernel/src/common/ubsan.c, line 28.
 void __ubsan_handle_add_overflow(SourceInfo *, void *,
     void *);
 <...>
@@ -63,18 +63,18 @@ Continuing.
 
 Breakpoint 12, __ubsan_handle_type_mismatch_v1 (
     s=0x40000ee0, a=0x0 <_Reset>, b=0xffffffffffffffd0)
-    at <...>/ARMMultiTasking/src/common/ubsan.c:38
+    at <...>/BadgerKernel/src/common/ubsan.c:38
 38      ubhandler(type_mismatch_v1, void* a, void* b);
 (gdb) bt
 #0  __ubsan_handle_type_mismatch_v1 (s=0x40000ee0,
     a=0x0 <_Reset>, b=0xffffffffffffffd0)
-    at <...>ARMMultiTasking/src/common/ubsan.c:38
+    at <...>BadgerKernel/src/common/ubsan.c:38
 #1  0x00000000000033a0 in choose_next_thread ()
-    at <...>/ARMMultiTasking/src/kernel/thread.c:362
+    at <...>/BadgerKernel/src/kernel/thread.c:362
 #2  0x0000000000003748 in do_scheduler ()
-    at <...>/ARMMultiTasking/src/kernel/thread.c:391
+    at <...>/BadgerKernel/src/kernel/thread.c:391
 #3  0x0000000000008a74 in load_next_thread ()
-    at <...>/ARMMultiTasking/src/hw/aarch64_virt/yield.S:153
+    at <...>/BadgerKernel/src/hw/aarch64_virt/yield.S:153
 ```
 
 Then you can inspect the parent frame to find the issue.
@@ -82,7 +82,7 @@ Then you can inspect the parent frame to find the issue.
 ```
 (gdb) up
 #1  0x00000000000033a0 in choose_next_thread ()
-    at <...>/ARMMultiTasking/src/kernel/thread.c:362
+    at <...>/BadgerKernel/src/kernel/thread.c:362
 362       *p = 'f';
 (gdb) p p
 $1 = 0x0 <_Reset>

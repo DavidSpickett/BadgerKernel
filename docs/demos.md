@@ -1,4 +1,4 @@
-# AMT Demos
+# Badger Kernel Demos
 
 The documents linked below give an overview of how the demos work and explain some mechanisms in these demos.
 

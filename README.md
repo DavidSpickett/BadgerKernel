@@ -1,6 +1,7 @@
-[![Build Status](https://github.com/davidspickett/ARMMultiTasking/workflows/build_and_test/badge.svg)](https://github.com/DavidSpickett/ARMMultiTasking/actions) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Build Status](https://github.com/davidspickett/BadgerKernel/workflows/build_and_test/badge.svg)](https://github.com/DavidSpickett/BadgerKernel/actions) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-AMT is a kernel providing multithreading on Arm platforms.
+Badger Kernel is a kernel providing multithreading on Arm platforms.
+(Badger because badgers have stripes and stripes are vaguely like threads)
 
 A minimal userspace is included to show how to use the kernel and test its functionality. There is no filesystem, this is provided by semihosting.
 
@@ -59,7 +60,7 @@ make
 
 ## Demos
 
-Demos are how we test AMT. For example, to run the yielding demo:
+Demos are how we test Badger Kernel. For example, to run the yielding demo:
 ```
 make run_yielding
 ```
@@ -75,16 +76,16 @@ For a full list see the [demos.md](docs/demos.md).
 There is a interactive shell, do `make run_shell` to use it. There's some basic commands provided and it can run loadable programs as commands. (see `demos/shell` for examples)
 
 ```
----------------------
------ AMT Shell -----
----------------------
+--------------------
+----- BK Shell -----
+--------------------
 $ help
 Builtins:
 help quit run
 Programs:
 echo ps ls
-$ echo hello AMT
-hello AMT
+$ echo hello BK
+hello BK
 $ run ps
 |-----------|
 | Thread 0

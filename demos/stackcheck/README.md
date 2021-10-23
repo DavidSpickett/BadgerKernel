@@ -25,7 +25,7 @@ If the stack is overflowed or underflowed, it will convert the syscall to `yield
 
 This function is used to detect if the thread's stack has been overflowed or underflowed.
 
-In AMT, we place 2 variables `bottom_canary` and `top_canary` on both sides of the stack in the thread structure. These two variables are initialized to `STACK_CANARY`. If their values have been changed, we know that overflow/underflow has occurred.
+In Badger Kernel, we place 2 variables `bottom_canary` and `top_canary` on both sides of the stack in the thread structure. These two variables are initialized to `STACK_CANARY`. If their values have been changed, we know that overflow/underflow has occurred.
 
 If the config `KCFG_DESTROY_ON_STACK_ERR` is enabled we invalidate the current thread and return `false`.
 

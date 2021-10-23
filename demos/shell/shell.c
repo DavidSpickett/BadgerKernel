@@ -268,9 +268,9 @@ static void command_loop(int input) {
 }
 
 void run_shell() {
-  printf("---------------------\n");
-  printf("----- AMT Shell -----\n");
-  printf("---------------------\n");
+  printf("--------------------\n");
+  printf("----- BK Shell -----\n");
+  printf("--------------------\n");
 
   int input = open(":tt", O_RDONLY);
   assert((input >= 0) && "Could not open stdin!");

@@ -20,7 +20,7 @@ After the creation of the thread, it will wait to be chosen by the scheduler so 
 
 The job of the scheduler is to choose the next thread to make use of the CPU.
 
-In AMT we store all of the threads in an array called `all_threads`, so the scheduler simply walks through this array to find the next thread.
+In Badger Kernel we store all of the threads in an array called `all_threads`, so the scheduler simply walks through this array to find the next thread.
 
 Then the current thread will be suspended until the thread has been chosen to run again.
 

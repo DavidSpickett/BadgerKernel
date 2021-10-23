@@ -1,4 +1,4 @@
-# AMT Kernel design notes
+# Badger Kernel Kernel design notes
 
 This document describes how key parts of the kernel work and why.
 
@@ -19,7 +19,7 @@ This document describes how key parts of the kernel work and why.
 * Running on real hardware
 * Being secure
 * Being fast
-* Porting existing software to AMT
+* Porting existing software to Badger Kernel
 * Providing a stable system ABI
 * Being any particular kind of kernel
 * Having an exhaustive test suite
@@ -27,7 +27,7 @@ This document describes how key parts of the kernel work and why.
 
 # Origins
 
-AMT is the product of boredom and curiosity. Most of the initial structure is influenced by my experience doing debug support for RTOS such as Zephyr and FreeRTOS.
+Badger Kernel is the product of boredom and curiosity. Most of the initial structure is influenced by my experience doing debug support for RTOS such as Zephyr and FreeRTOS.
 
 The cycle always goes like this:
 * Read a high level overview of a thing
@@ -40,7 +40,7 @@ Somewhere along the line you might even read the implementation from another sys
 
 # Project Layout
 
-This describes the source level layout of AMT.
+This describes the source level layout of Badger Kernel.
 
 * .github/workflows - Config for Github Actions CI
 * cmake - CMake functions for adding demos and loadable files
@@ -72,7 +72,7 @@ These tools are used for the development and testing:
 
 # Demos
 
-Demos are the tests for AMT. They aren't meant to be exhaustive but I try to cover the obvious corner cases. Hence "demos" not "tests", not that it matters much.
+Demos are the tests for Badger Kernel. They aren't meant to be exhaustive but I try to cover the obvious corner cases. Hence "demos" not "tests", not that it matters much.
 
 The general idea was to make the early demos use as few features as possible so that you could start there when porting a new platform.
 
@@ -143,13 +143,13 @@ Hence setup. The user defines `setup()` and the setup thread runs that. You can 
 
 ## Saving/Restoring Threads
 
-Note: I use the term "thread" because AMT doesn't have a concept of processes.
+Note: I use the term "thread" because Badger Kernel doesn't have a concept of processes.
 
-This isn't any kind of grand statement, it's just because the RTOS I learned from also don't have processes. You could say a "thread" for AMT is as heavyweight as a process would be elsewhere.
+This isn't any kind of grand statement, it's just because the RTOS I learned from also don't have processes. You could say a "thread" for Badger Kernel is as heavyweight as a process would be elsewhere.
 
 ### Background
 
-AMT's switching is pretty much all cooperative. So we know when a thread is going to yield. However this mostly me being too lazy to handle interrupts properly.
+Badger Kernel's switching is pretty much all cooperative. So we know when a thread is going to yield. However this mostly me being too lazy to handle interrupts properly.
 
 With that in mind thread switching saves everything, as if it were pre-emptive. (see the `selfyield` demo for a test of this)
 
@@ -167,7 +167,7 @@ asm volatile("svc 123");
 ```
 For the code above you need to save *everything* because the compiler isn't going to know that that asm is basically a function call. (a syscall if you will)
 
-Anyway, the upshot is that AMT saves all user registers on kernel entry. Which is not totally needed and is slower but:
+Anyway, the upshot is that Badger Kernel saves all user registers on kernel entry. Which is not totally needed and is slower but:
 1. It gives us some cool features like modifying thread registers, without some 2 stage saving process.
 2. Calling kernel C functions is as easy as...well, calling them.
 3. We can sort of support timer interrupts
@@ -281,7 +281,7 @@ The scheduler walks the whole of `all_threads` and doesn't find any valid thread
 
 # Syscalls
 
-AMT's syscalls are generated from a file `scripts/syscalls.py` into a header `include/common/syscall.h`. (amongst other places)
+Badger Kernel's syscalls are generated from a file `scripts/syscalls.py` into a header `include/common/syscall.h`. (amongst other places)
 
 The general idea is to keep the list minimal so some like `mutex` are a single call with a flag to define what it does.
 (yes mutexes can be done in user space but I'm lazy and making it a syscall is an easy way to get atomicity)
