@@ -273,12 +273,10 @@ void k_handle_syscall(void) {
   typedef size_t (*SyscallFn)();
   result =
       ((SyscallFn)(syscall_fn))(ctx->arg0, ctx->arg1, ctx->arg2, ctx->arg3);
-  // Make sure we zero out the result if the syscall returned void
-  // So we don't leak some in kernel address
-  if (!has_result) {
-    result = 0;
+  // Only copy to user if there's a result. To avoid leaking any kernel values.
+  if (has_result) {
+    ctx->arg0 = result;
   }
-  ctx->arg0 = result;
 
   if (log_errno) {
     if (user_thread_info.err_no != 0) {
