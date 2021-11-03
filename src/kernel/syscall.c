@@ -161,7 +161,7 @@ void k_handle_syscall(void) {
       break;
     case syscall_yield:
       syscall_fn = k_yield;
-      has_result = false;
+      has_result = true;
       update_user_thread_info = false;
       break;
     case syscall_get_msg:

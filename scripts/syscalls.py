@@ -8,7 +8,7 @@ syscalls = (
     ("set_thread_property", True,  True),
     # User gets kernel_config from user_thread_info
     ("set_kernel_config",   False, True),
-    ("yield",               False, False),
+    ("yield",               True,  False),
     ("get_msg",             True,  False),
     ("send_msg",            True,  False),
     ("thread_wait",         False, False),
