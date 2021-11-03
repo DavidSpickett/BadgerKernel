@@ -100,7 +100,7 @@ typedef struct {
 #define USER_CONST const
 #endif
 
-// This strcuture is available to threads from userspace
+// This structure is available to threads from userspace
 // and allows us to avoid syscalls for common operations.
 typedef struct {
   USER_CONST int id;
