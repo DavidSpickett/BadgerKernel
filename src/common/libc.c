@@ -1,15 +1,35 @@
-/**
- * We made our own implementation here because
- * toolchain-provided implementation contains
- * some instructions that has a strict rule to use.
+/*
+ * C library functions added as needed.
+ * (we don't link with gcc provided libc)
+ *
+ * One reason to do this is that the toolchain
+ * provided implementations contain
+ * some instructions that require specific alignments.
  *
  * Since we don't set up MMU, it is possible
  * to trigger data abort by those instruction.
  * (like DC ZVA, etc.)
+ * Not an issue on QEMU but happens on real hardware.
  */
 
+#include <stddef.h>
 #include <stdint.h>
 #include <string.h>
+// For EOF
+#include <stdio.h>
+
+int isdigit(int c) {
+  if (c == EOF) {
+    return 0;
+  }
+
+  char chr = c;
+  return chr >= '0' && chr <= '9';
+}
+
+int abs(int x) {
+  return x > 0 ? x : x * -1;
+}
 
 size_t strlen(const char* s) {
   size_t len = 0;
@@ -63,7 +83,7 @@ void bzero(void* dst, size_t len) {
   memset(dst, 0, len);
 }
 
-// LTO decides memset/memcpy are unused then presumably the compiler
+// TODO: LTO decides memset/memcpy are unused then presumably the compiler
 // generates a call to it and realises it's gone.
 __attribute__((used)) void* memset(void* dst, int ch, size_t len) {
   uint8_t* d = dst;

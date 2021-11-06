@@ -56,7 +56,7 @@ if platform.lower() == 'raspi4':
     config.unsupported = True
 
 if platform.lower() == 'thumb' and \
-        opt_level == '3' and \
+        opt_level in ['0', '3'] and \
         sanitizers == 'ON':
     config.excludes.add('loadbinaries')
 

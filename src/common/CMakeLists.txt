@@ -3,6 +3,7 @@ set( KERNEL_SOURCES ${KERNEL_SOURCES}
   ${CMAKE_SOURCE_DIR}/src/common/trace.c
   ${CMAKE_SOURCE_DIR}/src/common/assert.c
   ${CMAKE_SOURCE_DIR}/src/common/errno.c
+  ${CMAKE_SOURCE_DIR}/src/common/libc.c
 )
 
 if(SANITIZERS)

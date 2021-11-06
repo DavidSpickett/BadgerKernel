@@ -1,4 +1,5 @@
 // For current_thread
+#include "common/assert.h"
 #include "kernel/thread.h"
 #include "user/thread.h"
 #include <stddef.h>
@@ -7,7 +8,9 @@
 
 #define ALLOC_SIZE 500
 __attribute__((noinline)) void recurse(int repeat) {
-  char dummy[ALLOC_SIZE];
+  // Volatile otherwise the compiler will see it as unused
+  // when LTO inlining of memset happens.
+  volatile char dummy[ALLOC_SIZE];
   memset((void*)dummy, -1, ALLOC_SIZE);
   if (repeat) {
     recurse(repeat - 1);
@@ -52,7 +55,7 @@ void watcher() {
 
   for (int i = 0; i < num_threads; ++i) {
     if (thread_join(tids[i], NULL)) {
-      log_event("thread did not error!");
+      assert(0 && "thread did not error!");
     }
   }
 
