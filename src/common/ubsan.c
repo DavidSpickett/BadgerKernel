@@ -38,3 +38,4 @@ ubhandler(shift_out_of_bounds, UNUSED void* a, UNUSED void* b);
 ubhandler(mul_overflow, UNUSED void* a, UNUSED void* b);
 ubhandler(type_mismatch_v1, UNUSED void* a, UNUSED void* b);
 ubhandler(pointer_overflow, UNUSED void* a, UNUSED void* b, UNUSED void* c);
+ubhandler(negate_overflow, UNUSED void* a, UNUSED void* b);

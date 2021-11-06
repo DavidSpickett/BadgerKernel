@@ -9,7 +9,6 @@ set( KERNEL_SOURCES ${KERNEL_SOURCES}
   ${CMAKE_SOURCE_DIR}/src/hw/raspi4/uart.c
   ${CMAKE_SOURCE_DIR}/src/hw/raspi4/mbox.c
   ${CMAKE_SOURCE_DIR}/src/hw/raspi4/exception.c
-  ${CMAKE_SOURCE_DIR}/src/hw/raspi4/libs/string.c
 )
 
 set( PREFIX       "aarch64-none-elf-" )

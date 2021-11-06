@@ -5,10 +5,10 @@ endif()
 
 # UBSAN adds around 4k of .data to print.cpp
 # Which breaks the 64k RAM budget on thumb
-if(BP_LOWER STREQUAL "thumb" AND
-   OPT_LEVEL STREQUAL "3" AND
-   SANITIZERS)
-  return()
+if(BP_LOWER STREQUAL "thumb" AND SANITIZERS)
+  if(OPT_LEVEL STREQUAL "3" OR OPT_LEVEL STREQUAL "0")
+    return()
+  endif()
 endif()
 
 add_demo(loadbinaries 5)
