@@ -75,7 +75,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        build_platform: ["ARM", "THUMB", "AARCH64"]
+        build_platform: ["ARM", "THUMB", "AARCH64", "RASPI4"]
 
     steps:
     - uses: actions/checkout@v2
@@ -86,7 +86,7 @@ jobs:
         sudo apt-get install -y python3-pip ccache expect qemu-system-arm
         echo "CCACHE_DIR=$(pwd)/.ccache" >> $GITHUB_ENV
 
-    - if: matrix.build_platform == 'AARCH64'
+    - if: matrix.build_platform == 'AARCH64' || matrix.build_platform == 'RASPI4'
       name: Export Toolchain URL AArch64
       run: |
         echo "TOOLCHAIN_URL=https://developer.arm.com/-/media/Files/downloads/gnu-a/9.2-2019.12/binrel/gcc-arm-9.2-2019.12-x86_64-aarch64-none-elf.tar.xz" >> $GITHUB_ENV
