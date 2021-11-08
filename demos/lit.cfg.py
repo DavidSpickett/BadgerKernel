@@ -50,14 +50,21 @@ config.excludes.add('shell')
 # but local use may not be
 if platform.lower() == 'aarch64':
     config.excludes.add('threadlocalstorage')
+
+# Raspi4 only runs on real hardware, skip all tests
+if platform.lower() == 'raspi4':
+    config.unsupported = True
+
 if platform.lower() == 'thumb' and \
         opt_level == '3' and \
         sanitizers == 'ON':
     config.excludes.add('loadbinaries')
+
 if not (
         (platform.lower() == 'arm') and
         (opt_level == '0')):
     config.excludes.add('backtrace')
+
 if lto == 'ON':
     config.excludes.add('loadbinary')
     config.excludes.add('loadbinaries')

@@ -6,6 +6,9 @@ from textwrap import dedent
 # Run make test_<bla> target for each demo
 class MakeTest(lit.formats.base.TestFormat):
     def execute(self, test, litConfig):
+        if test.unsupported:
+            return lit.Test.UNSUPPORTED, ''
+
         filename = os.path.basename(test.getSourcePath())
         cmd = ["make", "test_" + os.path.splitext(filename)[0]]
         try:
@@ -45,7 +48,8 @@ class MakeTest(lit.formats.base.TestFormat):
             if os.path.isdir(os.path.join(source_path, directory)) and \
                     directory not in localConfig.excludes and \
                     not directory.startswith("__"):
-                yield lit.Test.Test(
-                    testSuite,
-                    path_in_suite + (directory,),
-                    localConfig)
+                test = lit.Test.Test(testSuite,
+                                     path_in_suite + (directory,),
+                                     localConfig)
+                test.unsupported = localConfig.unsupported
+                yield test
