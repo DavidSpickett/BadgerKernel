@@ -19,7 +19,7 @@ static bool k_host_supports_open_stdout(void) {
     return false;
   }
 
-  char magic[MAGIC_LEN];
+  char magic[MAGIC_LEN] = {0, 0, 0, 0};
   ssize_t got = k_read(fd, magic, MAGIC_LEN);
   if (got != MAGIC_LEN || magic[0] != SHFB_MAGIC_0 ||
       magic[1] != SHFB_MAGIC_1 || magic[2] != SHFB_MAGIC_2 ||
