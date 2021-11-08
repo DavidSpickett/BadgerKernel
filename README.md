@@ -6,9 +6,9 @@ Badger Kernel is a kernel providing multithreading on Arm platforms.
 A minimal userspace is included to show how to use the kernel and test its functionality. There is no filesystem, this is provided by semihosting.
 
 Current targets are:
-* Arm (Armv7A, Cortex A-15)
+* Arm (Armv7A Cortex A-15 virt)
 * Thumb (Armv7E-M Cortex-M4)
-* AArch64 (Armv8A, Cortex A-57)
+* AArch64 (Cortex A-57 virt, Raspberry Pi 4)
 
 For implementation details see the [design doc](docs/design.md).
 
