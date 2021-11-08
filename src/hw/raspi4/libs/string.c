@@ -63,7 +63,9 @@ void bzero(void* dst, size_t len) {
   memset(dst, 0, len);
 }
 
-void* memset(void* dst, int ch, size_t len) {
+// LTO decides memset/memcpy are unused then presumably the compiler
+// generates a call to it and realises it's gone.
+__attribute__((used)) void* memset(void* dst, int ch, size_t len) {
   uint8_t* d = dst;
   while (len-- > 0) {
     *d++ = ch;
@@ -71,7 +73,7 @@ void* memset(void* dst, int ch, size_t len) {
   return dst;
 }
 
-void* memcpy(void* dst, const void* src, size_t len) {
+__attribute__((used)) void* memcpy(void* dst, const void* src, size_t len) {
   uint8_t* d = dst;
   const uint8_t* s = src;
   while (len-- > 0) {
