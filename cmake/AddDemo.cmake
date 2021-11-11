@@ -23,9 +23,6 @@ function(__add_demo NAME TEST_TYPE MAX_THREADS)
 
   target_link_libraries(${NAME} PRIVATE "-Wl,-T,${CMAKE_SOURCE_DIR}/linker/${LINKER_SCRIPT},-lgcc,-N,--build-id=none")
 
-  add_custom_command(TARGET ${NAME} PRE_BUILD
-    COMMAND eval "${CMAKE_C_COMPILER} --version | head -n 1"
-    VERBATIM)
   add_dependencies(make_demos ${NAME})
 
   if (NOT BP_LOWER STREQUAL "raspi4")

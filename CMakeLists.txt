@@ -1,4 +1,3 @@
-project(BadgerKernel)
 cmake_minimum_required( VERSION 3.7 )
 set( CMAKE_EXPORT_COMPILE_COMMANDS ON )
 
@@ -39,8 +38,13 @@ else()
   Expected one of \"arm\", \"thumb\", \"aarch64\", \"raspi4\".")
 endif()
 
-set( CMAKE_C_COMPILER "${PREFIX}gcc" )
-set( CMAKE_CXX_COMPILER "${PREFIX}g++" )
+# TODO: The way we cross compile goes completely against cmake best practices
+set(CMAKE_C_COMPILER "${PREFIX}gcc")
+set(CMAKE_C_COMPILER_WORKS 1)
+set(CMAKE_CXX_COMPILER "${PREFIX}g++")
+set(CMAKE_CXX_COMPILER_WORKS 1)
+
+project(BadgerKernel)
 
 set( CFLAGS "-DSTACK_SIZE=${STACK_SIZE} -g3 -O${OPT_LEVEL} -Wall -Werror -Wextra")
 
