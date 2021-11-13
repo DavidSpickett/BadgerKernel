@@ -30,7 +30,7 @@ For implementation details see the [design doc](docs/design.md).
 
 ## Building
 
-Install cmake, make and an arm-none-eabi or aarch64-none-elf toolchain. Arm developer releases are the best way to get these.
+Install cmake, ninja and an arm-none-eabi or aarch64-none-elf toolchain. Arm developer releases are the best way to get these.
 
 AArch64:
 
@@ -49,31 +49,31 @@ See the [CI config](.github/workflows/build_and_test.yml) for the currently test
 
 Then configure and build according to which toolchain you installed:
 ```
-cmake . -DBUILD_PLATFORM=aarch64
+cmake . -G Ninja -DBUILD_PLATFORM=aarch64
 <or>
-cmake . -DBUILD_PLATFORM=arm
+cmake . -G Ninja -DBUILD_PLATFORM=arm
 <or>
-cmake . -DBUILD_PLATFORM=thumb
+cmake . -G Ninja -DBUILD_PLATFORM=thumb
 
-make
+ninja
 ```
 
 ## Demos
 
 Demos are how we test Badger Kernel. For example, to run the yielding demo:
 ```
-make run_yielding
+ninja run_yielding
 ```
 
-Each demo has `run_<demo>`, `debug_<demo>` and `test_<demo>` make targets.
+Each demo has `run_<demo>`, `debug_<demo>` and `test_<demo>` ninja targets.
 
-To test all the demos use `lit` (https://pypi.org/project/lit/) or just run `make`.
+To test all the demos use `lit` (https://pypi.org/project/lit/) or just run `ninja`.
 
 For a full list see the [demos.md](docs/demos.md).
 
 ## Shell
 
-There is a interactive shell, do `make run_shell` to use it. There's some basic commands provided and it can run loadable programs as commands. (see `demos/shell` for examples)
+There is a interactive shell, do `ninja run_shell` to use it. There's some basic commands provided and it can run loadable programs as commands. (see `demos/shell` for examples)
 
 ```
 --------------------

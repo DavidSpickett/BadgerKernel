@@ -81,8 +81,12 @@ message(STATUS "STACK_SIZE is ${STACK_SIZE}KB")
 message(STATUS "SEMIHOSTING is ${SEMIHOSTING}")
 message(STATUS "LINKER_SCRIPT is ${LINKER_SCRIPT}")
 
-# Convenient build target for CI
-add_custom_target(make_demos)
+# Convenient build target for CI that just builds and doesn't run tests
+add_custom_target(demos)
+
+# Copy lit config to build directory for out of tree builds
+configure_file("${CMAKE_SOURCE_DIR}/demos/lit.cfg.py" "${CMAKE_BINARY_DIR}/demos/lit.cfg.py" COPYONLY)
+configure_file("${CMAKE_SOURCE_DIR}/demos/test_format.py" "${CMAKE_BINARY_DIR}/demos/test_format.py" COPYONLY)
 
 include(cmake/AddDemo.cmake)
 include(cmake/AddLoadable.cmake)

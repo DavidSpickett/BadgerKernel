@@ -8,10 +8,10 @@ for platform in "arm" "thumb" "aarch64" "raspi4"; do
         # LTO isn't enabled at O0
         if [[ "${opt_level}_${lto}" != "0_ON" ]]; then
           rm -f CMakeCache.txt
-          cmake . -DBUILD_PLATFORM=${platform} -DOPT_LEVEL=${opt_level} -DSANITIZERS=${sanitizers} -DLTO=${lto}
-          make -j"$(nproc)" make_demos
+          cmake . -G Ninja -DBUILD_PLATFORM=${platform} -DOPT_LEVEL=${opt_level} -DSANITIZERS=${sanitizers} -DLTO=${lto}
+          ninja demos
           lit demos/ -a
-          make clean
+          ninja clean
         fi
       done
     done

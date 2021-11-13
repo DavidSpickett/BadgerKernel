@@ -18,55 +18,44 @@ function(__add_demo NAME TEST_TYPE MAX_THREADS)
   list( FILTER ASM_SOURCES INCLUDE REGEX ".*\.(s|S)$" )
   set_source_files_properties(${ASM_SOURCES} PROPERTIES LANGUAGE C)
 
-  add_executable ( ${NAME} ${CMAKE_SOURCE_DIR}/demos/${NAME}/${NAME}.c ${KERNEL_SOURCES} )
-  target_compile_definitions(${NAME} PRIVATE MAX_THREADS=${MAX_THREADS})
+  set(KERNEL_EXECUTABLE "${NAME}_kernel")
+
+  add_executable(${KERNEL_EXECUTABLE} ${CMAKE_SOURCE_DIR}/demos/${NAME}/${NAME}.c ${KERNEL_SOURCES} )
+  # Making <demo name> a custom target means we can add loadables to it later
+  # which will get built by "make <demo name>"
+  add_custom_target(${NAME} DEPENDS ${KERNEL_EXECUTABLE})
+  add_dependencies(demos ${NAME})
+
+  target_compile_definitions(${KERNEL_EXECUTABLE} PRIVATE MAX_THREADS=${MAX_THREADS})
 
   set(LINKER_SCRIPT_PATH "${CMAKE_SOURCE_DIR}/linker/${LINKER_SCRIPT}")
-  set_target_properties(${NAME} PROPERTIES LINK_DEPENDS "${LINKER_SCRIPT_PATH}")
-  target_link_libraries(${NAME} PRIVATE "-Wl,--script,${LINKER_SCRIPT_PATH},-lgcc,--omagic,--build-id=none")
-
-  add_dependencies(make_demos ${NAME})
+  set_target_properties(${KERNEL_EXECUTABLE} PROPERTIES LINK_DEPENDS "${LINKER_SCRIPT_PATH}")
+  target_link_libraries(${KERNEL_EXECUTABLE} PRIVATE "-Wl,--script,${LINKER_SCRIPT_PATH},-lgcc,--omagic,--build-id=none")
 
   if (NOT BP_LOWER STREQUAL "raspi4")
     add_custom_target(run_${NAME})
     add_dependencies(run_${NAME} ${NAME})
 
     add_custom_command(TARGET run_${NAME} POST_BUILD
-      COMMAND eval "${QEMU}${NAME}"
+      COMMAND eval "${QEMU}${KERNEL_EXECUTABLE}"
      VERBATIM)
 
     add_custom_target(debug_${NAME})
     add_dependencies(debug_${NAME} ${NAME})
 
     add_custom_command(TARGET debug_${NAME} POST_BUILD
-      COMMAND eval "${QEMU}${NAME} -s -S"
+      COMMAND eval "${QEMU}${KERNEL_EXECUTABLE} -s -S"
       VERBATIM)
   endif()
 
   if(NOT TEST_TYPE STREQUAL "none" AND NOT BP_LOWER STREQUAL "raspi4")
-    # This could be done with add_test, but then we wouldn't see the failure output.
     add_custom_target(test_${NAME} ALL)
     add_dependencies(test_${NAME} ${NAME})
 
-    # Run qemu with serial output into a log file.
-    # If it exited unexpectedly print the log and fail the test.
-    # Most often happens on a UBSAN failure.
-    set(QEMU_GET_LOG
-      "${QEMU}${NAME} -serial file:${NAME}_got.log > /dev/null 2>&1 || (cat ${NAME}_got.log && exit 1)")
-
-    if(TEST_TYPE STREQUAL "log")
-      add_custom_command(TARGET test_${NAME} POST_BUILD
-        # If Qemu runs successfully then diff the serial output and expected output
-        COMMAND eval "${QEMU_GET_LOG}"
-        COMMAND diff ${CMAKE_SOURCE_DIR}/demos/${NAME}/expected.log ${NAME}_got.log
-        VERBATIM)
-    elseif(TEST_TYPE STREQUAL "expect")
-      add_custom_command(TARGET test_${NAME} POST_BUILD
-        COMMAND eval "${QEMU_GET_LOG}"
-        COMMAND ${CMAKE_SOURCE_DIR}/demos/${NAME}/expected.exp
-        VERBATIM)
-    else()
-      message(FATAL_ERROR "Unknown testing type \"${TEST_TYPE}\" for demo \"${NAME}\"")
-    endif()
+    # This uses TEST_TYPE to decide what to do
+    configure_file("${CMAKE_SOURCE_DIR}/scripts/test_demo.sh" "${CMAKE_BINARY_DIR}/demos/${NAME}/test.sh")
+    add_custom_command(TARGET test_${NAME} POST_BUILD
+      COMMAND "${CMAKE_BINARY_DIR}/demos/${NAME}/test.sh"
+      VERBATIM)
   endif(NOT TEST_TYPE STREQUAL "none" AND NOT BP_LOWER STREQUAL "raspi4")
 endfunction(__add_demo)
