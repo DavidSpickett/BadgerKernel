@@ -21,7 +21,7 @@ function(__add_demo NAME TEST_TYPE MAX_THREADS)
   add_executable ( ${NAME} ${CMAKE_SOURCE_DIR}/demos/${NAME}/${NAME}.c ${KERNEL_SOURCES} )
   target_compile_definitions(${NAME} PRIVATE MAX_THREADS=${MAX_THREADS})
 
-  target_link_libraries(${NAME} PRIVATE "-Wl,-T,${CMAKE_SOURCE_DIR}/linker/${LINKER_SCRIPT},-lgcc,-N,--build-id=none")
+  target_link_libraries(${NAME} PRIVATE "-Wl,--script,${CMAKE_SOURCE_DIR}/linker/${LINKER_SCRIPT},-lgcc,--omagic,--build-id=none")
 
   add_dependencies(make_demos ${NAME})
 
