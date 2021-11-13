@@ -83,7 +83,7 @@ jobs:
     - name: Apt Installs
       run: |
         sudo apt-get update
-        sudo apt-get install -y python3-pip ccache expect qemu-system-arm
+        sudo apt-get install -y python3-pip ccache expect qemu-system-arm ninja-build
         echo "CCACHE_DIR=$(pwd)/.ccache" >> $GITHUB_ENV
 
     - if: matrix.build_platform == 'AARCH64' || matrix.build_platform == 'RASPI4'
@@ -133,8 +133,8 @@ jobs:
     #   cog.outl("    mkdir build_O{}_SANITIZERS_{}_LTO_{}".format(*params))
     #   cog.outl("    cd build_O{}_SANITIZERS_{}_LTO_{}".format(*params))
     #   cog.outl("    ccache -z")
-    #   cog.outl("    cmake -DBUILD_PLATFORM=${{{{ matrix.build_platform }}}} -DOPT_LEVEL={} -DSANITIZERS={} -DLTO={} ../".format(*params))
-    #   cog.outl("    make -j$(nproc) make_demos")
+    #   cog.outl("    cmake -G Ninja -DBUILD_PLATFORM=${{{{ matrix.build_platform }}}} -DOPT_LEVEL={} -DSANITIZERS={} -DLTO={} ../".format(*params))
+    #   cog.outl("    ninja demos")
     #   cog.outl("    ccache -s")
     #   cog.outl()
     # ]]]
@@ -143,8 +143,8 @@ jobs:
         mkdir build_O0_SANITIZERS_OFF_LTO_OFF
         cd build_O0_SANITIZERS_OFF_LTO_OFF
         ccache -z
-        cmake -DBUILD_PLATFORM=${{ matrix.build_platform }} -DOPT_LEVEL=0 -DSANITIZERS=OFF -DLTO=OFF ../
-        make -j$(nproc) make_demos
+        cmake -G Ninja -DBUILD_PLATFORM=${{ matrix.build_platform }} -DOPT_LEVEL=0 -DSANITIZERS=OFF -DLTO=OFF ../
+        ninja demos
         ccache -s
 
     - name: Build_O0_SANITIZERS_ON_LTO_OFF
@@ -152,8 +152,8 @@ jobs:
         mkdir build_O0_SANITIZERS_ON_LTO_OFF
         cd build_O0_SANITIZERS_ON_LTO_OFF
         ccache -z
-        cmake -DBUILD_PLATFORM=${{ matrix.build_platform }} -DOPT_LEVEL=0 -DSANITIZERS=ON -DLTO=OFF ../
-        make -j$(nproc) make_demos
+        cmake -G Ninja -DBUILD_PLATFORM=${{ matrix.build_platform }} -DOPT_LEVEL=0 -DSANITIZERS=ON -DLTO=OFF ../
+        ninja demos
         ccache -s
 
     - name: Build_Os_SANITIZERS_OFF_LTO_OFF
@@ -161,8 +161,8 @@ jobs:
         mkdir build_Os_SANITIZERS_OFF_LTO_OFF
         cd build_Os_SANITIZERS_OFF_LTO_OFF
         ccache -z
-        cmake -DBUILD_PLATFORM=${{ matrix.build_platform }} -DOPT_LEVEL=s -DSANITIZERS=OFF -DLTO=OFF ../
-        make -j$(nproc) make_demos
+        cmake -G Ninja -DBUILD_PLATFORM=${{ matrix.build_platform }} -DOPT_LEVEL=s -DSANITIZERS=OFF -DLTO=OFF ../
+        ninja demos
         ccache -s
 
     - name: Build_Os_SANITIZERS_OFF_LTO_ON
@@ -170,8 +170,8 @@ jobs:
         mkdir build_Os_SANITIZERS_OFF_LTO_ON
         cd build_Os_SANITIZERS_OFF_LTO_ON
         ccache -z
-        cmake -DBUILD_PLATFORM=${{ matrix.build_platform }} -DOPT_LEVEL=s -DSANITIZERS=OFF -DLTO=ON ../
-        make -j$(nproc) make_demos
+        cmake -G Ninja -DBUILD_PLATFORM=${{ matrix.build_platform }} -DOPT_LEVEL=s -DSANITIZERS=OFF -DLTO=ON ../
+        ninja demos
         ccache -s
 
     - name: Build_Os_SANITIZERS_ON_LTO_OFF
@@ -179,8 +179,8 @@ jobs:
         mkdir build_Os_SANITIZERS_ON_LTO_OFF
         cd build_Os_SANITIZERS_ON_LTO_OFF
         ccache -z
-        cmake -DBUILD_PLATFORM=${{ matrix.build_platform }} -DOPT_LEVEL=s -DSANITIZERS=ON -DLTO=OFF ../
-        make -j$(nproc) make_demos
+        cmake -G Ninja -DBUILD_PLATFORM=${{ matrix.build_platform }} -DOPT_LEVEL=s -DSANITIZERS=ON -DLTO=OFF ../
+        ninja demos
         ccache -s
 
     - name: Build_Os_SANITIZERS_ON_LTO_ON
@@ -188,8 +188,8 @@ jobs:
         mkdir build_Os_SANITIZERS_ON_LTO_ON
         cd build_Os_SANITIZERS_ON_LTO_ON
         ccache -z
-        cmake -DBUILD_PLATFORM=${{ matrix.build_platform }} -DOPT_LEVEL=s -DSANITIZERS=ON -DLTO=ON ../
-        make -j$(nproc) make_demos
+        cmake -G Ninja -DBUILD_PLATFORM=${{ matrix.build_platform }} -DOPT_LEVEL=s -DSANITIZERS=ON -DLTO=ON ../
+        ninja demos
         ccache -s
 
     - name: Build_O3_SANITIZERS_OFF_LTO_OFF
@@ -197,8 +197,8 @@ jobs:
         mkdir build_O3_SANITIZERS_OFF_LTO_OFF
         cd build_O3_SANITIZERS_OFF_LTO_OFF
         ccache -z
-        cmake -DBUILD_PLATFORM=${{ matrix.build_platform }} -DOPT_LEVEL=3 -DSANITIZERS=OFF -DLTO=OFF ../
-        make -j$(nproc) make_demos
+        cmake -G Ninja -DBUILD_PLATFORM=${{ matrix.build_platform }} -DOPT_LEVEL=3 -DSANITIZERS=OFF -DLTO=OFF ../
+        ninja demos
         ccache -s
 
     - name: Build_O3_SANITIZERS_OFF_LTO_ON
@@ -206,8 +206,8 @@ jobs:
         mkdir build_O3_SANITIZERS_OFF_LTO_ON
         cd build_O3_SANITIZERS_OFF_LTO_ON
         ccache -z
-        cmake -DBUILD_PLATFORM=${{ matrix.build_platform }} -DOPT_LEVEL=3 -DSANITIZERS=OFF -DLTO=ON ../
-        make -j$(nproc) make_demos
+        cmake -G Ninja -DBUILD_PLATFORM=${{ matrix.build_platform }} -DOPT_LEVEL=3 -DSANITIZERS=OFF -DLTO=ON ../
+        ninja demos
         ccache -s
 
     - name: Build_O3_SANITIZERS_ON_LTO_OFF
@@ -215,8 +215,8 @@ jobs:
         mkdir build_O3_SANITIZERS_ON_LTO_OFF
         cd build_O3_SANITIZERS_ON_LTO_OFF
         ccache -z
-        cmake -DBUILD_PLATFORM=${{ matrix.build_platform }} -DOPT_LEVEL=3 -DSANITIZERS=ON -DLTO=OFF ../
-        make -j$(nproc) make_demos
+        cmake -G Ninja -DBUILD_PLATFORM=${{ matrix.build_platform }} -DOPT_LEVEL=3 -DSANITIZERS=ON -DLTO=OFF ../
+        ninja demos
         ccache -s
 
     - name: Build_O3_SANITIZERS_ON_LTO_ON
@@ -224,8 +224,8 @@ jobs:
         mkdir build_O3_SANITIZERS_ON_LTO_ON
         cd build_O3_SANITIZERS_ON_LTO_ON
         ccache -z
-        cmake -DBUILD_PLATFORM=${{ matrix.build_platform }} -DOPT_LEVEL=3 -DSANITIZERS=ON -DLTO=ON ../
-        make -j$(nproc) make_demos
+        cmake -G Ninja -DBUILD_PLATFORM=${{ matrix.build_platform }} -DOPT_LEVEL=3 -DSANITIZERS=ON -DLTO=ON ../
+        ninja demos
         ccache -s
 
     # [[[end]]]
@@ -250,8 +250,7 @@ jobs:
     #   cog.outl("  run: |")
     #   cog.outl("    source testenv/bin/activate")
     #   cog.outl("    cd build_O{}_SANITIZERS_{}_LTO_{}".format(*params))
-    #   cog.outl("    # TODO: With multiple threads we sometimes get an error reading progress file")
-    #   cog.outl("    lit ../demos/ --xunit-xml-output results.xml -a -j1")
+    #   cog.outl("    lit demos/ --xunit-xml-output results.xml -a")
     #   cog.outl("  if: ${{ env.SHOULD_CONTINUE == 'YES' && ( failure() || success() ) }}")
     #   cog.outl()
     # ]]]
@@ -259,80 +258,70 @@ jobs:
       run: |
         source testenv/bin/activate
         cd build_O0_SANITIZERS_OFF_LTO_OFF
-        # TODO: With multiple threads we sometimes get an error reading progress file
-        lit ../demos/ --xunit-xml-output results.xml -a -j1
+        lit demos/ --xunit-xml-output results.xml -a
       if: ${{ env.SHOULD_CONTINUE == 'YES' && ( failure() || success() ) }}
 
     - name: Test_O0_SANITIZERS_ON_LTO_OFF
       run: |
         source testenv/bin/activate
         cd build_O0_SANITIZERS_ON_LTO_OFF
-        # TODO: With multiple threads we sometimes get an error reading progress file
-        lit ../demos/ --xunit-xml-output results.xml -a -j1
+        lit demos/ --xunit-xml-output results.xml -a
       if: ${{ env.SHOULD_CONTINUE == 'YES' && ( failure() || success() ) }}
 
     - name: Test_Os_SANITIZERS_OFF_LTO_OFF
       run: |
         source testenv/bin/activate
         cd build_Os_SANITIZERS_OFF_LTO_OFF
-        # TODO: With multiple threads we sometimes get an error reading progress file
-        lit ../demos/ --xunit-xml-output results.xml -a -j1
+        lit demos/ --xunit-xml-output results.xml -a
       if: ${{ env.SHOULD_CONTINUE == 'YES' && ( failure() || success() ) }}
 
     - name: Test_Os_SANITIZERS_OFF_LTO_ON
       run: |
         source testenv/bin/activate
         cd build_Os_SANITIZERS_OFF_LTO_ON
-        # TODO: With multiple threads we sometimes get an error reading progress file
-        lit ../demos/ --xunit-xml-output results.xml -a -j1
+        lit demos/ --xunit-xml-output results.xml -a
       if: ${{ env.SHOULD_CONTINUE == 'YES' && ( failure() || success() ) }}
 
     - name: Test_Os_SANITIZERS_ON_LTO_OFF
       run: |
         source testenv/bin/activate
         cd build_Os_SANITIZERS_ON_LTO_OFF
-        # TODO: With multiple threads we sometimes get an error reading progress file
-        lit ../demos/ --xunit-xml-output results.xml -a -j1
+        lit demos/ --xunit-xml-output results.xml -a
       if: ${{ env.SHOULD_CONTINUE == 'YES' && ( failure() || success() ) }}
 
     - name: Test_Os_SANITIZERS_ON_LTO_ON
       run: |
         source testenv/bin/activate
         cd build_Os_SANITIZERS_ON_LTO_ON
-        # TODO: With multiple threads we sometimes get an error reading progress file
-        lit ../demos/ --xunit-xml-output results.xml -a -j1
+        lit demos/ --xunit-xml-output results.xml -a
       if: ${{ env.SHOULD_CONTINUE == 'YES' && ( failure() || success() ) }}
 
     - name: Test_O3_SANITIZERS_OFF_LTO_OFF
       run: |
         source testenv/bin/activate
         cd build_O3_SANITIZERS_OFF_LTO_OFF
-        # TODO: With multiple threads we sometimes get an error reading progress file
-        lit ../demos/ --xunit-xml-output results.xml -a -j1
+        lit demos/ --xunit-xml-output results.xml -a
       if: ${{ env.SHOULD_CONTINUE == 'YES' && ( failure() || success() ) }}
 
     - name: Test_O3_SANITIZERS_OFF_LTO_ON
       run: |
         source testenv/bin/activate
         cd build_O3_SANITIZERS_OFF_LTO_ON
-        # TODO: With multiple threads we sometimes get an error reading progress file
-        lit ../demos/ --xunit-xml-output results.xml -a -j1
+        lit demos/ --xunit-xml-output results.xml -a
       if: ${{ env.SHOULD_CONTINUE == 'YES' && ( failure() || success() ) }}
 
     - name: Test_O3_SANITIZERS_ON_LTO_OFF
       run: |
         source testenv/bin/activate
         cd build_O3_SANITIZERS_ON_LTO_OFF
-        # TODO: With multiple threads we sometimes get an error reading progress file
-        lit ../demos/ --xunit-xml-output results.xml -a -j1
+        lit demos/ --xunit-xml-output results.xml -a
       if: ${{ env.SHOULD_CONTINUE == 'YES' && ( failure() || success() ) }}
 
     - name: Test_O3_SANITIZERS_ON_LTO_ON
       run: |
         source testenv/bin/activate
         cd build_O3_SANITIZERS_ON_LTO_ON
-        # TODO: With multiple threads we sometimes get an error reading progress file
-        lit ../demos/ --xunit-xml-output results.xml -a -j1
+        lit demos/ --xunit-xml-output results.xml -a
       if: ${{ env.SHOULD_CONTINUE == 'YES' && ( failure() || success() ) }}
 
     # [[[end]]]

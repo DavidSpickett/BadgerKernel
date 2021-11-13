@@ -3,18 +3,18 @@ import lit
 from textwrap import dedent
 
 
-# Run make test_<bla> target for each demo
+# Run test.sh for each demo
 class MakeTest(lit.formats.base.TestFormat):
     def execute(self, test, litConfig):
         if test.unsupported:
             return lit.Test.UNSUPPORTED, ''
 
         filename = os.path.basename(test.getSourcePath())
-        cmd = ["make", "test_" + os.path.splitext(filename)[0]]
+        test_script = os.path.join(test.getSourcePath(), "test.sh")
+        cmd = ["bash", test_script]
         try:
             timed_out = False
-            out, err, exitCode = lit.util.executeCommand(
-                cmd, timeout=30)
+            out, err, exitCode = lit.util.executeCommand(cmd, timeout=30)
         except lit.util.ExecuteCommandTimeoutException as e:
             exitCode = 1
             timed_out = True
@@ -44,12 +44,17 @@ class MakeTest(lit.formats.base.TestFormat):
             return
 
         for directory in sorted(os.listdir(source_path)):
-            # __ to ignore __pycache__ etc.
-            if os.path.isdir(os.path.join(source_path, directory)) and \
-                    directory not in localConfig.excludes and \
-                    not directory.startswith("__"):
-                test = lit.Test.Test(testSuite,
-                                     path_in_suite + (directory,),
-                                     localConfig)
-                test.unsupported = localConfig.unsupported
-                yield test
+            full_path = os.path.join(source_path, directory)
+            # __ to ignore __pycache__
+            # No test.sh means the test was disabled by cmake for this config.
+            if not os.path.isdir(full_path) or \
+                directory in localConfig.excludes or \
+                    directory.startswith("__"):
+                continue
+
+            test = lit.Test.Test(testSuite,
+                                 path_in_suite + (directory,),
+                                 localConfig)
+            has_test_script = "test.sh" in os.listdir(full_path)
+            test.unsupported = localConfig.unsupported or not has_test_script
+            yield test

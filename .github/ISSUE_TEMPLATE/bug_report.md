@@ -25,10 +25,10 @@ A clear and concise description of what the bug is.
 - cmake configuration
 ```
 ```
-- make command
+- ninja command
 ```
 ```
-- run command (.e.g `make run_yielding`)
+- run command (.e.g `ninja run_yielding`)
 ```
 ```
 - any additional steps

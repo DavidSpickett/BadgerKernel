@@ -44,28 +44,4 @@ config.test_exec_root = os.path.join(config.test_source_root, '..')
 
 # Exclude cmake related directory
 config.excludes.add('CMakeFiles')
-
 config.excludes.add('shell')
-# lower() because Github Actions config is case sensitive
-# but local use may not be
-if platform.lower() == 'aarch64':
-    config.excludes.add('threadlocalstorage')
-
-# Raspi4 only runs on real hardware, skip all tests
-if platform.lower() == 'raspi4':
-    config.unsupported = True
-
-if platform.lower() == 'thumb' and \
-        opt_level in ['0', '3'] and \
-        sanitizers == 'ON':
-    config.excludes.add('loadbinaries')
-
-if not (
-        (platform.lower() == 'arm') and
-        (opt_level == '0')):
-    config.excludes.add('backtrace')
-
-if lto == 'ON':
-    config.excludes.add('loadbinary')
-    config.excludes.add('loadbinaries')
-    config.excludes.add('loadpiebinary')
