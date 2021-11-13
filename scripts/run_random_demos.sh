@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -e pipefail
 
 while true; do
   python3 ./scripts/gen_random_demo.py > demos/generated/generated.c
