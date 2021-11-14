@@ -21,6 +21,29 @@ static const char* thread_state_to_str(ThreadState state) {
   }
 }
 
+static void print_related_thread(int this_tid, const char* kind,
+                                 bool(getter)(int, int*)) {
+  int other_tid = INVALID_THREAD;
+  bool got = getter(this_tid, &other_tid);
+  if (!got) {
+    return;
+  }
+
+  char other_name[THREAD_NAME_SIZE];
+  if (other_tid != INVALID_THREAD) {
+    thread_name(other_tid, other_name);
+  }
+
+  if (other_tid != INVALID_THREAD) {
+    printf("| %s | ", kind);
+    if (strlen(other_name)) {
+      printf("%s (%i)\n", other_name, other_tid);
+    } else {
+      printf("%i\n", other_tid);
+    }
+  }
+}
+
 void worker(int argc, char* argv[]) {
   (void)argv;
   if (argc > 1) {
@@ -41,20 +64,6 @@ void worker(int argc, char* argv[]) {
     get_thread_state(tid, &state);
     const char* state_name = thread_state_to_str(state);
 
-    int child_tid = INVALID_THREAD;
-    get_child(tid, &child_tid);
-    char child_name[THREAD_NAME_SIZE];
-    if (child_tid != INVALID_THREAD) {
-      thread_name(child_tid, child_name);
-    }
-
-    int parent_tid = INVALID_THREAD;
-    get_parent(tid, &parent_tid);
-    char parent_name[THREAD_NAME_SIZE];
-    if (parent_tid != INVALID_THREAD) {
-      thread_name(parent_tid, parent_name);
-    }
-
     printf("|-----------|\n");
     printf("| Thread %u\n", tid);
     printf("|-----------|\n");
@@ -64,25 +73,8 @@ void worker(int argc, char* argv[]) {
     }
 
     printf("| State     | %s (%u)\n", state_name, state);
-
-    if (parent_tid != INVALID_THREAD) {
-      printf("| Parent    | ");
-      if (strlen(parent_name)) {
-        printf("%s (%i)\n", parent_name, parent_tid);
-      } else {
-        printf("%i\n", parent_tid);
-      }
-    }
-
-    if (child_tid != INVALID_THREAD) {
-      printf("| Child     | ");
-      if (strlen(child_name)) {
-        printf("%s (%i)\n", child_name, child_tid);
-      } else {
-        printf("%i\n", child_tid);
-      }
-    }
-
+    print_related_thread(tid, "Parent   ", get_parent);
+    print_related_thread(tid, "Child    ", get_child);
     printf("|-----------|\n");
   }
 }
