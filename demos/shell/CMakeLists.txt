@@ -3,8 +3,10 @@ if(LTO OR NOT SEMIHOSTING)
   return()
 endif()
 
-if(BP_LOWER STREQUAL "thumb" AND SANITIZERS AND OPT_LEVEL STREQUAL "3")
-  return()
+if(BP_LOWER STREQUAL "thumb" AND SANITIZERS)
+  if (OPT_LEVEL STREQUAL "0" OR OPT_LEVEL STREQUAL "3")
+    return()
+  endif()
 endif()
 
 add_demo_no_test(shell 4)
