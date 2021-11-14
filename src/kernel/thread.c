@@ -237,7 +237,6 @@ static void swap_paged_threads(const Thread* current, const Thread* next) {
 static size_t next_possible_thread_idx(const Thread* curr) {
   if (curr) {
     // Parent always yields to child if possible
-    // TODO: I'm not sure that this behaviour makes sense
     if (is_valid_thread(curr->child) && can_schedule_thread(curr->child)) {
       return curr->child;
     }
