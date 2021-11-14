@@ -38,14 +38,14 @@ function(__add_demo NAME TEST_TYPE MAX_THREADS)
 
     add_custom_command(TARGET run_${NAME} POST_BUILD
       COMMAND eval "${QEMU}${KERNEL_EXECUTABLE}"
-     VERBATIM)
+     VERBATIM USES_TERMINAL)
 
     add_custom_target(debug_${NAME})
     add_dependencies(debug_${NAME} ${NAME})
 
     add_custom_command(TARGET debug_${NAME} POST_BUILD
       COMMAND eval "${QEMU}${KERNEL_EXECUTABLE} -s -S"
-      VERBATIM)
+      VERBATIM USES_TERMINAL)
   endif()
 
   if(NOT TEST_TYPE STREQUAL "none" AND NOT BP_LOWER STREQUAL "raspi4")
