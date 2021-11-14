@@ -18,6 +18,9 @@ void worker_1() {
 
   int tid = add_thread_from_worker(worker_2);
   assert(set_child(tid));
+  int parent = 0;
+  assert(get_parent(tid, &parent));
+  assert(parent == get_thread_id());
 
   // Won't run yet because we yield to worker_2
   // Then it comes back to us on finish
@@ -37,6 +40,14 @@ void worker_1() {
 }
 
 void setup(void) {
+  // Thread 0 has no parent
+  int parent = 0;
+  assert(get_parent(get_thread_id(), &parent));
+  assert(parent == INVALID_THREAD);
+
+  // Can't get parent of an invalid thread
+  assert(!get_parent(1, &parent));
+
   add_thread_from_worker(worker_1);
   add_thread_from_worker(worker_5);
 }

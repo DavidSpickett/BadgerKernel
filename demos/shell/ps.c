@@ -48,6 +48,13 @@ void worker(int argc, char* argv[]) {
       thread_name(child_tid, child_name);
     }
 
+    int parent_tid = INVALID_THREAD;
+    get_parent(tid, &parent_tid);
+    char parent_name[THREAD_NAME_SIZE];
+    if (parent_tid != INVALID_THREAD) {
+      thread_name(parent_tid, parent_name);
+    }
+
     printf("|-----------|\n");
     printf("| Thread %u\n", tid);
     printf("|-----------|\n");
@@ -57,6 +64,15 @@ void worker(int argc, char* argv[]) {
     }
 
     printf("| State     | %s (%u)\n", state_name, state);
+
+    if (parent_tid != INVALID_THREAD) {
+      printf("| Parent    | ");
+      if (strlen(parent_name)) {
+        printf("%s (%i)\n", parent_name, parent_tid);
+      } else {
+        printf("%i\n", parent_tid);
+      }
+    }
 
     if (child_tid != INVALID_THREAD) {
       printf("| Child     | ");

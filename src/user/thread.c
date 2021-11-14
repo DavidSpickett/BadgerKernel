@@ -123,6 +123,11 @@ bool get_child(int tid, int* child) {
   return got;
 }
 
+bool get_parent(int tid, int* parent) {
+  bool got = get_thread_property(tid, TPROP_PARENT, parent);
+  return got;
+}
+
 uint16_t permissions(uint32_t remove) {
   uint16_t to_remove = remove >> TFLAG_PERM_SHIFT;
   set_thread_property(CURRENT_THREAD, TPROP_PERMISSIONS, &to_remove);

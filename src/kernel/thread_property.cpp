@@ -28,6 +28,10 @@ struct PropChild {
   constexpr static int value = TPROP_CHILD;
   typedef int type;
 };
+struct PropParent {
+  constexpr static int value = TPROP_PARENT;
+  typedef int type;
+};
 struct PropState {
   constexpr static int value = TPROP_STATE;
   typedef ThreadState type;
@@ -60,7 +64,8 @@ public:
       typename = typename std::enable_if<
           (std::is_same<P, PropState>::value       ||
            std::is_same<P, PropPermissions>::value ||
-           std::is_same<P, PropChild>::value
+           std::is_same<P, PropChild>::value       ||
+           std::is_same<P, PropParent>::value
           ) &&
           // Error when the parameter type is != the property type
           // Even if the compiler could implicitly cast to it.
@@ -138,6 +143,9 @@ static bool do_get_thread_property(int tid, size_t property, UserPointer res) {
     case PropChild::value:
       res.set_value<PropChild>(thread->child);
       break;
+    case PropParent::value:
+      res.set_value<PropParent>(thread->parent);
+      break;
     case PropState::value:
       res.set_value<PropState>(thread->state);
       break;
@@ -184,7 +192,6 @@ static bool do_set_thread_property(int tid, size_t property,
   Thread* thread = &all_threads[tid];
   switch (property) {
     case PropChild::value: {
-      // Not sure I like one property call setting two things
       int child = value.get_value<PropChild>();
       if (is_valid_thread(child)) {
         thread->child = child;

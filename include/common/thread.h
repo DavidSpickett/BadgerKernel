@@ -35,11 +35,12 @@ for number, name, define, type in properties:
 ]]] */
 #define TPROP_NAME            0
 #define TPROP_CHILD           1
-#define TPROP_STATE           2
-#define TPROP_PERMISSIONS     3
-#define TPROP_REGISTERS       4
-#define TPROP_PENDING_SIGNALS 5
-#define TPROP_SIGNAL_HANDLER  6
+#define TPROP_PARENT          2
+#define TPROP_STATE           3
+#define TPROP_PERMISSIONS     4
+#define TPROP_REGISTERS       5
+#define TPROP_PENDING_SIGNALS 6
+#define TPROP_SIGNAL_HANDLER  7
 /* [[[end]]] */
 
 #define TFLAG_KIND_MASK 0xFFFF

@@ -39,6 +39,7 @@ bool thread_join(int tid, ThreadState* state);
 bool get_thread_state(int tid, ThreadState* state) __attribute__((nonnull));
 bool set_child(int child);
 bool get_child(int tid, int* child);
+bool get_parent(int tid, int* parent);
 
 void thread_wait(void);
 bool thread_wake(int tid);
