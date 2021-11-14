@@ -84,27 +84,15 @@ Builtins:
 help quit run
 Programs:
 echo ps ls
-$ echo hello BK
-hello BK
-$ run ps
-|-----------|
-| Thread 0
-|-----------|
-| Name      | shell
-| State     | suspended (2)
-| Child     | run (1)
-|-----------|
-|-----------|
-| Thread 1
-|-----------|
-| Name      | run
-| State     | suspended (2)
-| Child     | ps (2)
-|-----------|
-|-----------|
-| Thread 2
-|-----------|
-| Name      | ps
-| State     | running (1)
-|-----------|
+$ help run
+run <program name>
+$ echo Hello Badger Kernel!
+Hello Badger Kernel!
+$ ps
+| shell (0)
+   State | suspended (2)
+  Child  | ps (1)
+| ps (1)
+   State | running (1)
+  Parent | shell (0)
 ```
