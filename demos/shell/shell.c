@@ -83,7 +83,16 @@ static void run(int argc, char* argv[]) {
   // Pass on rest of arguments, +/- 1 to skip "run"
   // The program will still expect argv[0] to be its name
   const ThreadArgs args = make_args(argc - 1, argv + 1, 0, 0);
-  int tid = add_thread_from_file_with_args(argv[1], &args);
+
+  int tid = INVALID_THREAD;
+  // This is mostly for fun, it allows you to fill up all the
+  // available threads by doing "run run run ... <something>".
+  if (!strcmp(argv[1], "run")) {
+    tid = add_named_thread_with_args(run, argv[1], &args);
+  } else {
+    tid = add_thread_from_file_with_args(argv[1], &args);
+  }
+
   if (tid == INVALID_THREAD) {
     printf("Couldn't load \"%s\"\n", argv[1]);
   } else {

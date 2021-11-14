@@ -7,7 +7,7 @@ if(BP_LOWER STREQUAL "thumb" AND SANITIZERS AND OPT_LEVEL STREQUAL "3")
   return()
 endif()
 
-add_demo_no_test(shell 3)
+add_demo_no_test(shell 4)
 add_loadable(shell echo)
 add_loadable(shell ps)
 add_loadable(shell ls)

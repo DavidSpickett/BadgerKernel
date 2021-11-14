@@ -502,8 +502,14 @@ int k_add_thread_from_file_with_args(const char* filename,
     }
     return INVALID_THREAD;
   }
+
   int tid =
       k_add_named_thread_with_args(entry, filename, args, remove_permissions);
+  // You may have fewer free thread structures than you do empty code pages.
+  // Meaning you have mostly in-binary threads. In which case the above fails.
+  if (tid == INVALID_THREAD) {
+    return INVALID_THREAD;
+  }
 
 #if CODE_BACKING_PAGES
   all_threads[tid].code_backing_page = free_page;
