@@ -35,7 +35,7 @@ static void print_related_thread(int this_tid, const char* kind,
   }
 
   if (other_tid != INVALID_THREAD) {
-    printf("| %s | ", kind);
+    printf("%s", kind);
     if (strlen(other_name)) {
       printf("%s (%i)\n", other_name, other_tid);
     } else {
@@ -60,21 +60,18 @@ void worker(int argc, char* argv[]) {
       break;
     }
 
+    if (strlen(name)) {
+      printf("| %s (%u)\n", name, tid);
+    } else {
+      printf("| Thread %u\n", tid);
+    }
+
     // Valid already checked above
     get_thread_state(tid, &state);
     const char* state_name = thread_state_to_str(state);
+    printf("   State | %s (%u)\n", state_name, state);
 
-    printf("|-----------|\n");
-    printf("| Thread %u\n", tid);
-    printf("|-----------|\n");
-
-    if (strlen(name)) {
-      printf("| Name      | %s\n", name);
-    }
-
-    printf("| State     | %s (%u)\n", state_name, state);
-    print_related_thread(tid, "Parent   ", get_parent);
-    print_related_thread(tid, "Child    ", get_child);
-    printf("|-----------|\n");
+    print_related_thread(tid, "  Parent | ", get_parent);
+    print_related_thread(tid, "  Child  | ", get_child);
   }
 }
