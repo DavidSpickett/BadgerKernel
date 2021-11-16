@@ -1,12 +1,13 @@
 #ifndef USER_SYSCALL_H
 #define USER_SYSCALL_H
 
+#include "common/macros.h"
 #include "common/syscall.h"
 #include "port/port.h"
 #include <stddef.h>
 
-size_t generic_syscall(Syscall num, size_t arg1, size_t arg2, size_t arg3,
-                       size_t arg4);
+BK_EXPORT size_t generic_syscall(Syscall num, size_t arg1, size_t arg2,
+                                 size_t arg3, size_t arg4);
 
 #define DO_SYSCALL_0(NAME) generic_syscall(syscall_##NAME, 0, 0, 0, 0)
 #define DO_SYSCALL_1(NAME, ARG1)                                               \

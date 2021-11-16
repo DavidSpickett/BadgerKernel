@@ -1,5 +1,5 @@
 # We can not perform file operations without semihosting
-if(LTO OR NOT SEMIHOSTING)
+if(NOT SEMIHOSTING)
   return()
 endif()
 
