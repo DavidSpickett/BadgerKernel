@@ -1,6 +1,8 @@
 #ifndef USER_UTIL_H
 #define USER_UTIL_H
 
-void exit(int status);
+#include "common/macros.h"
+
+BK_EXPORT void exit(int status);
 
 #endif /* ifdef USER_UTIL_H */

@@ -5,19 +5,20 @@
 extern "C" {
 #endif
 
+#include "common/macros.h"
 #include <stdarg.h>
 #include <stdint.h>
 #include <string.h>
 
-int vprintf(const char* fmt, va_list args);
-int printf(const char* fmt, ...);
-int putchar(int chr);
-int sprintf(char* str, const char* fmt, ...);
+BK_EXPORT int vprintf(const char* fmt, va_list args);
+BK_EXPORT int printf(const char* fmt, ...);
+BK_EXPORT int putchar(int chr);
+BK_EXPORT int sprintf(char* str, const char* fmt, ...);
 
-void format_thread_name(char* out, int tid, const char* name);
+BK_EXPORT void format_thread_name(char* out, int tid, const char* name);
 
 enum TextColour { eReset, eYellow };
-const char* text_colour(enum TextColour colour);
+BK_EXPORT const char* text_colour(enum TextColour colour);
 
 #ifdef __cplusplus
 }

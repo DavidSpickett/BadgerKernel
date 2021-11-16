@@ -12,13 +12,13 @@
  * Not an issue on QEMU but happens on real hardware.
  */
 
+#include "common/macros.h"
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h> // For EOF
 #include <string.h>
-// For EOF
-#include <stdio.h>
 
-int isdigit(int c) {
+BK_EXPORT int isdigit(int c) {
   if (c == EOF) {
     return 0;
   }
@@ -27,11 +27,11 @@ int isdigit(int c) {
   return chr >= '0' && chr <= '9';
 }
 
-int abs(int x) {
+BK_EXPORT int abs(int x) {
   return x > 0 ? x : x * -1;
 }
 
-size_t strlen(const char* s) {
+BK_EXPORT size_t strlen(const char* s) {
   size_t len = 0;
   while (*s != '\0') {
     len++;
@@ -40,7 +40,7 @@ size_t strlen(const char* s) {
   return len;
 }
 
-int strcmp(const char* s1, const char* s2) {
+BK_EXPORT int strcmp(const char* s1, const char* s2) {
   while (*s1 == *s2 && *s1 != '\0' && *s2 != '\0') {
     s1++;
     s2++;
@@ -49,7 +49,7 @@ int strcmp(const char* s1, const char* s2) {
   return *s1 - *s2;
 }
 
-int strncmp(const char* s1, const char* s2, size_t len) {
+BK_EXPORT int strncmp(const char* s1, const char* s2, size_t len) {
   while (len > 0) {
     if (*s1 != *s2) {
       return *s1 - *s2;
@@ -67,7 +67,7 @@ int strncmp(const char* s1, const char* s2, size_t len) {
   return 0;
 }
 
-char* strncpy(char* dst, const char* src, size_t num) {
+BK_EXPORT char* strncpy(char* dst, const char* src, size_t num) {
   size_t i = 0;
   while (i < num && src[i] != '\0') {
     dst[i] = src[i];
@@ -79,13 +79,15 @@ char* strncpy(char* dst, const char* src, size_t num) {
   return dst;
 }
 
-void bzero(void* dst, size_t len) {
+BK_EXPORT void bzero(void* dst, size_t len) {
   memset(dst, 0, len);
 }
 
 // TODO: LTO decides memset/memcpy are unused then presumably the compiler
 // generates a call to it and realises it's gone.
-__attribute__((used)) void* memset(void* dst, int ch, size_t len) {
+// (BK_EXPORT only expands to used if elf loading is enabled, we always want
+// this to be used)
+BK_EXPORT __attribute__((used)) void* memset(void* dst, int ch, size_t len) {
   uint8_t* d = dst;
   while (len-- > 0) {
     *d++ = ch;
@@ -93,7 +95,8 @@ __attribute__((used)) void* memset(void* dst, int ch, size_t len) {
   return dst;
 }
 
-__attribute__((used)) void* memcpy(void* dst, const void* src, size_t len) {
+BK_EXPORT __attribute__((used)) void* memcpy(void* dst, const void* src,
+                                             size_t len) {
   uint8_t* d = dst;
   const uint8_t* s = src;
   while (len-- > 0) {
@@ -102,7 +105,7 @@ __attribute__((used)) void* memcpy(void* dst, const void* src, size_t len) {
   return dst;
 }
 
-void* memmove(void* dst, const void* src, size_t len) {
+BK_EXPORT void* memmove(void* dst, const void* src, size_t len) {
   if (len == 0 || dst == src) {
     // len == 0 or copy to the same place, return immediately
     return dst;

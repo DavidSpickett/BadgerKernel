@@ -1,6 +1,7 @@
 #include "kernel/thread.h"
 #include "common/assert.h"
 #include "common/errno.h"
+#include "common/macros.h"
 #include "common/print.h"
 #include "common/trace.h"
 #include "port/port.h"
@@ -25,7 +26,8 @@ __attribute__((section(".thread_vars"))) uint32_t kernel_config =
     KCFG_LOG_THREADS;
 
 #if CODE_PAGE_SIZE
-__attribute__((section(".code_page"))) uint8_t code_page[CODE_PAGE_SIZE];
+BK_EXPORT __attribute__((section(".code_page")))
+uint8_t code_page[CODE_PAGE_SIZE];
 #if CODE_BACKING_PAGES
 #define INVALID_PAGE 123456
 
