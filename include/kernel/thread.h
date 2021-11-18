@@ -58,6 +58,10 @@ extern Thread all_threads[MAX_THREADS];
 extern Thread* current_thread;
 extern Thread* next_thread;
 
+#ifdef CODE_PAGE_SIZE
+extern uint8_t code_page[CODE_PAGE_SIZE];
+#endif
+
 int k_add_thread_from_file_with_args(const char* filename,
                                      const ThreadArgs* args,
                                      uint16_t remove_permissions);

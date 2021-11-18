@@ -465,6 +465,12 @@ static void resolve_relocs(int elf, uint16_t idx, size_t section_table_offs,
     // This is where we put the answer to the relocation's question
     size_t* reloc_result_location = (size_t*)(code_page + reloc.r_offset);
 
+    if (reloc_result_location <= (size_t*)code_page ||
+        reloc_result_location >= (size_t*)(code_page + CODE_PAGE_SIZE)) {
+      PRINT_EXIT("Relocation result location 0x%x outside of code page!\n",
+                 reloc_result_location);
+    }
+
     if ((reloc_type == R_ARM_RELATIVE) || (reloc_type == R_AARCH64_RELATIVE)) {
       if (reloc_sym != 0) {
         PRINT_EXIT("Expected no symbol with R_ARM_RELATIVE!\n");
