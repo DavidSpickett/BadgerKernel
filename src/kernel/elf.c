@@ -465,7 +465,7 @@ static void resolve_relocs(int elf, uint16_t idx, size_t section_table_offs,
     // This is where we put the answer to the relocation's question
     size_t* reloc_result_location = (size_t*)(code_page + reloc.r_offset);
 
-    if (reloc_result_location <= (size_t*)code_page ||
+    if (reloc_result_location < (size_t*)code_page ||
         reloc_result_location >= (size_t*)(code_page + CODE_PAGE_SIZE)) {
       PRINT_EXIT("Relocation result location 0x%x outside of code page!\n",
                  reloc_result_location);
