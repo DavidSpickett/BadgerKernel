@@ -39,12 +39,22 @@ else()
 endif()
 
 # TODO: The way we cross compile goes completely against cmake best practices
-set(CMAKE_C_COMPILER "${PREFIX}gcc")
-set(CMAKE_C_COMPILER_WORKS 1)
-set(CMAKE_CXX_COMPILER "${PREFIX}g++")
-set(CMAKE_CXX_COMPILER_WORKS 1)
+set(CMAKE_ASM_COMPILER "${PREFIX}gcc")
+set(CMAKE_ASM_COMPILER_WORKS TRUE)
+set(CMAKE_ASM_COMPILER_ID_RUN TRUE)
+set(CMAKE_ASM_COMPILER_FORCED TRUE)
 
-project(BadgerKernel)
+set(CMAKE_C_COMPILER "${PREFIX}gcc")
+set(CMAKE_C_COMPILER_WORKS TRUE)
+set(CMAKE_C_COMPILER_ID_RUN TRUE)
+set(CMAKE_C_COMPILER_FORCED TRUE)
+
+set(CMAKE_CXX_COMPILER "${PREFIX}g++")
+set(CMAKE_CXX_COMPILER_WORKS TRUE)
+set(CMAKE_CXX_COMPILER_ID_RUN TRUE)
+set(CMAKE_CXX_COMPILER_FORCED TRUE)
+
+project(BadgerKernel C CXX ASM)
 
 set( CFLAGS "-DSTACK_SIZE=${STACK_SIZE} -g3 -O${OPT_LEVEL} -Wall -Werror -Wextra")
 
@@ -70,6 +80,7 @@ if(SEMIHOSTING)
   set( CFLAGS "${CFLAGS} -DSEMIHOSTING_ENABLED" )
 endif(SEMIHOSTING)
 
+set( CMAKE_ASM_FLAGS "${PLATFORM}")
 set( CMAKE_C_FLAGS "${PLATFORM} ${CFLAGS} -std=gnu11" )
 set( CMAKE_CXX_FLAGS "${PLATFORM} ${CFLAGS} -fno-rtti -fno-exceptions -fno-unwind-tables -std=c++11" )
 
