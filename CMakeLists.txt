@@ -77,7 +77,7 @@ if(SEMIHOSTING)
   set( CFLAGS "${CFLAGS} -DSEMIHOSTING_ENABLED" )
 endif(SEMIHOSTING)
 
-set( CMAKE_ASM_FLAGS "${PLATFORM}")
+set( CMAKE_ASM_FLAGS "${PLATFORM} -g3")
 set( CMAKE_C_FLAGS "${PLATFORM} ${CFLAGS} -std=gnu11" )
 set( CMAKE_CXX_FLAGS "${PLATFORM} ${CFLAGS} -fno-rtti -fno-exceptions -fno-unwind-tables -std=c++11" )
 
