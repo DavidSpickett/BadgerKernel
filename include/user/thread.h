@@ -7,7 +7,7 @@
 #include <stdint.h>
 
 BK_EXPORT int add_thread(const char* name, const ThreadArgs* args, void* worker,
-                         uint32_t flags);
+                         const ThreadFlags* flags);
 
 BK_EXPORT int add_named_thread(void (*worker)(void), const char* name);
 BK_EXPORT int add_thread_from_worker(void (*worker)(void));
@@ -18,10 +18,8 @@ BK_EXPORT int add_named_thread(void (*worker)(void), const char* name);
 BK_EXPORT int add_named_thread_with_args(void (*worker)(), const char* name,
                                          const ThreadArgs* args);
 
-// TODO: it's a uint32_t so you can use the existing
-// _NO_ macros, which are shifted << 16 already
-// Returns the updated set of permissions
-BK_EXPORT uint16_t permissions(uint32_t remove);
+// Remove "remove" from the current set and return the new permissions
+BK_EXPORT uint16_t permissions(uint16_t remove);
 
 BK_EXPORT bool get_thread_property(int tid, size_t property, void* res);
 BK_EXPORT bool set_thread_property(int tid, size_t property, const void* value);

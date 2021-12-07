@@ -81,13 +81,15 @@ void user_inherit() {
   errno = 0;
 
   // This thread will have same permissions
-  int tid = add_thread("same", NULL, same_permissions, THREAD_FUNC);
+  ThreadFlags flags = {.is_file = false, .remove_permissions = 0};
+  int tid = add_thread("same", NULL, same_permissions, &flags);
   set_child(tid);
   yield();
 
   // This has one removed
-  tid = add_thread("reduced", NULL, reduced_permissions,
-                   THREAD_FUNC | TPERM_NO_TCONFIG);
+  flags.remove_permissions = TPERM_TCONFIG;
+  tid = add_thread("reduced", NULL, reduced_permissions, &flags);
+
   set_child(tid);
   yield();
 
@@ -98,7 +100,7 @@ void user_inherit() {
 void user_reduce() {
   // Same idea as the others except we remove
   // permissons within the same thread.
-  uint16_t perm = permissions(TPERM_NO_FILE);
+  uint16_t perm = permissions(TPERM_FILE);
   assert((perm & TPERM_FILE) == 0);
   cannot_file();
 
@@ -106,11 +108,11 @@ void user_reduce() {
   // Except for TCONFIG, which means we can't change
   // our permissions anymore. (which makes sense but
   // was surprising to me at least)
-  perm = permissions(TPERM_NO_TCONFIG);
+  perm = permissions(TPERM_TCONFIG);
   cannot_tconfig();
 
   assert(perm & TPERM_KCONFIG);
-  perm = permissions(TPERM_NO_KCONFIG);
+  perm = permissions(TPERM_KCONFIG);
   assert(perm & TPERM_KCONFIG);
 }
 
@@ -131,7 +133,8 @@ void cleanup() {
 }
 
 #define RUN_TEST_THREAD(NAME, FN, FLAGS)                                       \
-  tid = add_thread(NAME, NULL, FN, FLAGS);                                     \
+  flags.remove_permissions = FLAGS;                                            \
+  tid = add_thread(NAME, NULL, FN, &flags);                                    \
   assert(tid != INVALID_THREAD);                                               \
   set_child(tid);                                                              \
   yield();
@@ -155,8 +158,10 @@ void setup(void) {
   CHECK_TPROP_FAILS(get_thread_property, -1, (void*)(1));
 
   set_thread_name(CURRENT_THREAD, "runner");
+  ThreadFlags flags;
+  flags.is_file = false;
 
-  RUN_TEST_THREAD("noalloc", cannot_alloc, THREAD_FUNC | TPERM_NO_ALLOC);
+  RUN_TEST_THREAD("noalloc", cannot_alloc, TPERM_ALLOC);
 
   // Since cannot_file obviously can't make these
   read_fd = open(SRC_ROOT "/CMakeLists.txt", O_RDONLY);
@@ -164,18 +169,16 @@ void setup(void) {
   write_fd = open("__perm_demo", O_WRONLY);
   assert(write_fd != -1);
 
-  RUN_TEST_THREAD("nofile", cannot_file, THREAD_FUNC | TPERM_NO_FILE);
-  RUN_TEST_THREAD("nocreate", cannot_create, THREAD_FUNC | TPERM_NO_CREATE);
-  RUN_TEST_THREAD("nokconfig", cannot_kconfig, THREAD_FUNC | TPERM_NO_KCONFIG);
-  RUN_TEST_THREAD("notconfig", cannot_tconfig, THREAD_FUNC | TPERM_NO_TCONFIG);
-  RUN_TEST_THREAD("notconfigother", cannot_tconfig_other,
-                  THREAD_FUNC | TPERM_NO_TCONFIG_OTHER);
+  RUN_TEST_THREAD("nofile", cannot_file, TPERM_FILE);
+  RUN_TEST_THREAD("nocreate", cannot_create, TPERM_CREATE);
+  RUN_TEST_THREAD("nokconfig", cannot_kconfig, TPERM_KCONFIG);
+  RUN_TEST_THREAD("notconfig", cannot_tconfig, TPERM_TCONFIG);
+  RUN_TEST_THREAD("notconfigother", cannot_tconfig_other, TPERM_TCONFIG_OTHER);
   RUN_TEST_THREAD("nomulti", cannot_mutli,
-                  THREAD_FUNC | TPERM_NO_FILE | TPERM_NO_ALLOC |
-                      TPERM_NO_KCONFIG);
-  RUN_TEST_THREAD("userinherit", user_inherit, THREAD_FUNC);
-  RUN_TEST_THREAD("userreduce", user_reduce, THREAD_FUNC);
-  RUN_TEST_THREAD("errno", errno_checks, THREAD_FUNC);
+                  TPERM_FILE | TPERM_ALLOC | TPERM_KCONFIG);
+  RUN_TEST_THREAD("userinherit", user_inherit, 0);
+  RUN_TEST_THREAD("userreduce", user_reduce, 0);
+  RUN_TEST_THREAD("errno", errno_checks, 0);
 
-  RUN_TEST_THREAD("cleanup", cleanup, THREAD_FUNC);
+  RUN_TEST_THREAD("cleanup", cleanup, 0);
 }

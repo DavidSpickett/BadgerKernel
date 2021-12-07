@@ -524,7 +524,12 @@ int k_add_thread_from_file_with_args(const char* filename,
 #endif
 
 int k_add_thread(const char* name, const ThreadArgs* args, void* worker,
-                 uint32_t flags) {
+                 const ThreadFlags* flags) {
+  if (!flags) {
+    user_thread_info.err_no = E_INVALID_ARGS;
+    return INVALID_THREAD;
+  }
+
   if (k_has_no_permission(TPERM_CREATE)) {
     return INVALID_THREAD;
   }
@@ -534,26 +539,18 @@ int k_add_thread(const char* name, const ThreadArgs* args, void* worker,
     args = &dummy_args;
   }
 
-  uint16_t kind = flags & TFLAG_KIND_MASK;
-  uint16_t remove_permissions = flags >> TFLAG_PERM_SHIFT;
-  switch (kind) {
-    case THREAD_FILE:
+  if (flags->is_file) {
 #ifndef CODE_PAGE_SIZE
-      assert(0);
-      __builtin_unreachable();
+    assert(0);
+    __builtin_unreachable();
 #else
-      return k_add_thread_from_file_with_args((const char*)worker, args,
-                                              remove_permissions);
+    return k_add_thread_from_file_with_args((const char*)worker, args,
+                                            flags->remove_permissions);
 #endif
-    case THREAD_FUNC:
-      return k_add_named_thread_with_args(worker, name, args,
-                                          remove_permissions);
-    default:
-      assert(0 && "invalid flags!");
-      __builtin_unreachable();
+  } else {
+    return k_add_named_thread_with_args(worker, name, args,
+                                        flags->remove_permissions);
   }
-
-  __builtin_unreachable();
 }
 
 void k_thread_wait(void) {

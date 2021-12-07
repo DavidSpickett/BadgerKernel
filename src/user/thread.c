@@ -28,7 +28,7 @@ void log_event(const char* event, ...) {
 }
 
 int add_thread(const char* name, const ThreadArgs* args, void* worker,
-               uint32_t flags) {
+               const ThreadFlags* flags) {
   ThreadArgs _args = {0, 0, 0, 0};
   if (args) {
     _args = *args;
@@ -37,25 +37,30 @@ int add_thread(const char* name, const ThreadArgs* args, void* worker,
 }
 
 int add_named_thread(void (*worker)(void), const char* name) {
-  return add_thread(name, NULL, worker, THREAD_FUNC);
+  ThreadFlags flags = {.is_file = false, .remove_permissions = 0};
+  return add_thread(name, NULL, worker, &flags);
 }
 
 int add_thread_from_worker(void (*worker)(void)) {
-  return add_thread(NULL, NULL, worker, THREAD_FUNC);
+  ThreadFlags flags = {.is_file = false, .remove_permissions = 0};
+  return add_thread(NULL, NULL, worker, &flags);
 }
 
 int add_thread_from_file(const char* filename) {
-  return add_thread(filename, NULL, (void*)filename, THREAD_FILE);
+  ThreadFlags flags = {.is_file = true, .remove_permissions = 0};
+  return add_thread(filename, NULL, (void*)filename, &flags);
 }
 
 int add_thread_from_file_with_args(const char* filename,
                                    const ThreadArgs* args) {
-  return add_thread(filename, args, (void*)filename, THREAD_FILE);
+  ThreadFlags flags = {.is_file = true, .remove_permissions = 0};
+  return add_thread(filename, args, (void*)filename, &flags);
 }
 
 int add_named_thread_with_args(void (*worker)(), const char* name,
                                const ThreadArgs* args) {
-  return add_thread(name, args, worker, THREAD_FUNC);
+  ThreadFlags flags = {.is_file = false, .remove_permissions = 0};
+  return add_thread(name, args, worker, &flags);
 }
 
 int get_thread_id(void) {
@@ -128,9 +133,8 @@ bool get_parent(int tid, int* parent) {
   return got;
 }
 
-uint16_t permissions(uint32_t remove) {
-  uint16_t to_remove = remove >> TFLAG_PERM_SHIFT;
-  set_thread_property(CURRENT_THREAD, TPROP_PERMISSIONS, &to_remove);
+uint16_t permissions(uint16_t remove) {
+  set_thread_property(CURRENT_THREAD, TPROP_PERMISSIONS, &remove);
   uint16_t new_permissions = 0;
   get_thread_property(CURRENT_THREAD, TPROP_PERMISSIONS, &new_permissions);
   return new_permissions;

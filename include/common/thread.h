@@ -43,12 +43,11 @@ for number, name, define, type in properties:
 #define TPROP_SIGNAL_HANDLER  7
 /* [[[end]]] */
 
-#define TFLAG_KIND_MASK 0xFFFF
-#define THREAD_FUNC     0
-#define THREAD_FILE     1
-
-// Amount to shift up when making "flags" for add_thread
-#define TFLAG_PERM_SHIFT 16
+// Passed to the add_thread syscall
+typedef struct {
+  bool is_file;
+  uint16_t remove_permissions;
+} ThreadFlags;
 
 #define TPERM_NONE          (0)
 #define TPERM_ALL           (0xFFFF)
@@ -60,16 +59,6 @@ for number, name, define, type in properties:
 #define TPERM_TCONFIG_OTHER (1 << 5) // Configure other threads
 
 /* clang-format on */
-
-// Use when removing permissions via add_thread
-#define TPERM_NO_ALL     ((uint32_t)TPERM_ALL << TFLAG_PERM_SHIFT)
-#define TPERM_NO_CREATE  ((uint32_t)TPERM_CREATE << TFLAG_PERM_SHIFT)
-#define TPERM_NO_FILE    ((uint32_t)TPERM_FILE << TFLAG_PERM_SHIFT)
-#define TPERM_NO_ALLOC   ((uint32_t)TPERM_ALLOC << TFLAG_PERM_SHIFT)
-#define TPERM_NO_KCONFIG ((uint32_t)TPERM_KCONFIG << TFLAG_PERM_SHIFT)
-#define TPERM_NO_TCONFIG ((uint32_t)TPERM_TCONFIG << TFLAG_PERM_SHIFT)
-#define TPERM_NO_TCONFIG_OTHER                                                 \
-  ((uint32_t)TPERM_TCONFIG_OTHER << TFLAG_PERM_SHIFT)
 
 #define YIELD_ANY 0
 #define YIELD_TO  1
