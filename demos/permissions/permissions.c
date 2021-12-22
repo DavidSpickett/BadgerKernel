@@ -17,16 +17,30 @@ int write_fd;
 
 void cannot_file() {
   // Some file that should always be there
+  errno = 0;
   assert(open(SRC_ROOT "/README.md", O_RDONLY) == -1);
+  assert(errno == E_PERM);
+  errno = 0;
   assert(list_dir(".", NULL, 0) == -1);
+  assert(errno == E_PERM);
   // nbyte must be non zero so that zero isn't
   // an expected return value
   char* tmp = "hello";
+  errno = 0;
   assert(write(write_fd, tmp, 5) == 0);
+  assert(errno == E_PERM);
+  errno = 0;
   assert(read(read_fd, tmp, 5) == 0);
+  assert(errno == E_PERM);
+  errno = 0;
   assert(lseek(read_fd, 33, SEEK_CUR) == -1);
+  assert(errno == E_PERM);
+  errno = 0;
   assert(remove("permissions") == -1);
+  assert(errno == E_PERM);
+  errno = 0;
   assert(close(read_fd) == -1);
+  assert(errno == E_PERM);
 }
 
 void cannot_create() {

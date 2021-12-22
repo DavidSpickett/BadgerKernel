@@ -1,5 +1,6 @@
 #include "kernel/file.h"
 #include "common/assert.h"
+#include "common/errno.h"
 #include "common/print.h"
 #include "kernel/semihosting.h"
 #include "kernel/thread.h"
@@ -63,6 +64,7 @@ int k_isatty(int fd) {
 
 int k_list_dir(const char* path, char* out, size_t outsz) {
   if (k_has_no_permission(TPERM_FILE)) {
+    user_thread_info.err_no = E_PERM;
     return -1;
   }
 
@@ -97,6 +99,7 @@ int k_list_dir(const char* path, char* out, size_t outsz) {
 
 int k_open(const char* path, int oflag, ...) {
   if (k_has_no_permission(TPERM_FILE)) {
+    user_thread_info.err_no = E_PERM;
     return -1;
   }
 
@@ -106,6 +109,7 @@ int k_open(const char* path, int oflag, ...) {
 
 ssize_t k_read(int fildes, void* buf, size_t nbyte) {
   if (k_has_no_permission(TPERM_FILE)) {
+    user_thread_info.err_no = E_PERM;
     return 0;
   }
 
@@ -116,6 +120,7 @@ ssize_t k_read(int fildes, void* buf, size_t nbyte) {
 
 ssize_t k_write(int filedes, const void* buf, size_t nbyte) {
   if (k_has_no_permission(TPERM_FILE)) {
+    user_thread_info.err_no = E_PERM;
     return 0;
   }
 
@@ -127,6 +132,7 @@ ssize_t k_write(int filedes, const void* buf, size_t nbyte) {
 off_t k_lseek(int fd, off_t offset, int whence) {
   assert(whence == SEEK_CUR);
   if (k_has_no_permission(TPERM_FILE)) {
+    user_thread_info.err_no = E_PERM;
     return (off_t)-1;
   }
 
@@ -137,6 +143,7 @@ off_t k_lseek(int fd, off_t offset, int whence) {
 
 int k_remove(const char* path) {
   if (k_has_no_permission(TPERM_FILE)) {
+    user_thread_info.err_no = E_PERM;
     return -1;
   }
 
@@ -146,6 +153,7 @@ int k_remove(const char* path) {
 
 int k_close(int filedes) {
   if (k_has_no_permission(TPERM_FILE)) {
+    user_thread_info.err_no = E_PERM;
     return -1;
   }
 
