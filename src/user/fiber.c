@@ -10,8 +10,7 @@ void make_context(FiberContext* ctx, void (*function)(FiberContext*),
                   uint8_t* stack_ptr) {
   init_context(ctx);
 
-  // Align to 16 bytes for AArch64
-  ctx->sp = ALIGN_STACK_PTR((size_t)stack_ptr);
+  ctx->sp = ALIGN_STACK_PTR(stack_ptr);
   ctx->pc = (size_t)function;
 
   // In case the function returns normally, we'll catch it

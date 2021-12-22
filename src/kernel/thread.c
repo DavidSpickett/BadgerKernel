@@ -126,7 +126,6 @@ void init_thread(Thread* thread, int tid, const char* name,
   thread->top_canary = STACK_CANARY;
   // Top of stack
   size_t stack_ptr = (size_t)(&(thread->stack[THREAD_STACK_SIZE]));
-  // Mask to align to 16 bytes for AArch64
   thread->stack_ptr = (uint8_t*)(ALIGN_STACK_PTR(stack_ptr));
 
   // Setup the initial restore frame

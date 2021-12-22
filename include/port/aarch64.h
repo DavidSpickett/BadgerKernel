@@ -78,8 +78,9 @@ typedef struct {
   size_t pc;
 } __attribute__((packed)) FiberContext;
 
-#define PC_ADD_MODE(pc)      (pc)
-#define PC_REMOVE_MODE(pc)   (pc)
-#define ALIGN_STACK_PTR(ptr) ((ptr) & ~0xF)
+#define PC_ADD_MODE(pc)    (pc)
+#define PC_REMOVE_MODE(pc) (pc)
+// 16 byte alignment
+#define ALIGN_STACK_PTR(ptr) ((size_t)(ptr) & ~0xF)
 
 #endif /* ifdef PORT_AARCH64_H */
