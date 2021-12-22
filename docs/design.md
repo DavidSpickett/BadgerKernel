@@ -450,8 +450,42 @@ Then we resume the user thread and it continues as normal.
 
 They key point is that we don't need to know which signal each context refers to. We simply remove a saved context each time we see the magic end address.
 
+# Binary Loading
+
+Binary loading is much like other operating systems where the loader is just another userspace program. The steps in BK go as follows.
+
+* Thread A asks to add a new thread from a file.
+* The kernel checks if there is a free thread and code page (or backing page).
+  * If the resources aren't avaialable, we return `INVALID_THREAD` to Thread A.
+  * If there are we then setup the new thread to run the loader.
+
+The setup itself has a few steps:
+* We make room at the top of the new thread's stack for the final thread arguments and name.
+  We do this because they likely point to the calling thread's stack and we don't want to be limited by that lifetime.
+* We copy the arguments to the very top of the stack so that their alignment is preserved.
+* We copy the final name in below that, since it might have an odd size.
+* The initial stack pointer of the new thread is adjusted down to account for this, and re-aligned as needed.
+
+The stack looks like:
+```
++------------- top of stack ---------+
++     arguments for new thread       +
++        name for new thread         +
++  (padding to align stack pointer)  +
++   intial restore frame of loader   +
++------ loader's stack pointer ------+
+```
+
+The loader is the first thing to run on the new thread. It gets these arguments:
+* The place to copy the ELF to (a code or code backing page).
+* The permissions to remove from the new thread (the loader runs with the same permissions as the caller).
+* The arguments of the final new thread. (stored on the loader's stack)
+* The name of the final new thread. (stored on the loader's stack)
+
+The loader will copy the elf into memory, do relocations and work out its entry point. This is the actual starting point of the new thread that Thread A asked to run.
+
+Finally the loader calls the restart syscall. This resets the current thread, to start running from the entry point of the loaded ELF. Its code page and parent settings are as they were before the loader ran. The final thread's stack will be as usual and the copies we made in the loader's stack overwritten since they are not needed anymore.
+
 # TODO: user threads
 
 # TODO: CI setup
-
-# TODO: binary loading
