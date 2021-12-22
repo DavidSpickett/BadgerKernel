@@ -9,6 +9,7 @@ syscalls = (
     # User gets kernel_config from user_thread_info
     ("set_kernel_config",   False, True),
     ("yield",               True,  False),
+    ("restart",             False, True),
     ("get_msg",             True,  False),
     ("send_msg",            True,  False),
     ("thread_wait",         False, False),

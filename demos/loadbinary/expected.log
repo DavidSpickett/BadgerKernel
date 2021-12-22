@@ -2,7 +2,7 @@ Thread            0: exiting
 Thread  <scheduler>: scheduling new thread
 Thread  <scheduler>: next thread chosen
 Thread       binary: Hello
-Thread       binary: Adding a new thread!
+Thread       binary: Added new thread with ID 0!
 Thread       binary: Goodbye
 Thread       binary: exiting
 Thread  <scheduler>: scheduling new thread
@@ -16,11 +16,13 @@ Thread  <scheduler>: scheduling new thread
 Thread  <scheduler>: next thread chosen
 Thread   load_again: resuming
 Thread   load_again: loading binary again
+Thread   load_again: binary thread cancelled
+Thread   load_again: binary loaded again as thread ID 0
 Thread   load_again: exiting
 Thread  <scheduler>: scheduling new thread
 Thread  <scheduler>: next thread chosen
 Thread       binary: Hello
-Thread       binary: Adding a new thread!
+Thread       binary: Added new thread with ID 1!
 Thread       binary: Goodbye
 Thread       binary: exiting
 Thread  <scheduler>: scheduling new thread

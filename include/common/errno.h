@@ -14,9 +14,8 @@ for name, num, desc in errnos:
 ]]] */
 #define E_PERM         1 // permission denied
 #define E_INVALID_ID   2 // invalid thread ID
-#define E_NOT_FOUND    3 // file not found
-#define E_NO_PAGE      4 // no free code page
-#define E_INVALID_ARGS 5 // invalid arguments
+#define E_NO_PAGE      3 // no free code page
+#define E_INVALID_ARGS 4 // invalid arguments
 /* [[[end]]] */
 
 char* strerror(int errnum);

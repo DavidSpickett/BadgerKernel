@@ -23,7 +23,7 @@ function(__add_loadable PARENT NAME PIE)
 
   target_compile_definitions(${PARENT}_kernel PRIVATE CODE_PAGE_SIZE=${CODE_PAGE_SIZE})
   # Need elf parser
-  target_sources(${PARENT}_kernel PRIVATE ${CMAKE_SOURCE_DIR}/src/kernel/elf.c)
+  target_sources(${PARENT}_kernel PRIVATE ${CMAKE_SOURCE_DIR}/src/user/elf.c)
 
   add_executable(${NAME} ${CMAKE_SOURCE_DIR}/demos/${PARENT}/${NAME}.c)
   # We depend on the kernel so we can use its symbols

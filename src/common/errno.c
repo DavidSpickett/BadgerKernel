@@ -14,8 +14,6 @@ char* strerror(int errnum) {
       return "permission denied";
     case E_INVALID_ID:
       return "invalid thread ID";
-    case E_NOT_FOUND:
-      return "file not found";
     case E_NO_PAGE:
       return "no free code page";
     case E_INVALID_ARGS:

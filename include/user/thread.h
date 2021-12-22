@@ -17,6 +17,8 @@ BK_EXPORT int add_thread_from_file_with_args(const char* filename,
 BK_EXPORT int add_named_thread(void (*worker)(void), const char* name);
 BK_EXPORT int add_named_thread_with_args(void (*worker)(), const char* name,
                                          const ThreadArgs* args);
+BK_EXPORT void restart(void* worker, const char* name, const ThreadArgs* args,
+                       uint16_t remove_permissions);
 
 // Remove "remove" from the current set and return the new permissions
 BK_EXPORT uint16_t permissions(uint16_t remove);

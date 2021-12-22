@@ -1,13 +1,14 @@
-#include "kernel/elf.h"
+#include "user/elf.h"
 #include "common/print.h"
-#include "kernel/file.h"
-#include "kernel/thread.h"
 #include "port/port.h"
+#include "user/errno.h"
+#include "user/file.h"
+#include "user/thread.h"
 #include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
-// Only for symbols, only use k_<...> functions in this file
+// Only for symbols
 #include "user/file.h"
 #include "user/thread.h"
 #include "user/util.h"
@@ -26,9 +27,12 @@
   } while (0)
 #define DEBUG_MSG_ELF_SECTION(msg) DEBUG_MSG_ELF("------ " msg " ------\n")
 
+// TODO: make these proper thread returns instead so we don't crash the whole
+// system?
+//       thread_cancel(CURRENT_THREAD) instead???
 #define PRINT_EXIT(fmt, ...)                                                   \
   printf("Error: " fmt, ##__VA_ARGS__);                                        \
-  k_exit(1);
+  exit(1);
 
 #define MAX_SECTION_NAME_LEN 80
 // TODO: this assumption is more risky than the section names
@@ -248,7 +252,7 @@ static const char* sym_type_tostr(unsigned char type) {
 extern uint8_t code_page[CODE_PAGE_SIZE];
 
 static void checked_lseek(int filedes, off_t offset, int whence) {
-  off_t new_pos = k_lseek(filedes, offset, whence);
+  off_t new_pos = lseek(filedes, offset, whence);
   if (new_pos != offset) {
     PRINT_EXIT("Couldn't seek to offset %u\n", offset);
   }
@@ -257,7 +261,7 @@ static void checked_lseek(int filedes, off_t offset, int whence) {
 static void get_section_name(int elf, size_t name_table_offset,
                              size_t name_offset, uint16_t idx, char* name) {
   checked_lseek(elf, name_table_offset + name_offset, SEEK_CUR);
-  ssize_t got = k_read(elf, name, MAX_SECTION_NAME_LEN);
+  ssize_t got = read(elf, name, MAX_SECTION_NAME_LEN);
   // This check is a bit weird, assuming that the name table
   // isn't at the end of the file here.
   if (got != MAX_SECTION_NAME_LEN) {
@@ -340,7 +344,7 @@ static SectionHeader get_section_header(int elf, uint16_t idx,
   checked_lseek(elf, hdr_pos, SEEK_CUR);
 
   SectionHeader section_hdr;
-  ssize_t got = k_read(elf, &section_hdr, section_hdr_size);
+  ssize_t got = read(elf, &section_hdr, section_hdr_size);
   if ((size_t)got < section_hdr_size) {
     PRINT_EXIT("Couldn't read header for section %u\n", idx);
   }
@@ -375,7 +379,7 @@ static SymbolInfo get_symbol_info(int elf, uint16_t table_idx, size_t sym_idx,
   size_t symbol_offset =
       sym_table_hdr.sh_offset + (sym_idx * sym_table_hdr.sh_entsize);
   checked_lseek(elf, symbol_offset, SEEK_CUR);
-  ssize_t got = k_read(elf, &symbol, sym_table_hdr.sh_entsize);
+  ssize_t got = read(elf, &symbol, sym_table_hdr.sh_entsize);
   if ((size_t)got < sym_table_hdr.sh_entsize) {
     PRINT_EXIT("Couldn't read symbol at index %u\n", sym_idx);
   }
@@ -383,7 +387,7 @@ static SymbolInfo get_symbol_info(int elf, uint16_t table_idx, size_t sym_idx,
   SymbolInfo sym_info;
 
   checked_lseek(elf, sym_name_table_hdr.sh_offset + symbol.st_name, SEEK_CUR);
-  got = k_read(elf, sym_info.name, MAX_SYMBOL_NAME_LEN);
+  got = read(elf, sym_info.name, MAX_SYMBOL_NAME_LEN);
   if (got < MAX_SYMBOL_NAME_LEN) {
     // TODO: read until null terminator function?
     // TODO: or just give in and us the heap
@@ -447,7 +451,7 @@ static void resolve_relocs(int elf, uint16_t idx, size_t section_table_offs,
        offs += reloc_size, ++reloc_idx) {
     checked_lseek(elf, offs, SEEK_CUR);
     ELFRelocation reloc;
-    ssize_t got = k_read(elf, &reloc, reloc_size);
+    ssize_t got = read(elf, &reloc, reloc_size);
     if ((size_t)got != reloc_size) {
       PRINT_EXIT("Failed to read reloc %u in section %s\n", reloc_idx, name);
     }
@@ -550,7 +554,7 @@ static bool load_section(int elf, uint16_t idx, size_t section_table_offs,
   checked_lseek(elf, name_table_offset + section_hdr.sh_name, SEEK_CUR);
   ssize_t max_section_name_len = 80;
   char name[max_section_name_len];
-  ssize_t got = k_read(elf, name, max_section_name_len);
+  ssize_t got = read(elf, name, max_section_name_len);
   if (got != max_section_name_len) {
     PRINT_EXIT("Failed to read name for section %u\n", idx);
   }
@@ -559,6 +563,8 @@ static bool load_section(int elf, uint16_t idx, size_t section_table_offs,
     DEBUG_MSG_ELF("Skipping non ALLOC section \"%s\" (%u)\n", name, idx);
     return false;
   }
+
+  DEBUG_MSG_ELF("Loading section \"%s\" (%u)\n", name, idx);
 
   void* start_code_page = (void*)code_page;
   void* end_code_page = (void*)&code_page[CODE_PAGE_SIZE];
@@ -569,16 +575,15 @@ static bool load_section(int elf, uint16_t idx, size_t section_table_offs,
     // but will be run from the code page as normal
     section_start = (void*)((size_t)section_start + (size_t)start_code_page);
   }
+  void* section_end = (void*)((size_t)(section_start) + section_hdr.sh_size);
+
+  DEBUG_MSG_ELF("Section range: 0x%x - 0x%x\n", section_start, section_end);
 
   if ((section_start < start_code_page) || (section_start >= end_code_page)) {
-    PRINT_EXIT("Section \"%s\" (%u) start address not within code page\n", name,
-               idx);
+    PRINT_EXIT("Section start address not within code page\n", name, idx);
   }
-
-  void* section_end = (void*)((size_t)(section_start) + section_hdr.sh_size);
   if (section_end >= end_code_page) {
-    PRINT_EXIT("Section \"%s\" (%u) extends off of the end of the code page\n",
-               name, idx);
+    PRINT_EXIT("Section extends off of the end of the code page\n", name, idx);
   }
 
   checked_lseek(elf, section_hdr.sh_offset, SEEK_CUR);
@@ -595,7 +600,7 @@ static bool load_section(int elf, uint16_t idx, size_t section_table_offs,
     // Zero init (reading from the elf just gets you rubbish)
     memset(dest_addr, 0, section_hdr.sh_size);
   } else {
-    ssize_t section_got = k_read(elf, dest_addr, section_hdr.sh_size);
+    ssize_t section_got = read(elf, dest_addr, section_hdr.sh_size);
     if ((size_t)section_got != section_hdr.sh_size) {
       PRINT_EXIT("Couldn't read content for section \"%s\" (%u)\n", name, idx);
     }
@@ -606,24 +611,22 @@ static bool load_section(int elf, uint16_t idx, size_t section_table_offs,
   return true;
 }
 
-void (*load_elf(const char* filename, void* dest))(void) {
+void load_elf(void* dest, uint16_t remove_permissions, const ThreadArgs* args,
+              const char* filename) {
   /* Validate elf and load all ALLOC sections into location
      dest. Returns a function pointer to the ELF entry point.
   */
   DEBUG_MSG_ELF_SECTION("Opening and validating file");
   DEBUG_MSG_ELF("Processing \"%s\"\n", filename);
-  int elf = k_open(filename, O_RDONLY);
+  int elf = open(filename, O_RDONLY);
   if (elf < 0) {
-    DEBUG_MSG_ELF("Couldn't open file %s\n", filename);
-    // Entry could be 0 in a pie ELF, but when it's returned
-    // it's offset so it'd be non zero
-    // Hence we're ok to use NULL to mean couldn't open
-    return NULL;
+    PRINT_EXIT("Couldn't open file \"%s\" (errno %u, %s)\n", filename, errno,
+               strerror(errno));
   }
 
   size_t header_size = sizeof(ElfHeader);
   ElfHeader elf_hdr;
-  ssize_t got = k_read(elf, &elf_hdr, header_size);
+  ssize_t got = read(elf, &elf_hdr, header_size);
   if ((size_t)got < header_size) {
     PRINT_EXIT("Couldn't read complete header from %s\n", filename);
   }
@@ -638,6 +641,7 @@ void (*load_elf(const char* filename, void* dest))(void) {
       elf, elf_hdr.e_shstrndx, elf_hdr.e_shoff, elf_hdr.e_shentsize);
 
   DEBUG_MSG_ELF_SECTION("Loading sections into memory");
+  DEBUG_MSG_ELF("Code page: 0x%x - 0x%x\n", dest, dest + CODE_PAGE_SIZE);
   bool loaded_something = false;
   bool is_shared = elf_hdr.e_type == ET_DYN;
   for (uint16_t idx = 0; idx < elf_hdr.e_shnum; ++idx) {
@@ -672,6 +676,9 @@ void (*load_elf(const char* filename, void* dest))(void) {
 
   DEBUG_MSG_ELF("Entry point will be set to 0x%x\n", entry_point);
 
-  DEBUG_MSG_ELF_SECTION("Finished loading ELF");
-  return entry_point;
+  DEBUG_MSG_ELF_SECTION("Finished loading ELF, restarting thread");
+
+  // Restarts this thread, starting at the entry point of the elf.
+  restart(entry_point, filename, args, remove_permissions);
+  __builtin_unreachable();
 }

@@ -453,3 +453,5 @@ They key point is that we don't need to know which signal each context refers to
 # TODO: user threads
 
 # TODO: CI setup
+
+# TODO: binary loading

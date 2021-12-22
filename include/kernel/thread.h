@@ -69,6 +69,9 @@ int k_add_thread_from_file_with_args(const char* filename,
 int k_add_thread(const char* name, const ThreadArgs* args, void* worker,
                  const ThreadFlags* flags);
 
+void k_restart(void* worker, const char* name, const ThreadArgs* args,
+               uint16_t remove_permissions);
+
 bool is_valid_thread(int tid);
 int k_get_thread_id(void);
 void k_set_thread_name(Thread* thread, const char* name);

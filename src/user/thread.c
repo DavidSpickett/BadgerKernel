@@ -63,6 +63,11 @@ int add_named_thread_with_args(void (*worker)(), const char* name,
   return add_thread(name, args, worker, &flags);
 }
 
+void restart(void* worker, const char* name, const ThreadArgs* args,
+             uint16_t remove_permissions) {
+  DO_SYSCALL_4(restart, worker, name, args, remove_permissions);
+}
+
 int get_thread_id(void) {
   return user_thread_info.id;
 }

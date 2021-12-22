@@ -41,10 +41,6 @@ void setup(void) {
   // when the first thread's keepalive exited
   add_named_thread(load_again, "load_again");
 
-  // This file doesn't exist
-  assert(add_thread_from_file("/?/:/;") == INVALID_THREAD);
-  assert(errno == E_NOT_FOUND);
-
   add_thread_from_file(filename);
   add_thread_from_file(filename);
   // This fails because we've used up all the backing pages

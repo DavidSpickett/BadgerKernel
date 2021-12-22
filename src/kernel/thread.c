@@ -8,7 +8,8 @@
 // So we can user log_event on exit
 #include "user/thread.h"
 #if CODE_PAGE_SIZE
-#include "kernel/elf.h"
+// Entry point for elf loading
+#include "user/elf.h"
 #endif
 #include "kernel/alloc.h"
 #include "kernel/file.h"
@@ -218,7 +219,17 @@ void log_scheduler_event(const char* event) {
 
 #if CODE_BACKING_PAGES
 static void swap_paged_threads(const Thread* current, const Thread* next) {
+  // Happens if the same thread is chosen to run again after yielding
   if (current == next) {
+    return;
+  }
+
+  // Happens when resuming after a restart syscall, which may have been done
+  // by the elf loader. There's no need to save code page content here,
+  // just copy in the newly loaded program.
+  if (current && !next) {
+    memcpy(code_page, code_backing_pages[current->code_backing_page].data,
+           CODE_PAGE_SIZE);
     return;
   }
 
@@ -495,22 +506,46 @@ int k_add_thread_from_file_with_args(const char* filename,
   dest = code_backing_pages[free_page].data;
 #endif
 
-  void (*entry)() = load_elf(filename, dest);
-  if (!entry) {
-    // Startup may call this to load STARTUP_PROG
-    if (current_thread) {
-      user_thread_info.err_no = E_NOT_FOUND;
-    }
-    return INVALID_THREAD;
-  }
+  // The loader will call the restart syscall with the new args after it has
+  // loaded the file. Since the arguments and filepath may be pointers to the
+  // caller's stack we will not set those here but later after copying them onto
+  // the loader's stack.
+  ThreadArgs load_args =
+      make_args(dest, remove_permissions, NULL /*args for new thread*/,
+                NULL /*filepath*/);
 
+  // The loader itself has the same permissions as the calling thread
+  // but when it restarts itself it will take on the permissions the caller
+  // asked for.
   int tid =
-      k_add_named_thread_with_args(entry, filename, args, remove_permissions);
-  // You may have fewer free thread structures than you do empty code pages.
-  // Meaning you have mostly in-binary threads. In which case the above fails.
+      k_add_named_thread_with_args((void*)load_elf, "loader", &load_args, 0);
   if (tid == INVALID_THREAD) {
     return INVALID_THREAD;
   }
+
+  // Move the intial stack pointer down to create space to copy into.
+  // +1 for the null terminator
+  size_t filename_len = strlen(filename) + 1;
+  uint8_t* new_stack_ptr =
+      all_threads[tid].stack_ptr - filename_len - sizeof(ThreadArgs);
+  new_stack_ptr = (uint8_t*)ALIGN_STACK_PTR(new_stack_ptr);
+
+  // Copy the intial stack frame backwards creating space at the top of the
+  // stack.
+  memmove(new_stack_ptr, all_threads[tid].stack_ptr, sizeof(RegisterContext));
+
+  all_threads[tid].stack_ptr = new_stack_ptr;
+
+  // We put the arguments first because the string may have an odd size that
+  // would change the alignment of the arguments.
+  void* args_dest =
+      all_threads[tid].stack + THREAD_STACK_SIZE - sizeof(ThreadArgs);
+  memcpy(args_dest, args, sizeof(ThreadArgs));
+  all_threads[tid].args.a3 = (size_t)args_dest;
+
+  void* filename_dest = args_dest - filename_len;
+  memcpy(filename_dest, filename, filename_len);
+  all_threads[tid].args.a4 = (size_t)filename_dest;
 
 #if CODE_BACKING_PAGES
   all_threads[tid].code_backing_page = free_page;
@@ -518,9 +553,47 @@ int k_add_thread_from_file_with_args(const char* filename,
 #else
   all_threads[tid].in_code_page = true;
 #endif
+
   return tid;
 }
 #endif
+
+void k_restart(void* worker, const char* name, const ThreadArgs* args,
+               uint16_t remove_permissions) {
+#if CODE_PAGE_SIZE
+  bool in_code_page = current_thread->in_code_page;
+#if CODE_BACKING_PAGES
+  size_t code_backing_page = current_thread->code_backing_page;
+#endif
+#endif
+
+  // Not going to save child here, assuming that this new
+  // thread represents a new branch of the tree.
+  int parent = current_thread->parent;
+
+  // Going to assume that this thread has no child given that
+  // the only use of restart so far is the loader. Where the thread
+  // will be new and the loader isn't going to set a child.
+
+  init_thread(current_thread, current_thread->id, name, worker, args,
+              current_thread->permissions & ~remove_permissions);
+
+  current_thread->parent = parent;
+
+#if CODE_PAGE_SIZE
+  current_thread->in_code_page = in_code_page;
+#if CODE_BACKING_PAGES
+  current_thread->code_backing_page = code_backing_page;
+#endif
+#endif
+
+#if CODE_BACKING_PAGES
+  // restart is the only syscall where you shift from one program to another.
+  // This new program might be stored in a backing page so copy it to the
+  // code page before "resuming" it aka starting it for the first time.
+  swap_paged_threads(current_thread, NULL);
+#endif
+}
 
 int k_add_thread(const char* name, const ThreadArgs* args, void* worker,
                  const ThreadFlags* flags) {

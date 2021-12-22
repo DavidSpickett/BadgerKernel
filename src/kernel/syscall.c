@@ -60,6 +60,8 @@ static const char* syscall_name(size_t num) {
       return "set_kernel_config";
     case syscall_yield:
       return "yield";
+    case syscall_restart:
+      return "restart";
     case syscall_get_msg:
       return "get_msg";
     case syscall_send_msg:
@@ -163,6 +165,11 @@ void k_handle_syscall(void) {
       syscall_fn = k_yield;
       has_result = true;
       update_user_thread_info = false;
+      break;
+    case syscall_restart:
+      syscall_fn = k_restart;
+      has_result = false;
+      update_user_thread_info = true;
       break;
     case syscall_get_msg:
       syscall_fn = k_get_msg;
