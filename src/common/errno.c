@@ -22,6 +22,6 @@ char* strerror(int errnum) {
       return "invalid arguments";
       /* [[[end]]] */
     default:
-      return "(unknown errno)";
+      return "<unknown errno>";
   }
 }
